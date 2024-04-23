@@ -147,3 +147,8 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+ACCOUNT_ALLOW_REGISTRATION = False
+
+LOGIN_REDIRECT_URL = '/coleta/'

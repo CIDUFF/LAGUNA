@@ -32,3 +32,12 @@ body {
     background-color: #f4f4f5;
     /* Cor azul bebê */
 }
+
+.navbar-custom {
+    background-color: #1a202c; /* Cor de fundo cinza escuro */
+    color: #8199b9; /* Cor do texto cinza claro */
+}
+
+.navbar-custom a {
+    color: #a0aec0; /* Cor do link cinza claro */
+}

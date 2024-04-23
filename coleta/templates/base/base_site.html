@@ -3,27 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <title>{% block title %}Sistemas Lagoa Viva{% endblock %}</title>
-    {% block css %}
-    <!-- Aqui você pode incluir arquivos CSS globais -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    {% endblock %}
+    {% load static %}
+        <!-- Aqui você pode incluir arquivos CSS globais -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+        <link rel="stylesheet" type="text/css" href="{% static 'coleta/styles.css' %}">
 </head>
 <body>
     <header>
         <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <a class="navbar-brand" href="{% url 'home' %}">Sistemas Lagoa Viva</a>
+            <a class="navbar-brand" href="{% url 'home' %}">
+                <img src="{% static 'images/logo.png' %}" alt="Logo Lagoa Viva" height="40">
+            </a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ml-auto">
                     {% if user.is_authenticated %}
+
+                        <li class="nav-item">
+                            <a class="nav-link">Lista de Amostras</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" >Cadastro de Amostras</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link">Cadastro de Coletores</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link">Cadastro de Analistas</a>
+                        </li>
                         <li class="nav-item">
                             <a class="nav-link" href="#">Olá, {{ user.username }}</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'account_logout' %}">Logout</a>
                         </li>
+
                     {% else %}
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'account_login' %}">Login</a>
@@ -41,7 +57,7 @@
     </main>
 
     <footer style="position: fixed; left: 0; bottom: 0; width: 100%; background-color: #f8f9fa; text-align: center; padding: 10px;">
-        Lagoa Viva &copy; {% now "Y" %} - Desenvolvido por CID
+        Lagoa Viva &copy; {% now "Y" %} - Desenvolvido por CID Lagoa Viva
     </footer>
 
     {% block js %}
