@@ -1,0 +1,17 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Coleta de Amostras</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'coleta/styles.css' %}">
+</head>
+<body>
+    <h1>Formulário de Coleta de Amostras</h1>
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Enviar</button>
+    </form>
+</body>
+</html>
