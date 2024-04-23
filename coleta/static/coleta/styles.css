@@ -12,6 +12,7 @@ form select {
     width: 100%;
     margin: 0 auto 10px;
     padding: 10px;
+    border: 1px solid #ccc;
     border-radius: 20px;
     /* Adiciona bordas arredondadas */
 }
@@ -33,6 +34,12 @@ body {
     /* Cor azul bebê */
 }
 
+
+.table {
+    margin-left: 0px;
+    margin-right: 0px;
+}
+
 .navbar-custom {
     background-color: #1a202c; /* Cor de fundo cinza escuro */
     color: #8199b9; /* Cor do texto cinza claro */
@@ -40,4 +47,13 @@ body {
 
 .navbar-custom a {
     color: #a0aec0; /* Cor do link cinza claro */
+}
+
+.form-box {
+    background-color: #f0f0f0;
+    /* Cor de fundo mais clara */
+    border: 2px solid rgb(110, 177, 231);
+    /* Bordas azuis */
+    padding: 20px;
+    /* Espaço interno para evitar que o conteúdo toque as bordas */
 }

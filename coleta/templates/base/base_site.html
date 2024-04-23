@@ -7,7 +7,8 @@
         <!-- Aqui você pode incluir arquivos CSS globais -->
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
         <link rel="stylesheet" type="text/css" href="{% static 'coleta/styles.css' %}">
-</head>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    </head>
 <body>
     <header>
         <nav class="navbar navbar-expand-lg navbar-light bg-light">
@@ -20,13 +21,13 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ml-auto">
                     {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'coleta' %}" >Cadastro de amostras</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'lista_coleta' %}" >Lista de Amostras</a>
+                        </li>
 
-                        <li class="nav-item">
-                            <a class="nav-link">Lista de Amostras</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" >Cadastro de Amostras</a>
-                        </li>
                         <li class="nav-item">
                             <a class="nav-link">Cadastro de Coletores</a>
                         </li>
@@ -58,12 +59,31 @@
 
     <footer style="position: fixed; left: 0; bottom: 0; width: 100%; background-color: #f8f9fa; text-align: center; padding: 10px;">
         Lagoa Viva &copy; {% now "Y" %} - Desenvolvido por CID Lagoa Viva
-    </footer>
+        </footer>
 
-    {% block js %}
-    <!-- Aqui você pode incluir arquivos JavaScript globais -->
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-    {% endblock %}
+        {% block js %}
+        <!-- Aqui você pode incluir arquivos JavaScript globais -->
+        <!-- This script block includes the necessary JavaScript libraries for the webpage. -->
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+        <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/pt.js"></script>
+
+        <!-- This script block initializes the flatpickr library for date and time input fields. -->
+        <script>
+        window.addEventListener("DOMContentLoaded", function() {
+            flatpickr(".flatpickr", {
+                locale: "pt",
+                enableTime: true,
+                time_24hr: true,
+                altInput: true,
+                altFormat: "d/m/Y H:i",
+            });
+        });
+        </script>
+        {% endblock %}
+    </body>
+    </html>
 </body>
+
 </html>

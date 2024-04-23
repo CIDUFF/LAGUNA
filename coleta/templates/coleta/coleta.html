@@ -9,13 +9,20 @@ Coleta de Amostras
 {% block css %}
 {{ block.super }}
 <link rel="stylesheet" type="text/css" href="{% static 'coleta/styles.css' %}">
+<style>
+.form-box {
+    background-color: #f0f0f0; /* Cor de fundo mais clara */
+    border: 2px solid blue; /* Bordas azuis */
+    padding: 20px; /* Espaço interno para evitar que o conteúdo toque as bordas */
+}
+</style>
 {% endblock %}
 
 {% block content %}
 <div class="container">
     <div class="row justify-content-center">
-        <div class="col-md-6">
-            <h1 class="text-center my-4">Formulário de Coleta de Amostras</h1>
+        <div class="col-md-6 form-box">
+            <h3 class="text-center my-4">Formulário de Coleta de Amostras</h3>
             <form method="POST">
                 {% csrf_token %}
                 {{ form.as_p }}

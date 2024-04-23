@@ -1,6 +1,20 @@
 from django.db import models
 
 class Coleta_lagoa(models.Model):
+    """
+    Represents a water collection from a lagoon.
+
+    Attributes:
+        pH (DecimalField): The pH value of the water sample.
+        temperatura (DecimalField): The temperature of the water sample.
+        turbidez (DecimalField): The turbidity of the water sample.
+        oxigenio_dissolvido (DecimalField): The dissolved oxygen of the water sample.
+        data_coleta (DateField): The date of the water collection.
+        local_coleta (CharField): The location of the water collection.
+        responsavel_coleta (CharField): The person responsible for the water collection.
+        observacoes (TextField): Additional observations about the water sample.
+    """
+
     pH = models.DecimalField(max_digits=4, decimal_places=2)
     temperatura = models.DecimalField(max_digits=4, decimal_places=2)
     turbidez = models.DecimalField(max_digits=4, decimal_places=2)
@@ -13,3 +27,22 @@ class Coleta_lagoa(models.Model):
     def __str__(self):
         return f'Coleta da água em {self.local_coleta} em {self.data_coleta}'
     
+class coletores(models.Model):
+    nome = models.CharField(max_length=100)
+    email = models.EmailField(max_length=100)
+    telefone = models.CharField(max_length=15)
+    filiacao = models.CharField(max_length=100)
+
+    
+    def __str__(self):
+        return f'{self.nome}'
+    
+class analistas(models.Model):
+    nome = models.CharField(max_length=100)
+    email = models.EmailField(max_length=100)
+    telefone = models.CharField(max_length=15)
+    filiacao = models.CharField(max_length=100)
+    organizacao = models.CharField(max_length=100)
+    
+    def __str__(self):
+        return f'{self.nome}'
