@@ -1,0 +1,34 @@
+/* Arquivo: coleta/styles.css */
+
+/* Estilização dos campos de entrada */
+form input[type="text"],
+form input[type="email"],
+form input[type="password"],
+form input[type="number"],
+/* Adiciona campos de entrada numéricos */
+form textarea,
+form select {
+    display: block;
+    width: 100%;
+    margin: 0 auto 10px;
+    padding: 10px;
+    border-radius: 20px;
+    /* Adiciona bordas arredondadas */
+}
+
+/* Estilização dos rótulos dos campos */
+form label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+/* Estilização dos erros de validação */
+form .errorlist {
+    color: red;
+    margin-bottom: 10px;
+}
+
+body {
+    background-color: #f4f4f5;
+    /* Cor azul bebê */
+}

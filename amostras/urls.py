@@ -9,7 +9,8 @@ admin.site.name = "SCALA - LAGOA VIVA"
 
 
 urlpatterns = [
+    path('', include('coleta.urls')),
     path('admin/', admin.site.urls),
     path('accounts/', include('allauth.urls')),
-    path('', include('coleta.urls')),
+    
 ]
