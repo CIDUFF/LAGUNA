@@ -11,88 +11,89 @@
         <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <a class="navbar-brand" href="{% url 'home' %}">
-                <img src="{% static 'images/logo.png' %}" alt="Logo Lagoa Viva" height="40">
-            </a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ml-auto">
-                    {% if user.is_authenticated %}
-                        <li class="nav-item">
-                            <a class="nav-link" href=# >Dashboard</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'coleta' %}" >Cadastro de amostras</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'lista_coleta' %}" >Lista de Amostras</a>
-                        </li>
+    <div id="navbar-container">
+            <header>
+                <nav class="navbar navbar-expand-lg navbar-light bg-light">
+                    <a class="navbar-brand" href="{% url 'home' %}">
+                        <img src="{% static 'images/logo.png' %}" alt="Logo Lagoa Viva" height="40">
+                    </a>
+                    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarNav">
+                        <ul class="navbar-nav ml-auto">
+                            {% if user.is_authenticated %}
+                                <li class="nav-item">
+                                    <a class="nav-link" href=# >Dashboard</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{% url 'coleta' %}" >Cadastro de amostras</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{% url 'lista_coleta' %}" >Lista de Amostras</a>
+                                </li>
 
-                        <li class="nav-item">
-                            <a class="nav-link">Cadastro de Coletores</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link">Cadastro de Analistas</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Olá, {{ user.username }}</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'account_logout' %}">Logout</a>
-                        </li>
+                                <li class="nav-item">
+                                    <a class="nav-link">Cadastro de Coletores</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link">Cadastro de Analistas</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#">Olá, {{ user.username }}</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{% url 'account_logout' %}">Logout</a>
+                                </li>
 
-                    {% else %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'account_login' %}">Login</a>
-                        </li>
-                    {% endif %}
-                </ul>
+                            {% else %}
+                                <li class="nav-item">
+                                    <a class="nav-link" href="{% url 'account_login' %}">Login</a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </nav>
+            </header>
+
+        <main class="main-content">
+            <div class="d-flex justify-content-center align-items-center vh-100">
+                {% block content %}
+                <!-- O conteúdo das páginas individuais será inserido aqui -->
+                {% endblock %}
             </div>
-        </nav>
-    </header>
-
-    <main class="main-content">
-        <div class="d-flex justify-content-center align-items-center vh-100">
-
-            {% block content %}
-            <!-- O conteúdo das páginas individuais será inserido aqui -->
-            {% endblock %}
-        </div>
-    </main>
-
-    <footer style="position: fixed; left: 0; bottom: 0; width: 100%; background-color: #f8f9fa; text-align: center; padding: 10px;">
-        Lagoa Viva &copy; {% now "Y" %} - Desenvolvido por CID Lagoa Viva
-        </footer>
-
-        {% block js %}
-        <!-- Aqui você pode incluir arquivos JavaScript globais -->
-        <!-- This script block includes the necessary JavaScript libraries for the webpage. -->
-        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
-        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-        <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/pt.js"></script>
-
-        <!-- This script block initializes the flatpickr library for date and time input fields. -->
-        <script>
-        window.addEventListener("DOMContentLoaded", function() {
-            flatpickr(".flatpickr", {
-                locale: "pt",
-                altFormat: "d/m/Y",
-                altInput: true,
-                enableTime: true,
+        </main>
+    </div>
 
 
 
-            });
-        });
-        </script>
-        {% endblock %}
-    </body>
-    </html>
 </body>
+
+<footer style="position: fixed; left: 0; bottom: 0; width: 100%; background-color: #f8f9fa; text-align: center; padding: 10px;">
+    Lagoa Viva &copy; {% now "Y" %} - Desenvolvido por CID Lagoa Viva
+    </footer>
+
+    {% block js %}
+    <!-- Aqui você pode incluir arquivos JavaScript globais -->
+    <!-- This script block includes the necessary JavaScript libraries for the webpage. -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/pt.js"></script>
+
+    <!-- This script block initializes the flatpickr library for date and time input fields. -->
+    <script>
+    window.addEventListener("DOMContentLoaded", function() {
+        flatpickr(".flatpickr", {
+            locale: "pt",
+            dateFormat: "d/m/Y",
+            altInput: false,
+            enableTime: true,
+        });
+    });
+    </script>
+    {% endblock %}
+</body>
+</html>
 
 </html>

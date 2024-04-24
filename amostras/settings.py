@@ -152,3 +152,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 ACCOUNT_ALLOW_REGISTRATION = False
 
 LOGIN_REDIRECT_URL = '/coleta/'
+
+DATE_INPUT_FORMATS = ['%d/%m/%Y']
+
+
+DATETIME_INPUT_FORMATS = ['%d/%m/%Y %H:%M']
