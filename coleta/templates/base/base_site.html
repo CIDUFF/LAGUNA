@@ -8,6 +8,7 @@
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
         <link rel="stylesheet" type="text/css" href="{% static 'coleta/styles.css' %}">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+        <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     </head>
 <body>
     <header>
@@ -54,10 +55,13 @@
         </nav>
     </header>
 
-    <main>
-        {% block content %}
-        <!-- O conteúdo das páginas individuais será inserido aqui -->
-        {% endblock %}
+    <main class="main-content">
+        <div class="d-flex justify-content-center align-items-center vh-100">
+
+            {% block content %}
+            <!-- O conteúdo das páginas individuais será inserido aqui -->
+            {% endblock %}
+        </div>
     </main>
 
     <footer style="position: fixed; left: 0; bottom: 0; width: 100%; background-color: #f8f9fa; text-align: center; padding: 10px;">
@@ -77,10 +81,12 @@
         window.addEventListener("DOMContentLoaded", function() {
             flatpickr(".flatpickr", {
                 locale: "pt",
-                enableTime: true,
-                time_24hr: true,
+                altFormat: "d/m/Y",
                 altInput: true,
-                altFormat: "d/m/Y H:i",
+                enableTime: true,
+
+
+
             });
         });
         </script>

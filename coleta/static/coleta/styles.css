@@ -1,59 +1,144 @@
-/* Arquivo: coleta/styles.css */
+:root {
+    --cinza-escuro: #1a202c;
+    --cinza-claro: #a0aec0;
+    --branco: #fff;
+    --cinza: #ccc;
+    --azul: rgb(110, 177, 231);
+    --cinza-fundo: #f0f0f0;
+}
 
-/* Estilização dos campos de entrada */
+body {
+    background-color: #f4f4f5;
+    font-family: 'Roboto', sans-serif;
+}
+
+.navbar-custom {
+    background-color: var(--cinza-escuro);
+    color: var(--cinza-claro);
+}
+
+.navbar-custom a {
+    color: var(--cinza-claro);
+}
+
+.form-box {
+    background-color: var(--cinza-fundo);
+    border: 2px solid var(--azul);
+    padding: 20px;
+}
+
+form {
+    display: block;
+    margin: auto;
+    width: 50%;
+}
+
 form input[type="text"],
 form input[type="email"],
 form input[type="password"],
 form input[type="number"],
-/* Adiciona campos de entrada numéricos */
 form textarea,
 form select {
     display: block;
     width: 100%;
     margin: 0 auto 10px;
     padding: 10px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--cinza);
     border-radius: 20px;
-    /* Adiciona bordas arredondadas */
 }
 
-/* Estilização dos rótulos dos campos */
 form label {
     display: block;
     margin-bottom: 5px;
 }
 
-/* Estilização dos erros de validação */
 form .errorlist {
     color: red;
     margin-bottom: 10px;
 }
 
-body {
-    background-color: #f4f4f5;
-    /* Cor azul bebê */
+form input[type="submit"] {
+    background-color: var(--cinza-escuro);
+    border: none;
+    color: var(--branco);
+    padding: 12px 25px;
+    border-radius: 4px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    text-transform: uppercase; /* Transforma o texto em maiúsculas */
+    letter-spacing: 1px; /* Adiciona um espaço entre as letras */
 }
 
-
-.table {
-    margin-left: 0px;
-    margin-right: 0px;
+form input[type="submit"]:hover {
+    background-color: #2d3748;
+    transform: scale(1.05); /* Aumenta o tamanho do botão quando o mouse passa sobre ele */
 }
 
-.navbar-custom {
-    background-color: #1a202c; /* Cor de fundo cinza escuro */
-    color: #8199b9; /* Cor do texto cinza claro */
+form input[type="submit"]:active {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    transform: scale(0.98); /* Diminui o tamanho do botão quando é clicado */
 }
 
-.navbar-custom a {
-    color: #a0aec0; /* Cor do link cinza claro */
+/* Adicionando margens ao corpo do site */
+.main-content {
+    margin: 0 50px;
 }
 
-.form-box {
-    background-color: #f0f0f0;
-    /* Cor de fundo mais clara */
-    border: 2px solid rgb(110, 177, 231);
-    /* Bordas azuis */
+.logout-box {
+    width: 80%;
+    max-width: 400px;
+    height: 13vh;
+    padding: 1rem;
+    border-radius: .20rem;
+    background-color: #f8f9fa;
+    text-align: center;
+    position: absolute;
+    top: 30%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.login-box {
+    width: 80%;
+    max-width: 400px;
+    height: 50vh;
+    padding: 1rem;
+    border-radius: .25rem;
+    background-color: #f8f9fa;
+    text-align: left;
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.form-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin: auto;
+    width: 60%;
+    border: 1px solid var(--cinza);
     padding: 20px;
-    /* Espaço interno para evitar que o conteúdo toque as bordas */
+    border-radius: 5px;
+}
+
+.form-container label {
+    margin-right: 10px;
+}
+
+.form-container .input-group {
+    display: flex;
+    align-items: left;
+    margin-bottom: 15px;
+}
+
+.form-container .input-group input {
+    flex-grow: 1;
+}
+
+h4 {
+    text-align: center;
 }

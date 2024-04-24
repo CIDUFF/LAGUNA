@@ -1,0 +1,20 @@
+{% extends 'base/base_site.html' %}
+
+{% load allauth i18n %}
+{% block head_title %}
+    {% trans "Sign Out" %}
+{% endblock head_title %}
+{% block content %}
+        <div class="logout-box">
+            <h4>{% trans "Are you sure you want to sign out?" %}</h4>
+            <p>{% trans 'Você será redirecionado para a tela inicial' %}</p>
+            {% url 'account_logout' as action_url %}
+            <form method="post" action="{{ action_url }}">
+                {% csrf_token %}
+                {{ redirect_field }}
+                <button type="submit" class="btn btn-danger mt-3">
+                    {% trans 'Sign Out' %}
+                </button>
+            </form>
+        </div>
+{% endblock content %}

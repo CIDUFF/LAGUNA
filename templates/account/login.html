@@ -1,0 +1,36 @@
+{% extends 'base/base_site.html' %}
+{% load static %}
+{% load i18n %}
+{% load allauth account %}
+{% block head_title %}
+    {% trans "Sign In" %}
+{% endblock head_title %}
+{% block content %}
+    <div class="d-flex">
+        <div class="login-box">
+            <h4>{% trans "Entrar no sistema" %}</h4>
+            {% if not SOCIALACCOUNT_ONLY %}
+                {% url 'account_login' as login_url %}
+                <form method="post" action="{{ login_url }}">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    {{ redirect_field }}
+                    <button type="submit" class="btn btn-primary mt-3">
+                        {% trans 'Sign In' %}
+                    </button>
+                </form>
+            {% endif %}
+            {% if LOGIN_BY_CODE_ENABLED %}
+                <hr>
+                <h2>
+                    <a href="{{ request_login_code_url }}" class="btn btn-secondary mt-3">
+                        {% trans "Mail me a sign-in code" %}
+                    </a>
+                </h2>
+            {% endif %}
+            {% if SOCIALACCOUNT_ENABLED %}
+                {% include "socialaccount/snippets/login.html" with page_layout="entrance" %}
+            {% endif %}
+        </div>
+    </div>
+{% endblock content %}
