@@ -16,7 +16,7 @@ class Coleta_lagoa(models.Model):
     """
 
     pH = models.DecimalField(max_digits=4, decimal_places=2)
-    temperatura = models.DecimalField(max_digits=4, decimal_places=2)
+    temperatura = models.IntegerField(("Temperatura da água"), default=0)
     turbidez = models.DecimalField(max_digits=4, decimal_places=2)
     oxigenio_dissolvido = models.DecimalField(max_digits=4, decimal_places=2)
     data_coleta = models.DateField(auto_now=False, auto_now_add=False)
