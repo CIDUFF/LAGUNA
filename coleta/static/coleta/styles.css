@@ -224,3 +224,9 @@ h4 {
 .card-responsive {
     max-width: 90vw;
 }
+
+@media (min-width: 992px) {
+    .navbar-collapse {
+        display: none !important;
+    }
+}
