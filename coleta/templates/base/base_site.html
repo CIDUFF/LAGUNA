@@ -2,7 +2,8 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>{% block title %}Sistemas Lagoa Viva{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Sistemas CID Lagoa Viva{% endblock %}</title>
     {% load static %}
         <!-- Aqui você pode incluir arquivos CSS globais -->
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
@@ -58,11 +59,13 @@
         </div>
     
     <main class="main-content">
-        <div class="d-flex justify-content-center align-items-center">
-            <div id="content-container">
-                {% block content %}
-                <!-- O conteúdo das páginas individuais será inserido aqui -->
-                {% endblock %}
+        <div class="container">
+            <div class="row justify-content-center align-items-center" style="min-height: 100vh;">
+                <div id="content-container" class="col-12 col-sm-8 col-md-6 d-flex justify-content-center align-items-center">
+                    {% block content %}
+                    <!-- O conteúdo das páginas individuais será inserido aqui -->
+                    {% endblock %}
+                </div>
             </div>
         </div>
     </main>
