@@ -4,12 +4,20 @@
     --branco: #fff;
     --cinza: #ccc;
     --cinza-fundo: #f0f0f0;
+    --azul: #007bff;
+    --spacing-small: 10px;
+    --spacing-medium: 20px;
+    --spacing-large: 30px;
+}
+
+* {
+    box-sizing: border-box;
 }
 
 body {
-    background-color: #f4f4f5;
+    background-color: var(--cinza-fundo);
     font-family: 'Roboto', sans-serif;
-    margin-top: 20px; /* Adicione esta linha */
+    margin-top: var(--spacing-medium);
 }
 
 .navbar-custom {
@@ -24,87 +32,22 @@ body {
 .form-box {
     background-color: var(--cinza-fundo);
     border: 2px solid var(--azul);
-    margin-top: 5vh; /* 5% da altura da janela de visualização */
-    display: flex; /* Adicione esta linha para usar flexbox */
-    flex-direction: column; /* Adicione esta linha para alinhar os itens verticalmente */
-    align-items: center; /* Adicione esta linha para centralizar os itens horizontalmente */
-    justify-content: center; /* Adicione esta linha para centralizar os itens verticalmente */
-    width: 100%; /* Adicione esta linha para tornar o formulário responsivo */
-    max-width: 600px; /* Adicione esta linha para limitar a largura máxima do formulário */
-    padding: 20px; /* Adicione esta linha para adicionar algum espaço interno ao formulário */
-    box-sizing: border-box; /* Adicione esta linha para incluir o padding e a borda na largura e altura totais do formulário */
-}
-
-/* Estilos para telas com largura de 768px ou mais */
-
-@media (min-width: 420px) {
-    .form-box {
-        margin-top: 5vh;
-    }
-}
-
-@media (min-width: 768px) {
-    .form-box {
-        margin-top: 5vh;
-    }
-}
-
-/* Estilos para telas com largura de 992px ou mais */
-@media (min-width: 992px) {
-    .form-box {
-        margin-top: 5vh;
-    }
-}
-
-/* Estilos para telas com largura de 1200px ou mais */
-@media (min-width: 1200px) {
-    .form-box {
-        margin-top: 5vh;
-    }
+    margin-top: 5vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 600px;
+    padding: var(--spacing-medium);
 }
 
 form {
     display: block;
     margin: auto;
-    margin-top: 5vh; /* 5% da altura da janela de visualização */
-    margin-bottom: 20px;
+    margin-top: 5vh;
+    margin-bottom: var(--spacing-medium);
     max-width: 90%;
-}
-
-/* Estilos para telas com largura de 768px ou mais */
-
-@media (min-width: 420px) {
-    form {
-        margin-top: 5vh;
-        margin-bottom: 30px;
-        max-width: 75%;
-    }
-}
-
-@media (min-width: 768px) {
-    form {
-        margin-top: 5vh;
-        margin-bottom: 30px;
-        max-width: 75%;
-    }
-}
-
-/* Estilos para telas com largura de 992px ou mais */
-@media (min-width: 992px) {
-    form {
-        margin-top: 5vh;
-        margin-bottom: 40px;
-        max-width: 60%;
-    }
-}
-
-/* Estilos para telas com largura de 1200px ou mais */
-@media (min-width: 1200px) {
-    form {
-        margin-top: 5vh;
-        margin-bottom: 50px;
-        max-width: 50%;
-    }
 }
 
 form input[type="text"],
@@ -115,22 +58,21 @@ form textarea,
 form select {
     display: block;
     width: 100%;
-    margin: 0 auto 10px;
-    padding: 10px;
+    margin: 0 auto var(--spacing-small);
+    padding: var(--spacing-small);
     border: 1px solid var(--cinza);
     border-radius: 10px;
     font-size: 16px;
-    box-sizing: border-box;
 }
 
 form label {
     display: block;
-    margin-bottom: 5px;
+    margin-bottom: var(--spacing-small);
 }
 
 form .errorlist {
     color: red;
-    margin-bottom: 10px;
+    margin-bottom: var(--spacing-small);
 }
 
 form input[type="submit"] {
@@ -143,53 +85,48 @@ form input[type="submit"] {
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-    text-transform: uppercase; /* Transforma o texto em maiúsculas */
-    letter-spacing: 1px; /* Adiciona um espaço entre as letras */
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 form input[type="submit"]:hover {
     background-color: #2d3748;
-    transform: scale(1.05); /* Aumenta o tamanho do botão quando o mouse passa sobre ele */
+    transform: scale(1.05);
 }
 
 form input[type="submit"]:active {
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-    transform: scale(0.98); /* Diminui o tamanho do botão quando é clicado */
+    transform: scale(0.98);
 }
 
-/* Adicionando margens ao corpo do site */
 .main-content {
     min-height: calc(100vh - 60px);
     padding-top: 120px;
 }
 
-.logout-box {
-    width: 80vw; /* largura como 80% da largura da viewport */
+.logout-box,
+.login-box {
+    width: 80vw;
     max-width: 400px;
-    height: 30vh; /* altura como 30% da altura da viewport */
     padding: 1rem;
     border-radius: .20rem;
-    background-color: #f8f9fa;
-    text-align: center;
+    background-color: var(--branco);
     position: absolute;
-    top: 50%; /* centralizado verticalmente */
-    left: 50%; /* centralizado horizontalmente */
-    transform: translate(-50%, -50%); /* necessário para o alinhamento central */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 
 .login-box {
-    width: 80vw; /* largura como 80% da largura da viewport */
-    max-width: 400px;
-    height: 50vh; /* altura como 50% da altura da viewport */
-    padding: 1rem;
-    border-radius: .25rem;
-    background-color: #f8f9fa;
+    height: 50vh;
     text-align: left;
-    position: absolute;
-    top: 50%; /* centralizado verticalmente */
-    left: 50%; /* centralizado horizontalmente */
-    transform: translate(-50%, -50%); /* necessário para o alinhamento central */
 }
+
+.logout-box {
+    height: 30vh;
+    text-align: center;
+}
+
 .form-container {
     display: flex;
     flex-direction: column;
@@ -197,18 +134,18 @@ form input[type="submit"]:active {
     margin: auto;
     width: 90%;
     border: 1px solid var(--cinza);
-    padding: 20px;
+    padding: var(--spacing-medium);
     border-radius: 5px;
 }
 
 .form-container label {
-    margin-right: 10px;
+    margin-right: var(--spacing-small);
 }
 
 .form-container .input-group {
     display: flex;
     align-items: left;
-    margin-bottom: 15px;
+    margin-bottom: var(--spacing-medium);
 }
 
 .form-container .input-group input {
@@ -229,4 +166,16 @@ h4 {
     .navbar-collapse {
         display: none !important;
     }
+}
+
+.footer {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    background-color: var(--branco);
+}
+
+.navbar-nav .nav-link:hover {
+    color: var(--azul);
 }
