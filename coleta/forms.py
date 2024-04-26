@@ -12,4 +12,3 @@ class Coleta_agua(forms.ModelForm):
             'data_coleta': forms.DateInput(attrs={'type': 'date', 'class': 'flatpickr'}),
         }
     
-# Compare this snippet from coleta/views.py:
