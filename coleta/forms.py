@@ -1,6 +1,8 @@
 from django import forms
 from .models import Coleta_lagoa
 
+
+#TODO: #3 Criar forms para cadastro de pessoas e laboratórios
 class Coleta_agua(forms.ModelForm):
     class Meta:
         model = Coleta_lagoa
