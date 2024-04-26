@@ -1,35 +1,25 @@
-{% extends 'base/base_site.html' %}
+{% extends 'base/base_site.html' %} {% load static %} {% block title %} SIMAL -
+Sistema de Monitoramento Integrado de Águas Lagunares {% endblock %} {% block
+css %} {{ block.super }}
+<link
+  rel="stylesheet"
+  type="text/css"
+  href="{% static 'coleta/styles.css' %}"
+/>
+{% endblock %} {% load static %} {% load static %} {% block content %}
+<link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}" />
 
-{% load static %}
-
-{% block title %}
-SIMAL - Sistema de Monitoramento Integrado de Águas Lagunares
-{% endblock %}
-
-{% block css %}
-{{ block.super }}
-<link rel="stylesheet" type="text/css" href="{% static 'coleta/styles.css' %}">
-{% endblock %}
-
-{% load static %}
-
-{% load static %}
-
-{% block content %}
-    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
-
-    <div class="container" style="max-width: 800px;">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title text-center">Cadastro de Amostras</h5>
-                <form method="POST" class="needs-validation" novalidate>
-                    {% csrf_token %}
-                    {{ form.as_p }}
-                    <button type="submit" class="btn btn-primary btn-block">Enviar</button>
-                </form>
-            </div>
-        </div>
+<div class="container" style="max-width: 800px">
+  <div class="card">
+    <div class="card-body">
+      <h5 class="card-title text-center">Cadastro de Amostras</h5>
+      <form method="POST" class="needs-validation" novalidate>
+        {% csrf_token %} {{ form.as_p }}
+        <button type="submit" class="btn btn-primary btn-block">Enviar</button>
+      </form>
     </div>
+  </div>
+</div>
 
-    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+<script src="{% static 'js/bootstrap.min.js' %}"></script>
 {% endblock %}
