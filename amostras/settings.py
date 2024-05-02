@@ -43,6 +43,8 @@ INSTALLED_APPS = [
     'django.contrib.sites',
     'allauth.socialaccount',
     'coleta',
+    'crispy_forms',
+    'crispy_bootstrap3',
 ]
 
 AUTHENTICATION_BACKENDS = [
@@ -157,3 +159,5 @@ DATE_INPUT_FORMATS = ['%d/%m/%Y']
 
 
 DATETIME_INPUT_FORMATS = ['%d/%m/%Y %H:%M']
+
+CRISPY_TEMPLATE_PACK = 'bootstrap3'
