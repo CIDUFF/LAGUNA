@@ -15,14 +15,23 @@ class Coleta_lagoa(models.Model):
         observacoes (TextField): Additional observations about the water sample.
     """
 
-    pH = models.DecimalField(max_digits=4, decimal_places=2)
-    temperatura = models.IntegerField(("Temperatura da água"), default=0)
-    turbidez = models.DecimalField(max_digits=4, decimal_places=2)
-    oxigenio_dissolvido = models.DecimalField(max_digits=4, decimal_places=2)
-    data_coleta = models.DateField(auto_now=False, auto_now_add=False)
-    local_coleta = models.CharField(max_length=100)
-    responsavel_coleta = models.CharField(max_length=100) #adicionar um model para cadastro de coletores
-    observacoes = models.TextField(max_length=500, blank=True)
+    # pH = models.DecimalField(max_digits=4, decimal_places=2)
+    # temperatura = models.IntegerField(("Temperatura da água"), default=0)
+    # turbidez = models.DecimalField(max_digits=4, decimal_places=2)
+    # oxigenio_dissolvido = models.DecimalField(max_digits=4, decimal_places=2)
+    # data_coleta = models.DateField(auto_now=False, auto_now_add=False)
+    # local_coleta = models.CharField(max_length=100)
+    # responsavel_coleta = models.CharField(max_length=100) #adicionar um model para cadastro de coletores
+    # observacoes = models.TextField(max_length=500, blank=True)
+    
+    
+    data_coleta_campo = models.DateField(auto_now=False, auto_now_add=False)
+    codigo_amostra = models.CharField(max_length=50)
+    coletor = models.ForeignKey('coletores', on_delete=models.CASCADE, related_name='coletor')
+    laboratorio = models.ForeignKey('Laboratorios', on_delete=models.CASCADE, related_name='laboratorio')
+    solicitante = models.ForeignKey('solicitantes', on_delete=models.CASCADE, related_name='solicitante')
+    ponto_coleta = models.ForeignKey('locais_coleta', on_delete=models.CASCADE, related_name='ponto_coleta')
+
     
     def __str__(self):
         return f'Coleta da água em {self.local_coleta} em {self.data_coleta}'
@@ -90,3 +99,4 @@ class Laboratorios(models.Model):
     
     def __str__(self):
         return f'{self.nome}'
+
