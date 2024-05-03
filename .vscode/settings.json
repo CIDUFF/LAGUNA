@@ -1,0 +1,14 @@
+{
+  "sqltools.connections": [
+    {
+      "previewLimit": 50,
+      "server": "db.cid-uff.net",
+      "port": 5432,
+      "driver": "PostgreSQL",
+      "name": "lagoaviva",
+      "database": "lagoaviva",
+      "username": "lagoaviva",
+      "password": "l4g04uff"
+    }
+  ]
+}

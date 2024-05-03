@@ -46,3 +46,47 @@ class analistas(models.Model):
     
     def __str__(self):
         return f'{self.nome}'
+    
+class locais_coleta(models.Model):
+    local = models.CharField(max_length=50)
+    ponto_coleta = models.IntegerField(default=0)
+    codigo = models.CharField(max_length=60, blank=True)
+    
+    def save(self, *args, **kwargs):
+        codigo_local = ''.join(palavra[0] for palavra in self.local.split())
+        self.codigo = f'{codigo_local}{self.ponto_coleta}'
+        super().save(*args, **kwargs)
+    
+    def __str__(self):
+        return f'{self.local}'
+
+class tipos_analise(models.Model):
+    analise = models.CharField(max_length=50)
+    unidade_medida = models.CharField(max_length=10)
+    
+    def __str__(self):
+        return f'{self.analise}'
+
+class solicitantes(models.Model):
+    nome = models.CharField(max_length=100)
+    email = models.EmailField(max_length=100)
+    telefone = models.CharField(max_length=15)
+
+    
+    def __str__(self):
+        return f'{self.nome}'
+
+class Laboratorios(models.Model):
+    TIPO_CHOICES = [
+        ('interno', 'Interno'),
+        ('externo', 'Externo'),
+    ]
+
+    nome = models.CharField(max_length=100)
+    email = models.EmailField(max_length=100)
+    telefone = models.CharField(max_length=15)
+    endereco = models.CharField(max_length=100)
+    tipo = models.CharField(max_length=7, choices=TIPO_CHOICES)
+    
+    def __str__(self):
+        return f'{self.nome}'
