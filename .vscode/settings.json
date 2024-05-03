@@ -5,7 +5,7 @@
       "server": "db.cid-uff.net",
       "port": 5432,
       "driver": "PostgreSQL",
-      "name": "lagoaviva",
+      "name": "lagoa viva",
       "database": "lagoaviva",
       "username": "lagoaviva",
       "password": "l4g04uff"
