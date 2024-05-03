@@ -5,7 +5,7 @@ from .models import Coleta_lagoa
 
 
 
-#TODO: #3 Criar forms para cadastro de pessoas e laboratórios
+#TODO: #3 Atualizar o form de coleta
 class Coleta_agua(forms.ModelForm):
     """
     A form for collecting water samples.

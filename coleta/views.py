@@ -4,7 +4,7 @@ from .forms import Coleta_agua
 from django.contrib.auth.decorators import login_required
 from .models import Coleta_lagoa
 
-
+#TODO: Atualizar a view de coleta
 @login_required
 def coleta(request):
     if request.method == 'POST':
