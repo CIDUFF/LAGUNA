@@ -3,36 +3,53 @@ from crispy_forms.layout import Layout, Fieldset, ButtonHolder, Submit
 from django import forms
 from .models import *
 
-# class Coleta_agua(forms.ModelForm):
+class ColetaCampo(forms.ModelForm):
     
-#     def __init__(self,*args,**kwargs):
+    def __init__(self,*args,**kwargs):
 
-#         super(Coleta_agua, self).__init__(*args, **kwargs)
-#         self.helper = FormHelper()
-#         self.helper.layout = Layout(
-#             Fieldset(
-#                 'Dados da coleta',
-#                 'data_coleta_campo',
-#                 'codigo_amostra',
-#                 'coletor',
-#                 'laboratorio',
-#                 'solicitante',
-#                 'ponto_coleta'
-#             ),
-#             ButtonHolder(
-#                 Submit('submit', 'Salvar')
-#             )
-#         )
+        super(ColetaCampo, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Fieldset(
+                'Dados da Coleta',
+                'clima',
+                'matriz',
+                'hora_inicio',
+                'hora_fim',
+                'temperatura',
+                'ph',
+                'orp',
+                'condutividade',
+                'turbidez',
+                'od',
+                'od_pct',
+                'tds',
+                'salinidade'
+            ),
+            ButtonHolder(
+                Submit('submit', 'Salvar')
+            )
+        )
 
-#     class Meta:
+    class Meta:
 
-#         model = ProgramaColeta
-#         fields = ['data_coleta_campo', 'codigo_amostra', 'coletor', 'laboratorio', 'solicitante', 'ponto_coleta']
-#         widgets = {
-#             'data_coleta_campo': forms.DateInput(attrs={'type': 'date', 'class': 'flatpickr'}),
-#         }
-        
-#TODO: Fazer form para coleta no campo
-
-# class ColetaCampo (forms.ModelForm):
-   
+        model = Campo
+        fields = [
+            'clima',
+            'matriz',
+            'hora_inicio',
+            'hora_fim',
+            'temperatura',
+            'ph',
+            'orp',
+            'condutividade',
+            'turbidez',
+            'od',
+            'od_pct',
+            'tds',
+            'salinidade'
+        ]
+        widgets = {
+            'hora_inicio': forms.TimeInput(attrs={'type': 'time'}),
+            'hora_fim': forms.TimeInput(attrs={'type': 'time'}),
+        }

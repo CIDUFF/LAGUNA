@@ -1,4 +1,5 @@
 from django.db import models
+from datetime import datetime, date
 
 
 
@@ -83,9 +84,9 @@ class Campo(models.Model):
     matriz = models.CharField("Matriz", max_length=12, choices=MATRIZ)
     hora_inicio = models.TimeField("Hora de Início", auto_now=False, auto_now_add=False)
     hora_fim = models.TimeField("Hora de Término", auto_now=False, auto_now_add=False)
-    data = models.ForeignKey(ProgramaColeta, on_delete=models.CASCADE, related_name='data')
+    data = models.DateField(default=date.today)
     tempo = models.DurationField("Duração", editable=False)
-    ponto = models.ForeignKey(LocaisColeta, on_delete=models.CASCADE, related_name='ponto')
+    ponto = models.IntegerField("Ponto de Coleta", null=True)
     temperatura = models.DecimalField("Temperatura", max_digits=5, decimal_places=2)
     ph = models.DecimalField("pH", max_digits=5, decimal_places=2)
     orp = models.IntegerField("ORP mV")
@@ -98,10 +99,11 @@ class Campo(models.Model):
 
 
     def save(self, *args, **kwargs):
-        self.tempo = self.hora_fim - self.hora_inicio
-        super().save(*args, **kwargs)
-        
-        
+            datetime_inicio = datetime.combine(date.today(), self.hora_inicio)
+            datetime_fim = datetime.combine(date.today(), self.hora_fim)
+            self.tempo = datetime_fim - datetime_inicio
+            super().save(*args, **kwargs)
+            
 class ListaColeta(models.Model):
     STATUS = [
         ('programada', 'Programada'),
