@@ -1,6 +1,25 @@
 from django.db import models
 
+
+
+# Este módulo contém as classes que representam os
+
+# modelos de dados do sistema.
+
+
+
+
 class Coletores(models.Model):
+    """
+    Represents a collector in the system.
+
+    Attributes:
+        nome (str): The name of the collector.
+        email (str): The email address of the collector.
+        telefone (str): The phone number of the collector.
+        filiacao (str): The affiliation of the collector.
+    """
+
     nome = models.CharField(max_length=100)
     email = models.EmailField(max_length=100)
     telefone = models.CharField(max_length=15)
@@ -64,7 +83,7 @@ class ProgramaColeta(models.Model):
     observacoes = models.TextField(max_length=500, blank=True)
 
     def __str__(self):
-        return f'Coleta da água em {self.ponto_coleta.local} em {self.data_coleta_campo}'
+        return f'Coleta da água em {self.ponto_coleta} em {self.data_coleta_campo}'
     
 
 class ColetaDeCampo(models.Model):
@@ -116,11 +135,30 @@ class Campo(models.Model):
     tds = models.DecimalField("TDS", max_digits=5, decimal_places=2)
     salinidade = models.DecimalField("Salinidade", max_digits=5, decimal_places=2)
 
-    
-    
 
     def save(self, *args, **kwargs):
         self.tempo = self.hora_fim - self.hora_inicio
         super().save(*args, **kwargs)
+        
+        
+class Lista_coleta(models.Model):
+    STATUS = [
+        ('programada', 'Programada'),
+        ('reprogramada', 'Reprogramada'), 
+        ('realizada', 'Realizada'),
+        ('cancelada', 'Cancelada'),
+    ]
+
+    data_coleta_campo = models.DateField(auto_now=False, auto_now_add=False)
+    equipe_coleta = models.ForeignKey(Coletores, on_delete=models.CASCADE, related_name='coletor')
+    laboratorio = models.ForeignKey(Laboratorios, on_delete=models.CASCADE, related_name='laboratorio')
+    solicitante = models.ForeignKey(Solicitantes, on_delete=models.CASCADE, related_name='solicitante')
+    ponto_coleta = models.ForeignKey(LocaisColeta, on_delete=models.CASCADE, related_name='ponto_coleta')
+    status_coleta = models.CharField(max_length=12, choices=STATUS, default='programada')
+    observacoes = models.TextField(max_length=500, blank=True)
+    campo = models.OneToOneField(Campo, on_delete=models.CASCADE, related_name='campo')
+
+    def __str__(self):
+        return f'Coleta da água em {self.ponto_coleta} em {self.data_coleta_campo}'
     
 
