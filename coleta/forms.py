@@ -1,7 +1,7 @@
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Fieldset, ButtonHolder, Submit
 from django import forms
-from .models import Coleta_lagoa
+from .models import ProgramaColeta
 
 class Coleta_agua(forms.ModelForm):
     """
@@ -19,7 +19,7 @@ class Coleta_agua(forms.ModelForm):
     
     def __init__(self,*args,**kwargs):
         """
-        Constructor for the Coleta_lagoa form.
+        Constructor for the ProgramaColeta form.
 
         This method initializes the form with a custom layout using the crispy_forms helper.
 
@@ -47,10 +47,15 @@ class Coleta_agua(forms.ModelForm):
 
     class Meta:
         """
-        Meta class for defining metadata options for the Coleta_lagoa form.
+        Meta class for defining metadata options for the ProgramaColeta form.
         """
-        model = Coleta_lagoa
+        model = ProgramaColeta
         fields = ['data_coleta_campo', 'codigo_amostra', 'coletor', 'laboratorio', 'solicitante', 'ponto_coleta']
         widgets = {
             'data_coleta_campo': forms.DateInput(attrs={'type': 'date', 'class': 'flatpickr'}),
         }
+        
+#TODO: Fazer form para coleta no campo
+
+# class ColetaCampo (forms.ModelForm):
+   

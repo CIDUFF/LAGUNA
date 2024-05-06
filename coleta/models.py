@@ -1,89 +1,11 @@
 from django.db import models
 
-class Coleta_lagoa(models.Model):
-    """
-    Represents a water collection from a lagoon.
-
-    Attributes:
-        pH (DecimalField): The pH value of the water sample.
-        temperatura (DecimalField): The temperature of the water sample.
-        turbidez (DecimalField): The turbidity of the water sample.
-        oxigenio_dissolvido (DecimalField): The dissolved oxygen of the water sample.
-        data_coleta (DateField): The date of the water collection.
-        local_coleta (CharField): The location of the water collection.
-        responsavel_coleta (CharField): The person responsible for the water collection.
-        observacoes (TextField): Additional observations about the water sample.
-    """
-
-    pH = models.DecimalField(max_digits=4, decimal_places=2)
-    temperatura = models.IntegerField(("Temperatura da água"), default=0)
-    turbidez = models.DecimalField(max_digits=4, decimal_places=2)
-    oxigenio_dissolvido = models.DecimalField(max_digits=4, decimal_places=2)
-    data_coleta = models.DateField(auto_now=False, auto_now_add=False)
-    local_coleta = models.CharField(max_length=100)
-    responsavel_coleta = models.CharField(max_length=100) #adicionar um model para cadastro de coletores
-    observacoes = models.TextField(max_length=500, blank=True)
-    
-#TODO: Atualizar o model de coleta
-
-    # data_coleta_campo = models.DateField(auto_now=False, auto_now_add=False)
-    # codigo_amostra = models.CharField(max_length=50)
-    # coletor = models.ForeignKey('coletores', on_delete=models.CASCADE, related_name='coletor')
-    # laboratorio = models.ForeignKey('Laboratorios', on_delete=models.CASCADE, related_name='laboratorio')
-    # solicitante = models.ForeignKey('solicitantes', on_delete=models.CASCADE, related_name='solicitante')
-    # ponto_coleta = models.ForeignKey('locais_coleta', on_delete=models.CASCADE, related_name='ponto_coleta')
-    # status_coleta = models.BooleanField(default=False)
-
-    
-    def __str__(self):
-        return f'Coleta da água em {self.local_coleta} em {self.data_coleta}'
-    
-class coletores(models.Model):
+class Coletores(models.Model):
     nome = models.CharField(max_length=100)
     email = models.EmailField(max_length=100)
     telefone = models.CharField(max_length=15)
     filiacao = models.CharField(max_length=100)
 
-    
-    def __str__(self):
-        return f'{self.nome}'
-    
-class analistas(models.Model):
-    nome = models.CharField(max_length=100)
-    email = models.EmailField(max_length=100)
-    telefone = models.CharField(max_length=15)
-    filiacao = models.CharField(max_length=100)
-    organizacao = models.CharField(max_length=100)
-    
-    def __str__(self):
-        return f'{self.nome}'
-    
-class locais_coleta(models.Model):
-    local = models.CharField(max_length=50)
-    ponto_coleta = models.IntegerField(default=0)
-    codigo = models.CharField(max_length=60, blank=True)
-    
-    def save(self, *args, **kwargs):
-        codigo_local = ''.join(palavra[0] for palavra in self.local.split())
-        self.codigo = f'{codigo_local}{self.ponto_coleta}'
-        super().save(*args, **kwargs)
-    
-    def __str__(self):
-        return f'{self.local}'
-
-class tipos_analise(models.Model):
-    analise = models.CharField(max_length=50)
-    unidade_medida = models.CharField(max_length=10)
-    
-    def __str__(self):
-        return f'{self.analise}'
-
-class solicitantes(models.Model):
-    nome = models.CharField(max_length=100)
-    email = models.EmailField(max_length=100)
-    telefone = models.CharField(max_length=15)
-
-    
     def __str__(self):
         return f'{self.nome}'
 
@@ -101,4 +23,104 @@ class Laboratorios(models.Model):
     
     def __str__(self):
         return f'{self.nome}'
+
+class Solicitantes(models.Model):
+    nome = models.CharField(max_length=100)
+    email = models.EmailField(max_length=100)
+    telefone = models.CharField(max_length=15)
+
+    def __str__(self):
+        return f'{self.nome}'
+
+class LocaisColeta(models.Model):
+    local = models.CharField(max_length=50)
+    ponto_coleta = models.IntegerField(default=0)
+    codigo = models.CharField(max_length=60, blank=True)
+    rota = models.CharField(max_length=100, blank=True)
+    
+    def save(self, *args, **kwargs):
+        codigo_local = ''.join(palavra[0] for palavra in self.local.split())
+        self.codigo = f'{codigo_local}{self.ponto_coleta}'
+        super().save(*args, **kwargs)
+    
+    def __str__(self):
+        return f'{self.local}'
+
+class ProgramaColeta(models.Model):
+    
+    STATUS = [
+        ('programada', 'Programada'),
+        ('reprogramada', 'Reprogramada'), 
+        ('realizada', 'Realizada'),
+        ('cancelada', 'Cancelada'),
+    ]
+
+    data_coleta_campo = models.DateField(auto_now=False, auto_now_add=False)
+    equipe_coleta = models.ForeignKey(Coletores, on_delete=models.CASCADE, related_name='coletor')
+    laboratorio = models.ForeignKey(Laboratorios, on_delete=models.CASCADE, related_name='laboratorio')
+    solicitante = models.ForeignKey(Solicitantes, on_delete=models.CASCADE, related_name='solicitante')
+    ponto_coleta = models.ForeignKey(LocaisColeta, on_delete=models.CASCADE, related_name='ponto_coleta')
+    status_coleta = models.CharField(max_length=12, choices=STATUS, default='programada')
+    observacoes = models.TextField(max_length=500, blank=True)
+
+    def __str__(self):
+        return f'Coleta da água em {self.ponto_coleta.local} em {self.data_coleta_campo}'
+    
+
+class ColetaDeCampo(models.Model):
+    
+    CLIMA_CHOICES = [
+        ('sol', 'Sol'),
+        ('chuva', 'Chuva'),
+        ('nublado', 'Nublado'),
+        ('vento', 'Vento'),
+    ]
+    
+    MATRIZ = [
+        ('agua_marinha', 'Água marinha'),
+        ('agua_doce', 'Água doce'),
+        ('agua_salobra', 'Água salobra'),
+        ('agua_salina', 'Água salina'),
+    ]
+    
+class Campo(models.Model):
+    
+    CLIMA_CHOICES = [
+        ('sol', 'Sol'),
+        ('chuva', 'Chuva'),
+        ('nublado', 'Nublado'),
+        ('vento', 'Vento'),
+    ]
+    
+    MATRIZ = [
+        ('agua_marinha', 'Água marinha'),
+        ('agua_doce', 'Água doce'),
+        ('agua_salobra', 'Água salobra'),
+        ('agua_salina', 'Água salina'),
+    ]
+    
+    clima = models.CharField("Clima", max_length=7, choices=CLIMA_CHOICES)
+    matriz = models.CharField("Matriz", max_length=12, choices=MATRIZ)
+    hora_inicio = models.TimeField("Hora de Início", auto_now=False, auto_now_add=False)
+    hora_fim = models.TimeField("Hora de Término", auto_now=False, auto_now_add=False)
+    data = models.ForeignKey(ProgramaColeta, on_delete=models.CASCADE, related_name='data')
+    tempo = models.DurationField("Duração", editable=False)
+    ponto = models.ForeignKey(LocaisColeta, on_delete=models.CASCADE, related_name='ponto')
+    temperatura = models.DecimalField("Temperatura", max_digits=5, decimal_places=2)
+    ph = models.DecimalField("pH", max_digits=5, decimal_places=2)
+    orp = models.IntegerField("ORP mV")
+    condutividade = models.DecimalField("Condutividade uS/cm", max_digits=5, decimal_places=2)
+    turbidez = models.DecimalField("Turbidez NTU", max_digits=5, decimal_places=2)
+    od = models.DecimalField("OD mg/L", max_digits=5, decimal_places=2)
+    od_pct = models.DecimalField("OD %", max_digits=5, decimal_places=2)
+    tds = models.DecimalField("TDS", max_digits=5, decimal_places=2)
+    salinidade = models.DecimalField("Salinidade", max_digits=5, decimal_places=2)
+
+    
+    
+
+    def save(self, *args, **kwargs):
+        self.tempo = self.hora_fim - self.hora_inicio
+        super().save(*args, **kwargs)
+    
 
