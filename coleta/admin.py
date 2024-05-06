@@ -1,8 +1,8 @@
 from django.contrib import admin
-from .models import Coleta_lagoa
+from .models import *
 
 # Register your models here.
 
-admin.site.register(Coleta_lagoa)
+# admin.site.register(Coleta_lagoa)
 
 
