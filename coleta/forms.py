@@ -3,15 +3,12 @@ from crispy_forms.layout import Layout, Fieldset, ButtonHolder, Submit
 from django import forms
 from .models import Coleta_lagoa
 
-
-
-#TODO: #3 Atualizar o form de coleta
 class Coleta_agua(forms.ModelForm):
     """
     A form for collecting water samples.
 
     This form is used to collect data related to water samples, including the date of collection,
-    the location of collection, the person responsible for the collection, and various water quality parameters.
+    the sample code, the collector, the laboratory, the requester, and the collection point.
 
     Attributes:
         model (Model): The model class associated with the form.
@@ -36,14 +33,12 @@ class Coleta_agua(forms.ModelForm):
         self.helper.layout = Layout(
             Fieldset(
                 'Dados da coleta',
-                'data_coleta',
-                'local_coleta',
-                'responsavel_coleta',
-                'pH',
-                'temperatura',
-                'turbidez',
-                'oxigenio_dissolvido',
-                'observacoes'
+                'data_coleta_campo',
+                'codigo_amostra',
+                'coletor',
+                'laboratorio',
+                'solicitante',
+                'ponto_coleta'
             ),
             ButtonHolder(
                 Submit('submit', 'Salvar')
@@ -55,9 +50,7 @@ class Coleta_agua(forms.ModelForm):
         Meta class for defining metadata options for the Coleta_lagoa form.
         """
         model = Coleta_lagoa
-        fields = ['data_coleta', 'local_coleta', 'responsavel_coleta', 'pH', 'temperatura', 'turbidez', 'oxigenio_dissolvido',
-                  'observacoes']
+        fields = ['data_coleta_campo', 'codigo_amostra', 'coletor', 'laboratorio', 'solicitante', 'ponto_coleta']
         widgets = {
-            'data_coleta': forms.DateInput(attrs={'type': 'date', 'class': 'flatpickr'}),
+            'data_coleta_campo': forms.DateInput(attrs={'type': 'date', 'class': 'flatpickr'}),
         }
-    

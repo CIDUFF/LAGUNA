@@ -32,6 +32,7 @@ class Coleta_lagoa(models.Model):
     # laboratorio = models.ForeignKey('Laboratorios', on_delete=models.CASCADE, related_name='laboratorio')
     # solicitante = models.ForeignKey('solicitantes', on_delete=models.CASCADE, related_name='solicitante')
     # ponto_coleta = models.ForeignKey('locais_coleta', on_delete=models.CASCADE, related_name='ponto_coleta')
+    # status_coleta = models.BooleanField(default=False)
 
     
     def __str__(self):
