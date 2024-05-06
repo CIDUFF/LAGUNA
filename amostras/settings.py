@@ -42,9 +42,10 @@ INSTALLED_APPS = [
     'allauth.account',
     'django.contrib.sites',
     'allauth.socialaccount',
-    'coleta',
+    'SIMAL',
     'crispy_forms',
     'crispy_bootstrap3',
+    
 ]
 
 AUTHENTICATION_BACKENDS = [
