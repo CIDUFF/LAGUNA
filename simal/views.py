@@ -7,6 +7,9 @@ from django_tables2 import RequestConfig
 # from django.views.generic import ListView
 # from .models import ColetaCampo
 
+def home(request):
+    return render(request, 'home.html')
+
 #TODO: Atualizar a view de coleta
 @login_required
 def coleta(request):
@@ -20,10 +23,6 @@ def coleta(request):
     return render(request, 'coleta/coleta.html', {'form': form})
 
 
-# @login_required
-# def lista_coleta(request):
-#     coletas = ColetaCampo.objects.all()
-#     return render(request, 'coleta/lista_coleta.html', {'coletas': coletas})
 
 @login_required
 def atualizar_coleta(request, id):
@@ -72,8 +71,8 @@ def agenda_coleta(request):
     
 
 
-def home(request):
-    return render(request, 'home.html')
+
+
 
 
 

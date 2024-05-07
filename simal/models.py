@@ -61,20 +61,20 @@ class ProgramaColeta(models.Model):
     equipe_coleta = models.ForeignKey(Coletores, on_delete=models.CASCADE, related_name='programa_coletor')
     laboratorio = models.ForeignKey(Laboratorios, on_delete=models.CASCADE, related_name='programa_laboratorio')
     solicitante = models.ForeignKey(Solicitantes, on_delete=models.CASCADE, related_name='programa_solicitante')
-    ponto_coleta = models.ForeignKey(LocaisColeta, on_delete=models.CASCADE, related_name='programa_ponto_coleta')
+    local_coleta = models.ForeignKey(LocaisColeta, on_delete=models.CASCADE, related_name='programa_ponto_coleta')
     status_coleta = models.CharField(max_length=12, choices=STATUS, default='programada')
     observacoes = models.TextField(max_length=500, blank=True)
 
-    def save(self, *args, **kwargs):
-        if not self.ordem_servico:
-            data = datetime.now().strftime('%Y%m%d')  # Data atual no formato AAAAMMDD
-            numero_aleatorio = ''.join(random.choices(string.digits, k=5))  # Número aleatório de 5 dígitos
-            primeira_palavra_local = self.ponto_coleta.ponto.split(' ')[0]  # Primeira palavra do local
-            self.ordem_servico = f'{data}-{numero_aleatorio}-{primeira_palavra_local}'
-        super().save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+    #     if not self.ordem_servico:
+    #         data = datetime.now().strftime('%Y%m%d')  # Data atual no formato AAAAMMDD
+    #         numero_aleatorio = ''.join(random.choices(string.digits, k=5))  # Número aleatório de 5 dígitos
+    #         primeira_palavra_local = self.local_coleta.split(' ')[0]  # Primeira palavra do local
+    #         self.ordem_servico = f'{data}-{numero_aleatorio}-{primeira_palavra_local}'
+    #     super().save(*args, **kwargs)
 
     def __str__(self):
-        return f'Coleta da água em {self.ponto_coleta} em {self.data_coleta_campo}'
+        return f'Coleta da água em {self.local_coleta} em {self.data_coleta_campo}'
     
 class Campo(models.Model):
     

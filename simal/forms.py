@@ -56,39 +56,43 @@ class ColetaCampo(forms.ModelForm):
 
 class ProgramaColetaForm(forms.ModelForm):
         
-        def __init__(self,*args,**kwargs):
-    
-            super(ProgramaColetaForm, self).__init__(*args, **kwargs)
-            self.helper = FormHelper()
-            self.helper.layout = Layout(
-                Fieldset(
-                    'Formulário de Programação de Coleta',
-                    'data_coleta_campo',
-                    'equipe_coleta',
-                    'laboratorio',
-                    'solicitante',
-                    'ponto_coleta',
-                    'status_coleta',
-                    'observacoes'
-                ),
-                ButtonHolder(
-                    Submit('submit', 'Salvar')
-                )
-            )
-    
-        class Meta:
-    
-            model = ProgramaColeta
-            fields = [
+    def __init__(self,*args,**kwargs):
+
+        super(ProgramaColetaForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Fieldset(
+                'Formulário de Programação de Coleta',
                 'data_coleta_campo',
                 'equipe_coleta',
                 'laboratorio',
                 'solicitante',
-                'ponto_coleta',
+                'local_coleta',
                 'status_coleta',
                 'observacoes'
-            ]
-            widgets = {
-            'data_coleta_campo': forms.DateInput(attrs={'type': 'date'}),
-        }
-            
+            ),
+            ButtonHolder(
+                Submit('submit', 'Salvar')
+            )
+        )
+
+        # Cria uma lista de opções únicas para o campo local_coleta
+        locais_unicos = LocaisColeta.objects.values_list('local', flat=True).distinct()
+        opcoes_unicas = [(local, local) for local in locais_unicos]
+        self.fields['local_coleta'].choices = opcoes_unicas
+
+    class Meta:
+
+        model = ProgramaColeta
+        fields = [
+            'data_coleta_campo',
+            'equipe_coleta',
+            'laboratorio',
+            'solicitante',
+            'local_coleta',
+            'status_coleta',
+            'observacoes'
+        ]
+        widgets = {
+        'data_coleta_campo': forms.DateInput(attrs={'type': 'date'}),
+    }
