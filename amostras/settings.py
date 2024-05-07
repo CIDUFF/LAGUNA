@@ -163,3 +163,5 @@ DATE_INPUT_FORMATS = ['%d/%m/%Y']
 DATETIME_INPUT_FORMATS = ['%d/%m/%Y %H:%M']
 
 CRISPY_TEMPLATE_PACK = 'bootstrap3'
+
+DJANGO_TABLES2_TEMPLATE = 'django_tables2/bootstrap.html'

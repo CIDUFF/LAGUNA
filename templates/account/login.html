@@ -5,44 +5,44 @@
     {% trans "Sign In" %}
 {% endblock head_title %}
 {% block content %}
-    {% element h1 %}
-        {% trans "Sign In" %}
-    {% endelement %}
-    {% if not SOCIALACCOUNT_ONLY %}
-        {% setvar link %}
-            <a href="{{ signup_url }}">
+    <div class="container">
+        {% element h1 class="title" %}
+            {% trans "Sign In" %}
+        {% endelement %}
+        {% if not SOCIALACCOUNT_ONLY %}
+            {% setvar link %}
+                <a href="{{ signup_url }}" class="link">
+                {% endsetvar %}
+                {% setvar end_link %}
+                </a>
             {% endsetvar %}
-            {% setvar end_link %}
-            </a>
-        {% endsetvar %}
-        <p>
-            {% blocktranslate %}If you have not created an account yet, then please {{ link }}sign up{{ end_link }} first.{% endblocktranslate %}
-        </p>
-        {% url 'account_login' as login_url %}
-        {% element form form=form method="post" action=login_url tags="entrance,login" %}
-            {% slot body %}
-                {% csrf_token %}
-                {% element fields form=form unlabeled=True %}
-                {% endelement %}
-                {{ redirect_field }}
-            {% endslot %}
-            {% slot actions %}
-                {% element button type="submit" tags="prominent,login" %}
-                    {% trans "Sign In" %}
-                {% endelement %}
-            {% endslot %}
-        {% endelement %}
-    {% endif %}
-    {% if LOGIN_BY_CODE_ENABLED %}
-        {% element hr %}
-        {% endelement %}
-        {% element h2 %}
-            {% element button href=request_login_code_url tags="prominent,login,secondary" %}
-                {% trans "Mail me a sign-in code" %}
+
+            {% url 'account_login' as login_url %}
+            {% element form form=form method="post" action=login_url tags="entrance,login" class="form" %}
+                {% slot body %}
+                    {% csrf_token %}
+                    {% element fields form=form unlabeled=True class="fields" %}
+                    {% endelement %}
+                    {{ redirect_field }}
+                {% endslot %}
+                {% slot actions %}
+                    {% element button type="submit" tags="prominent,login" class="button" %}
+                        {% trans "Sign In" %}
+                    {% endelement %}
+                {% endslot %}
             {% endelement %}
-        {% endelement %}
-    {% endif %}
-    {% if SOCIALACCOUNT_ENABLED %}
-        {% include "socialaccount/snippets/login.html" with page_layout="entrance" %}
-    {% endif %}
+        {% endif %}
+        {% if LOGIN_BY_CODE_ENABLED %}
+            {% element hr class="divider" %}
+            {% endelement %}
+            {% element h2 class="subtitle" %}
+                {% element button href=request_login_code_url tags="prominent,login,secondary" class="button-secondary" %}
+                    {% trans "Mail me a sign-in code" %}
+                {% endelement %}
+            {% endelement %}
+        {% endif %}
+        {% if SOCIALACCOUNT_ENABLED %}
+            {% include "socialaccount/snippets/login.html" with page_layout="entrance" %}
+        {% endif %}
+    </div>
 {% endblock content %}

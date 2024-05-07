@@ -53,3 +53,39 @@ class ColetaCampo(forms.ModelForm):
             'hora_inicio': forms.TimeInput(attrs={'type': 'time'}),
             'hora_fim': forms.TimeInput(attrs={'type': 'time'}),
         }
+
+class ProgramaColetaForm(forms.ModelForm):
+        
+        def __init__(self,*args,**kwargs):
+    
+            super(ProgramaColetaForm, self).__init__(*args, **kwargs)
+            self.helper = FormHelper()
+            self.helper.layout = Layout(
+                Fieldset(
+                    'Formulário de Programação de Coleta',
+                    'data_coleta_campo',
+                    'equipe_coleta',
+                    'laboratorio',
+                    'solicitante',
+                    'ponto_coleta',
+                    'status_coleta',
+                    'observacoes'
+                ),
+                ButtonHolder(
+                    Submit('submit', 'Salvar')
+                )
+            )
+    
+        class Meta:
+    
+            model = ProgramaColeta
+            fields = [
+                'data_coleta_campo',
+                'equipe_coleta',
+                'laboratorio',
+                'solicitante',
+                'ponto_coleta',
+                'status_coleta',
+                'observacoes'
+            ]
+            
