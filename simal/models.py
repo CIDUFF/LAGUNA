@@ -1,13 +1,15 @@
-from django.db import models
 from datetime import datetime, date
-
+import random
+import string
+from django.db import models
 
 
 class Coletores(models.Model):
-    nome = models.CharField(max_length=100)
-    email = models.EmailField(max_length=100)
-    telefone = models.CharField(max_length=15)
-    filiacao = models.CharField(max_length=100)
+    nome = models.CharField(max_length=100, default= 'Nome do Coletor')
+    email = models.EmailField(max_length=100, default = 'seuemail@email.com')
+    telefone = models.CharField(max_length=15, default='(21) 99999-9999')
+    filiacao = models.CharField(max_length=100, default='UFF')
+    equipe = models.CharField(max_length=25, default='Equipe 1')
 
     def __str__(self):
         return f'{self.nome}'
@@ -37,9 +39,10 @@ class Solicitantes(models.Model):
 
 class LocaisColeta(models.Model):
     local = models.CharField(max_length=50)
-    ponto_coleta = models.IntegerField(default=0)
-    codigo = models.CharField(max_length=60, blank=True)
-    rota = models.CharField(max_length=100, blank=True)
+    local_codigo = models.CharField(max_length=50,default='00') # Código numérico começando em 01 para cada local no DB
+    ponto = models.CharField(max_length=60, blank=False)
+    codigo = models.CharField(max_length=60, blank=False)
+    # rota = models.CharField(max_length=100, blank=True)
     
     def __str__(self):
         return f'{self.local}'
@@ -53,6 +56,7 @@ class ProgramaColeta(models.Model):
         ('cancelada', 'Cancelada'),
     ]
 
+    ordem_servico = models.CharField(max_length=20, blank=True)
     data_coleta_campo = models.DateField(auto_now=False, auto_now_add=False)
     equipe_coleta = models.ForeignKey(Coletores, on_delete=models.CASCADE, related_name='programa_coletor')
     laboratorio = models.ForeignKey(Laboratorios, on_delete=models.CASCADE, related_name='programa_laboratorio')
@@ -60,6 +64,14 @@ class ProgramaColeta(models.Model):
     ponto_coleta = models.ForeignKey(LocaisColeta, on_delete=models.CASCADE, related_name='programa_ponto_coleta')
     status_coleta = models.CharField(max_length=12, choices=STATUS, default='programada')
     observacoes = models.TextField(max_length=500, blank=True)
+
+    def save(self, *args, **kwargs):
+        if not self.ordem_servico:
+            data = datetime.now().strftime('%Y%m%d')  # Data atual no formato AAAAMMDD
+            numero_aleatorio = ''.join(random.choices(string.digits, k=5))  # Número aleatório de 5 dígitos
+            primeira_palavra_local = self.ponto_coleta.ponto.split(' ')[0]  # Primeira palavra do local
+            self.ordem_servico = f'{data}-{numero_aleatorio}-{primeira_palavra_local}'
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f'Coleta da água em {self.ponto_coleta} em {self.data_coleta_campo}'
