@@ -1,45 +1,10 @@
 <!--TODO: Atualizar visualização da tabela de coletas -->
-{% extends 'base/base_site.html' %} {% load static %} {% block content %}
+{% extends 'base/base_site.html' %} 
+{% load django_tables2  %}
+{% load static %} {% block content %}
 <div class="table-responsive">
   <table class="table">
-    <thead>
-      <tr>
-        <th scope="col">Data da Coleta</th>
-        <th scope="col">Local da Coleta</th>
-        <th scope="col">Responsável pela Coleta</th>
-        <th scope="col">pH</th>
-        <th scope="col">Temperatura</th>
-        <th scope="col">Turbidez</th>
-        <th scope="col">Oxigênio Dissolvido</th>
-        <th scope="col">Observações</th>
-        <th scope="col">Ações</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for coleta in coletas %}
-      <tr>
-        <td>{{ coleta.data_coleta }}</td>
-        <td>{{ coleta.local_coleta }}</td>
-        <td>{{ coleta.responsavel_coleta }}</td>
-        <td>{{ coleta.pH }}</td>
-        <td>{{ coleta.temperatura }}</td>
-        <td>{{ coleta.turbidez }}</td>
-        <td>{{ coleta.oxigenio_dissolvido }}</td>
-        <td>{{ coleta.observacoes }}</td>
-        <td>
-          <a
-            href="{% url 'atualizar_coleta' coleta.id %}"
-            class="btn btn-primary"
-            >Atualizar</a
-          >
-        </td>
-      </tr>
-      {% empty %}
-      <tr>
-        <td colspan="9">Nenhuma coleta encontrada.</td>
-      </tr>
-      {% endfor %}
-    </tbody>
+    {% render_table table_campo %}
   </table>
 </div>
 {% endblock %}

@@ -11,7 +11,7 @@ class ColetaCampo(forms.ModelForm):
         self.helper = FormHelper()
         self.helper.layout = Layout(
             Fieldset(
-                'Dados da Coleta',
+                'Formulário de campo - coleta de dados',
                 'clima',
                 'matriz',
                 'hora_inicio',
