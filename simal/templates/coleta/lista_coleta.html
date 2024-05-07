@@ -1,0 +1,14 @@
+<!--TODO: Atualizar visualização da tabela de coletas -->
+{% extends 'base/base_site.html' %} 
+{% load django_tables2  %}
+{% load static %} 
+{% block content %}
+<div class="container_coleta">
+  <h1>Lista de Coletas</h1>
+</div>
+<div class="table-responsive">
+  <table class="table">
+    {% render_table table_campo %}
+  </table>
+</div>
+{% endblock %}

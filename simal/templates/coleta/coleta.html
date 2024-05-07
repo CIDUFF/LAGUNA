@@ -1,0 +1,14 @@
+{% extends 'base/base_site.html' %} 
+
+{% load crispy_forms_tags %}
+
+{% block title %} Registro de coleta de Campo {% endblock %}
+
+{% block content %}
+
+{% csrf_token %} 
+
+{% crispy form %}
+
+
+{% endblock %}

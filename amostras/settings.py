@@ -42,9 +42,11 @@ INSTALLED_APPS = [
     'allauth.account',
     'django.contrib.sites',
     'allauth.socialaccount',
-    'coleta',
+    'simal',
     'crispy_forms',
     'crispy_bootstrap3',
+    'django_tables2',
+    
 ]
 
 AUTHENTICATION_BACKENDS = [
@@ -137,13 +139,13 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
-]
+# STATICFILES_DIRS = [
+#     os.path.join(BASE_DIR, 'static'),
+# ]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
@@ -153,7 +155,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 ACCOUNT_ALLOW_REGISTRATION = False
 
-LOGIN_REDIRECT_URL = '/coleta/'
+LOGIN_REDIRECT_URL = '/agendar_coleta/'
 
 DATE_INPUT_FORMATS = ['%d/%m/%Y']
 
@@ -161,3 +163,5 @@ DATE_INPUT_FORMATS = ['%d/%m/%Y']
 DATETIME_INPUT_FORMATS = ['%d/%m/%Y %H:%M']
 
 CRISPY_TEMPLATE_PACK = 'bootstrap3'
+
+DJANGO_TABLES2_TEMPLATE = 'django_tables2/bootstrap.html'
