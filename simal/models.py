@@ -22,9 +22,9 @@ class Laboratorios(models.Model):
 
     nome = models.CharField(max_length=100)
     email = models.EmailField(max_length=100)
-    telefone = models.CharField(max_length=15)
+    telefone = models.CharField(max_length=100)
     endereco = models.CharField(max_length=100)
-    tipo = models.CharField(max_length=7, choices=TIPO_CHOICES)
+    tipo = models.CharField(max_length=25, choices=TIPO_CHOICES)
     
     def __str__(self):
         return f'{self.nome}'

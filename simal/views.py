@@ -68,6 +68,8 @@ def agenda_coleta(request):
     else:
         form = ProgramaColetaForm()
     return render(request, 'coleta/agendar_coleta.html', {'form': form})
+
+
     
 
 
