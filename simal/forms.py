@@ -88,4 +88,7 @@ class ProgramaColetaForm(forms.ModelForm):
                 'status_coleta',
                 'observacoes'
             ]
+            widgets = {
+            'data_coleta_campo': forms.DateInput(attrs={'type': 'date'}),
+        }
             
