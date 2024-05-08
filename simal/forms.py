@@ -95,7 +95,7 @@ class ProgramaColetaForm(forms.Form):
         self.fields['local_coleta'].choices = [(local, local) for local in locais_unicos]
 
         # Faz o mesmo para equipe_coleta, laboratorio, solicitante e status_coleta
-        equipes_unicas = Coletores.objects.values_list('nome', flat=True).distinct()
+        equipes_unicas = Coletores.objects.values_list('equipe', flat=True).distinct()
         self.fields['equipe_coleta'].choices = [(equipe, equipe) for equipe in equipes_unicas]
 
         solicitantes_unicos = Solicitantes.objects.values_list('nome', flat=True).distinct()

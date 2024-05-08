@@ -54,7 +54,7 @@ class ProgramaColeta(models.Model):
 
     ordem_servico = models.CharField(max_length=20, blank=True)
     data_coleta_campo = models.DateField(auto_now=False, auto_now_add=False)
-    equipe_coleta = models.ForeignKey(Coletores, on_delete=models.CASCADE, related_name='programa_coletor')
+    equipe_coleta = models.CharField(max_length=50, default='Equipe 1')
     # laboratorio = models.ForeignKey(Laboratorios, on_delete=models.CASCADE, related_name='programa_laboratorio')
     Laboratorio = models.CharField(max_length=50,default='Interno')
     # solicitante = models.ForeignKey(Solicitantes, on_delete=models.CASCADE, related_name='programa_solicitante')
@@ -64,13 +64,7 @@ class ProgramaColeta(models.Model):
     status_coleta = models.CharField(max_length=12, choices=STATUS, default='programada')
     observacoes = models.TextField(max_length=500, blank=True)
 
-    # def save(self, *args, **kwargs):
-    #     if not self.ordem_servico:
-    #         data = datetime.now().strftime('%Y%m%d')  # Data atual no formato AAAAMMDD
-    #         numero_aleatorio = ''.join(random.choices(string.digits, k=5))  # Número aleatório de 5 dígitos
-    #         primeira_palavra_local = self.local_coleta.split(' ')[0]  # Primeira palavra do local
-    #         self.ordem_servico = f'{data}-{numero_aleatorio}-{primeira_palavra_local}'
-    #     super().save(*args, **kwargs)
+
 
     def __str__(self):
         return f'Coleta da água em {self.local_coleta} em {self.data_coleta_campo}'
