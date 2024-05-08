@@ -4,6 +4,7 @@ from .forms import *
 from django.contrib.auth.decorators import login_required
 from .tables import *
 from django_tables2 import RequestConfig
+
 # from django.views.generic import ListView
 # from .models import ColetaCampo
 
@@ -59,14 +60,34 @@ def coletas_agendas(request):
         })
 
 @login_required
+
+
 def agenda_coleta(request):
     if request.method == 'POST':
         form = ProgramaColetaForm(request.POST)
         if form.is_valid():
-            form.save()
+            # Cria uma nova instância do modelo ProgramaColeta
+            programa_coleta = ProgramaColeta()
+
+            # Atribui os dados do formulário aos campos do modelo
+            programa_coleta.data_coleta_campo = form.cleaned_data['data_coleta_campo']
+
+            # Busca a instância correta do modelo Coletores e a atribui ao campo equipe_coleta
+            equipe_coleta = Coletores.objects.get(nome=form.cleaned_data['equipe_coleta'])
+            programa_coleta.equipe_coleta = equipe_coleta
+            programa_coleta.Laboratorio = form.cleaned_data['laboratorio']
+            programa_coleta.solicitante = form.cleaned_data['solicitante']
+            programa_coleta.local_coleta = form.cleaned_data['local_coleta']
+            programa_coleta.status_coleta = form.cleaned_data['status_coleta']
+            programa_coleta.observacoes = form.cleaned_data['observacoes']
+
+            # Salva o modelo no banco de dados
+            programa_coleta.save()
+
             return redirect('coletas_agendas')
     else:
         form = ProgramaColetaForm()
+
     return render(request, 'coleta/agendar_coleta.html', {'form': form})
 
 

@@ -3,10 +3,22 @@ from crispy_forms.layout import Layout, Fieldset, ButtonHolder, Submit
 from django import forms
 from .models import *
 
-class ColetaCampo(forms.ModelForm):
-    
-    def __init__(self,*args,**kwargs):
+class ColetaCampo(forms.Form):
+    clima = forms.CharField()
+    matriz = forms.CharField()
+    hora_inicio = forms.TimeField(widget=forms.TimeInput(attrs={'type': 'time'}))
+    hora_fim = forms.TimeField(widget=forms.TimeInput(attrs={'type': 'time'}))
+    temperatura = forms.DecimalField()
+    ph = forms.DecimalField()
+    orp = forms.DecimalField()
+    condutividade = forms.DecimalField()
+    turbidez = forms.DecimalField()
+    od = forms.DecimalField()
+    od_pct = forms.DecimalField()
+    tds = forms.DecimalField()
+    salinidade = forms.DecimalField()
 
+    def __init__(self,*args,**kwargs):
         super(ColetaCampo, self).__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.layout = Layout(
@@ -31,33 +43,35 @@ class ColetaCampo(forms.ModelForm):
             )
         )
 
-    class Meta:
-
-        model = Campo
-        fields = [
-            'clima',
-            'matriz',
-            'hora_inicio',
-            'hora_fim',
-            'temperatura',
-            'ph',
-            'orp',
-            'condutividade',
-            'turbidez',
-            'od',
-            'od_pct',
-            'tds',
-            'salinidade'
-        ]
-        widgets = {
-            'hora_inicio': forms.TimeInput(attrs={'type': 'time'}),
-            'hora_fim': forms.TimeInput(attrs={'type': 'time'}),
-        }
-
-class ProgramaColetaForm(forms.ModelForm):
+class ProgramaColetaForm(forms.Form):
+    
+    data_coleta_campo = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
+    
+    equipe_coleta = forms.ChoiceField()
+    
+    TIPO_CHOICES = [
+    ('interno', 'Interno'),
+    ('externo', 'Externo'),
+    ]
         
-    def __init__(self,*args,**kwargs):
+    laboratorio = forms.ChoiceField(choices=TIPO_CHOICES)
+    
+    solicitante = forms.ChoiceField()
+    
+    local_coleta = forms.ChoiceField()
+    
+    STATUS = [
+        ('programada', 'Programada'),
+        ('reprogramada', 'Reprogramada'), 
+        ('realizada', 'Realizada'),
+        ('cancelada', 'Cancelada'),
+        ]
+    
+    status_coleta = forms.ChoiceField(choices=STATUS)
+    
+    observacoes = forms.CharField(widget=forms.Textarea(attrs={'rows': 3, 'cols': 40}))
 
+    def __init__(self,*args,**kwargs):
         super(ProgramaColetaForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.layout = Layout(
@@ -78,21 +92,12 @@ class ProgramaColetaForm(forms.ModelForm):
 
         # Cria uma lista de opções únicas para o campo local_coleta
         locais_unicos = LocaisColeta.objects.values_list('local', flat=True).distinct()
-        opcoes_unicas = [(local, local) for local in locais_unicos]
-        self.fields['local_coleta'].choices = opcoes_unicas
+        self.fields['local_coleta'].choices = [(local, local) for local in locais_unicos]
 
-    class Meta:
+        # Faz o mesmo para equipe_coleta, laboratorio, solicitante e status_coleta
+        equipes_unicas = Coletores.objects.values_list('nome', flat=True).distinct()
+        self.fields['equipe_coleta'].choices = [(equipe, equipe) for equipe in equipes_unicas]
 
-        model = ProgramaColeta
-        fields = [
-            'data_coleta_campo',
-            'equipe_coleta',
-            'laboratorio',
-            'solicitante',
-            'local_coleta',
-            'status_coleta',
-            'observacoes'
-        ]
-        widgets = {
-        'data_coleta_campo': forms.DateInput(attrs={'type': 'date'}),
-    }
+        solicitantes_unicos = Solicitantes.objects.values_list('nome', flat=True).distinct()
+        self.fields['solicitante'].choices = [(solicitante, solicitante) for solicitante in solicitantes_unicos]
+

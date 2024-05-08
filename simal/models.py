@@ -15,16 +15,12 @@ class Coletores(models.Model):
         return f'{self.nome}'
 
 class Laboratorios(models.Model):
-    TIPO_CHOICES = [
-        ('interno', 'Interno'),
-        ('externo', 'Externo'),
-    ]
 
     nome = models.CharField(max_length=100)
     email = models.EmailField(max_length=100)
     telefone = models.CharField(max_length=100)
     endereco = models.CharField(max_length=100)
-    tipo = models.CharField(max_length=25, choices=TIPO_CHOICES)
+    tipo = models.CharField(max_length=25)
     
     def __str__(self):
         return f'{self.nome}'
@@ -59,8 +55,10 @@ class ProgramaColeta(models.Model):
     ordem_servico = models.CharField(max_length=20, blank=True)
     data_coleta_campo = models.DateField(auto_now=False, auto_now_add=False)
     equipe_coleta = models.ForeignKey(Coletores, on_delete=models.CASCADE, related_name='programa_coletor')
-    laboratorio = models.ForeignKey(Laboratorios, on_delete=models.CASCADE, related_name='programa_laboratorio')
-    solicitante = models.ForeignKey(Solicitantes, on_delete=models.CASCADE, related_name='programa_solicitante')
+    # laboratorio = models.ForeignKey(Laboratorios, on_delete=models.CASCADE, related_name='programa_laboratorio')
+    Laboratorio = models.CharField(max_length=50,default='Interno')
+    # solicitante = models.ForeignKey(Solicitantes, on_delete=models.CASCADE, related_name='programa_solicitante')
+    solicitante = models.CharField(max_length=50, default='João Silva')
     # local_coleta = models.ForeignKey(LocaisColeta, on_delete=models.CASCADE, related_name='programa_ponto_coleta')
     local_coleta = models.CharField(max_length=50)
     status_coleta = models.CharField(max_length=12, choices=STATUS, default='programada')
