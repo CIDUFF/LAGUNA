@@ -61,7 +61,8 @@ class ProgramaColeta(models.Model):
     equipe_coleta = models.ForeignKey(Coletores, on_delete=models.CASCADE, related_name='programa_coletor')
     laboratorio = models.ForeignKey(Laboratorios, on_delete=models.CASCADE, related_name='programa_laboratorio')
     solicitante = models.ForeignKey(Solicitantes, on_delete=models.CASCADE, related_name='programa_solicitante')
-    local_coleta = models.ForeignKey(LocaisColeta, on_delete=models.CASCADE, related_name='programa_ponto_coleta')
+    # local_coleta = models.ForeignKey(LocaisColeta, on_delete=models.CASCADE, related_name='programa_ponto_coleta')
+    local_coleta = models.CharField(max_length=50)
     status_coleta = models.CharField(max_length=12, choices=STATUS, default='programada')
     observacoes = models.TextField(max_length=500, blank=True)
 
