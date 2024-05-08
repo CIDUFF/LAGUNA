@@ -98,7 +98,7 @@ class Campo(models.Model):
     hora_inicio = models.TimeField("Hora de Início", auto_now=False, auto_now_add=False)
     hora_fim = models.TimeField("Hora de Término", auto_now=False, auto_now_add=False)
     data = models.DateField(default=date.today)
-    tempo = models.DurationField("Duração", editable=False)
+    # tempo = models.DurationField("Duração", editable=False)
     ponto = models.IntegerField("Ponto de Coleta", null=True)
     temperatura = models.DecimalField("Temperatura", max_digits=5, decimal_places=2)
     ph = models.DecimalField("pH", max_digits=5, decimal_places=2)
