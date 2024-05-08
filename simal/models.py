@@ -56,7 +56,7 @@ class ProgramaColeta(models.Model):
     data_coleta_campo = models.DateField(auto_now=False, auto_now_add=False)
     equipe_coleta = models.CharField(max_length=50, default='Equipe 1')
     # laboratorio = models.ForeignKey(Laboratorios, on_delete=models.CASCADE, related_name='programa_laboratorio')
-    Laboratorio = models.CharField(max_length=50,default='Interno')
+    laboratorio = models.CharField(max_length=50,default='Interno')
     # solicitante = models.ForeignKey(Solicitantes, on_delete=models.CASCADE, related_name='programa_solicitante')
     solicitante = models.CharField(max_length=50, default='João Silva')
     # local_coleta = models.ForeignKey(LocaisColeta, on_delete=models.CASCADE, related_name='programa_ponto_coleta')
@@ -112,7 +112,7 @@ class Campo(models.Model):
 class ListaColeta(models.Model):
     STATUS = [
         ('programada', 'Programada'),
-        ('reprogramada', 'Reprogramada'), 
+        ('reprogramada', 'Reprogramada'),
         ('realizada', 'Realizada'),
         ('cancelada', 'Cancelada'),
     ]
@@ -128,3 +128,5 @@ class ListaColeta(models.Model):
 
     def __str__(self):
         return f'Coleta da água em {self.ponto_coleta} em {self.data_coleta_campo}'
+    
+    

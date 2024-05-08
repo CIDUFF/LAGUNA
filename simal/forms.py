@@ -4,6 +4,28 @@ from django import forms
 from .models import *
 
 class ColetaCampo(forms.Form):
+    """
+    Representa um formulário para coletar dados de campo.
+
+    Atributos:
+        clima (CharField): Campo para capturar informações sobre o clima.
+        matriz (CharField): Campo para capturar informações sobre a matriz.
+        hora_inicio (TimeField): Campo para capturar a hora de início.
+        hora_fim (TimeField): Campo para capturar a hora de término.
+        temperatura (DecimalField): Campo para capturar a temperatura.
+        ph (DecimalField): Campo para capturar o valor de pH.
+        orp (DecimalField): Campo para capturar o potencial de oxidação-redução.
+        condutividade (DecimalField): Campo para capturar a condutividade.
+        turbidez (DecimalField): Campo para capturar a turbidez.
+        od (DecimalField): Campo para capturar a demanda de oxigênio.
+        od_pct (DecimalField): Campo para capturar a porcentagem de demanda de oxigênio.
+        tds (DecimalField): Campo para capturar os sólidos dissolvidos totais.
+        salinidade (DecimalField): Campo para capturar a salinidade.
+
+    Métodos:
+        __init__: Inicializa o formulário e define o layout.
+    """
+
     clima = forms.CharField()
     matriz = forms.CharField()
     hora_inicio = forms.TimeField(widget=forms.TimeInput(attrs={'type': 'time'}))
@@ -44,17 +66,31 @@ class ColetaCampo(forms.Form):
         )
 
 class ProgramaColetaForm(forms.Form):
+    """
+    Classe que define o formulário de programação de coleta.
+
+    Este formulário é usado para capturar informações sobre a programação de coleta de amostras.
+    Ele contém campos para a data de coleta, equipe de coleta, laboratório, solicitante, local de coleta,
+    status da coleta e observações.
+
+    Atributos:
+        data_coleta_campo (DateField): Campo para inserir a data de coleta.
+        equipe_coleta (ChoiceField): Campo para selecionar a equipe de coleta.
+        laboratorio (ChoiceField): Campo para selecionar o laboratório.
+        solicitante (ChoiceField): Campo para selecionar o solicitante.
+        local_coleta (ChoiceField): Campo para selecionar o local de coleta.
+        status_coleta (ChoiceField): Campo para selecionar o status da coleta.
+        observacoes (CharField): Campo para inserir observações sobre a coleta.
+
+    Métodos:
+        __init__: Inicializa o formulário e define o layout.
+    """
     
     data_coleta_campo = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
     
     equipe_coleta = forms.ChoiceField()
-    
-    TIPO_CHOICES = [
-    ('interno', 'Interno'),
-    ('externo', 'Externo'),
-    ]
         
-    laboratorio = forms.ChoiceField(choices=TIPO_CHOICES)
+    laboratorio = forms.ChoiceField()
     
     solicitante = forms.ChoiceField()
     
@@ -90,14 +126,12 @@ class ProgramaColetaForm(forms.Form):
             )
         )
 
-        # Cria uma lista de opções únicas para o campo local_coleta
-        locais_unicos = LocaisColeta.objects.values_list('local', flat=True).distinct()
-        self.fields['local_coleta'].choices = [(local, local) for local in locais_unicos]
+        def gerar_opcoes_unicas(modelo, campo):
+            valores_unicos = modelo.objects.values_list(campo, flat=True).distinct()
+            return [(valor, valor) for valor in valores_unicos]
 
-        # Faz o mesmo para equipe_coleta, laboratorio, solicitante e status_coleta
-        equipes_unicas = Coletores.objects.values_list('equipe', flat=True).distinct()
-        self.fields['equipe_coleta'].choices = [(equipe, equipe) for equipe in equipes_unicas]
-
-        solicitantes_unicos = Solicitantes.objects.values_list('nome', flat=True).distinct()
-        self.fields['solicitante'].choices = [(solicitante, solicitante) for solicitante in solicitantes_unicos]
-
+        # Agora você pode usar essa função para gerar as opções únicas para cada campo
+        self.fields['local_coleta'].choices = gerar_opcoes_unicas(LocaisColeta, 'local')
+        self.fields['equipe_coleta'].choices = gerar_opcoes_unicas(Coletores, 'equipe')
+        self.fields['solicitante'].choices = gerar_opcoes_unicas(Solicitantes, 'nome')
+        self.fields['laboratorio'].choices = gerar_opcoes_unicas(Laboratorios, 'nome')
