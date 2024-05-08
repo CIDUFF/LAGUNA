@@ -2,6 +2,7 @@ from datetime import datetime, date
 import random
 import string
 from django.db import models
+from django.utils.crypto import get_random_string
 
 
 class Coletores(models.Model):
@@ -63,6 +64,13 @@ class ProgramaColeta(models.Model):
     local_coleta = models.CharField(max_length=50)
     status_coleta = models.CharField(max_length=12, choices=STATUS, default='programada')
     observacoes = models.TextField(max_length=500, blank=True)
+    
+    
+    def save(self, *args, **kwargs):
+        if not self.ordem_servico:
+        # Gera uma ordem de serviço única
+            self.ordem_servico = get_random_string(length=8)
+        super().save(*args, **kwargs)
 
 
 
