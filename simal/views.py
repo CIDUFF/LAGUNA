@@ -73,8 +73,8 @@ def agenda_coleta(request):
             programa_coleta.data_coleta_campo = form.cleaned_data['data_coleta_campo']
 
             # Busca a instância correta do modelo Coletores e a atribui ao campo equipe_coleta
-            equipe_coleta = Coletores.objects.filter(equipe=form.cleaned_data['equipe_coleta']).first()
-            programa_coleta.equipe_coleta = equipe_coleta
+            # equipe_coleta = Coletores.objects.filter(equipe=form.cleaned_data['equipe_coleta'])
+            programa_coleta.equipe_coleta = form.cleaned_data['equipe_coleta']
             programa_coleta.Laboratorio = form.cleaned_data['laboratorio']
             programa_coleta.solicitante = form.cleaned_data['solicitante']
             programa_coleta.local_coleta = form.cleaned_data['local_coleta']
