@@ -2,7 +2,7 @@
 :root {
   --primary-color: #70cfcb; /* Define a cor primária do site */
   --secondary-color: #5fb8b2; /* Define a cor secundária do site */
-  --tertiary-color: #0062d5; /* Define a cor terciária do site */
+  --tertiary-color: #0056ba; /* Define a cor terciária do site */
 }
 
 /* Estilos gerais */
@@ -49,11 +49,19 @@ h1, h2, h3, h4, h5, h6, legend, label {
 }
 
 .nav-link:hover {
-  transform: translateY(-3px); /* Move os links de navegação 3 pixels para cima quando o mouse passa sobre eles */
+  transform: translateY(-5px); /* Move os links de navegação 3 pixels para cima quando o mouse passa sobre eles */
   transition: all 0.2s ease-in-out; /* Adiciona uma animação suave à transformação dos links de navegação quando o mouse passa sobre eles */
 }
 
 footer {
   background-color: var(--primary-color) !important; /* Define a cor de fundo do rodapé para a cor primária */
   color: white !important; /* Define a cor do texto do rodapé para branco */
+}
+
+.navbar-toggler{
+  border-color: white !important; /* Define a cor de fundo do botão de alternância da barra de navegação para a cor primária */
+}
+.dropdown-menu{
+  background-color: var(--primary-color) !important; /* Define a cor de fundo do menu suspenso para a cor primária */
+  color: white !important; /* Define a cor do texto do menu suspenso para branco */
 }

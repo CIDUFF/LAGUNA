@@ -4,6 +4,7 @@ from .models import *
 
 #TODO: Adicionar filtro e opção para exportação de dados
 class ColetaCampoTable(tables.Table):
+    
     update = tables.LinkColumn('atualizar_coleta', args=[A('pk')], orderable=False, empty_values=[])
 
     class Meta:
@@ -20,6 +21,8 @@ class ColetaCampoTable(tables.Table):
         table_pagination = True
 
 class ProgramaColetaTable(tables.Table):
+    
+    update = tables.LinkColumn('atualizar_programacao', args=[A('pk')], orderable=False, empty_values=[],text='ATUALIZAR')
     class Meta:
         model = ProgramaColeta
         template_name = 'django_tables2/bootstrap.html'

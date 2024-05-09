@@ -26,33 +26,33 @@
                     <ul class="navbar-nav">
                         {% if user.is_authenticated %}
                             <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <a class="nav-link dropdown-toggle lead" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     Cadastro
                                 </a>
                                 <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                    <a class="dropdown-item" href="{% url 'coleta' %}">Cadastro de amostras</a>
-                                    <a class="dropdown-item" href="#">Cadastro de Coletores</a>
-                                    <a class="dropdown-item" href="#">Cadastro de Analistas</a>
+                                    <a class="dropdown-item lead" href="{% url 'coleta' %}">Cadastro de amostras</a>
+                                    <a class="dropdown-item lead" href="#">Cadastro de Coletores</a>
+                                    <a class="dropdown-item lead" href="#">Cadastro de Analistas</a>
                                 </div>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="#">Dashboard</a>
-                            </li>
-                                                        <li class="nav-item">
-                                <a class="nav-link" href="{% url 'agendar_coleta' %}">Agendar campanha</a>
+                                <a class="nav-link lead" href="#">Dashboard</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="{% url 'lista_coleta' %}">Lista de Amostras</a>
+                                <a class="nav-link lead" href="{% url 'agendar_coleta' %}">Agendar campanha</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="#">Olá, {{ user.username }}</a>
+                                <a class="nav-link lead" href="{% url 'lista_coleta' %}">Lista de Amostras</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="{% url 'account_logout' %}">Logout</a>
+                                <a class="nav-link lead" href="#">Olá, {{ user.username }}</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link lead" href="{% url 'account_logout' %}">Logout</a>
                             </li>
                         {% else %}
                             <li class="nav-item">
-                                <a class="nav-link" href="{% url 'account_login' %}">Login</a>
+                                <a class="nav-link lead" href="{% url 'account_login' %}">Login</a>
                             </li>
                         {% endif %}
                     </ul>
