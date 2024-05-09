@@ -4,11 +4,13 @@ from .forms import *
 from django.contrib.auth.decorators import login_required
 from .tables import *
 from django_tables2 import RequestConfig
+import os
 
 # from django.views.generic import ListView
 # from .models import ColetaCampo
 
 def home(request):
+    
     return render(request, 'home.html')
 
 #TODO: Atualizar a view de coleta
@@ -60,8 +62,6 @@ def coletas_agendas(request):
         })
 
 @login_required
-
-
 def agenda_coleta(request):
     if request.method == 'POST':
         form = ProgramaColetaForm(request.POST)
@@ -89,6 +89,12 @@ def agenda_coleta(request):
         form = ProgramaColetaForm()
 
     return render(request, 'coleta/agendar_coleta.html', {'form': form})
+
+# ----------------------------------------------------------------------------------
+
+# front_end
+
+
 
 
 

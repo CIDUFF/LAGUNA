@@ -1,1 +1,24 @@
 {% extends 'base/base_site.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="jumbotron">
+        <div class="card bg-light mb-3">
+            <div class="card-body d-flex justify-content-center align-items-center">
+                <h1 class="display-4">Bem-vindo ao SIMAL</h1>
+            </div>
+        </div>
+        <p class="lead">Sistema de Monitoramente de Águas Lagunares</p>
+        <p class="lead">Esta plataforma tem como objetivo melhorar a gestão dos processos de coleta e análise de amostras das lagunas de Maricá.</p>
+        <p class="lead">Este projeto foi desenvolvido pelo Centro de Inteligência de dados do Projeto Lagoa Viva.</p>
+        <hr class="my-4">
+        <p class="lead">Algumas das ferramentas disponíveis no sistema:</p>
+        <p class="lead"><i class="fas fa-calendar-check"></i> - Agendamento de campanhas de coleta</p>
+        <p class="lead"><i class="fas fa-eye"></i> - Visualização de amostras coletadas</p>
+        <p class="lead"><i class="fas fa-file-alt"></i> - Relatórios de análises</p>
+        <p class="lead"><i class="fas fa-map-marker-alt"></i> - Mapa de pontos de coleta</p>
+        <p class="lead"><i class="fas fa-chart-pie"></i> - Gráficos de análises</p>
+        <a class="btn btn-custom btn-lg" href="accounts/login" role="button">Clique aqui para entrar no sistema</a>
+    </div>
+</div>
+{% endblock %}

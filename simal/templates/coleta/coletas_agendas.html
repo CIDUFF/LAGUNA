@@ -1,19 +1,6 @@
-{% extends 'base/base_site.html' %}
+{% extends 'base/base_site.html' %} {% load django_tables2 %} {% load static %}
+{% block content %} {% block title %}
 
-{% load django_tables2  %}
-{% load static %} 
+<h1>Lista de Coletas agendadas</h1>
 
-{% block content %}
-
-<div class="container_coleta">
-  <h1>Lista de Coletas agendadas</h1>
-</div>
-
-<div class="table-responsive">
-  <table class="table">
-    {% render_table table_agenda_coleta %}
-  </table>
-
-</div>
-
-{% endblock %}
+{% endblock title %} {% render_table table_agenda_coleta %} {% endblock %}

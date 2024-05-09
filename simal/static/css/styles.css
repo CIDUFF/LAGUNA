@@ -1,8 +1,15 @@
 /* Adicionando margens ao corpo do site */
 
+/* variaveis */
+
+:root {
+  --primary-color: #70cfcb;
+  --secondary-color: #5fb8b2;
+}
+
 body {
-  margin-bottom: 20px;
   margin: 10px;
+  margin-bottom: 20px;
   padding-bottom: 10vh;
 }
 
@@ -12,5 +19,32 @@ form {
 
 .main-content {
   margin-top: 20px;
+}
+
+h1 {
+  color: var(--primary-color);
+}
+
+legend{
+  color: var(--primary-color);
+}
+
+.fas{
+  color: var(--primary-color)
+}
+
+.btn-custom {
+  background-color: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+.btn-custom:hover,
+.btn-custom:focus,
+.btn-custom:active,
+.btn-custom:visited {
+  background-color: var(--secondary-color);
+  border-color: var(--secondary-color);
+  color: white; /* Adicionado para manter a cor do texto como branco */
+  text-decoration-color: aliceblue;
 }
 
