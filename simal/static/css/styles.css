@@ -33,18 +33,21 @@ legend{
   color: var(--primary-color)
 }
 
-.btn-custom {
+
+
+.btn-custom,
+.btn {
   background-color: var(--primary-color);
   color: white;
   border-color: var(--primary-color);
 }
-.btn-custom:hover,
-.btn-custom:focus,
-.btn-custom:active,
-.btn-custom:visited {
+.btn-custom,.btn:hover,
+.btn-custom,.btn:focus,
+.btn-custom,.btn:active,
+.btn-custom,.btn:visited {
   background-color: var(--secondary-color);
   border-color: var(--secondary-color);
-  color: white; /* Adicionado para manter a cor do texto como branco */
+  color: white; 
   text-decoration-color: aliceblue;
 }
 
