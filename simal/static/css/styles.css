@@ -1,59 +1,59 @@
 /* Variáveis de cores */
 :root {
-  --primary-color: #70cfcb;
-  --secondary-color: #5fb8b2;
+  --primary-color: #70cfcb; /* Define a cor primária do site */
+  --secondary-color: #5fb8b2; /* Define a cor secundária do site */
+  --tertiary-color: #0062d5; /* Define a cor terciária do site */
 }
 
 /* Estilos gerais */
 body {
-  margin: 10px 10px 20px;
-  padding-bottom: 10vh;
+  margin: 10px 10px 20px; /* Define as margens do corpo do site */
+  padding-bottom: 10vh; /* Define o preenchimento inferior do corpo do site */
 }
 
 form {
-  width: 100%;
+  width: 100%; /* Define a largura dos formulários para ocupar toda a largura disponível */
 }
 
 .main-content {
-  margin-top: 20px;
+  margin-top: 20px; /* Define a margem superior do conteúdo principal */
 }
 
 /* Estilos de cores primárias */
-h1, legend, .fas, .btn-custom, .btn {
-  color: var(--primary-color);
+.fas, .btn-custom, .btn {
+  color: var(--primary-color); /* Define a cor do texto dos elementos h1, legend, .fas, .btn-custom e .btn para a cor primária */
+}
+
+h1, h2, h3, h4, h5, h6, legend, label {
+  color: var(--tertiary-color) !important; /* Define a cor do texto dos títulos h1, h2, h3, h4, h5 e h6 para a cor primária */
 }
 
 /* Estilos de botões */
 .btn-custom, .btn {
-  background-color: var(--primary-color);
-  border-color: var(--primary-color);
-  color: white;
+  background-color: var(--primary-color); /* Define a cor de fundo dos botões para a cor primária */
+  border-color: var(--primary-color); /* Define a cor da borda dos botões para a cor primária */
+  color: white; /* Define a cor do texto dos botões para branco */
 }
 
 .btn-custom:hover, .btn-custom:focus, .btn-custom:active, .btn-custom:visited,
 .btn:hover, .btn:focus, .btn:active, .btn:visited {
-  background-color: var(--secondary-color);
-  border-color: var(--secondary-color);
-  color: white;
-  text-decoration-color: aliceblue;
+  background-color: var(--secondary-color); /* Define a cor de fundo dos botões quando o mouse passa sobre eles, quando estão focados, ativos ou visitados para a cor secundária */
+  border-color: var(--secondary-color); /* Define a cor da borda dos botões quando o mouse passa sobre eles, quando estão focados, ativos ou visitados para a cor secundária */
+  color: white; /* Define a cor do texto dos botões quando o mouse passa sobre eles, quando estão focados, ativos ou visitados para branco */
+  text-decoration-color: aliceblue; /* Define a cor da decoração do texto dos botões quando o mouse passa sobre eles, quando estão focados, ativos ou visitados para aliceblue */
 }
 
 /* Estilos de navegação */
 .nav-link {
-  color: white !important;
-}
-
-/* Estilos de navegação */
-.nav-link {
-  color: white !important;
+  color: white !important; /* Define a cor do texto dos links de navegação para branco */
 }
 
 .nav-link:hover {
-  transform: translateY(-3px);
-  transition: all 0.2s ease-in-out;
+  transform: translateY(-3px); /* Move os links de navegação 3 pixels para cima quando o mouse passa sobre eles */
+  transition: all 0.2s ease-in-out; /* Adiciona uma animação suave à transformação dos links de navegação quando o mouse passa sobre eles */
 }
 
 footer {
-  background-color: var(--primary-color) !important;
-  color: white !important;
+  background-color: var(--primary-color) !important; /* Define a cor de fundo do rodapé para a cor primária */
+  color: white !important; /* Define a cor do texto do rodapé para branco */
 }
