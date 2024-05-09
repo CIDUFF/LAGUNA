@@ -3,10 +3,44 @@ from crispy_forms.layout import Layout, Fieldset, ButtonHolder, Submit
 from django import forms
 from .models import *
 
-class ColetaCampo(forms.ModelForm):
-    
-    def __init__(self,*args,**kwargs):
+class ColetaCampo(forms.Form):
+    """
+    Representa um formulário para coletar dados de campo.
 
+    Atributos:
+        clima (CharField): Campo para capturar informações sobre o clima.
+        matriz (CharField): Campo para capturar informações sobre a matriz.
+        hora_inicio (TimeField): Campo para capturar a hora de início.
+        hora_fim (TimeField): Campo para capturar a hora de término.
+        temperatura (DecimalField): Campo para capturar a temperatura.
+        ph (DecimalField): Campo para capturar o valor de pH.
+        orp (DecimalField): Campo para capturar o potencial de oxidação-redução.
+        condutividade (DecimalField): Campo para capturar a condutividade.
+        turbidez (DecimalField): Campo para capturar a turbidez.
+        od (DecimalField): Campo para capturar a demanda de oxigênio.
+        od_pct (DecimalField): Campo para capturar a porcentagem de demanda de oxigênio.
+        tds (DecimalField): Campo para capturar os sólidos dissolvidos totais.
+        salinidade (DecimalField): Campo para capturar a salinidade.
+
+    Métodos:
+        __init__: Inicializa o formulário e define o layout.
+    """
+
+    clima = forms.CharField()
+    matriz = forms.CharField()
+    hora_inicio = forms.TimeField(widget=forms.TimeInput(attrs={'type': 'time'}))
+    hora_fim = forms.TimeField(widget=forms.TimeInput(attrs={'type': 'time'}))
+    temperatura = forms.DecimalField()
+    ph = forms.DecimalField()
+    orp = forms.DecimalField()
+    condutividade = forms.DecimalField()
+    turbidez = forms.DecimalField()
+    od = forms.DecimalField()
+    od_pct = forms.DecimalField()
+    tds = forms.DecimalField()
+    salinidade = forms.DecimalField()
+
+    def __init__(self,*args,**kwargs):
         super(ColetaCampo, self).__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.layout = Layout(
@@ -31,64 +65,73 @@ class ColetaCampo(forms.ModelForm):
             )
         )
 
-    class Meta:
+class ProgramaColetaForm(forms.Form):
+    """
+    Classe que define o formulário de programação de coleta.
 
-        model = Campo
-        fields = [
-            'clima',
-            'matriz',
-            'hora_inicio',
-            'hora_fim',
-            'temperatura',
-            'ph',
-            'orp',
-            'condutividade',
-            'turbidez',
-            'od',
-            'od_pct',
-            'tds',
-            'salinidade'
-        ]
-        widgets = {
-            'hora_inicio': forms.TimeInput(attrs={'type': 'time'}),
-            'hora_fim': forms.TimeInput(attrs={'type': 'time'}),
-        }
+    Este formulário é usado para capturar informações sobre a programação de coleta de amostras.
+    Ele contém campos para a data de coleta, equipe de coleta, laboratório, solicitante, local de coleta,
+    status da coleta e observações.
 
-class ProgramaColetaForm(forms.ModelForm):
+    Atributos:
+        data_coleta_campo (DateField): Campo para inserir a data de coleta.
+        equipe_coleta (ChoiceField): Campo para selecionar a equipe de coleta.
+        laboratorio (ChoiceField): Campo para selecionar o laboratório.
+        solicitante (ChoiceField): Campo para selecionar o solicitante.
+        local_coleta (ChoiceField): Campo para selecionar o local de coleta.
+        status_coleta (ChoiceField): Campo para selecionar o status da coleta.
+        observacoes (CharField): Campo para inserir observações sobre a coleta.
+
+    Métodos:
+        __init__: Inicializa o formulário e define o layout.
+    """
+    
+    data_coleta_campo = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
+    
+    equipe_coleta = forms.ChoiceField()
         
-        def __init__(self,*args,**kwargs):
+    laboratorio = forms.ChoiceField()
     
-            super(ProgramaColetaForm, self).__init__(*args, **kwargs)
-            self.helper = FormHelper()
-            self.helper.layout = Layout(
-                Fieldset(
-                    'Formulário de Programação de Coleta',
-                    'data_coleta_campo',
-                    'equipe_coleta',
-                    'laboratorio',
-                    'solicitante',
-                    'ponto_coleta',
-                    'status_coleta',
-                    'observacoes'
-                ),
-                ButtonHolder(
-                    Submit('submit', 'Salvar')
-                )
-            )
+    solicitante = forms.ChoiceField()
     
-        class Meta:
+    local_coleta = forms.ChoiceField()
     
-            model = ProgramaColeta
-            fields = [
+    STATUS = [
+        ('programada', 'Programada'),
+        ('reprogramada', 'Reprogramada'), 
+        ('realizada', 'Realizada'),
+        ('cancelada', 'Cancelada'),
+        ]
+    
+    status_coleta = forms.ChoiceField(choices=STATUS)
+    
+    observacoes = forms.CharField(widget=forms.Textarea(attrs={'rows': 3, 'cols': 40}))
+
+    def __init__(self,*args,**kwargs):
+        super(ProgramaColetaForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Fieldset(
+                'Formulário de Programação de Coleta',
                 'data_coleta_campo',
                 'equipe_coleta',
                 'laboratorio',
                 'solicitante',
-                'ponto_coleta',
+                'local_coleta',
                 'status_coleta',
                 'observacoes'
-            ]
-            widgets = {
-            'data_coleta_campo': forms.DateInput(attrs={'type': 'date'}),
-        }
-            
+            ),
+            ButtonHolder(
+                Submit('submit', 'Salvar')
+            )
+        )
+
+        def gerar_opcoes_unicas(modelo, campo):
+            valores_unicos = modelo.objects.values_list(campo, flat=True).distinct()
+            return [(valor, valor) for valor in valores_unicos]
+
+        # Agora você pode usar essa função para gerar as opções únicas para cada campo
+        self.fields['local_coleta'].choices = gerar_opcoes_unicas(LocaisColeta, 'local')
+        self.fields['equipe_coleta'].choices = gerar_opcoes_unicas(Coletores, 'equipe')
+        self.fields['solicitante'].choices = gerar_opcoes_unicas(Solicitantes, 'nome')
+        self.fields['laboratorio'].choices = gerar_opcoes_unicas(Laboratorios, 'nome')

@@ -1,28 +1,27 @@
-from django.db import models
 from datetime import datetime, date
-
+import random
+import string
+from django.db import models
+from django.utils.crypto import get_random_string
 
 
 class Coletores(models.Model):
-    nome = models.CharField(max_length=100)
-    email = models.EmailField(max_length=100)
-    telefone = models.CharField(max_length=15)
-    filiacao = models.CharField(max_length=100)
+    nome = models.CharField(max_length=100, default= 'Nome do Coletor')
+    email = models.EmailField(max_length=100, default = 'seuemail@email.com')
+    telefone = models.CharField(max_length=15, default='(21) 99999-9999')
+    filiacao = models.CharField(max_length=100, default='UFF')
+    equipe = models.CharField(max_length=25, default='Equipe 1')
 
     def __str__(self):
         return f'{self.nome}'
 
 class Laboratorios(models.Model):
-    TIPO_CHOICES = [
-        ('interno', 'Interno'),
-        ('externo', 'Externo'),
-    ]
 
     nome = models.CharField(max_length=100)
     email = models.EmailField(max_length=100)
-    telefone = models.CharField(max_length=15)
+    telefone = models.CharField(max_length=100)
     endereco = models.CharField(max_length=100)
-    tipo = models.CharField(max_length=7, choices=TIPO_CHOICES)
+    tipo = models.CharField(max_length=25)
     
     def __str__(self):
         return f'{self.nome}'
@@ -37,9 +36,10 @@ class Solicitantes(models.Model):
 
 class LocaisColeta(models.Model):
     local = models.CharField(max_length=50)
-    ponto_coleta = models.IntegerField(default=0)
-    codigo = models.CharField(max_length=60, blank=True)
-    rota = models.CharField(max_length=100, blank=True)
+    local_codigo = models.CharField(max_length=50,default='00') # Código numérico começando em 01 para cada local no DB
+    ponto = models.CharField(max_length=60, blank=False)
+    codigo = models.CharField(max_length=60, blank=False)
+    # rota = models.CharField(max_length=100, blank=True)
     
     def __str__(self):
         return f'{self.local}'
@@ -53,16 +53,29 @@ class ProgramaColeta(models.Model):
         ('cancelada', 'Cancelada'),
     ]
 
+    ordem_servico = models.CharField(max_length=20, blank=True)
     data_coleta_campo = models.DateField(auto_now=False, auto_now_add=False)
-    equipe_coleta = models.ForeignKey(Coletores, on_delete=models.CASCADE, related_name='programa_coletor')
-    laboratorio = models.ForeignKey(Laboratorios, on_delete=models.CASCADE, related_name='programa_laboratorio')
-    solicitante = models.ForeignKey(Solicitantes, on_delete=models.CASCADE, related_name='programa_solicitante')
-    ponto_coleta = models.ForeignKey(LocaisColeta, on_delete=models.CASCADE, related_name='programa_ponto_coleta')
+    equipe_coleta = models.CharField(max_length=50, default='Equipe 1')
+    # laboratorio = models.ForeignKey(Laboratorios, on_delete=models.CASCADE, related_name='programa_laboratorio')
+    laboratorio = models.CharField(max_length=50,default='Interno')
+    # solicitante = models.ForeignKey(Solicitantes, on_delete=models.CASCADE, related_name='programa_solicitante')
+    solicitante = models.CharField(max_length=50, default='João Silva')
+    # local_coleta = models.ForeignKey(LocaisColeta, on_delete=models.CASCADE, related_name='programa_ponto_coleta')
+    local_coleta = models.CharField(max_length=50)
     status_coleta = models.CharField(max_length=12, choices=STATUS, default='programada')
     observacoes = models.TextField(max_length=500, blank=True)
+    
+    
+    def save(self, *args, **kwargs):
+        if not self.ordem_servico:
+        # Gera uma ordem de serviço única
+            self.ordem_servico = get_random_string(length=8)
+        super().save(*args, **kwargs)
+
+
 
     def __str__(self):
-        return f'Coleta da água em {self.ponto_coleta} em {self.data_coleta_campo}'
+        return f'Coleta da água em {self.local_coleta} em {self.data_coleta_campo}'
     
 class Campo(models.Model):
     
@@ -85,7 +98,7 @@ class Campo(models.Model):
     hora_inicio = models.TimeField("Hora de Início", auto_now=False, auto_now_add=False)
     hora_fim = models.TimeField("Hora de Término", auto_now=False, auto_now_add=False)
     data = models.DateField(default=date.today)
-    tempo = models.DurationField("Duração", editable=False)
+    # tempo = models.DurationField("Duração", editable=False)
     ponto = models.IntegerField("Ponto de Coleta", null=True)
     temperatura = models.DecimalField("Temperatura", max_digits=5, decimal_places=2)
     ph = models.DecimalField("pH", max_digits=5, decimal_places=2)
@@ -107,7 +120,7 @@ class Campo(models.Model):
 class ListaColeta(models.Model):
     STATUS = [
         ('programada', 'Programada'),
-        ('reprogramada', 'Reprogramada'), 
+        ('reprogramada', 'Reprogramada'),
         ('realizada', 'Realizada'),
         ('cancelada', 'Cancelada'),
     ]
@@ -123,3 +136,5 @@ class ListaColeta(models.Model):
 
     def __str__(self):
         return f'Coleta da água em {self.ponto_coleta} em {self.data_coleta_campo}'
+    
+    

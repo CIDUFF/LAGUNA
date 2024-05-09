@@ -10,6 +10,7 @@
     <link rel="stylesheet" type="text/css" href="{% static 'css/styles.css' %}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body>
     <div id="navbar-container">
@@ -36,6 +37,9 @@
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="#">Dashboard</a>
+                            </li>
+                                                        <li class="nav-item">
+                                <a class="nav-link" href="{% url 'agendar_coleta' %}">Agendar campanha</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" href="{% url 'lista_coleta' %}">Lista de Amostras</a>

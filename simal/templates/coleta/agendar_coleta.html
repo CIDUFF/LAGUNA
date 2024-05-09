@@ -1,22 +1,22 @@
-{% extends 'base/base_site.html' %}
+{% extends 'base/base_site.html' %} 
 
-{% load crispy_forms_tags %}
+{% load crispy_forms_tags %} 
 
-{% block title %}Agendar nova Coleta{% endblock %}
+{% block title%}
+
+Agendar nova Campanha
+
+{% endblock %} 
 
 {% block content %}
 
 <div class="container">
-    <div class="row">
-        <div class="col-md-12">
-            <h1>Agendar nova Coleta</h1>
-            <form method="post">
-                {% csrf_token %}
-                {% crispy form %}
-                <button type="submit" class="btn btn-primary">Agendar</button>
-            </form>
-        </div>
+  <div class="row">
+    <div class="col-md-12">
+      <h1>Agendar nova Coleta</h1>
+      {% csrf_token %} {% crispy form %}
     </div>
+  </div>
 </div>
-    
+
 {% endblock %}

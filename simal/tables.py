@@ -23,12 +23,12 @@ class ProgramaColetaTable(tables.Table):
     class Meta:
         model = ProgramaColeta
         template_name = 'django_tables2/bootstrap.html'
-        fields = ['data_coleta_campo', 'equipe_coleta', 'laboratorio', 'solicitante', 'ponto_coleta', 'status_coleta', 'observacoes']
+        fields = ['data_coleta_campo', 'equipe_coleta', 'laboratorio', 'solicitante', 'local_coleta', 'status_coleta', 'observacoes']
         attrs = {'class': 'table table-striped table-bordered table-hover'}
         empty_text = 'Não há dados para exibir'
         orderable = False
         exclude = ('id', 'created_at', 'updated_at', 'campo')
-        sequence = ('data_coleta_campo', 'equipe_coleta', 'laboratorio', 'solicitante', 'ponto_coleta', 'status_coleta', 'observacoes')
+        sequence = ('data_coleta_campo', 'equipe_coleta', 'laboratorio', 'solicitante', 'local_coleta', 'status_coleta', 'observacoes')
         per_page = 10
         paginator_class = tables.LazyPaginator
         table_pagination = True      
