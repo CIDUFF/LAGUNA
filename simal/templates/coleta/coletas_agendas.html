@@ -1,5 +1,18 @@
-{% extends 'base/base_site.html' %} {% load django_tables2 %} {% load static %}
-{% block content %} {% block title %}
+{% extends 'base/base_site.html' %} 
+
+
+{% load django_tables2 %} 
+
+{% load static %}
+
+{% block content %}  
+
+{% block title %}  
+
+Agenda de campanhas
+
+
+{% endblock%} 
 
 
 {% block header %}
@@ -12,4 +25,4 @@
 {% endblock header %}
     
 
-{% endblock title %} {% render_table table_agenda_coleta %} {% endblock %}
+{% render_table table_agenda_coleta %} {% endblock %}
