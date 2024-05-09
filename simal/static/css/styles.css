@@ -1,15 +1,12 @@
-/* Adicionando margens ao corpo do site */
-
-/* variaveis */
-
+/* Variáveis de cores */
 :root {
   --primary-color: #70cfcb;
   --secondary-color: #5fb8b2;
 }
 
+/* Estilos gerais */
 body {
-  margin: 10px;
-  margin-bottom: 20px;
+  margin: 10px 10px 20px;
   padding-bottom: 10vh;
 }
 
@@ -21,33 +18,42 @@ form {
   margin-top: 20px;
 }
 
-h1 {
+/* Estilos de cores primárias */
+h1, legend, .fas, .btn-custom, .btn {
   color: var(--primary-color);
 }
 
-legend{
-  color: var(--primary-color);
-}
-
-.fas{
-  color: var(--primary-color)
-}
-
-
-
-.btn-custom,
-.btn {
+/* Estilos de botões */
+.btn-custom, .btn {
   background-color: var(--primary-color);
-  color: white;
   border-color: var(--primary-color);
+  color: white;
 }
-.btn-custom,.btn:hover,
-.btn-custom,.btn:focus,
-.btn-custom,.btn:active,
-.btn-custom,.btn:visited {
+
+.btn-custom:hover, .btn-custom:focus, .btn-custom:active, .btn-custom:visited,
+.btn:hover, .btn:focus, .btn:active, .btn:visited {
   background-color: var(--secondary-color);
   border-color: var(--secondary-color);
-  color: white; 
+  color: white;
   text-decoration-color: aliceblue;
 }
 
+/* Estilos de navegação */
+.nav-link {
+  color: white !important;
+}
+
+/* Estilos de navegação */
+.nav-link {
+  color: white !important;
+}
+
+.nav-link:hover {
+  transform: translateY(-3px);
+  transition: all 0.2s ease-in-out;
+}
+
+footer {
+  background-color: var(--primary-color) !important;
+  color: white !important;
+}
