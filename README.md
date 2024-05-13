@@ -2,5 +2,4 @@
 
 Sistema de Monitoramento Integrado de Águas Lagunares (SIMAL)
 
-teste
 
