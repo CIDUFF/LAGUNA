@@ -7,12 +7,15 @@ __pycache__
 .env
 myvenv/
 venv/
+.venv
+ENV/
 
 # Database
 db.sqlite3
 
-# Static folder at project root
+# Static folders
 /static/
+staticfiles/
 
 # macOS
 ._*
@@ -30,3 +33,26 @@ $RECYCLE.BIN/
 .vscode/
 .history/
 *.code-workspace
+
+# Django
+*.log
+*.pot
+local_settings.py
+media
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# Docker
+.dockerenv
+docker-compose.yml
+Dockerfile
+
+# Cache
+*.cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+staticfiles/
