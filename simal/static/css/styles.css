@@ -24,7 +24,7 @@ form {
   color: var(--primary-color); /* Define a cor do texto dos elementos h1, legend, .fas, .btn-custom e .btn para a cor primária */
 }
 
-h1, h2, h3, h4, h5, h6, legend, label {
+h1, h2, h3, h4, h5, h6, legend {
   color: var(--tertiary-color) !important; /* Define a cor do texto dos títulos h1, h2, h3, h4, h5 e h6 para a cor primária */
 }
 
@@ -64,6 +64,19 @@ footer {
 .dropdown-menu{
   background-color: var(--primary-color) !important; /* Define a cor de fundo do menu suspenso para a cor primária */
   color: white !important; /* Define a cor do texto do menu suspenso para branco */
+}
+
+/* Estilos de formulários */
+
+label {
+  color: var(--tertiary-color) !important; /* Define a cor do texto das etiquetas para a cor primária */
+  font-weight: bold; /* Define o peso da fonte das etiquetas para negrito */
+  font-size: medium
+}
+
+.form-control {
+  color: var(--tertiary-color) !important; /* Define a cor do texto dos controles para a cor primária */
+  text-align: center; /* Centraliza o texto nos controles */
 }
 
 /* sidebar */
