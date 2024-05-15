@@ -8,7 +8,6 @@
 /* Estilos gerais */
 body {
   margin: 10px 10px 20px; /* Define as margens do corpo do site */
-  padding-bottom: 10vh; /* Define o preenchimento inferior do corpo do site */
 }
 
 form {
@@ -76,7 +75,33 @@ label {
 
 .form-control {
   color: var(--tertiary-color) !important; /* Define a cor do texto dos controles para a cor primária */
-  text-align: center; /* Centraliza o texto nos controles */
+  text-align: left; /* Centraliza o texto nos controles */
+}
+
+.table-container::-webkit-scrollbar {
+  width: 30px; /* Ajuste a espessura da barra de rolagem vertical */
+  height: 30px; /* Ajuste a espessura da barra de rolagem horizontal */
+}
+
+.table-container::-webkit-scrollbar-track {
+  background: #f1f1f1; /* Cor de fundo da barra de rolagem */
+}
+
+.table-container::-webkit-scrollbar-thumb {
+  background: #888; /* Cor da barra de rolagem */
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+  background: #555; /* Cor da barra de rolagem ao passar o mouse */
+}
+
+.table-container {
+  overflow-x: auto;
+}
+
+table {
+  min-width: 100%; /* Ajuste este valor conforme necessário */
+  /* outros estilos da tabela */
 }
 
 /* sidebar */
@@ -127,6 +152,7 @@ body {
     background-color: #0e2238;
     display: flex;
     flex-direction: column;
+
 }
 
 #sidebar.expand {
@@ -224,4 +250,23 @@ a.sidebar-link:hover {
     transition: all .2s ease-out;
 }
 
+.menu-itens {
+
+  position: fixed;
+
+}
+
+.authentication {
+  margin-top: 25rem; /* Adiciona um padding na parte inferior */
+  display: flex;
+  flex-direction: column; /* Organiza os itens em uma coluna */
+  gap: 2rem; /* Adiciona um espaçamento mínimo entre os itens */
+}
+
+.navigation-icons {
+  display: flex;
+  flex-direction: column; /* Organiza os itens em uma coluna */
+  display: flex; /* Organiza os itens em uma linha */
+  gap: 2rem; /* Adiciona um espaçamento mínimo entre os itens */
+}
 
