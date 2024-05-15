@@ -8,7 +8,6 @@
 /* Estilos gerais */
 body {
   margin: 10px 10px 20px; /* Define as margens do corpo do site */
-  padding-bottom: 10vh; /* Define o preenchimento inferior do corpo do site */
 }
 
 form {
@@ -76,7 +75,7 @@ label {
 
 .form-control {
   color: var(--tertiary-color) !important; /* Define a cor do texto dos controles para a cor primária */
-  text-align: center; /* Centraliza o texto nos controles */
+  text-align: left; /* Centraliza o texto nos controles */
 }
 
 /* sidebar */
@@ -127,6 +126,7 @@ body {
     background-color: #0e2238;
     display: flex;
     flex-direction: column;
+
 }
 
 #sidebar.expand {
@@ -222,6 +222,11 @@ a.sidebar-link:hover {
 #sidebar.expand .sidebar-link[data-bs-toggle="collapse"].collapsed::after {
     transform: rotate(45deg);
     transition: all .2s ease-out;
+}
+
+.menu-itens {
+
+  position: fixed;
 }
 
 
