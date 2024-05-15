@@ -253,6 +253,20 @@ a.sidebar-link:hover {
 .menu-itens {
 
   position: fixed;
+
 }
 
+.authentication {
+  margin-top: 25rem; /* Adiciona um padding na parte inferior */
+  display: flex;
+  flex-direction: column; /* Organiza os itens em uma coluna */
+  gap: 2rem; /* Adiciona um espaçamento mínimo entre os itens */
+}
+
+.navigation-icons {
+  display: flex;
+  flex-direction: column; /* Organiza os itens em uma coluna */
+  display: flex; /* Organiza os itens em uma linha */
+  gap: 2rem; /* Adiciona um espaçamento mínimo entre os itens */
+}
 
