@@ -1,7 +1,7 @@
 /* Variáveis de cores */
 :root {
-  --primary-color: #70cfcb; /* Define a cor primária do site */
-  --secondary-color: #5fb8b2; /* Define a cor secundária do site */
+  --primary-color: #0e2238; /* Define a cor primária do site */
+  --secondary-color: #5783b6; /* Define a cor secundária do site */
   --tertiary-color: #0056ba; /* Define a cor terciária do site */
 }
 
@@ -38,6 +38,37 @@ legend {
     --tertiary-color
   ) !important; /* Define a cor do texto dos títulos h1, h2, h3, h4, h5 e h6 para a cor primária */
 }
+
+/* paginacao */
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  padding: 1em 0;
+}
+
+.pagination a {
+  color: var(--primary-color);
+  float: left;
+  padding: 8px 16px;
+  text-decoration: none;
+  transition: background-color .3s;
+  border: 1px solid var(--primary-color);
+  margin: 0 4px;
+  border-radius: 5px; /* Adiciona cantos arredondados */
+}
+
+.pagination a.active {
+  background-color: var(--primary-color);
+  color: white;
+  border: 1px solid var(--primary-color);
+  border-radius: 5px; /* Adiciona cantos arredondados */
+}
+
+.pagination a:hover:not(.active) {
+  background-color: #ddd;
+}
+
 
 /* Estilos de botões */
 .btn-custom,
