@@ -136,28 +136,37 @@
               <i class="lni lni-grid-alt"></i>
             </button>
             <div class="sidebar-logo">
-              <a href="{% url 'home' %}">Heliogábalo</a>
+              <a href="{% url 'home' %}">LAGUNA</a>
             </div>
           </div>
           <ul class="sidebar-nav">
             {% if user.is_authenticated %}
             <li class="sidebar-item">
-              <a href="{% url 'coleta' %}" class="sidebar-link">
-                <i class="lni lni-user"></i>
-                <span>Cadastro de amostras</span>
+              <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse"
+                 data-bs-target="#cadastro" aria-expanded="false" aria-controls="cadastro">
+                <i class="lni lni-capsule"></i>
+                <span>Cadastro</span>
               </a>
-            </li>
-            <li class="sidebar-item">
-              <a href="#" class="sidebar-link">
-                <i class="lni lni-agenda"></i>
-                <span>Cadastro de Coletores</span>
-              </a>
-            </li>
-            <li class="sidebar-item">
-              <a href="#" class="sidebar-link">
-                <i class="lni lni-protection"></i>
-                <span>Cadastro de Analistas</span>
-              </a>
+              <ul id="cadastro" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                <li class="sidebar-item">
+                  <a href="{% url 'coleta' %}" class="sidebar-link">
+                    <i class="lni lni-capsule"></i>
+                    <span>Cadastro de amostras</span>
+                  </a>
+                </li>
+                <li class="sidebar-item">
+                  <a href="#" class="sidebar-link">
+                    <i class="lni lni-agenda"></i>
+                    <span>Cadastro de Coletores</span>
+                  </a>
+                </li>
+                <li class="sidebar-item">
+                  <a href="#" class="sidebar-link">
+                    <i class="lni lni-protection"></i>
+                    <span>Cadastro de Analistas</span>
+                  </a>
+                </li>
+              </ul>
             </li>
             <li class="sidebar-item">
               <a href="#" class="sidebar-link">
@@ -173,7 +182,7 @@
             </li>
             <li class="sidebar-item">
               <a href="{% url 'lista_coleta' %}" class="sidebar-link">
-                <i class="lni lni-user"></i>
+                <i class="lni lni-write"></i>
                 <span>Lista de Amostras</span>
               </a>
             </li>
@@ -192,7 +201,7 @@
             {% else %}
             <li class="sidebar-item">
               <a href="{% url 'account_login' %}" class="sidebar-link">
-                <i class="lni lni-exit"></i>
+                <i class="lni lni-enter"></i>
                 <span>Login</span>
               </a>
             </li>
