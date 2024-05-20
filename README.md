@@ -1,4 +1,4 @@
 # sistema_amostras
 
-Sistema de Monitoramento Integrado de Águas Lagunares (SIMAL)
+LAGUNA - Laboratório Avançado para Gerenciamento, Uso e Análise de Amostras
 
