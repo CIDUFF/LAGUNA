@@ -1,4 +1,4 @@
-# sistema_amostras
+# LAGUNA
 
-LAGUNA - Laboratório Avançado para Gerenciamento, Uso e Análise de Amostras
+Laboratório Avançado para Gerenciamento, Uso e Análise de Amostras
 
