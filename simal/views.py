@@ -43,41 +43,7 @@ def atualizar_coleta(request, id):
 
 
 
-@login_required
-def atualizar_programacao(request, id):
-    """
-    Atualiza a programação de coleta com base nos dados fornecidos pelo formulário.
 
-    Args:
-        request (HttpRequest): O objeto HttpRequest que contém os dados da requisição.
-        id (int): O ID da programação de coleta a ser atualizada.
-
-    Returns:
-        HttpResponse: O objeto HttpResponse que renderiza o template 'coleta/agendar_coleta.html'
-                      com o formulário atualizado ou redireciona para a página 'coletas_agendas'
-                      em caso de sucesso na atualização dos dados.
-
-    Raises:
-        Http404: Se a programação de coleta com o ID fornecido não existir.
-
-    """
-    programacao = get_object_or_404(ProgramaColeta, id=id)
-    if request.method == 'POST':
-        form = ProgramaColetaForm(request.POST)
-        if form.is_valid():
-            for field, value in form.cleaned_data.items():
-                setattr(programacao, field, value)
-            programacao.save()
-            messages.success(request, 'Dados atualizados com sucesso!')
-            return redirect('coletas_agendas')
-        else:
-            print(form.errors)  # Imprime os erros de validação
-    else:
-        form_data = {field.name: getattr(programacao, field.name) for field in ProgramaColeta._meta.fields}
-        if 'data_coleta' in form_data:
-            form_data['data_coleta'] = form_data['data_coleta'].strftime('%Y-%m-%d %H:%M:%S')
-        form = ProgramaColetaForm(initial=form_data)
-    return render(request, 'coleta/agendar_coleta.html', {'form': form})
 
 @login_required
 def deletar_coleta(request, id):
@@ -129,6 +95,42 @@ def agenda_coleta(request):
     else:
         form = ProgramaColetaForm()
 
+    return render(request, 'coleta/agendar_coleta.html', {'form': form})
+
+@login_required
+def atualizar_programacao(request, id):
+    """
+    Atualiza a programação de coleta com base nos dados fornecidos pelo formulário.
+
+    Args:
+        request (HttpRequest): O objeto HttpRequest que contém os dados da requisição.
+        id (int): O ID da programação de coleta a ser atualizada.
+
+    Returns:
+        HttpResponse: O objeto HttpResponse que renderiza o template 'coleta/agendar_coleta.html'
+                      com o formulário atualizado ou redireciona para a página 'coletas_agendas'
+                      em caso de sucesso na atualização dos dados.
+
+    Raises:
+        Http404: Se a programação de coleta com o ID fornecido não existir.
+
+    """
+    programacao = get_object_or_404(ProgramaColeta, id=id)
+    if request.method == 'POST':
+        form = ProgramaColetaForm(request.POST)
+        if form.is_valid():
+            for field, value in form.cleaned_data.items():
+                setattr(programacao, field, value)
+            programacao.save()
+            messages.success(request, 'Dados atualizados com sucesso!')
+            return redirect('coletas_agendas')
+        else:
+            print(form.errors)  # Imprime os erros de validação
+    else:
+        form_data = {field.name: getattr(programacao, field.name) for field in ProgramaColeta._meta.fields}
+        if 'data_coleta' in form_data:
+            form_data['data_coleta'] = form_data['data_coleta'].strftime('%Y-%m-%d %H:%M:%S')
+        form = ProgramaColetaForm(initial=form_data)
     return render(request, 'coleta/agendar_coleta.html', {'form': form})
 
 # ----------------------------------------------------------------------------------

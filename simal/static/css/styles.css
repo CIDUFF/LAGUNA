@@ -280,7 +280,11 @@ a.sidebar-link:hover {
 
 .sidebar-item {
   position: relative;
+  text-decoration: none;
 }
+
+
+
 
 #sidebar:not(.expand) .sidebar-item .sidebar-dropdown {
   position: absolute;
@@ -303,6 +307,10 @@ a.sidebar-link:hover {
   display: inline; 
 }
 
+.list-unstyled {
+  padding-left: 5rem; /* Add a padding-left to create a small indentation */
+}
+
 #sidebar.expand .sidebar-link[data-bs-toggle="collapse"]::after {
   border: solid;
   border-width: 0 0.075rem 0.075rem 0;
@@ -321,8 +329,21 @@ a.sidebar-link:hover {
   transition: all 0.2s ease-out;
 }
 
+#sidebar.expand .sidebar-dropdown{
+  padding-left: 1rem;
+}
+
+.sidebar-dropdown {
+  padding-left: 1rem;
+}
+
 .menu-itens {
   position: fixed;
+
+}
+
+.sidebar-link {
+    text-decoration: none;
 }
 
 .authentication {
