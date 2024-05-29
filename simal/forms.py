@@ -135,3 +135,28 @@ class ProgramaColetaForm(forms.Form):
         self.fields['equipe_coleta'].choices = gerar_opcoes_unicas(Coletores, 'equipe')
         self.fields['solicitante'].choices = gerar_opcoes_unicas(Solicitantes, 'nome')
         self.fields['laboratorio'].choices = gerar_opcoes_unicas(Laboratorios, 'nome')
+        
+
+class ChecklistCampoForm(forms.Form):
+    
+    data_checklist = forms.DateField()
+    # ordem_servico = forms.ModelChoiceField(queryset=ProgramaColeta.objects.all())
+    status_checklist = forms.ChoiceField(choices=ChecklistCampo.STATUS)
+    observacoes = forms.CharField(widget=forms.Textarea, max_length=500, required=False)
+    
+    def __init__(self,*args,**kwargs):
+        super(ChecklistCampoForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Fieldset(
+                'Formulário de Checklist de Campo',
+                'data_checklist',
+                'ordem_servico',
+                'status_checklist',
+                'observacoes'
+            ),
+            ButtonHolder(
+                Submit('submit', 'Salvar')
+            )
+        )
+  

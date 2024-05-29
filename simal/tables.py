@@ -22,7 +22,8 @@ class ColetaCampoTable(tables.Table):
 
 class ProgramaColetaTable(tables.Table):
     
-    update = tables.LinkColumn('atualizar_programacao', args=[A('pk')], orderable=False, empty_values=[],text='ATUALIZAR')
+    update = tables.LinkColumn('atualizar_programacao', args=[A('pk')], orderable=False, empty_values=[],text='EDITAR')
+    start = tables.LinkColumn('atualizar_programacao', args=[A('pk')], orderable=False, empty_values=[],text='Iniciar')
     class Meta:
         model = ProgramaColeta
         template_name = 'django_tables2/bootstrap.html'
@@ -34,6 +35,6 @@ class ProgramaColetaTable(tables.Table):
         sequence = ('data_coleta_campo', 'equipe_coleta', 'laboratorio', 'solicitante', 'local_coleta', 'status_coleta', 'observacoes')
         per_page = 10
         paginator_class = tables.LazyPaginator
-        table_pagination = True      
+        table_pagination = True
 
 #TODO: Criar tabelas para as outras classes

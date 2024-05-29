@@ -56,14 +56,12 @@ class ProgramaColeta(models.Model):
     ordem_servico = models.CharField(max_length=20, blank=True)
     data_coleta_campo = models.DateField(auto_now=False, auto_now_add=False)
     equipe_coleta = models.CharField(max_length=50, default='Equipe 1')
-    # laboratorio = models.ForeignKey(Laboratorios, on_delete=models.CASCADE, related_name='programa_laboratorio')
     laboratorio = models.CharField(max_length=50,default='Interno')
-    # solicitante = models.ForeignKey(Solicitantes, on_delete=models.CASCADE, related_name='programa_solicitante')
     solicitante = models.CharField(max_length=50, default='João Silva')
-    # local_coleta = models.ForeignKey(LocaisColeta, on_delete=models.CASCADE, related_name='programa_ponto_coleta')
     local_coleta = models.CharField(max_length=50)
     status_coleta = models.CharField(max_length=12, choices=STATUS, default='programada')
     observacoes = models.TextField(max_length=500, blank=True)
+    # checklist = models.CharField(max_length=1, choices=[(0, 'Não realizada'), (1, 'Realizada')])
     
     
     def save(self, *args, **kwargs):
@@ -137,4 +135,16 @@ class ListaColeta(models.Model):
     def __str__(self):
         return f'Coleta da água em {self.ponto_coleta} em {self.data_coleta_campo}'
     
+class ChecklistCampo(models.Model):
     
+    STATUS = [
+        ('concluido', 'Concluído'),
+        ('pendente', 'Pendente'),
+    ]
+    data_checklist = models.DateField(auto_now=False, auto_now_add=True)
+    ordem_servico = models.ForeignKey(ProgramaColeta, on_delete=models.CASCADE, related_name='checklist_ordem_servico')
+    status_checklist = models.CharField(max_length=9, choices=STATUS, default='pendente')
+    observacoes = models.TextField(max_length=500, blank=True)
+    
+    def __str__(self):
+        return f'Checklist da coleta em {self.data_checklist}'
