@@ -22,10 +22,10 @@
         <div class="menu-itens">
           <div class="d-flex">
             <button class="toggle-btn" type="button">
-              <i class="bi bi-gear-fill"></i>
+              <i class="bi bi-nut" style="color: #000 !important;"></i>
             </button>
             <div class="sidebar-logo">
-              <a href="{% url 'home' %}">LAGUNA</a>
+              <a href="{% url 'home' %}" style="color: #000 !important;">Laguna </a>
             </div>
           </div>
           <ul class="sidebar-nav">
@@ -34,9 +34,40 @@
               
               <li class="sidebar-item">
                 <a href="{% url 'home' %}" class="sidebar-link">
-                  <i class="lni lni-dashboard"></i>
+                  <i class="bi bi-house"></i>
+                  <span>Início</span>
+                </a>
+                <a href="{% url 'home' %}" class="sidebar-link">
+                  <i class="bi bi-bar-chart-line"></i>
                   <span>Dashboard</span>
                 </a>
+                <li class="sidebar-item">
+                  <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse" data-bs-target="#campanhas" aria-expanded="false" aria-controls="campanhas">
+                    <i class="bi bi-calendar3"></i>
+                    <span>Campanhas</span>
+                  </a>
+                  <ul id="campanhas" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                    <li class="sidebar-item">
+                      <a href="{% url 'agendar_coleta' %}" class="sidebar-link">
+                        <i class="lni lni-ship"></i>
+                        <span>Programar nova capanha</span>
+                      </a>
+                    </li>
+                    <li class="sidebar-item">
+                      <a href="{% url 'coletas_agendas' %}" class="sidebar-link">
+                        <i class="lni lni-calendar"></i>
+                        <span>Campanhas agendadas</span>
+                      </a>
+                    </li>
+                    <li class="sidebar-item">
+                      <a href="{% url 'coletas_agendas' %}" class="sidebar-link">
+                        <i class="lni lni-power-switch"></i>
+                        <span>Iniciar campanha</span>
+                      </a>
+                    </li>
+                    
+                  </ul>
+                </li>
               </li>
               <li class="sidebar-item">
                 <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse" data-bs-target="#cadastro" aria-expanded="false" aria-controls="cadastro">
@@ -65,33 +96,6 @@
                 </ul>
               </li>
 
-              <li class="sidebar-item">
-                <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse" data-bs-target="#campanhas" aria-expanded="false" aria-controls="campanhas">
-                  <i class="bi bi-calendar3"></i>
-                  <span>Campanhas</span>
-                </a>
-                <ul id="campanhas" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
-                  <li class="sidebar-item">
-                    <a href="{% url 'agendar_coleta' %}" class="sidebar-link">
-                      <i class="lni lni-ship"></i>
-                      <span>Programar nova capanha</span>
-                    </a>
-                  </li>
-                  <li class="sidebar-item">
-                    <a href="{% url 'coletas_agendas' %}" class="sidebar-link">
-                      <i class="lni lni-calendar"></i>
-                      <span>Campanhas agendadas</span>
-                    </a>
-                  </li>
-                  <li class="sidebar-item">
-                    <a href="{% url 'coletas_agendas' %}" class="sidebar-link">
-                      <i class="lni lni-power-switch"></i>
-                      <span>Iniciar campanha</span>
-                    </a>
-                  </li>
-                  
-                </ul>
-              </li>
               
               <li class="sidebar-item">
                 <a href="{% url 'agendar_coleta' %}" class="sidebar-link">
