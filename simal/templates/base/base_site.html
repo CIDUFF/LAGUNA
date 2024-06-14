@@ -26,12 +26,12 @@
             </button>
             <div class="sidebar-logo">
               <a href="{% url 'home' %}" style="color: #000 !important;">Laguna </a>
+              <a href="#" style="font-size: 10px;">v.01</a>
             </div>
           </div>
           <ul class="sidebar-nav">
             {% if user.is_authenticated %}
             <div class="navigation-icons">
-              
               <li class="sidebar-item">
                 <a href="{% url 'home' %}" class="sidebar-link">
                   <i class="bi bi-house"></i>
@@ -65,8 +65,7 @@
                         <i class="lni lni-power-switch"></i>
                         <span>Iniciar campanha</span>
                       </a>
-                    </li>
-                    
+                    </li>                   
                   </ul>
                 </li>
               </li>
@@ -96,8 +95,6 @@
                   </li>
                 </ul>
               </li>
-
-              
               <li class="sidebar-item">
                 <a href="{% url 'agendar_coleta' %}" class="sidebar-link">
                   <i class="lni lni-write"></i>
@@ -119,11 +116,10 @@
               <li class="sidebar-item">
                 <a href="#" class="sidebar-link">
                   <i class="bi bi-gear"></i>
-                  <span>Configuração dos sistema</span>
+                  <span>Configuração do sistema</span>
                 </a>
               </li>
             </div>
-
             <div class="authentication">
               <li class="sidebar-item">
                 <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse" data-bs-target="#authentication" aria-expanded="false" aria-controls="authentication">
@@ -141,7 +137,6 @@
               </li>
             </div>
               {% else %}
-
               <li class="sidebar-item">
                 <a href="{% url 'account_login' %}" class="sidebar-link">
                   <i class="lni lni-enter"></i>
