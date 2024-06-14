@@ -286,7 +286,7 @@ a.sidebar-link:hover {
   position: absolute;
   top: 0;
   left: 70px;
-  background-color: #0e2238;
+  background-color: #ffffff;
   padding: 0;
   min-width: 15rem;
   display: none;
@@ -321,12 +321,12 @@ a.sidebar-link:hover {
   position: absolute;
   right: 1.5rem;
   top: 1.4rem;
-  transform: rotate(-135deg);
+  transform: rotate(45deg);
   transition: all 0.2s ease-out;
 }
 
 #sidebar.expand .sidebar-link[data-bs-toggle="collapse"].collapsed::after {
-  transform: rotate(45deg);
+  transform: rotate(-45deg);
   transition: all 0.2s ease-out;
 }
 
