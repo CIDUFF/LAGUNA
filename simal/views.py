@@ -133,6 +133,31 @@ def atualizar_programacao(request, id):
         form = ProgramaColetaForm(initial=form_data)
     return render(request, 'coleta/agendar_coleta.html', {'form': form})
 
+@login_required
+def checklist_campanha(request):
+    if request.method == 'POST':
+        form = ChecklistCampoForm(request.POST)
+        if form.is_valid():
+            # Cria uma nova instância do modelo ProgramaColeta
+            checklist_campanha = ChecklistCampoForm()
+
+            # programa_coleta.data_coleta_campo = form.cleaned_data['data_coleta_campo']
+            checklist_campanha.ordem_servico = form.cleaned_data['ordem_servico']
+            checklist_campanha.status_checklist = form.cleaned_data['status_checklist']
+            checklist_campanha.observacoes = form.cleaned_data['observacoes']
+            
+
+            # Salva o modelo no banco de dados
+            checklist_campanha.save()
+
+            return redirect('checklist_campanha')
+    else:
+        form = ChecklistCampoForm()
+
+    return render(request, 'coleta/checklist_campanha.html', {'form': form})
+            
+
+
 # ----------------------------------------------------------------------------------
 
 # front_end

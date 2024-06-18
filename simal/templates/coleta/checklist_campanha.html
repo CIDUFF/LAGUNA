@@ -1,0 +1,20 @@
+{% extends 'base/base_site.html' %} 
+
+{% load crispy_forms_tags %} 
+
+{% block title %}
+  Antes de ini
+{% endblock %} 
+
+{% block content %}
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12">
+      <h1>Checklist de campanha</h1>
+      {% csrf_token %} {% crispy form %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}
