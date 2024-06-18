@@ -3,6 +3,7 @@
   --primary-color: #ffffff; /* Define a cor primária do site */
   --secondary-color: #5783b6; /* Define a cor secundária do site */
   --tertiary-color: #000000; /* Define a cor terciária do site */
+  --quaternary-color: #9197B3; /* Define a cor quaternária do site */
 }
 
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap");
@@ -51,9 +52,10 @@ legend {
 
 .pagination a {
   color: var(--primary-color);
+  background-color: #9197B3;
   float: left;
   padding: 8px 16px;
-  text-decoration: none;
+  text-decoration: non e;
   transition: background-color 0.3s;
   border: 1px solid var(--primary-color);
   margin: 0 4px;
