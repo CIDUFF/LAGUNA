@@ -3,7 +3,7 @@
   --primary-color: #ffffff; /* Define a cor primária do site */
   --secondary-color: #5783b6; /* Define a cor secundária do site */
   --tertiary-color: #000000; /* Define a cor terciária do site */
-  --quaternary-color: #9197B3; /* Define a cor quaternária do site */
+  --quaternary-color: #9197b3; /* Define a cor quaternária do site */
 }
 
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap");
@@ -52,7 +52,7 @@ legend {
 
 .pagination a {
   color: var(--primary-color);
-  background-color: #9197B3;
+  background-color: #9197b3;
   float: left;
   padding: 8px 16px;
   text-decoration: non e;
@@ -350,10 +350,10 @@ a.sidebar-link:hover {
 
 .authentication {
   position: relative;
-  margin-top: 20rem;
+  margin-top: 10rem;
   display: flex;
   flex-direction: column; /* Organiza os itens em uma coluna */
-  gap: 2rem; /* Adiciona um espaçamento mínimo entre os itens */
+  gap: 1.5rem !important; /* Adiciona um espaçamento mínimo entre os itens */
 }
 
 .navigation-icons {
@@ -363,11 +363,64 @@ a.sidebar-link:hover {
   gap: 1.2rem; /* Adiciona um espaçamento mínimo entre os itens */
 }
 
-
 #sidebar a,
 #sidebar i {
-  color: #9197B3 !important;
+  color: #9197b3 !important;
+}
+
+.img-larger {
+  transform: scale(2.5); /* Ajuste o valor conforme necessário */
+  margin-top: 2rem;
+  margin-bottom: 1.5rem;
+  margin-left: 2rem ;
+}
+
+.card {
+  background-color: #ffffff;
+  border-radius: 1.5rem !important;
+  box-shadow: 0 1rem 1rem 0 rgba(0, 0, 0, 0.1); /* Ajuste a sombra para aparecer apenas na parte inferior */
+  padding: 0.5rem;
+}
+
+.small-card {
+  background-color: #ffffff !important;
+  border: none !important; /* Remove a borda */
+  box-shadow: none !important; /* Remove a sombra */
+  padding: 0.5rem !important;
+  outline: none !important; /* Remove o contorno */
 }
 
 
+
+.card-title {
+  font-size: 1rem !important;
+  color: #9197b3 !important;
+  font-weight: 300;
+  padding-left: 2rem;
+  margin-bottom: 0rem !important; /* Adicione esta linha para diminuir a margem inferior */
+}
+
+.card-text {
+  font-size: 2rem !important;
+  font-weight: 500;
+  color: #000000 !important;
+  padding-left: 2rem;
+  margin-top: 0rem !important; /* Adicione esta linha para diminuir a margem superior */
+  margin-bottom: 0rem !important; /* Adicione esta linha para diminuir a margem inferior */
+}
+
+.card-desc {
+  font-size: 1rem !important;
+  color: #9197b3 !important;
+  font-weight: 300;
+  padding-left: 2rem;
+}
+
+.home-title {
+  font-size: 2rem !important;
+  font-weight: 300;
+  color: #000000 !important;
+  padding-left: 2rem;
+  margin-top: 0rem !important; /* Adicione esta linha para diminuir a margem superior */
+}
 
