@@ -1,56 +1,58 @@
 {% extends 'base/base_site.html' %} {% block content %}
-<p class="home-title">Olá, {{ user.username }}</p>
-<div class="container mt-5">
-  <!-- Início da nova box -->
-  <div class="row">
-    <div class="col-md-12">
-      <div class="card">
-        <div class="card-body">
-          <div class="row">
-            <!-- Primeiro card interno -->
-            <div class="col-md-4">
-              <div class="card small-card">
-                <div class="card-body">
-                  <div class="row">
-                    <div class="col-2">
-                      <div class="d-flex justify-content-center">
-                        <img
-                          src="static/images/icone-calendario.svg"
-                          alt="teste"
-                          class="img-fluid img-larger"
-                        />
+{% if user.is_authenticated %}
+  <p class="home-title">Olá, {{ user.username }}</p>
+  <div class="container mt-5">
+    <!-- Início da nova box -->
+    <div class="row">
+      <div class="col-md-12">
+        <div class="card d-flex justify-content-center">
+          <div class="card-body">
+            <div class="row">
+              <!-- Primeiro card interno -->
+              <div class="col-md-4">
+                <div class="card small-card">
+                  <div class="card-body">
+                    <div class="row">
+                      <div class="col-2">
+                        <div class="d-flex justify-content-center">
+                          <img
+                            src="static/images/icone-calendario.svg"
+                            alt="teste"
+                            class="img-fluid img-larger"
+                          />
+                        </div>
                       </div>
-                    </div>
-                    <div class="col-10 justify-content-center">
-                      <p class="card-title">Próxima campanha</p>
-                      <p class="card-text">22/12/2012</p>
-                      <p class="card-desc">status: Programada</p>
+                      <div class="col-10 justify-content-center">
+                        <p class="card-title">Próxima campanha</p>
+                        <p class="card-text">22/12/2012</p>
+                        <p class="card-desc">status: Programada</p>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-            <!-- Segundo card interno -->
-            <div class="col-md-4">
-              <div class="card small-card">
-                <div class="card-body">
-                  <div class="row">
-                    <div class="col-2">
-                      <div class="d-flex justify-content-center">
-                        <img
-                          src="static/images/icone-termometro.svg"
-                          alt="teste"
-                          class="img-fluid img-larger"
-                        />
+              <!-- Segundo card interno -->
+              <div class="col-md-4">
+                <div class="card small-card">
+                  <div class="card-body">
+                    <div class="row">
+                      <div class="col-2">
+                        <div class="d-flex justify-content-center">
+                          <img
+                            src="static/images/icone-termometro.svg"
+                            alt="teste"
+                            class="img-fluid img-larger"
+                          />
+                        </div>
                       </div>
-                    </div>
-                    <div class="col-10 justify-content-center">
-                      <p class="card-title">Previsão do tempo</p>
-                      <p class="card-text">Nublado</p>
-                      {% comment %} 
-                      TODO: #28 adicionar api call para previsão do tempo
-                      {% endcomment %}
-                      <p class="card-desc">mudar aqui</p> 
+                      <div class="col-10 justify-content-center">
+                        <p class="card-title">Previsão do tempo</p>
+                        <p class="card-text">Nublado</p>
+                        {% comment %} 
+                        TODO: #28 adicionar api call para previsão do tempo
+                        {% endcomment %}
+                        <p class="card-desc">mudar aqui</p> 
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -59,7 +61,25 @@
               <div class="col-md-4">
                 <div class="card small-card">
                   <div class="card-body">
-                    <!-- Conteúdo da terceira caixa -->
+                    <div class="row">
+                      <div class="col-2">
+                        <div class="d-flex justify-content-center">
+                          <img
+                            src="static/images/icone-checklist.svg"
+                            alt="teste"
+                            class="img-fluid img-larger"
+                          />
+                        </div>
+                      </div>
+                      <div class="col-10 justify-content-center">
+                        <p class="card-title">Checklist</p>
+                        <p class="card-text">14%</p>
+                        {% comment %} 
+                        TODO: #28 adicionar api call para previsão do tempo
+                        {% endcomment %}
+                        <p class="card-desc">Dentro do prazo</p> 
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -67,8 +87,18 @@
           </div>
         </div>
       </div>
+      <!-- Fim da nova box -->
     </div>
-    <!-- Fim da nova box -->
   </div>
+  {% else %}
+  <div class="container mt-5">
+    <h1 class="text-center">Olá, visitante</h1>
+    <p class="text-center">Faça login para visualizar o sistema</p>
+    <div class="d-flex justify-content-center">
+      <a href="{% url 'account_login' %}" class="btn btn-primary">Clique aqui para logar</a>
+    </div>
+  </div>
+  {% endif %}
   {% endblock %}
+
 </div>
