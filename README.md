@@ -1,4 +1,4 @@
-# sistema_amostras
+# LAGUNA
 
 Sistema de Monitoramento Integrado de Águas Lagunares (SIMAL)
 
