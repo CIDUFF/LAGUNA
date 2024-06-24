@@ -1,8 +1,8 @@
 from datetime import datetime, date
-import random
-import string
 from django.db import models
 from django.utils.crypto import get_random_string
+# import random
+# import string
 
 
 class Coletores(models.Model):
