@@ -423,6 +423,7 @@ a.sidebar-link:hover {
   color: #000000 !important;
   padding-left: 2rem;
   margin-top: 0rem !important; /* Adicione esta linha para diminuir a margem superior */
+  font-family: 'Poppins', sans-serif !important;
 }
 
 .card.cronograma {
@@ -477,3 +478,4 @@ a.sidebar-link:hover {
   text-align: center !important;
   margin-bottom: 0rem !important; /* Adicione esta linha para diminuir a margem inferior */
 }
+
