@@ -8,6 +8,7 @@
 
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap");
 
+
 /* Estilos gerais */
 body {
   margin: 10px 10px 20px; /* Define as margens do corpo do site */
@@ -198,7 +199,7 @@ h1 {
 }
 
 body {
-  font-family: "Poppins", sans-serif;
+  font-family: 'Poppins', sans-serif !important;
 }
 
 .wrapper {
@@ -425,4 +426,56 @@ a.sidebar-link:hover {
   font-family: 'Poppins', sans-serif !important;
 }
 
+.card.cronograma {
+  background-color: #ffffff;
+  border-radius: 1.5rem !important;
+  box-shadow: 0 1rem 1rem 0 rgba(0, 0, 0, 0.1); /* Ajuste a sombra para aparecer apenas na parte inferior */
+  padding: 0.5rem;
+  margin: 1rem !important;
+  width: 50% !important;
+  margin-top: 2rem !important;
+  
+}
+.card.calendario {
+  background-color: #ffffff;
+  border-radius: 1.5rem !important;
+  box-shadow: 0 1rem 1rem 0 rgba(0, 0, 0, 0.1); /* Ajuste a sombra para aparecer apenas na parte inferior */
+  padding: 0.5rem;
+  margin: 1rem !important;
+  margin-top: 2rem !important;
+  width: 50% !important;
+}
+.card.campanha {
+  background-color: #ffffff;
+  border-radius: 1.5rem !important;
+  box-shadow: 0 1rem 1rem 0 rgba(0, 0, 0, 0.1); /* Ajuste a sombra para aparecer apenas na parte inferior */
+  padding: 0.5rem;
+  margin: 1rem !important;
+  margin-top: 1rem !important;
+}
+
+
+.container-campanha {
+  display: flex;
+  justify-content: space-between;
+}
+
+.title-campanha {
+  font-size: 1.5em !important;
+  font-weight: 500;
+  color: #000000 !important;
+  text-align: center !important;
+  padding-left: 2rem;
+  margin-top: 0rem !important; /* Adicione esta linha para diminuir a margem superior */
+  margin-bottom: 0rem !important; /* Adicione esta linha para diminuir a margem inferior */
+}
+
+.subtitulo-campanha {
+  font-size: 1rem !important;
+  color: #9197b3 !important;
+  font-weight: 300;
+  padding-left: 1rem;
+  text-align: center !important;
+  margin-bottom: 0rem !important; /* Adicione esta linha para diminuir a margem inferior */
+}
 
