@@ -156,7 +156,9 @@ def checklist_campanha(request):
 
     return render(request, 'coleta/checklist_campanha.html', {'form': form})
             
-
+def ajuda(request):
+    
+    return render(request, 'ajuda.html')
 
 # ----------------------------------------------------------------------------------
 

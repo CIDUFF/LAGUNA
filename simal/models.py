@@ -15,6 +15,11 @@ class Coletores(models.Model):
     def __str__(self):
         return f'{self.nome}'
 
+class Ajuda(models.Model):
+    topico = models.CharField(max_length=15, default="sistema", blank=False)
+    pergunta = models.CharField(max_length=150, blank=False)
+    resposta = models.CharField(max_length=150, blank=False)
+
 class Laboratorios(models.Model):
 
     nome = models.CharField(max_length=100)
