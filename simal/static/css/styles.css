@@ -422,5 +422,7 @@ a.sidebar-link:hover {
   color: #000000 !important;
   padding-left: 2rem;
   margin-top: 0rem !important; /* Adicione esta linha para diminuir a margem superior */
+  font-family: 'Poppins', sans-serif !important;
 }
+
 

@@ -4,8 +4,11 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django_tables2 import RequestConfig
 from django.contrib.auth.decorators import login_required
+from datetime import datetime, timedelta
+from django.http import JsonResponse
 from .forms import *
 from .tables import *
+from .services import get_weather_description
 
 
 
@@ -162,6 +165,18 @@ def checklist_campanha(request):
 
 # front_end
 
+
+@login_required
+def weather(request):
+    weather_description = get_weather_description("Niterói, BR")
+    return render(request, 'home.html', {'weather_description': weather_description})
+    
+
+# pagina de ajuda
+@login_required
+def ajuda(request):
+
+    return render(request, 'ajuda.html')
 
 
 
