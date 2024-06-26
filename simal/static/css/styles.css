@@ -466,8 +466,8 @@ a.sidebar-link:hover {
   color: #000000 !important;
   text-align: center !important;
   padding-left: 2rem;
-  margin-top: 0rem !important; /* Adicione esta linha para diminuir a margem superior */
-  margin-bottom: 0rem !important; /* Adicione esta linha para diminuir a margem inferior */
+  margin-top: 1rem !important; /* Adicione esta linha para diminuir a margem superior */
+  margin-bottom: 1rem !important; /* Adicione esta linha para diminuir a margem inferior */
 }
 
 .subtitulo-campanha {
@@ -478,10 +478,11 @@ a.sidebar-link:hover {
   text-align: center !important;
   margin-bottom: 0rem !important; /* Adicione esta linha para diminuir a margem inferior */
 }
-<<<<<<< HEAD
+
 /*Estilos para a tela de Ajuda*/
-.faq {
+.card.faq {
   margin-top: 20px;
+ 
 }
 
 .faq-item {
@@ -489,18 +490,20 @@ a.sidebar-link:hover {
   padding: 10px 0;
 }
 
-.faq-question {
+.card.faq-question {
   cursor: pointer;
-  color: #1a73e8;
+  color: #000000;
+  font-weight: 500;
+  padding: 30px;
 }
 
 .faq-answer {
   display: none;
   padding: 10px 0;
-  color: #666;
+  color: #6e6e6e;
 }
 
-.help-section {
+.card.help-section {
   background-color: #f8e4e4;
   padding: 20px;
   margin-top: 20px;
@@ -544,6 +547,3 @@ a.sidebar-link:hover {
   font-size: 0.9em;
   color: #666;
 }
-=======
-
->>>>>>> fb5240ed667d2c9de71910661c191d8bb33b1cc9

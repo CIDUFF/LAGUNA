@@ -16,9 +16,9 @@ class Coletores(models.Model):
         return f'{self.nome}'
 
 class Ajuda(models.Model):
-    topico = models.CharField(max_length=15, default="sistema", blank=False)
-    pergunta = models.CharField(max_length=150, blank=False)
-    resposta = models.CharField(max_length=150, blank=False)
+    nome = models.CharField(max_length=15)
+    email = models.EmailField(max_length=100, default = 'seuemail@email.com')
+    pergunta = models.TextField(max_length=250)
 
 class Laboratorios(models.Model):
 

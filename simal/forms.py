@@ -159,4 +159,24 @@ class ChecklistCampoForm(forms.Form):
                 Submit('submit', 'Salvar')
             )
         )
+
+class AjudaForm(forms.Form):
+    nome = forms.CharField()
+    email = forms.EmailField()
+    perguntas = forms.CharField(widget=forms.Textarea, max_length=500, required=False)
+
+    def __init__(self,*args,**kwargs):
+        super(AjudaForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Fieldset(
+                'Formulário de Ajuda',
+                'Nome',
+                'e-mail',
+                'Pergunta'
+            ),
+            ButtonHolder(
+                Submit('submit', 'Enviar')
+            )
+        )
   

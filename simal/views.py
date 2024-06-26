@@ -180,7 +180,25 @@ def ajuda(request):
 
     return render(request, 'ajuda.html')
 
+@login_required
+def ajuda(request):
+    if request.method == 'POST':
+        form = AjudaForm(request.POST)
+        if form.is_valid():
 
+            ajuda = AjudaForm()
+            ajuda.nome = form.cleaned_data['nome']
+            ajuda.email = form.cleaned_data['email']
+            ajuda.pergunta = form.cleaned_data['pergunta']
+
+            Ajuda.save()
+
+
+            return redirect('ajuda')
+    else:
+        form = AjudaForm()
+
+    return render(request, 'ajuda.html', {'form': form})
 
 
 

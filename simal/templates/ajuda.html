@@ -1,32 +1,30 @@
 {% extends 'base/base_site.html' %} 
-{% block title%} Ajuda {% endblock %}
+{% load crispy_forms_tags %}
+{% block title %} Ajuda {% endblock %}
 {% block content %} 
 {% if user.is_authenticated %}
     <div class="container">
         <h1>Ajuda</h1>
-        <div class="faq">
-            <h2>Perguntas frequentes</h2>
+        <div class="card faq">
+            <h2 class="title-campanha">Perguntas Frequentes</h2>
             <div class="faq-item">
-                <div class="faq-question">Como faço para redefinir minha senha?</div>
+                <div class="card faq-question">Como faço para redefinir minha senha?</div>
                 <div class="faq-answer">
                     Vá na aba "usuário" (último ícone localizado embaixo no canto esquerdo).<br>
                     Logo em seguida clique na parte da "senha", modifique e salve as alterações.
                 </div>
             </div>
             <div class="faq-item">
-                <div class="faq-question">Como faço para cadastrar uma nova campanha?</div>
+                <div class="card faq-question">Como faço para cadastrar uma nova campanha?</div>
                 <div class="faq-answer">[Instruções para cadastrar uma nova campanha]</div>
             </div>
             <div class="faq-item">
-                <div class="faq-question">Como entro em contato com o suporte?</div>
+                <div class="card faq-question">Como entro em contato com o suporte?</div>
                 <div class="faq-answer">[Instruções para contato com o suporte]</div>
             </div>
         </div>
-        <div class="help-section">
-            <h2>Ajuda</h2>
-            <textarea placeholder="Descreva o problema abaixo"></textarea>
-            <button>Enviar</button>
-            <p class="last-updated">Last Updated<br>3/8/2020</p>
+        <div class="card help-section">
+            {% csrf_token %} {{ form.as_p}} {% crispy form %} 
         </div>
         <div class="footer">
             Suporte Técnico<br>
@@ -34,7 +32,7 @@
             Email: suporte@exemplo.com
         </div>
     </div>
-    <script src="script.js"></script>
+
 {% else %}
     <div class="container mt-5">
         <h1 class="text-center">Olá, visitante</h1>
