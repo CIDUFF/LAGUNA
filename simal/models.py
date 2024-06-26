@@ -20,6 +20,7 @@ class Ajuda(models.Model):
     email = models.EmailField(max_length=100, default = 'seuemail@email.com')
     pergunta = models.TextField(max_length=250)
 
+
 class Laboratorios(models.Model):
 
     nome = models.CharField(max_length=100)

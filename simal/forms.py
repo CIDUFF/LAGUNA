@@ -163,7 +163,7 @@ class ChecklistCampoForm(forms.Form):
 class AjudaForm(forms.Form):
     nome = forms.CharField()
     email = forms.EmailField()
-    perguntas = forms.CharField(widget=forms.Textarea, max_length=500, required=False)
+    pergunta = forms.CharField(widget=forms.Textarea, max_length=500, required=False)
 
     def __init__(self,*args,**kwargs):
         super(AjudaForm, self).__init__(*args, **kwargs)
@@ -171,9 +171,9 @@ class AjudaForm(forms.Form):
         self.helper.layout = Layout(
             Fieldset(
                 'Formulário de Ajuda',
-                'Nome',
-                'e-mail',
-                'Pergunta'
+                'nome',
+                'email',
+                'pergunta'
             ),
             ButtonHolder(
                 Submit('submit', 'Enviar')
