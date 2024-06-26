@@ -19,7 +19,10 @@ class Ajuda(models.Model):
     nome = models.CharField(max_length=15)
     email = models.EmailField(max_length=100, default = 'seuemail@email.com')
     pergunta = models.TextField(max_length=250)
+    data = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+            return f'{self.nome}'
 
 class Laboratorios(models.Model):
 

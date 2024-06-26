@@ -186,12 +186,12 @@ def ajuda(request):
         form = AjudaForm(request.POST)
         if form.is_valid():
 
-            ajuda = AjudaForm()
-            ajuda.nome = form.cleaned_data['nome']
-            ajuda.email = form.cleaned_data['email']
-            ajuda.pergunta = form.cleaned_data['pergunta']
+            nova_ajuda = Ajuda() ## Model
+            nova_ajuda.nome = form.cleaned_data['nome']
+            nova_ajuda.email = form.cleaned_data['email']
+            nova_ajuda.pergunta = form.cleaned_data['pergunta']
 
-            Ajuda.save()
+            nova_ajuda.save()
 
 
             return redirect('ajuda')
