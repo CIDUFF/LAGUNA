@@ -159,7 +159,9 @@ def checklist_campanha(request):
 
     return render(request, 'coleta/checklist_campanha.html', {'form': form})
             
-
+def ajuda(request):
+    
+    return render(request, 'ajuda.html')
 
 # ----------------------------------------------------------------------------------
 
@@ -178,7 +180,25 @@ def ajuda(request):
 
     return render(request, 'ajuda.html')
 
+@login_required
+def ajuda(request):
+    if request.method == 'POST':
+        form = AjudaForm(request.POST)
+        if form.is_valid():
 
+            nova_ajuda = Ajuda() ## Model
+            nova_ajuda.nome = form.cleaned_data['nome']
+            nova_ajuda.email = form.cleaned_data['email']
+            nova_ajuda.pergunta = form.cleaned_data['pergunta']
+
+            nova_ajuda.save()
+
+
+            return redirect('ajuda')
+    else:
+        form = AjudaForm()
+
+    return render(request, 'ajuda.html', {'form': form})
 
 
 
