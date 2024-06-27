@@ -3,6 +3,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django_tables2 import RequestConfig
+from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from datetime import datetime, timedelta
 from django.http import JsonResponse
@@ -17,9 +18,15 @@ from .services import get_weather_description
 
 def home(request):
     
-    return render(request, 'home.html')
+    proxima_campanha = ProgramaColeta.objects.filter(data_coleta_campo__gt=timezone.now()).order_by('data_coleta_campo').first()
+    # Chama a função get_weather_description para obter a descrição do tempo
+    weather_description = get_weather_description("Santa Catarina, BR")
 
+    # Passa a descrição do tempo para o template, junto com outros contextos necessários
+    return render(request, 'home.html', {'weather_description': weather_description})
 #TODO: Atualizar a view de coleta
+
+
 @login_required
 def coleta(request):
     if request.method == 'POST':
@@ -27,6 +34,7 @@ def coleta(request):
         if form.is_valid():
             form.save()
             return redirect('lista_coleta')
+        
     else:
         form = ColetaCampo()
     return render(request, 'coleta/coleta.html', {'form': form})
@@ -159,29 +167,35 @@ def checklist_campanha(request):
 
     return render(request, 'coleta/checklist_campanha.html', {'form': form})
             
-def ajuda(request):
-    
-    return render(request, 'ajuda.html')
 
 # ----------------------------------------------------------------------------------
 
 # front_end
 
 
-@login_required
-def weather(request):
-    weather_description = get_weather_description("Niterói, BR")
-    return render(request, 'home.html', {'weather_description': weather_description})
+# @login_required
+# def weather(request):
+#     weather_description = get_weather_description("Niterói, BR")
+#     return render(request, 'home.html', {'weather_description': weather_description})
     
 
 # pagina de ajuda
 @login_required
 def ajuda(request):
+    """
+    Função de visualização para a página de ajuda.
 
-    return render(request, 'ajuda.html')
+    Esta função é decorada com @login_required para garantir que apenas usuários autenticados possam acessar a página de ajuda.
 
-@login_required
-def ajuda(request):
+    Args:
+        request (HttpRequest): O objeto HttpRequest que contém os detalhes da solicitação HTTP.
+
+    Returns:
+        HttpResponse: O objeto HttpResponse que representa a resposta HTTP para a solicitação.
+
+    Raises:
+        None
+    """
     if request.method == 'POST':
         form = AjudaForm(request.POST)
         if form.is_valid():
