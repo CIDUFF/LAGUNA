@@ -5,6 +5,7 @@ from django.contrib import messages
 from django_tables2 import RequestConfig
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
+from django.urls import reverse
 from datetime import datetime, timedelta
 from django.http import JsonResponse
 from .forms import *
@@ -84,14 +85,12 @@ def agenda_coleta(request):
     if request.method == 'POST':
         form = ProgramaColetaForm(request.POST)
         if form.is_valid():
-            # Cria uma nova instância do modelo ProgramaColeta
             programa_coleta = ProgramaColeta()
 
             # Atribui os dados do formulário aos campos do modelo
             programa_coleta.data_coleta_campo = form.cleaned_data['data_coleta_campo']
-
-            # Busca a instância correta do modelo Coletores e a atribui ao campo equipe_coleta
-            # equipe_coleta = Coletores.objects.filter(equipe=form.cleaned_data['equipe_coleta'])
+            # Adicione a linha abaixo para atribuir o valor de data_fim_coleta_campo
+            programa_coleta.data_fim_coleta_campo = form.cleaned_data['data_fim_coleta_campo']
             programa_coleta.equipe_coleta = form.cleaned_data['equipe_coleta']
             programa_coleta.laboratorio = form.cleaned_data['laboratorio']
             programa_coleta.solicitante = form.cleaned_data['solicitante']
@@ -145,27 +144,18 @@ def atualizar_programacao(request, id):
     return render(request, 'coleta/agendar_coleta.html', {'form': form})
 
 @login_required
-def checklist_campanha(request):
+def iniciar_campanha(request):
     if request.method == 'POST':
-        form = ChecklistCampoForm(request.POST)
+        form = IniciarCampanhaForm(request.POST)
         if form.is_valid():
-            # Cria uma nova instância do modelo ProgramaColeta
-            checklist_campanha = ChecklistCampoForm()
-
-            # programa_coleta.data_coleta_campo = form.cleaned_data['data_coleta_campo']
-            checklist_campanha.ordem_servico = form.cleaned_data['ordem_servico']
-            checklist_campanha.status_checklist = form.cleaned_data['status_checklist']
-            checklist_campanha.observacoes = form.cleaned_data['observacoes']
-            
-
-            # Salva o modelo no banco de dados
-            checklist_campanha.save()
-
-            return redirect('checklist_campanha')
+            ordem_servico = form.cleaned_data['ordem_servico'].id  # Corrigido aqui
+            redirect_url = reverse('checklist_campanha') + \
+                f'?ordem_servico={ordem_servico}'
+            return redirect(redirect_url)
     else:
-        form = ChecklistCampoForm()
+        form = IniciarCampanhaForm()
 
-    return render(request, 'coleta/checklist_campanha.html', {'form': form})
+    return render(request, 'coleta/iniciar_campanha.html', {'form': form})
             
 
 # ----------------------------------------------------------------------------------
@@ -216,7 +206,53 @@ def ajuda(request):
 
 
 
+## View para pagina de inicio de campanha
+
+@login_required
+def iniciar_campanha(request):
+    if request.method == 'POST':
+        form = IniciarCampanhaForm(request.POST)
+        if form.is_valid():
+            ordem_servico = form.cleaned_data['ordem_servico'].ordem_servico
+            redirect_url = reverse('checklist_campanha') + \
+                f'?ordem_servico={ordem_servico}'
+            return redirect(redirect_url)
+    else:
+        form = IniciarCampanhaForm()
+
+    return render(request, 'coleta/iniciar_campanha.html', {'form': form})
 
 
+@login_required
+def checklist_campanha(request):
+    ordem_servico_selecionada = request.GET.get('ordem_servico', None)
+    if request.method == 'POST':
+        form = ChecklistCampoForm(request.POST)
+        if form.is_valid():
+            checklist_campanha = ChecklistCampo()
+
+            # Busca a instância de ProgramaColeta usando o ID fornecido
+            ordem_servico_instance = get_object_or_404(
+                ProgramaColeta, ordem_servico=ordem_servico_selecionada)
+
+            checklist_campanha.ordem_servico = ordem_servico_instance
+            checklist_campanha.status_checklist = form.cleaned_data['status_checklist']
+            checklist_campanha.observacoes = form.cleaned_data['observacoes']
+            checklist_campanha.previsao_tempo = form.cleaned_data['previsao_tempo']
+            checklist_campanha.avisar_labs = form.cleaned_data['avisar_labs']
+            checklist_campanha.reservar_carro = form.cleaned_data['reservar_carro']
+            checklist_campanha.reservar_barco = form.cleaned_data['reservar_barco']
+            checklist_campanha.separar_equipamentos = form.cleaned_data['separar_equipamentos']
+            checklist_campanha.conferir_equipamentos = form.cleaned_data['conferir_equipamentos']
+            checklist_campanha.comprar_gelo = form.cleaned_data['comprar_gelo']
+
+            checklist_campanha.save()
+
+            return redirect('home')
+    else:
+        form = ChecklistCampoForm(
+            ordem_servico_selecionada=ordem_servico_selecionada)
+
+    return render(request, 'coleta/checklist_campanha.html', {'form': form})
 
 

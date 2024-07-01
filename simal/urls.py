@@ -4,6 +4,7 @@ urlpatterns = [
     path('', views.home, name='home'),
     path('coleta/', views.coleta, name='coleta'),
     path('ajuda/', views.ajuda, name='ajuda'),
+    path("iniciar_campanha/", views.iniciar_campanha, name="iniciar_campanha"),
 
     
     path('lista_coleta/', views.lista_coleta, name='lista_coleta'),

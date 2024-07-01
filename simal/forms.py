@@ -1,7 +1,9 @@
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Fieldset, ButtonHolder, Submit
+from django.forms import ModelChoiceField
 from django import forms
 from .models import *
+
 
 class ColetaCampo(forms.Form):
     """
@@ -28,7 +30,8 @@ class ColetaCampo(forms.Form):
 
     clima = forms.CharField()
     matriz = forms.CharField()
-    hora_inicio = forms.TimeField(widget=forms.TimeInput(attrs={'type': 'time'}))
+    hora_inicio = forms.TimeField(
+        widget=forms.TimeInput(attrs={'type': 'time'}))
     hora_fim = forms.TimeField(widget=forms.TimeInput(attrs={'type': 'time'}))
     temperatura = forms.DecimalField()
     ph = forms.DecimalField()
@@ -40,7 +43,7 @@ class ColetaCampo(forms.Form):
     tds = forms.DecimalField()
     salinidade = forms.DecimalField()
 
-    def __init__(self,*args,**kwargs):
+    def __init__(self, *args, **kwargs):
         super(ColetaCampo, self).__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.layout = Layout(
@@ -65,6 +68,7 @@ class ColetaCampo(forms.Form):
             )
         )
 
+
 class ProgramaColetaForm(forms.Form):
     """
     Classe que define o formulário de programação de coleta.
@@ -85,35 +89,41 @@ class ProgramaColetaForm(forms.Form):
     Métodos:
         __init__: Inicializa o formulário e define o layout.
     """
-    
-    data_coleta_campo = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
-    
+
+    data_coleta_campo = forms.DateField(
+        widget=forms.DateInput(attrs={'type': 'date'}))
+
     equipe_coleta = forms.ChoiceField()
-        
+
     laboratorio = forms.ChoiceField()
-    
+
     solicitante = forms.ChoiceField()
-    
+
     local_coleta = forms.ChoiceField()
-    
+
     STATUS = [
         ('programada', 'Programada'),
-        ('reprogramada', 'Reprogramada'), 
+        ('reprogramada', 'Reprogramada'),
         ('realizada', 'Realizada'),
         ('cancelada', 'Cancelada'),
-        ]
-    
-    status_coleta = forms.ChoiceField(choices=STATUS)
-    
-    observacoes = forms.CharField(widget=forms.Textarea(attrs={'rows': 3, 'cols': 40}))
+    ]
 
-    def __init__(self,*args,**kwargs):
+    status_coleta = forms.ChoiceField(choices=STATUS)
+
+    observacoes = forms.CharField(
+        widget=forms.Textarea(attrs={'rows': 3, 'cols': 40}))
+
+    data_fim_coleta_campo = forms.DateField(
+        widget=forms.DateInput(attrs={'type': 'date'}))
+
+    def __init__(self, *args, **kwargs):
         super(ProgramaColetaForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.layout = Layout(
             Fieldset(
                 'Formulário de Programação de Coleta',
                 'data_coleta_campo',
+                'data_fim_coleta_campo',
                 'equipe_coleta',
                 'laboratorio',
                 'solicitante',
@@ -127,25 +137,50 @@ class ProgramaColetaForm(forms.Form):
         )
 
         def gerar_opcoes_unicas(modelo, campo):
-            valores_unicos = modelo.objects.values_list(campo, flat=True).distinct()
+            valores_unicos = modelo.objects.values_list(
+                campo, flat=True).distinct()
             return [(valor, valor) for valor in valores_unicos]
 
         # Agora você pode usar essa função para gerar as opções únicas para cada campo
-        self.fields['local_coleta'].choices = gerar_opcoes_unicas(LocaisColeta, 'local')
-        self.fields['equipe_coleta'].choices = gerar_opcoes_unicas(Coletores, 'equipe')
-        self.fields['solicitante'].choices = gerar_opcoes_unicas(Solicitantes, 'nome')
-        self.fields['laboratorio'].choices = gerar_opcoes_unicas(Laboratorios, 'nome')
-        
+        self.fields['local_coleta'].choices = gerar_opcoes_unicas(
+            LocaisColeta, 'local')
+        self.fields['equipe_coleta'].choices = gerar_opcoes_unicas(
+            Coletores, 'equipe')
+        self.fields['solicitante'].choices = gerar_opcoes_unicas(
+            Solicitantes, 'nome')
+        self.fields['laboratorio'].choices = gerar_opcoes_unicas(
+            Laboratorios, 'nome')
+
 
 class ChecklistCampoForm(forms.Form):
-    
-    data_checklist = forms.DateField()
-    # ordem_servico = forms.ModelChoiceField(queryset=ProgramaColeta.objects.all())
+    # Mantém os campos existentes
+    data_checklist = forms.DateField(
+        widget=forms.DateInput(attrs={'type': 'date'})) 
+    ordem_servico = forms.CharField(
+        widget=forms.TextInput(attrs={'readonly': 'readonly'}))
     status_checklist = forms.ChoiceField(choices=ChecklistCampo.STATUS)
-    observacoes = forms.CharField(widget=forms.Textarea, max_length=500, required=False)
-    
-    def __init__(self,*args,**kwargs):
+    observacoes = forms.CharField(
+        widget=forms.Textarea, max_length=500, required=False)
+
+    # Adiciona os novos campos booleanos
+    previsao_tempo = forms.BooleanField(
+        label="Previsão do tempo", required=False)
+    avisar_labs = forms.BooleanField(
+        label="Avisar laboratórios", required=False)
+    reservar_carro = forms.BooleanField(label="Reservar carro", required=False)
+    reservar_barco = forms.BooleanField(label="Reservar barco", required=False)
+    separar_equipamentos = forms.BooleanField(
+        label="Separar equipamentos", required=False)
+    conferir_equipamentos = forms.BooleanField(
+        label="Conferir equipamentos", required=False)
+    comprar_gelo = forms.BooleanField(label="Comprar gelo", required=False)
+
+    def __init__(self, *args, **kwargs):
+        ordem_servico_selecionada = kwargs.pop(
+            'ordem_servico_selecionada', None)
         super(ChecklistCampoForm, self).__init__(*args, **kwargs)
+        if ordem_servico_selecionada:
+            self.fields['ordem_servico'].initial = ordem_servico_selecionada
         self.helper = FormHelper()
         self.helper.layout = Layout(
             Fieldset(
@@ -153,7 +188,14 @@ class ChecklistCampoForm(forms.Form):
                 'data_checklist',
                 'ordem_servico',
                 'status_checklist',
-                'observacoes'
+                'observacoes',
+                'previsao_tempo',
+                'avisar_labs',
+                'reservar_carro',
+                'reservar_barco',
+                'separar_equipamentos',
+                'conferir_equipamentos',
+                'comprar_gelo'
             ),
             ButtonHolder(
                 Submit('submit', 'Salvar')
@@ -163,9 +205,10 @@ class ChecklistCampoForm(forms.Form):
 class AjudaForm(forms.Form):
     nome = forms.CharField()
     email = forms.EmailField()
-    pergunta = forms.CharField(widget=forms.Textarea, max_length=500, required=False)
+    pergunta = forms.CharField(
+        widget=forms.Textarea, max_length=500, required=False)
 
-    def __init__(self,*args,**kwargs):
+    def __init__(self, *args, **kwargs):
         super(AjudaForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.layout = Layout(
@@ -179,4 +222,12 @@ class AjudaForm(forms.Form):
                 Submit('submit', 'Enviar')
             )
         )
-  
+
+
+class IniciarCampanhaForm(forms.Form):
+    ordem_servico = forms.ModelChoiceField(queryset=ProgramaColeta.objects.all(
+    ), label="Selecione a campanha que deseja iniciar")
+
+    def __init__(self, *args, **kwargs):
+        super(IniciarCampanhaForm, self).__init__(*args, **kwargs)
+        self.fields['ordem_servico'].empty_label = "Selecione uma campanha"
