@@ -156,7 +156,7 @@ class ChecklistCampoForm(forms.Form):
     # Mantém os campos existentes
     data_checklist = forms.DateField(
         widget=forms.DateInput(attrs={'type': 'date'})) 
-    ordem_servico = forms.CharField(
+    ordem_servico = forms.CharField(label="Ordem de serviço",
         widget=forms.TextInput(attrs={'readonly': 'readonly'}))
     status_checklist = forms.ChoiceField(choices=ChecklistCampo.STATUS)
     observacoes = forms.CharField(
@@ -184,18 +184,16 @@ class ChecklistCampoForm(forms.Form):
         self.helper = FormHelper()
         self.helper.layout = Layout(
             Fieldset(
-                'Formulário de Checklist de Campo',
-                'data_checklist',
+                'Checklist de Campo',
                 'ordem_servico',
-                'status_checklist',
-                'observacoes',
                 'previsao_tempo',
                 'avisar_labs',
                 'reservar_carro',
                 'reservar_barco',
                 'separar_equipamentos',
                 'conferir_equipamentos',
-                'comprar_gelo'
+                'comprar_gelo',
+                'observacoes'
             ),
             ButtonHolder(
                 Submit('submit', 'Salvar')
