@@ -225,34 +225,22 @@ def iniciar_campanha(request):
 
 @login_required
 def checklist_campanha(request):
-    ordem_servico_selecionada = request.GET.get('ordem_servico', None)
-    if request.method == 'POST':
-        form = ChecklistCampoForm(request.POST)
-        if form.is_valid():
-            checklist_campanha = ChecklistCampo()
+    ordem_servico_selecionada = request.GET.get('ordem_servico')
+    form = ChecklistCampoForm(request.POST or None, ordem_servico_selecionada=ordem_servico_selecionada)
 
-            # Busca a instância de ProgramaColeta usando o ID fornecido
-            ordem_servico_instance = get_object_or_404(
-                ProgramaColeta, ordem_servico=ordem_servico_selecionada)
-
-            checklist_campanha.ordem_servico = ordem_servico_instance
-            checklist_campanha.status_checklist = form.cleaned_data['status_checklist']
-            checklist_campanha.observacoes = form.cleaned_data['observacoes']
-            checklist_campanha.previsao_tempo = form.cleaned_data['previsao_tempo']
-            checklist_campanha.avisar_labs = form.cleaned_data['avisar_labs']
-            checklist_campanha.reservar_carro = form.cleaned_data['reservar_carro']
-            checklist_campanha.reservar_barco = form.cleaned_data['reservar_barco']
-            checklist_campanha.separar_equipamentos = form.cleaned_data['separar_equipamentos']
-            checklist_campanha.conferir_equipamentos = form.cleaned_data['conferir_equipamentos']
-            checklist_campanha.comprar_gelo = form.cleaned_data['comprar_gelo']
-
-            checklist_campanha.save()
-
-            return redirect('home')
-    else:
-        form = ChecklistCampoForm(
-            ordem_servico_selecionada=ordem_servico_selecionada)
+    if request.method == 'POST' and form.is_valid():
+        checklist_campanha = ChecklistCampo()
+        ordem_servico_instance = get_object_or_404(ProgramaColeta, ordem_servico=ordem_servico_selecionada)
+        
+        # Atribui os campos do formulário e outros valores diretamente
+        for campo in ('status_checklist', 'observacoes', 'previsao_tempo', 'avisar_labs',
+                      'reservar_carro', 'reservar_barco', 'separar_equipamentos',
+                      'conferir_equipamentos', 'comprar_gelo'):
+            setattr(checklist_campanha, campo, form.cleaned_data[campo])
+        
+        checklist_campanha.ordem_servico = ordem_servico_instance
+        checklist_campanha.save()
+        return redirect('home')
 
     return render(request, 'coleta/checklist_campanha.html', {'form': form})
-
 
