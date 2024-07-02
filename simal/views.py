@@ -3,7 +3,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django_tables2 import RequestConfig
+from django.utils import timezone
 from django.contrib.auth.decorators import login_required
+from django.urls import reverse
 from datetime import datetime, timedelta
 from django.http import JsonResponse
 from .forms import *
@@ -17,9 +19,15 @@ from .services import get_weather_description
 
 def home(request):
     
-    return render(request, 'home.html')
+    proxima_campanha = ProgramaColeta.objects.filter(data_coleta_campo__gt=timezone.now()).order_by('data_coleta_campo').first()
+    # Chama a função get_weather_description para obter a descrição do tempo
+    weather_description = get_weather_description("Santa Catarina, BR")
 
+    # Passa a descrição do tempo para o template, junto com outros contextos necessários
+    return render(request, 'home.html', {'weather_description': weather_description})
 #TODO: Atualizar a view de coleta
+
+
 @login_required
 def coleta(request):
     if request.method == 'POST':
@@ -27,6 +35,7 @@ def coleta(request):
         if form.is_valid():
             form.save()
             return redirect('lista_coleta')
+        
     else:
         form = ColetaCampo()
     return render(request, 'coleta/coleta.html', {'form': form})
@@ -76,14 +85,12 @@ def agenda_coleta(request):
     if request.method == 'POST':
         form = ProgramaColetaForm(request.POST)
         if form.is_valid():
-            # Cria uma nova instância do modelo ProgramaColeta
             programa_coleta = ProgramaColeta()
 
             # Atribui os dados do formulário aos campos do modelo
             programa_coleta.data_coleta_campo = form.cleaned_data['data_coleta_campo']
-
-            # Busca a instância correta do modelo Coletores e a atribui ao campo equipe_coleta
-            # equipe_coleta = Coletores.objects.filter(equipe=form.cleaned_data['equipe_coleta'])
+            # Adicione a linha abaixo para atribuir o valor de data_fim_coleta_campo
+            programa_coleta.data_fim_coleta_campo = form.cleaned_data['data_fim_coleta_campo']
             programa_coleta.equipe_coleta = form.cleaned_data['equipe_coleta']
             programa_coleta.laboratorio = form.cleaned_data['laboratorio']
             programa_coleta.solicitante = form.cleaned_data['solicitante']
@@ -137,51 +144,48 @@ def atualizar_programacao(request, id):
     return render(request, 'coleta/agendar_coleta.html', {'form': form})
 
 @login_required
-def checklist_campanha(request):
+def iniciar_campanha(request):
     if request.method == 'POST':
-        form = ChecklistCampoForm(request.POST)
+        form = IniciarCampanhaForm(request.POST)
         if form.is_valid():
-            # Cria uma nova instância do modelo ProgramaColeta
-            checklist_campanha = ChecklistCampoForm()
-
-            # programa_coleta.data_coleta_campo = form.cleaned_data['data_coleta_campo']
-            checklist_campanha.ordem_servico = form.cleaned_data['ordem_servico']
-            checklist_campanha.status_checklist = form.cleaned_data['status_checklist']
-            checklist_campanha.observacoes = form.cleaned_data['observacoes']
-            
-
-            # Salva o modelo no banco de dados
-            checklist_campanha.save()
-
-            return redirect('checklist_campanha')
+            ordem_servico = form.cleaned_data['ordem_servico'].id  # Corrigido aqui
+            redirect_url = reverse('checklist_campanha') + \
+                f'?ordem_servico={ordem_servico}'
+            return redirect(redirect_url)
     else:
-        form = ChecklistCampoForm()
+        form = IniciarCampanhaForm()
 
-    return render(request, 'coleta/checklist_campanha.html', {'form': form})
+    return render(request, 'coleta/iniciar_campanha.html', {'form': form})
             
-def ajuda(request):
-    
-    return render(request, 'ajuda.html')
 
 # ----------------------------------------------------------------------------------
 
 # front_end
 
 
-@login_required
-def weather(request):
-    weather_description = get_weather_description("Niterói, BR")
-    return render(request, 'home.html', {'weather_description': weather_description})
+# @login_required
+# def weather(request):
+#     weather_description = get_weather_description("Niterói, BR")
+#     return render(request, 'home.html', {'weather_description': weather_description})
     
 
 # pagina de ajuda
 @login_required
 def ajuda(request):
+    """
+    Função de visualização para a página de ajuda.
 
-    return render(request, 'ajuda.html')
+    Esta função é decorada com @login_required para garantir que apenas usuários autenticados possam acessar a página de ajuda.
 
-@login_required
-def ajuda(request):
+    Args:
+        request (HttpRequest): O objeto HttpRequest que contém os detalhes da solicitação HTTP.
+
+    Returns:
+        HttpResponse: O objeto HttpResponse que representa a resposta HTTP para a solicitação.
+
+    Raises:
+        None
+    """
     if request.method == 'POST':
         form = AjudaForm(request.POST)
         if form.is_valid():
@@ -202,7 +206,41 @@ def ajuda(request):
 
 
 
+## View para pagina de inicio de campanha
+
+@login_required
+def iniciar_campanha(request):
+    if request.method == 'POST':
+        form = IniciarCampanhaForm(request.POST)
+        if form.is_valid():
+            ordem_servico = form.cleaned_data['ordem_servico'].ordem_servico
+            redirect_url = reverse('checklist_campanha') + \
+                f'?ordem_servico={ordem_servico}'
+            return redirect(redirect_url)
+    else:
+        form = IniciarCampanhaForm()
+
+    return render(request, 'coleta/iniciar_campanha.html', {'form': form})
 
 
+@login_required
+def checklist_campanha(request):
+    ordem_servico_selecionada = request.GET.get('ordem_servico')
+    form = ChecklistCampoForm(request.POST or None, ordem_servico_selecionada=ordem_servico_selecionada)
 
+    if request.method == 'POST' and form.is_valid():
+        checklist_campanha = ChecklistCampo()
+        ordem_servico_instance = get_object_or_404(ProgramaColeta, ordem_servico=ordem_servico_selecionada)
+        
+        # Atribui os campos do formulário e outros valores diretamente
+        for campo in ('status_checklist', 'observacoes', 'previsao_tempo', 'avisar_labs',
+                      'reservar_carro', 'reservar_barco', 'separar_equipamentos',
+                      'conferir_equipamentos', 'comprar_gelo'):
+            setattr(checklist_campanha, campo, form.cleaned_data[campo])
+        
+        checklist_campanha.ordem_servico = ordem_servico_instance
+        checklist_campanha.save()
+        return redirect('home')
+
+    return render(request, 'coleta/checklist_campanha.html', {'form': form})
 
