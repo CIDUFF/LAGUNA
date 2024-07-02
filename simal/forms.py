@@ -1,5 +1,6 @@
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Fieldset, ButtonHolder, Submit
+from django.utils import timezone
 from django.forms import ModelChoiceField
 from django import forms
 from .models import *
@@ -155,9 +156,10 @@ class ProgramaColetaForm(forms.Form):
 class ChecklistCampoForm(forms.Form):
     # Mantém os campos existentes
     data_checklist = forms.DateField(
-        widget=forms.DateInput(attrs={'type': 'date'})) 
+        widget=forms.HiddenInput(),
+        initial=timezone.now().date)
     ordem_servico = forms.CharField(label="Ordem de serviço",
-        widget=forms.TextInput(attrs={'readonly': 'readonly'}))
+                                    widget=forms.TextInput(attrs={'readonly': 'readonly'}))
     status_checklist = forms.ChoiceField(choices=ChecklistCampo.STATUS)
     observacoes = forms.CharField(
         widget=forms.Textarea, max_length=500, required=False)
@@ -185,6 +187,7 @@ class ChecklistCampoForm(forms.Form):
         self.helper.layout = Layout(
             Fieldset(
                 'Checklist de Campo',
+                'data_checklist',
                 'ordem_servico',
                 'previsao_tempo',
                 'avisar_labs',
@@ -196,9 +199,10 @@ class ChecklistCampoForm(forms.Form):
                 'observacoes'
             ),
             ButtonHolder(
-                Submit('submit', 'Salvar')
+                Submit('submit', 'Salvar e iniciar campanha')
             )
         )
+
 
 class AjudaForm(forms.Form):
     nome = forms.CharField()

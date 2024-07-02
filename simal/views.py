@@ -53,7 +53,17 @@ def atualizar_coleta(request, id):
             messages.success(request, 'Dados atualizados com sucesso!')
     return render(request, 'coleta/coleta.html', {'form': form})
 
-
+# @login_required
+# def iniciar_campanha_link(request):
+#     campanha = IniciarCampanhaForm.objects.get(id=id)
+#     form = IniciarCampanhaForm(instance=campanha)
+#     if request.method == 'POST':
+#         form = IniciarCampanhaForm(request.POST, instance=campanha)
+#         if form.is_valid():
+#             form.save()
+#             messages.success(request, 'Sucesso!')
+#     return render(request, 'coleta/iniciar_campanha.html', {'form': form})
+    
 
 
 
@@ -143,19 +153,7 @@ def atualizar_programacao(request, id):
         form = ProgramaColetaForm(initial=form_data)
     return render(request, 'coleta/agendar_coleta.html', {'form': form})
 
-@login_required
-def iniciar_campanha(request):
-    if request.method == 'POST':
-        form = IniciarCampanhaForm(request.POST)
-        if form.is_valid():
-            ordem_servico = form.cleaned_data['ordem_servico'].id  # Corrigido aqui
-            redirect_url = reverse('checklist_campanha') + \
-                f'?ordem_servico={ordem_servico}'
-            return redirect(redirect_url)
-    else:
-        form = IniciarCampanhaForm()
 
-    return render(request, 'coleta/iniciar_campanha.html', {'form': form})
             
 
 # ----------------------------------------------------------------------------------
@@ -207,6 +205,7 @@ def ajuda(request):
 
 
 ## View para pagina de inicio de campanha
+
 
 @login_required
 def iniciar_campanha(request):

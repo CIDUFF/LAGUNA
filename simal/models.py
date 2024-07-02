@@ -1,6 +1,7 @@
 from datetime import datetime, date
 from django.db import models
 from django.utils.crypto import get_random_string
+import re
 # import random
 # import string
 
@@ -61,23 +62,39 @@ class ProgramaColeta(models.Model):
         ('realizada', 'Realizada'),
         ('cancelada', 'Cancelada'),
     ]
+    ANALISE = [
+        ('Água', 'Sedimentos')
+    ]
 
-    ordem_servico = models.CharField(max_length=20, blank=True)
+    ordem_servico = models.CharField(max_length=200, blank=True)
     data_coleta_campo = models.DateField(null=True)
     data_fim_coleta_campo = models.DateField(null= True)
     equipe_coleta = models.CharField(max_length=50, default='Equipe 1')
     laboratorio = models.CharField(max_length=50,default='Interno')
     solicitante = models.CharField(max_length=50, default='João Silva')
     local_coleta = models.CharField(max_length=50)
+    tipos_analise = models.CharField(max_length=50, choices=ANALISE, default='Água')
     status_coleta = models.CharField(max_length=12, choices=STATUS, default='programada')
     observacoes = models.TextField(max_length=500, blank=True)
+    
     # checklist = models.CharField(max_length=1, choices=[(0, 'Não realizada'), (1, 'Realizada')])
     
     
     def save(self, *args, **kwargs):
         if not self.ordem_servico:
-        # Gera uma ordem de serviço única
-            self.ordem_servico = get_random_string(length=8)
+
+            # Gera uma ordem de serviço única
+            # Acessa o código do local de coleta
+            codigo_local = self.local_coleta
+            # Formata a data de coleta no campo
+            data_coleta_formatada = self.data_coleta_campo
+            # Gera uma string aleatória de 4 caracteres
+            string_aleatoria = get_random_string(length=4)
+            # Combina os elementos para formar a ordem de serviço
+            self.ordem_servico = f'{codigo_local}{data_coleta_formatada}{string_aleatoria}'
+            # Remove espaços e caracteres especiais
+            self.ordem_servico = re.sub(r'[\s\W_]+', '', self.ordem_servico)
+            
         super().save(*args, **kwargs)
 
 
