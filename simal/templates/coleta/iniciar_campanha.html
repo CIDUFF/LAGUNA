@@ -1,10 +1,10 @@
 {% extends 'base/base_site.html' %} 
 {% block title%} Iniciar campanha {% endblock %}
 {% block content %} 
-<form method="POST" action="">
+<h2>Selecione a campanha que deseja iniciar</h2>
+<form method="POST" action="" class='card checklist'>
     {% csrf_token %}
-    <h1>Selecione a campanha que deseja iniciar</h1>
     {{ form.as_p }}
-    <button type="submit">Prosseguir</button>
+    <button type="submit" class='btn-campanha'>Prosseguir</button>
 </form>
 {% endblock %}

@@ -14,13 +14,10 @@
 
 
 {% block header %}
-   <h1>
-
-       Lista de Campanhas agendadas
-
-   </h1> 
+   <h2>Lista de Campanhas agendadas</h2> 
 
 {% endblock header %}
     
-
-{% render_table table_agenda_coleta %} {% endblock %}
+<div class="card checklist">
+    {% render_table table_agenda_coleta %} {% endblock %}
+</div>
