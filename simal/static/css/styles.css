@@ -524,7 +524,7 @@ a.sidebar-link:hover {
 }
 
 .help-section button {
-  background-color: #4CAF50;
+  background-color: #0d6efd;
   color: white;
   padding: 10px 20px;
   border: none;
@@ -533,7 +533,7 @@ a.sidebar-link:hover {
 }
 
 .help-section button:hover {
-  background-color: #45a049;
+  background-color: #0b5ed7;
 }
 
 .last-updated {
@@ -546,4 +546,39 @@ a.sidebar-link:hover {
   margin-top: 20px;
   font-size: 0.9em;
   color: #666;
+}
+
+.card.checklist {
+  background-color: #ffffff;
+  border-radius: 1.5rem !important;
+  box-shadow: 0 1rem 1rem 0 rgba(0, 0, 0, 0.1); /* Ajuste a sombra para aparecer apenas na parte inferior */
+  padding: 2rem;
+  margin: 1rem !important;
+  margin-top: 1rem !important;
+}
+
+.card.form-checklist {
+  background-color: #ffffff !important;
+  border-width: thin !important; 
+  border-color: #b0b0b0 !important;
+  border-radius: 0.5rem !important;
+  box-shadow: 0 1rem 1rem 0 rgba(0, 0, 0, 0.1); /* Ajuste a sombra para aparecer apenas na parte inferior */
+  padding: 2rem;
+  margin: 1rem !important;
+  margin-top: 1rem !important;
+}
+
+.btn-campanha {
+  background-color: #0d6efd !important;
+
+  color: white !important;
+  padding: 10px 20px  !important;
+  border: none  !important;
+  border-radius: 5px !important;
+  cursor: pointer !important;
+  max-width: min-content;
+}
+.btn-campanha:hover {
+  background-color: #0b5ed7 !important;
+  
 }
