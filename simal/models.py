@@ -118,6 +118,7 @@ class Campo(models.Model):
         ('agua_salina', 'Água salina'),
     ]
     
+    ordem_servico = models.ForeignKey(ProgramaColeta, on_delete=models.CASCADE, related_name='ordem_servico_campo')
     clima = models.CharField("Clima", max_length=7, choices=CLIMA_CHOICES)
     matriz = models.CharField("Matriz", max_length=12, choices=MATRIZ)
     hora_inicio = models.TimeField("Hora de Início", auto_now=False, auto_now_add=False)
