@@ -244,3 +244,39 @@ def checklist_campanha(request):
 
     return render(request, 'coleta/checklist_campanha.html', {'form': form})
 
+@login_required
+def cadastro_laboratorio(request):
+    if request.method == 'POST':
+        form = LaboratorioForm(request.POST)
+        if form.is_valid():
+            laboratorio = Laboratorios()
+            laboratorio.nome = form.cleaned_data['nome']
+            laboratorio.email = form.cleaned_data['email']
+            laboratorio.telefone = form.cleaned_data['telefone']
+            laboratorio.endereco = form.cleaned_data['endereco']
+            laboratorio.tipo = form.cleaned_data['tipo']
+            laboratorio.save()
+            return redirect('cadastro_laboratorio')
+        
+    else:
+        form = LaboratorioForm()
+
+    return redirect(request, 'cadastro_laboratorio.html', {'form': form})
+
+# if request.method == 'POST':
+#         form = AjudaForm(request.POST)
+#         if form.is_valid():
+
+#             nova_ajuda = Ajuda() ## Model
+#             nova_ajuda.nome = form.cleaned_data['nome']
+#             nova_ajuda.email = form.cleaned_data['email']
+#             nova_ajuda.pergunta = form.cleaned_data['pergunta']
+
+#             nova_ajuda.save()
+
+
+#             return redirect('ajuda')
+#     else:
+#         form = AjudaForm()
+
+#     return render(request, 'ajuda.html', {'form': form})

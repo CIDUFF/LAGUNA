@@ -230,3 +230,27 @@ class IniciarCampanhaForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super(IniciarCampanhaForm, self).__init__(*args, **kwargs)
         self.fields['ordem_servico'].empty_label = "Selecione uma campanha"
+
+class LaboratorioForm(forms.Form):
+    nome = forms.CharField(label='Nome do laboratório')
+    endereco = forms.CharField(label='Endereço')
+    telefone = forms.CharField(label='Telefone')
+    email = forms.EmailField(label='Email')
+    tipo = forms.CharField(label='Tipo')
+
+    def __init__(self, *args, **kwargs):
+        super(LaboratorioForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Fieldset(
+                'Formulário de Cadastro de Laboratório',
+                'nome',
+                'endereco',
+                'telefone',
+                'email',
+                'tipo'
+            ),
+            ButtonHolder(
+                Submit('submit', 'Salvar')
+            )
+        )
