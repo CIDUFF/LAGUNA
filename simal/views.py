@@ -256,27 +256,18 @@ def cadastro_laboratorio(request):
             laboratorio.endereco = form.cleaned_data['endereco']
             laboratorio.tipo = form.cleaned_data['tipo']
             laboratorio.save()
-            return redirect('cadastro_laboratorio')
+            return redirect('laboratorios_cadastrados')
         
     else:
         form = LaboratorioForm()
 
-    return redirect(request, 'cadastro_laboratorio.html', {'form': form})
+    return render(request, 'cadastro_laboratorio.html', {'form': form})
 
-# if request.method == 'POST':
-#         form = AjudaForm(request.POST)
-#         if form.is_valid():
-
-#             nova_ajuda = Ajuda() ## Model
-#             nova_ajuda.nome = form.cleaned_data['nome']
-#             nova_ajuda.email = form.cleaned_data['email']
-#             nova_ajuda.pergunta = form.cleaned_data['pergunta']
-
-#             nova_ajuda.save()
-
-
-#             return redirect('ajuda')
-#     else:
-#         form = AjudaForm()
-
-#     return render(request, 'ajuda.html', {'form': form})
+@login_required
+def laboratorios_cadastrados(request):
+    table = LaboratoriosTable(Laboratorios.objects.all())
+    RequestConfig(request, paginate={"per_page": 25}).configure(table)
+    return render(request, 'laboratorios_cadastrados.html', {
+        'table_laboratorios': table
+        })
+    

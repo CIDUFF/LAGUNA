@@ -76,6 +76,18 @@
                 </a>
                 <ul id="cadastro" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
                   <li class="sidebar-item">
+                    <a href="{% url 'cadastro_laboratorio' %}" class="sidebar-link">
+                      <i class="bi bi-airplane-engines-fill"></i>
+                      <span>Cadastro de laboratórios</span>
+                    </a>
+                  </li>
+                  <li class="sidebar-item">
+                    <a href="{% url 'laboratorios_cadastrados' %}" class="sidebar-link">
+                      <i class="bi bi-buildings"></i>
+                      <span>Laboratórios Cadastrados</span>
+                    </a>
+                  </li>
+                  <li class="sidebar-item">
                     <a href="{% url 'coleta' %}" class="sidebar-link">
                       <i class="lni lni-capsule"></i>
                       <span>Cadastro de amostras</span>
