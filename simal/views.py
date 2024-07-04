@@ -7,7 +7,7 @@ from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from datetime import datetime, timedelta
-from django.http import JsonResponse
+from django.http import JsonResponse, Http404
 from .forms import *
 from .tables import *
 from .services import get_weather_description
@@ -17,13 +17,22 @@ from .services import get_weather_description
 # from .models import ColetaCampo
 
 def home(request):
+    coletas_futuras = ProgramaColeta.objects.filter(
+        data_coleta_campo__gte=timezone.now()).order_by('data_coleta_campo')
 
-    proxima_campanha = ProgramaColeta.objects.filter(
-        data_coleta_campo__gt=timezone.now()).order_by('data_coleta_campo').first()
-    # Chama a função get_weather_description para obter a descrição do tempo
-    weather_description = get_weather_description("Santa Catarina, BR")
+    if coletas_futuras.exists():
+        coleta_proxima = coletas_futuras.first()
+    else:
+        raise Http404("Não há coletas futuras programadas.")
 
-    # Passa a descrição do tempo para o template, junto com outros contextos necessários
+    # Formata a data_coleta_campo como uma string no formato esperado
+    # Supondo que a função get_weather_description espera uma data no formato 'YYYY-MM-DD'
+    data_coleta_formatada = coleta_proxima.data_coleta_campo.strftime(
+        '%Y-%m-%d')
+
+    weather_description = get_weather_description(
+        "Maricá", data_coleta_formatada)
+
     return render(request, 'home.html', {'weather_description': weather_description})
 
 

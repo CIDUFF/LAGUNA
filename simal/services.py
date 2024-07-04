@@ -1,38 +1,39 @@
 from datetime import datetime
 import requests
-from django.conf import settings
-import django
-import os
+# import os
+# from dotenv import load_dotenv
 
 
-django.setup()
-
-
-
-def get_weather_description(cidade, data):
-    # Obtém a chave API do OpenWeatherMap a partir de uma variável de ambiente
-    chave_api = os.getenv('OPENWEATHERMAP_API_KEY',
-                          settings.OPENWEATHERMAP_API_KEY)
-    url = f"http://api.openweathermap.org/data/2.5/forecast?q={cidade}&appid={chave_api}&units=metric&lang=pt_br"
+def get_weather_description(city, date):
+    
+    # load_dotenv()
+    
+    # Obtém a chave API do OpenWeatherMap a partir das configurações do Django ou variável de ambiente
+    # api_key = os.getenv('OPENWEATHERMAP_API_KEY')
+    
+    # @TODO: remover a chave de api
+    
+    url = f"http://api.openweathermap.org/data/2.5/forecast?q={city}&appid=c7f48ba7775040a6dee7d27670eb2553&units=metric&lang=pt_br"
 
     try:
-        resposta = requests.get(url)
-        resposta.raise_for_status()  # Levanta uma exceção para respostas de erro (4xx ou 5xx)
+        response = requests.get(url)
+        response.raise_for_status()  # Raises an exception for 4xx/5xx responses
     except requests.RequestException as e:
         return f"Erro ao acessar a API do OpenWeatherMap: {e}"
 
-    previsoes = resposta.json().get('list', [])
-    for previsao in previsoes:
-        data_previsao = datetime.fromtimestamp(previsao['dt']).date()
-        if data_previsao == datetime.strptime(data, '%Y-%m-%d').date():
-            descricao = previsao['weather'][0]['description']
-            temperatura = previsao['main']['temp']
-            return f"Previsão do tempo para {cidade} em {data}: {descricao}, temperatura de {temperatura}°C"
+    forecasts = response.json().get('list', [])
+    target_date = datetime.strptime(date, '%Y-%m-%d').date()
+    for forecast in forecasts:
+        forecast_date = datetime.fromtimestamp(forecast['dt']).date()
+        if forecast_date == target_date:
+            description = forecast['weather'][0]['description']
+            temperature = forecast['main']['temp']
+            return f"{description}, {temperature}°C"
 
     return "Previsão do tempo não encontrada para a data especificada."
 
 
 # Exemplo de uso
-cidade = "São Paulo"
-data = "2024-07-05"  # Formato AAAA-MM-DD
-print(get_weather_description(cidade, data))
+city = "Maricá"
+date = "2024-07-05"  # Formato AAAA-MM-DD
+print(get_weather_description(city, date))
