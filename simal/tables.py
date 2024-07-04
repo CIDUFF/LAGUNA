@@ -30,6 +30,8 @@ class ProgramaColetaTable(tables.Table):
 
     update = tables.LinkColumn('atualizar_programacao', args=[A(
         'pk')], orderable=False, empty_values=[], text='EDITAR')
+    delete = tables.LinkColumn('deletar_programacao', args=[A(
+        'pk')], orderable=False, empty_values=[], text='DELETAR')
     start = tables.LinkColumn('atualizar_programacao', args=[A(
         'pk')], orderable=False, empty_values=[], text='Iniciar')
 

@@ -2,6 +2,7 @@ from datetime import datetime, date
 from django.db import models
 from django.utils.crypto import get_random_string
 import re
+import unicodedata
 # import random
 # import string
 
@@ -82,19 +83,20 @@ class ProgramaColeta(models.Model):
     
     def save(self, *args, **kwargs):
         if not self.ordem_servico:
-
-            # Gera uma ordem de serviço única
-            # Acessa o código do local de coleta
-            codigo_local = self.local_coleta
-            # Formata a data de coleta no campo
-            data_coleta_formatada = self.data_coleta_campo
-            # Gera uma string aleatória de 4 caracteres
-            string_aleatoria = get_random_string(length=4)
-            # Combina os elementos para formar a ordem de serviço
-            self.ordem_servico = f'{codigo_local}{data_coleta_formatada}{string_aleatoria}'
-            # Remove espaços e caracteres especiais
-            self.ordem_servico = re.sub(r'[\s\W_]+', '', self.ordem_servico)
             
+            # Gera uma ordem de serviço única combinando código do local, data formatada e string aleatória
+            ordem_servico_raw = f"{self.local_coleta}{self.data_coleta_campo}{get_random_string(length=4)}"
+
+            # Normaliza, remove acentos, converte para minúsculas e remove caracteres especiais
+            ordem_servico_normalized = unicodedata.normalize(
+                'NFKD', ordem_servico_raw)
+            ordem_servico_ascii = ordem_servico_normalized.encode(
+                'ASCII', 'ignore').decode('ASCII')
+            ordem_servico_clean = re.sub(
+                r'[\s\W_]+', '', ordem_servico_ascii).lower()
+
+            self.ordem_servico = ordem_servico_clean
+
         super().save(*args, **kwargs)
 
 
@@ -119,6 +121,7 @@ class Campo(models.Model):
     ]
     
     ordem_servico = models.ForeignKey(ProgramaColeta, on_delete=models.CASCADE, related_name='ordem_servico_campo')
+    codigo_coleta = models.CharField("Código da Coleta", max_length=50, blank=True)
     clima = models.CharField("Clima", max_length=7, choices=CLIMA_CHOICES)
     matriz = models.CharField("Matriz", max_length=12, choices=MATRIZ)
     hora_inicio = models.TimeField("Hora de Início", auto_now=False, auto_now_add=False)

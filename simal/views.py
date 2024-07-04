@@ -25,7 +25,7 @@ def home(request):
 
     # Passa a descrição do tempo para o template, junto com outros contextos necessários
     return render(request, 'home.html', {'weather_description': weather_description})
-# TODO: Atualizar a view de coleta
+
 
 
 @login_required
@@ -40,7 +40,7 @@ def coleta(request):
         form = ColetaCampo()
     return render(request, 'coleta/coleta.html', {'form': form})
 
-
+# TODO: Atualizar a view de coleta
 @login_required
 def atualizar_coleta(request, id):
     coleta = ColetaCampo.objects.get(id=id)
@@ -155,6 +155,28 @@ def atualizar_programacao(request, id):
         form = ProgramaColetaForm(initial=form_data)
     return render(request, 'coleta/agendar_coleta.html', {'form': form})
 
+@login_required
+
+def deletar_programacao(request, id):
+    """
+    Deleta a programação de coleta com base no ID fornecido.
+
+    Args:
+        request (HttpRequest): O objeto HttpRequest que contém os dados da requisição.
+        id (int): O ID da programação de coleta a ser deletada.
+
+    Returns:
+        HttpResponse: O objeto HttpResponse que redireciona para a página 'coletas_agendas'
+                      em caso de sucesso na deleção dos dados.
+
+    Raises:
+        Http404: Se a programação de coleta com o ID fornecido não existir.
+
+    """
+    programacao = get_object_or_404(ProgramaColeta, id=id)
+    programacao.delete()
+    messages.success(request, 'Programação de coleta deletada com sucesso!')
+    return redirect('coletas_agendas')
 
 # ----------------------------------------------------------------------------------
 
@@ -251,6 +273,8 @@ def checklist_campanha(request):
 def gerar_rota_campanha(request):
     # Assume que a ordem de serviço é passada como parâmetro GET
     ordem_servico = request.GET.get('ordem_servico')
+
+    
     if ordem_servico:
         campanha = get_object_or_404(
             ProgramaColeta, ordem_servico=ordem_servico)
