@@ -13,19 +13,19 @@ from .tables import *
 from .services import get_weather_description
 
 
-
 # from django.views.generic import ListView
 # from .models import ColetaCampo
 
 def home(request):
-    
-    proxima_campanha = ProgramaColeta.objects.filter(data_coleta_campo__gt=timezone.now()).order_by('data_coleta_campo').first()
+
+    proxima_campanha = ProgramaColeta.objects.filter(
+        data_coleta_campo__gt=timezone.now()).order_by('data_coleta_campo').first()
     # Chama a função get_weather_description para obter a descrição do tempo
     weather_description = get_weather_description("Santa Catarina, BR")
 
     # Passa a descrição do tempo para o template, junto com outros contextos necessários
     return render(request, 'home.html', {'weather_description': weather_description})
-#TODO: Atualizar a view de coleta
+# TODO: Atualizar a view de coleta
 
 
 @login_required
@@ -35,11 +35,10 @@ def coleta(request):
         if form.is_valid():
             form.save()
             return redirect('lista_coleta')
-        
+
     else:
         form = ColetaCampo()
     return render(request, 'coleta/coleta.html', {'form': form})
-
 
 
 @login_required
@@ -63,8 +62,6 @@ def atualizar_coleta(request, id):
 #             form.save()
 #             messages.success(request, 'Sucesso!')
 #     return render(request, 'coleta/iniciar_campanha.html', {'form': form})
-    
-
 
 
 @login_required
@@ -73,6 +70,7 @@ def deletar_coleta(request, id):
     coleta.delete()
     return redirect('lista_coleta')
 
+
 @login_required
 def lista_coleta(request):
     table = ColetaCampoTable(Campo.objects.all())
@@ -80,8 +78,8 @@ def lista_coleta(request):
     return render(request, 'coleta/lista_coleta.html', {
         'table_campo': table
         })
-    
-    
+
+
 @login_required
 def coletas_agendas(request):
     table = ProgramaColetaTable(ProgramaColeta.objects.all())
@@ -89,6 +87,7 @@ def coletas_agendas(request):
     return render(request, 'coleta/coletas_agendas.html', {
         'table_agenda_coleta': table
         })
+
 
 @login_required
 def agenda_coleta(request):
@@ -116,6 +115,7 @@ def agenda_coleta(request):
         form = ProgramaColetaForm()
 
     return render(request, 'coleta/agendar_coleta.html', {'form': form})
+
 
 @login_required
 def atualizar_programacao(request, id):
@@ -147,14 +147,14 @@ def atualizar_programacao(request, id):
         else:
             print(form.errors)  # Imprime os erros de validação
     else:
-        form_data = {field.name: getattr(programacao, field.name) for field in ProgramaColeta._meta.fields}
+        form_data = {field.name: getattr(
+            programacao, field.name) for field in ProgramaColeta._meta.fields}
         if 'data_coleta' in form_data:
-            form_data['data_coleta'] = form_data['data_coleta'].strftime('%Y-%m-%d %H:%M:%S')
+            form_data['data_coleta'] = form_data['data_coleta'].strftime(
+                '%Y-%m-%d %H:%M:%S')
         form = ProgramaColetaForm(initial=form_data)
     return render(request, 'coleta/agendar_coleta.html', {'form': form})
 
-
-            
 
 # ----------------------------------------------------------------------------------
 
@@ -165,7 +165,7 @@ def atualizar_programacao(request, id):
 # def weather(request):
 #     weather_description = get_weather_description("Niterói, BR")
 #     return render(request, 'home.html', {'weather_description': weather_description})
-    
+
 
 # pagina de ajuda
 @login_required
@@ -188,13 +188,12 @@ def ajuda(request):
         form = AjudaForm(request.POST)
         if form.is_valid():
 
-            nova_ajuda = Ajuda() ## Model
+            nova_ajuda = Ajuda()  # Model
             nova_ajuda.nome = form.cleaned_data['nome']
             nova_ajuda.email = form.cleaned_data['email']
             nova_ajuda.pergunta = form.cleaned_data['pergunta']
 
             nova_ajuda.save()
-
 
             return redirect('ajuda')
     else:
@@ -203,8 +202,7 @@ def ajuda(request):
     return render(request, 'ajuda.html', {'form': form})
 
 
-
-## View para pagina de inicio de campanha
+# View para pagina de inicio de campanha
 
 
 @login_required
@@ -225,21 +223,39 @@ def iniciar_campanha(request):
 @login_required
 def checklist_campanha(request):
     ordem_servico_selecionada = request.GET.get('ordem_servico')
-    form = ChecklistCampoForm(request.POST or None, ordem_servico_selecionada=ordem_servico_selecionada)
+    form = ChecklistCampoForm(
+        request.POST or None, ordem_servico_selecionada=ordem_servico_selecionada)
 
     if request.method == 'POST' and form.is_valid():
         checklist_campanha = ChecklistCampo()
-        ordem_servico_instance = get_object_or_404(ProgramaColeta, ordem_servico=ordem_servico_selecionada)
-        
+        ordem_servico_instance = get_object_or_404(
+            ProgramaColeta, ordem_servico=ordem_servico_selecionada)
+        redirect_url = reverse('gerar_rota_campanha') + \
+            f'?ordem_servico={ordem_servico_instance.ordem_servico}'
+
         # Atribui os campos do formulário e outros valores diretamente
-        for campo in ('status_checklist', 'observacoes', 'previsao_tempo', 'avisar_labs',
+        for campo in ('observacoes', 'previsao_tempo', 'avisar_labs',
                       'reservar_carro', 'reservar_barco', 'separar_equipamentos',
                       'conferir_equipamentos', 'comprar_gelo'):
             setattr(checklist_campanha, campo, form.cleaned_data[campo])
-        
+
         checklist_campanha.ordem_servico = ordem_servico_instance
         checklist_campanha.save()
-        return redirect('home')
+
+        return redirect (redirect_url)
 
     return render(request, 'coleta/checklist_campanha.html', {'form': form})
+
+
+@login_required
+def gerar_rota_campanha(request):
+    # Assume que a ordem de serviço é passada como parâmetro GET
+    ordem_servico = request.GET.get('ordem_servico')
+    if ordem_servico:
+        campanha = get_object_or_404(
+            ProgramaColeta, ordem_servico=ordem_servico)
+    else:
+        campanha = None
+    return render(request, 'coleta/gerar_rota_campanha.html', {'campanha': campanha})
+
 

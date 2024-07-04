@@ -13,4 +13,5 @@ urlpatterns = [
     path('coletas_agendas/', views.coletas_agendas, name='coletas_agendas'),
     path('agendar_coleta/', views.agenda_coleta, name='agendar_coleta'),
     path('checklist_campanha/', views.checklist_campanha, name='checklist_campanha'),
+    path('gerar_rota_campanha/', views.gerar_rota_campanha, name='gerar_rota_campanha'),
 ]

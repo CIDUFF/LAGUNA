@@ -159,8 +159,7 @@ class ChecklistCampoForm(forms.Form):
         widget=forms.HiddenInput(),
         initial=timezone.now().date)
     ordem_servico = forms.CharField(label="Ordem de serviço",
-                                    widget=forms.TextInput(attrs={'readonly': 'readonly'}))
-    status_checklist = forms.ChoiceField(choices=ChecklistCampo.STATUS)
+                                    widget=forms.TextInput())
     observacoes = forms.CharField( label='Observações',
         widget=forms.Textarea, max_length=500, required=False)
 
@@ -200,7 +199,7 @@ class ChecklistCampoForm(forms.Form):
                 css_class='card form-checklist'
             ),
             ButtonHolder(
-                Submit('submit', 'Salvar e iniciar campanha')
+                Submit('submit', 'Salvar e continuar')
             )
         )
 

@@ -169,9 +169,8 @@ class ChecklistCampo(models.Model):
         ('concluido', 'Concluído'),
         ('pendente', 'Pendente'),
     ]
-    data_checklist = models.DateField(auto_now=False, auto_now_add=True)
+    data_checklist = models.DateField(auto_now=True)
     ordem_servico = models.ForeignKey(ProgramaColeta, on_delete=models.CASCADE, related_name='checklist_ordem_servico')
-    status_checklist = models.CharField(max_length=9, choices=STATUS, default='pendente')
     previsao_tempo = models.BooleanField("Previsão do tempo", blank=True, null=True)
     avisar_labs = models.BooleanField("Avisar laboratórios", blank=True, null=True)
     reservar_carro = models.BooleanField("Reservar carro", blank=True, null=True)
@@ -179,8 +178,6 @@ class ChecklistCampo(models.Model):
     separar_equipamentos = models.BooleanField("Separar equipamentos", blank=True, null=True)
     conferir_equipamentos = models.BooleanField("Conferir equipamentos", blank=True, null=True)
     comprar_gelo = models.BooleanField("Comprar gelo", blank=True, null=True)
-    
-    
     observacoes = models.TextField(max_length=500, blank=True)
     
     def __str__(self):
