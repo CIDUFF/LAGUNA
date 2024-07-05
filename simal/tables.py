@@ -28,23 +28,23 @@ class ColetaCampoTable(tables.Table):
 
 class ProgramaColetaTable(tables.Table):
 
-    update = tables.LinkColumn('atualizar_programacao', args=[A(
-        'pk')], orderable=False, empty_values=[], text='EDITAR')
-    delete = tables.LinkColumn('deletar_programacao', args=[A(
-        'pk')], orderable=False, empty_values=[], text='DELETAR')
-    start = tables.LinkColumn('atualizar_programacao', args=[A(
-        'pk')], orderable=False, empty_values=[], text='Iniciar')
+    atualizar = tables.LinkColumn('atualizar_programacao', args=[A(
+        'pk')], orderable=False, empty_values=[], text='Atualizar dados')
+    deletar = tables.LinkColumn('deletar_programacao', args=[A(
+        'pk')], orderable=False, empty_values=[], text='Remover programação')
+    iniciar = tables.LinkColumn('iniciar_campanha', args=[A(
+        'ordem_servico')], orderable=False, empty_values=[], text='Iniciar coleta')
 
     class Meta:
         model = ProgramaColeta
         template_name = 'django_tables2/bootstrap.html'
-        fields = ['data_coleta_campo', 'equipe_coleta', 'laboratorio', 'solicitante',
+        fields = ['usuario','data_coleta_campo', 'equipe_coleta', 'laboratorio', 'solicitante',
                   'local_coleta', 'status_coleta', 'observacoes', 'ordem_servico']
         attrs = {'class': 'table table-striped table-bordered table-hover'}
         empty_text = 'Não há dados para exibir'
         orderable = False
         exclude = ('id', 'created_at', 'updated_at', 'campo')
-        sequence = ('data_coleta_campo', 'equipe_coleta', 'laboratorio', 'solicitante',
+        sequence = ('usuario','data_coleta_campo', 'equipe_coleta', 'laboratorio', 'solicitante',
                     'local_coleta', 'status_coleta', 'observacoes', 'ordem_servico')
         per_page = 10
         paginator_class = tables.LazyPaginator

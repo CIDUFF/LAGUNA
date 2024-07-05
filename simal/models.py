@@ -1,8 +1,10 @@
 from datetime import datetime, date
+from django.conf import settings
 from django.db import models
 from django.utils.crypto import get_random_string
 import re
 import unicodedata
+from django.contrib.auth.models import User  # Importa o modelo User
 # import random
 # import string
 
@@ -55,11 +57,11 @@ class LocaisColeta(models.Model):
     def __str__(self):
         return f'{self.local}'
 
+
 class ProgramaColeta(models.Model):
-    
     STATUS = [
         ('programada', 'Programada'),
-        ('reprogramada', 'Reprogramada'), 
+        ('reprogramada', 'Reprogramada'),
         ('realizada', 'Realizada'),
         ('cancelada', 'Cancelada'),
     ]
@@ -67,35 +69,39 @@ class ProgramaColeta(models.Model):
         ('Água', 'Sedimentos')
     ]
 
-    ordem_servico = models.CharField(max_length=200, blank=True)
-    data_coleta_campo = models.DateField(null=True)
-    data_fim_coleta_campo = models.DateField(null= True)
-    equipe_coleta = models.CharField(max_length=50, default='Equipe 1')
-    laboratorio = models.CharField(max_length=50,default='Interno')
-    solicitante = models.CharField(max_length=50, default='João Silva')
-    local_coleta = models.CharField(max_length=50)
-    tipos_analise = models.CharField(max_length=50, choices=ANALISE, default='Água')
-    status_coleta = models.CharField(max_length=12, choices=STATUS, default='programada')
-    observacoes = models.TextField(max_length=500, blank=True)
+    ordem_servico = models.CharField(max_length=200, blank=True, verbose_name='Ordem de Serviço')
+    data_coleta_campo = models.DateField(null=True, verbose_name='Data da Coleta')
+    data_fim_coleta_campo = models.DateField(null=True,verbose_name='Data Final')
+    equipe_coleta = models.CharField(max_length=50, default='Equipe 1', verbose_name='Equipe de Coleta')
+    laboratorio = models.CharField(max_length=50, default='Interno',verbose_name='Laboratório')
+    solicitante = models.CharField(max_length=50, default='João Silva', verbose_name='Responsável')
+    local_coleta = models.CharField(max_length=50,verbose_name='Local de Coleta')
+    tipos_analise = models.CharField(
+        max_length=50, choices=ANALISE, default='Água', verbose_name='Tipo de Análise')
+    status_coleta = models.CharField(
+        max_length=12, choices=STATUS, default='programada', verbose_name='Status da Coleta')
+    observacoes = models.TextField(max_length=500, blank=True, verbose_name='Observações')
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE,
+                                verbose_name="Usuário", null=True)  # Adiciona o campo usuario
+    
     
     # checklist = models.CharField(max_length=1, choices=[(0, 'Não realizada'), (1, 'Realizada')])
     
-    
-    def save(self, *args, **kwargs):
-        if not self.ordem_servico:
-            
-            # Gera uma ordem de serviço única combinando código do local, data formatada e string aleatória
-            ordem_servico_raw = f"{self.local_coleta}{self.data_coleta_campo}{get_random_string(length=4)}"
+    # Modifica o método save para aceitar um argumento adicional 'usuario'
 
-            # Normaliza, remove acentos, converte para minúsculas e remove caracteres especiais
+    def save(self, usuario=None, *args, **kwargs):
+        if not self.ordem_servico:
+            ordem_servico_raw = f"{self.local_coleta}{self.data_coleta_campo}{get_random_string(length=4)}"
             ordem_servico_normalized = unicodedata.normalize(
                 'NFKD', ordem_servico_raw)
             ordem_servico_ascii = ordem_servico_normalized.encode(
                 'ASCII', 'ignore').decode('ASCII')
             ordem_servico_clean = re.sub(
                 r'[\s\W_]+', '', ordem_servico_ascii).lower()
-
             self.ordem_servico = ordem_servico_clean
+
+        if usuario:  # Atribui o usuário recebido ao campo usuario
+            self.usuario = usuario
 
         super().save(*args, **kwargs)
 
