@@ -153,29 +153,38 @@ class ProgramaColetaForm(forms.Form):
             Laboratorios, 'nome')
 
 
-class ChecklistCampoForm(forms.Form):
-    # Mantém os campos existentes
-    data_checklist = forms.DateField(
-        widget=forms.HiddenInput(),
-        initial=timezone.now().date)
-    ordem_servico = forms.CharField(label="Ordem de serviço",
-        widget=forms.TextInput(attrs={'readonly': 'readonly'}))
-    status_checklist = forms.ChoiceField(choices=ChecklistCampo.STATUS)
-    observacoes = forms.CharField( label='Observações',
-        widget=forms.Textarea, max_length=500, required=False)
+def custom_checkbox_widget():
+    """
+    Retorna um widget CheckboxInput com a classe CSS 'custom-checkbox' aplicada.
+    """
+    return forms.CheckboxInput(attrs={'class': 'custom-checkbox'})
 
-    # Adiciona os novos campos booleanos
+
+class ChecklistCampoForm(forms.Form):
+    # Campos básicos do formulário
+    data_checklist = forms.DateField(
+        widget=forms.HiddenInput(), initial=timezone.now().date)
+    ordem_servico = forms.CharField(
+        label="Ordem de serviço", widget=forms.TextInput(attrs={'readonly': 'readonly'}))
+    status_checklist = forms.ChoiceField(choices=ChecklistCampo.STATUS)
+    observacoes = forms.CharField(
+        label='Observações', widget=forms.Textarea, max_length=500, required=False)
+
+    # Campos booleanos utilizando a função auxiliar para o widget
     previsao_tempo = forms.BooleanField(
-        label="Previsão do tempo", required=False)
+        label="Previsão do tempo", required=False, widget=custom_checkbox_widget())
     avisar_labs = forms.BooleanField(
-        label="Avisar laboratórios", required=False)
-    reservar_carro = forms.BooleanField(label="Reservar carro", required=False)
-    reservar_barco = forms.BooleanField(label="Reservar barco", required=False)
+        label="Avisar laboratórios", required=False, widget=custom_checkbox_widget())
+    reservar_carro = forms.BooleanField(
+        label="Reservar carro", required=False, widget=custom_checkbox_widget())
+    reservar_barco = forms.BooleanField(
+        label="Reservar barco", required=False, widget=custom_checkbox_widget())
     separar_equipamentos = forms.BooleanField(
-        label="Separar equipamentos", required=False)
+        label="Separar equipamentos", required=False, widget=custom_checkbox_widget())
     conferir_equipamentos = forms.BooleanField(
-        label="Conferir equipamentos", required=False)
-    comprar_gelo = forms.BooleanField(label="Comprar gelo", required=False)
+        label="Conferir equipamentos", required=False, widget=custom_checkbox_widget())
+    comprar_gelo = forms.BooleanField(
+        label="Comprar gelo", required=False, widget=custom_checkbox_widget())
 
     def __init__(self, *args, **kwargs):
         ordem_servico_selecionada = kwargs.pop(
@@ -196,11 +205,12 @@ class ChecklistCampoForm(forms.Form):
                 'separar_equipamentos',
                 'conferir_equipamentos',
                 'comprar_gelo',
+                'status_checklist',
                 'observacoes',
                 css_class='card form-checklist'
             ),
             ButtonHolder(
-                Submit('submit', 'Salvar e continuar')
+                Submit('submit', 'Salvar e continuar', css_class='btn-primary')
             )
         )
 
@@ -234,3 +244,14 @@ class IniciarCampanhaForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super(IniciarCampanhaForm, self).__init__(*args, **kwargs)
         self.fields['ordem_servico'].empty_label = "Selecione uma campanha"
+
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Fieldset(
+                'Iniciar Campanha',
+                'ordem_servico',
+            ),
+            ButtonHolder(
+                Submit('submit', 'Prosseguir'),
+            )
+        )

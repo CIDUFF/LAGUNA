@@ -7,7 +7,7 @@ from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from datetime import datetime, timedelta
-from django.http import JsonResponse, Http404
+from django.http import JsonResponse, Http404, HttpResponse
 from .forms import *
 from .tables import *
 from .services import get_weather_description
@@ -17,34 +17,41 @@ from .services import get_weather_description
 # from .models import ColetaCampo
 
 def home(request):
-    data_coleta_proxima = ProgramaColeta.objects.filter(
-        data_coleta_campo__gte=timezone.now()
-    ).order_by('data_coleta_campo').values_list('data_coleta_campo', flat=True).first()
-    
-    status_coleta = ProgramaColeta.objects.filter(
-        data_coleta_campo__gte=timezone.now()
-    ).order_by('data_coleta_campo').values_list('status_coleta', flat=True).first()
+    try:
+        data_coleta_proxima = ProgramaColeta.objects.filter(
+            data_coleta_campo__gte=timezone.now()
+        ).order_by('data_coleta_campo').values_list('data_coleta_campo', flat=True).first()
 
-    if data_coleta_proxima:
-        data_coleta_proxima_formatada = data_coleta_proxima.strftime(
-            '%Y-%m-%d')
-    else:
-        data_coleta_proxima_formatada = None
+        status_coleta = ProgramaColeta.objects.filter(
+            data_coleta_campo__gte=timezone.now()
+        ).order_by('data_coleta_campo').values_list('status_coleta', flat=True).first()
 
-    weather_description = get_weather_description(
-        "Maricá", data_coleta_proxima_formatada)
-    
-    data_coleta_proxima_formatada = data_coleta_proxima.strftime(
-        '%d/%m/%Y')
+        if data_coleta_proxima:
+            data_coleta_proxima_formatada = data_coleta_proxima.strftime(
+                '%Y-%m-%d')
+            weather_description = get_weather_description(
+                "Maricá", data_coleta_proxima_formatada)
+            # Atualiza a formatação da data após confirmar que ela existe
+            data_coleta_proxima_formatada = data_coleta_proxima.strftime(
+                '%d/%m/%Y')
+        else:
+            data_coleta_proxima_formatada = None
+            weather_description = None
 
-    # Criando a variável context para organizar os dados passados para o template
-    context = {
-        'weather_description': weather_description,
-        'data_coleta_proxima_formatada': data_coleta_proxima_formatada,
-        'status_coleta': status_coleta
-    }
+        # Criando a variável context para organizar os dados passados para o template
+        context = {
+            'weather_description': weather_description,
+            'data_coleta_proxima_formatada': data_coleta_proxima_formatada,
+            'status_coleta': status_coleta
+        }
 
-    return render(request, 'home.html', context)
+        return render(request, 'home.html', context)
+    except ProgramaColeta.DoesNotExist:
+        # Tratamento para o caso de não encontrar ProgramaColeta
+        return HttpResponse("Nenhum programa de coleta encontrado.", status=404)
+    except Exception as e:
+        # Tratamento genérico de erro
+        return HttpResponse(f"Erro ao carregar a página: {str(e)}", status=500)
 
 
 
@@ -72,16 +79,7 @@ def atualizar_coleta(request, id):
             messages.success(request, 'Dados atualizados com sucesso!')
     return render(request, 'coleta/coleta.html', {'form': form})
 
-# @login_required
-# def iniciar_campanha_link(request):
-#     campanha = IniciarCampanhaForm.objects.get(id=id)
-#     form = IniciarCampanhaForm(instance=campanha)
-#     if request.method == 'POST':
-#         form = IniciarCampanhaForm(request.POST, instance=campanha)
-#         if form.is_valid():
-#             form.save()
-#             messages.success(request, 'Sucesso!')
-#     return render(request, 'coleta/iniciar_campanha.html', {'form': form})
+
 
 
 @login_required
@@ -127,7 +125,7 @@ def agenda_coleta(request):
             programa_coleta.observacoes = form.cleaned_data['observacoes']
 
             # Salva o modelo no banco de dados
-            programa_coleta.save()
+            programa_coleta.save(usuario=request.user)
 
             return redirect('coletas_agendas')
     else:
@@ -247,16 +245,22 @@ def ajuda(request):
 
 
 @login_required
-def iniciar_campanha(request):
+def iniciar_campanha(request, ordem_servico=None):
+    # Obtém o valor de ordem_servico da URL, se houver
+    ordem_servico = request.GET.get('ordem_servico', None)
+    filtro = {}
+    if ordem_servico:
+        filtro['ordem_servico_inicial'] = ordem_servico
+
     if request.method == 'POST':
-        form = IniciarCampanhaForm(request.POST)
+        form = IniciarCampanhaForm(request.POST, **filtro)
         if form.is_valid():
-            ordem_servico = form.cleaned_data['ordem_servico'].ordem_servico
+            ordem_servico = form.cleaned_data['ordem_servico']
             redirect_url = reverse('checklist_campanha') + \
-                f'?ordem_servico={ordem_servico}'
+                f'?ordem_servico={ordem_servico.ordem_servico}'
             return redirect(redirect_url)
     else:
-        form = IniciarCampanhaForm()
+        form = IniciarCampanhaForm(**filtro)
 
     return render(request, 'coleta/iniciar_campanha.html', {'form': form})
 
@@ -293,12 +297,22 @@ def gerar_rota_campanha(request):
     # Assume que a ordem de serviço é passada como parâmetro GET
     ordem_servico = request.GET.get('ordem_servico')
 
-    
     if ordem_servico:
         campanha = get_object_or_404(
             ProgramaColeta, ordem_servico=ordem_servico)
+        data = campanha.data_coleta_campo
+        
+        previsao_tempo = get_weather_description("Maricá", data.strftime('%Y-%m-%d'))
+        
+        context = {
+            'campanha': campanha,
+            'previsao_tempo': previsao_tempo
+        }
     else:
         campanha = None
-    return render(request, 'coleta/gerar_rota_campanha.html', {'campanha': campanha})
+        
+    
+    
+    return render(request, 'coleta/gerar_rota_campanha.html', context)
 
 
