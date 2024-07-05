@@ -159,12 +159,8 @@ class ChecklistCampoForm(forms.Form):
         widget=forms.HiddenInput(),
         initial=timezone.now().date)
     ordem_servico = forms.CharField(label="Ordem de serviço",
-<<<<<<< HEAD
-                                    widget=forms.TextInput())
-=======
         widget=forms.TextInput(attrs={'readonly': 'readonly'}))
     status_checklist = forms.ChoiceField(choices=ChecklistCampo.STATUS)
->>>>>>> cc38285 (Atualizações das telas de checklist)
     observacoes = forms.CharField( label='Observações',
         widget=forms.Textarea, max_length=500, required=False)
 
