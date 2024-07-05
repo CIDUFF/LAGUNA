@@ -273,6 +273,7 @@ a.sidebar-link {
 .sidebar-link i {
   font-size: 1.1rem;
   margin-right: 0.75rem;
+
 }
 
 a.sidebar-link:hover {
@@ -289,10 +290,12 @@ a.sidebar-link:hover {
   position: absolute;
   top: 0;
   left: 70px;
-  background-color: #ffffff;
-  padding: 0;
-  min-width: 15rem;
+  width: 200%;
+  background-color: #ffffffc7;
+  border-radius: 10px;
+  min-width: 16rem;
   display: none;
+
 }
 
 #sidebar:not(.expand) .sidebar-item:hover .has-dropdown + .sidebar-dropdown {
@@ -570,13 +573,13 @@ a.sidebar-link:hover {
 
 .btn-campanha {
   background-color: #0d6efd !important;
-
+ display: inline-block !important;
   color: white !important;
   padding: 10px 20px  !important;
   border: none  !important;
   border-radius: 5px !important;
   cursor: pointer !important;
-  max-width: min-content;
+
 }
 .btn-campanha:hover {
   background-color: #0b5ed7 !important;

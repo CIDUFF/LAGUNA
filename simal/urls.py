@@ -13,5 +13,5 @@ urlpatterns = [
     path('checklist_campanha/', views.checklist_campanha, name='checklist_campanha'),
     path('cadastro_laboratorio/', views.cadastro_laboratorio, name='cadastro_laboratorio'),
     path('laboratorios_cadastrados/', views.laboratorios_cadastrados, name='laboratorios_cadastrados'),
-    path('atualizar_laboratorio/<int:id>/', views.laboratorios_cadastrados, name='atualizar_laboratorio')
+    path('cadastro_laboratorio/<int:id>/', views.atualizar_laboratorio, name='atualizar_laboratorio')
 ]

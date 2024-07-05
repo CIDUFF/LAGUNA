@@ -1,7 +1,9 @@
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Fieldset, ButtonHolder, Submit
+from crispy_forms.layout import Layout, Fieldset, ButtonHolder, Submit, HTML, Div
 from django.forms import ModelChoiceField
 from django import forms
+from django.utils.html import format_html
+from django.urls import reverse
 from .models import *
 
 
@@ -251,6 +253,16 @@ class LaboratorioForm(forms.Form):
                 'tipo'
             ),
             ButtonHolder(
-                Submit('submit', 'Salvar')
+                Layout(
+                    Div(
+                        Submit('submit', 'Salvar'),
+                        css_class='col-6'
+                    ),
+                    Div(
+                        HTML(format_html('<a href="{}" class="btn btn-primary btn-campanha">Laboratórios Cadastrados</a>', reverse('laboratorios_cadastrados'))),
+                        css_class='col-6 text-right'
+                    )
+                ),
+                css_class='row'
             )
         )

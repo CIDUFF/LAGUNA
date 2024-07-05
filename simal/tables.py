@@ -53,3 +53,4 @@ class LaboratoriosTable(tables.Table):
         paginator_class = tables.LazyPaginator
         table_pagination = True
 #TODO: Criar tabelas para as outras classes
+

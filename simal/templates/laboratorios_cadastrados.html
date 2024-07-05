@@ -19,5 +19,9 @@
 {% endblock header %}
     
 <div class="card checklist">
-    {% render_table table_laboratorios %} {% endblock %}
+    {% render_table table_laboratorios %} 
 </div>
+<a href="{% url 'cadastro_laboratorio' %}">
+    <button type="button" class="btn btn-primary">Voltar</button>
+</a>
+{% endblock %}

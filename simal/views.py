@@ -271,3 +271,20 @@ def laboratorios_cadastrados(request):
         'table_laboratorios': table
         })
     
+@login_required
+def atualizar_laboratorio(request, id):
+    laboratorio = get_object_or_404(Laboratorios, id=id)
+    if request.method == 'POST':
+        form = LaboratorioForm(request.POST)
+        if form.is_valid():
+            for field, value in form.cleaned_data.items():
+                setattr(laboratorio, field, value)
+            laboratorio.save()
+            messages.success(request, 'Dados atualizados com sucesso!')
+            return redirect('laboratorios_cadastrados')
+        else:
+            print(form.errors)  # Imprime os erros de validação
+    else:
+        form_data = {field.name: getattr(laboratorio, field.name) for field in Laboratorios._meta.fields}
+        form = LaboratorioForm(initial=form_data)
+    return render(request, 'cadastro_laboratorio.html', {'form': form})
