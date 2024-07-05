@@ -198,7 +198,6 @@ class ChecklistCampoForm(forms.Form):
                 'Checklist de Campo',
                 'data_checklist',
                 'ordem_servico',
-                'status_checklist',
                 'previsao_tempo',
                 'avisar_labs',
                 'reservar_carro',
@@ -206,6 +205,7 @@ class ChecklistCampoForm(forms.Form):
                 'separar_equipamentos',
                 'conferir_equipamentos',
                 'comprar_gelo',
+                'status_checklist',
                 'observacoes',
                 css_class='card form-checklist'
             ),
@@ -244,13 +244,14 @@ class IniciarCampanhaForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super(IniciarCampanhaForm, self).__init__(*args, **kwargs)
         self.fields['ordem_servico'].empty_label = "Selecione uma campanha"
+
         self.helper = FormHelper()
         self.helper.layout = Layout(
             Fieldset(
                 'Iniciar Campanha',
-                'ordem_servico'
+                'ordem_servico',
             ),
             ButtonHolder(
-                Submit('submit', 'Prosseguir')
+                Submit('submit', 'Prosseguir'),
             )
         )

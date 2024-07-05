@@ -246,15 +246,21 @@ def ajuda(request):
 
 @login_required
 def iniciar_campanha(request, ordem_servico=None):
+    # Obtém o valor de ordem_servico da URL, se houver
+    ordem_servico = request.GET.get('ordem_servico', None)
+    filtro = {}
+    if ordem_servico:
+        filtro['ordem_servico_inicial'] = ordem_servico
+
     if request.method == 'POST':
-        form = IniciarCampanhaForm(request.POST)
+        form = IniciarCampanhaForm(request.POST, **filtro)
         if form.is_valid():
-            ordem_servico = form.cleaned_data['ordem_servico'].ordem_servico
+            ordem_servico = form.cleaned_data['ordem_servico']
             redirect_url = reverse('checklist_campanha') + \
-                f'?ordem_servico={ordem_servico}'
+                f'?ordem_servico={ordem_servico.ordem_servico}'
             return redirect(redirect_url)
     else:
-        form = IniciarCampanhaForm(initial={'ordem_servico': ordem_servico})
+        form = IniciarCampanhaForm(**filtro)
 
     return render(request, 'coleta/iniciar_campanha.html', {'form': form})
 
@@ -291,12 +297,22 @@ def gerar_rota_campanha(request):
     # Assume que a ordem de serviço é passada como parâmetro GET
     ordem_servico = request.GET.get('ordem_servico')
 
-    
     if ordem_servico:
         campanha = get_object_or_404(
             ProgramaColeta, ordem_servico=ordem_servico)
+        data = campanha.data_coleta_campo
+        
+        previsao_tempo = get_weather_description("Maricá", data.strftime('%Y-%m-%d'))
+        
+        context = {
+            'campanha': campanha,
+            'previsao_tempo': previsao_tempo
+        }
     else:
         campanha = None
-    return render(request, 'coleta/gerar_rota_campanha.html', {'campanha': campanha})
+        
+    
+    
+    return render(request, 'coleta/gerar_rota_campanha.html', context)
 
 
