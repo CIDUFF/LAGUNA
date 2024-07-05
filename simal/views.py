@@ -17,23 +17,34 @@ from .services import get_weather_description
 # from .models import ColetaCampo
 
 def home(request):
-    coletas_futuras = ProgramaColeta.objects.filter(
-        data_coleta_campo__gte=timezone.now()).order_by('data_coleta_campo')
+    data_coleta_proxima = ProgramaColeta.objects.filter(
+        data_coleta_campo__gte=timezone.now()
+    ).order_by('data_coleta_campo').values_list('data_coleta_campo', flat=True).first()
+    
+    status_coleta = ProgramaColeta.objects.filter(
+        data_coleta_campo__gte=timezone.now()
+    ).order_by('data_coleta_campo').values_list('status_coleta', flat=True).first()
 
-    if coletas_futuras.exists():
-        coleta_proxima = coletas_futuras.first()
+    if data_coleta_proxima:
+        data_coleta_proxima_formatada = data_coleta_proxima.strftime(
+            '%Y-%m-%d')
     else:
-        raise Http404("Não há coletas futuras programadas.")
-
-    # Formata a data_coleta_campo como uma string no formato esperado
-    # Supondo que a função get_weather_description espera uma data no formato 'YYYY-MM-DD'
-    data_coleta_formatada = coleta_proxima.data_coleta_campo.strftime(
-        '%Y-%m-%d')
+        data_coleta_proxima_formatada = None
 
     weather_description = get_weather_description(
-        "Maricá", data_coleta_formatada)
+        "Maricá", data_coleta_proxima_formatada)
+    
+    data_coleta_proxima_formatada = data_coleta_proxima.strftime(
+        '%d/%m/%Y')
 
-    return render(request, 'home.html', {'weather_description': weather_description})
+    # Criando a variável context para organizar os dados passados para o template
+    context = {
+        'weather_description': weather_description,
+        'data_coleta_proxima_formatada': data_coleta_proxima_formatada,
+        'status_coleta': status_coleta
+    }
+
+    return render(request, 'home.html', context)
 
 
 
@@ -107,7 +118,6 @@ def agenda_coleta(request):
 
             # Atribui os dados do formulário aos campos do modelo
             programa_coleta.data_coleta_campo = form.cleaned_data['data_coleta_campo']
-            # Adicione a linha abaixo para atribuir o valor de data_fim_coleta_campo
             programa_coleta.data_fim_coleta_campo = form.cleaned_data['data_fim_coleta_campo']
             programa_coleta.equipe_coleta = form.cleaned_data['equipe_coleta']
             programa_coleta.laboratorio = form.cleaned_data['laboratorio']

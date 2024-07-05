@@ -102,7 +102,7 @@ class ProgramaColeta(models.Model):
 
 
     def __str__(self):
-        return f'Coleta da água em {self.local_coleta} em {self.data_coleta_campo}, ordem de serviço: {self.ordem_servico}'
+        return f'{self.local_coleta} em {self.data_coleta_campo}, OS: {self.ordem_servico}'
     
 class Campo(models.Model):
     

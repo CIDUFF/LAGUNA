@@ -33,7 +33,8 @@ def get_weather_description(city, date):
     return "Previsão do tempo não encontrada para a data especificada."
 
 
+
 # Exemplo de uso
-city = "Maricá"
-date = "2024-07-05"  # Formato AAAA-MM-DD
-print(get_weather_description(city, date))
+# city = "Maricá"
+# date = "2024-07-07"  # Formato AAAA-MM-DD
+# print(get_weather_description(city, date))
