@@ -1,12 +1,10 @@
 {% extends 'base/base_site.html' %} 
+{% load crispy_forms_tags %} 
 {% block title%} Iniciar campanha {% endblock %}
 {% block content %} 
 <h2>Selecione a campanha que deseja iniciar</h2>
-<form method="POST" action="" class='card checklist'>
+<div class='card checklist'>
     {% csrf_token %}
-    {{ form.as_p }}
-    <div>
-        <button type="submit" class='btn-campanha'>Prosseguir</button>
-    </div>
-</form>
+    {% crispy form %}
+</div>
 {% endblock %}

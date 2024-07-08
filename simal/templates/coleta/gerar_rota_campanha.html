@@ -1,0 +1,25 @@
+{% extends 'base/base_site.html' %} 
+{% block title%} gerar rota {% endblock %}
+{% block content %} 
+<h2>Confira os dados e clique em "Gerar rota" para prosseguir</h2>
+
+<!-- Exibindo detalhes da campanha -->
+<div>
+	<p><strong>Ordem de serviço:</strong> {{ campanha.ordem_servico }}</p>
+	<p><strong>Data de Início:</strong> {{ campanha.data_coleta_campo|date:"d/m/Y" }}</p>
+	<p><strong>Local:</strong> {{ campanha.local_coleta}}</p>
+    <p><strong>Solicitante</strong> {{ campanha.solicitante }}</p>
+    <p><strong>Previsão do tempo: </strong>{{ previsao_tempo }}</p> 
+
+    <!--botao para gerar rotas-->
+
+    <a href="#" class="btn btn-primary">Gerar rota</a>
+
+    <!--botao para voltar a pagina inical-->
+
+    <a href="{% url 'coletas_agendas' %}" class="btn btn-primary">Cancelar</a>
+</div>
+
+<!-- Aqui pode ser adicionado um formulário ou botão para "Gerar rota" -->
+
+{% endblock %}
