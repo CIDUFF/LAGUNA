@@ -316,3 +316,47 @@ def gerar_rota_campanha(request):
     return render(request, 'coleta/gerar_rota_campanha.html', context)
 
 
+@login_required
+def cadastro_laboratorio(request):
+    if request.method == 'POST':
+        form = LaboratorioForm(request.POST)
+        if form.is_valid():
+            laboratorio = Laboratorios()
+            laboratorio.nome = form.cleaned_data['nome']
+            laboratorio.email = form.cleaned_data['email']
+            laboratorio.telefone = form.cleaned_data['telefone']
+            laboratorio.endereco = form.cleaned_data['endereco']
+            laboratorio.tipo = form.cleaned_data['tipo']
+            laboratorio.save()
+            return redirect('laboratorios_cadastrados')
+        
+    else:
+        form = LaboratorioForm()
+
+    return render(request, 'cadastro_laboratorio.html', {'form': form})
+
+@login_required
+def laboratorios_cadastrados(request):
+    table = LaboratoriosTable(Laboratorios.objects.all())
+    RequestConfig(request, paginate={"per_page": 25}).configure(table)
+    return render(request, 'laboratorios_cadastrados.html', {
+        'table_laboratorios': table
+        })
+    
+@login_required
+def atualizar_laboratorio(request, id):
+    laboratorio = get_object_or_404(Laboratorios, id=id)
+    if request.method == 'POST':
+        form = LaboratorioForm(request.POST)
+        if form.is_valid():
+            for field, value in form.cleaned_data.items():
+                setattr(laboratorio, field, value)
+            laboratorio.save()
+            messages.success(request, 'Dados atualizados com sucesso!')
+            return redirect('laboratorios_cadastrados')
+        else:
+            print(form.errors)  # Imprime os erros de validação
+    else:
+        form_data = {field.name: getattr(laboratorio, field.name) for field in Laboratorios._meta.fields}
+        form = LaboratorioForm(initial=form_data)
+    return render(request, 'cadastro_laboratorio.html', {'form': form})

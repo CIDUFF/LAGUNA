@@ -1,0 +1,22 @@
+{% extends 'base/base_site.html' %} 
+{% load crispy_forms_tags %}
+{% block title %} Cadastro de Laboratórios {% endblock %}
+{% block content %} 
+{% if user.is_authenticated %}
+<div class="card checklist">
+            {% csrf_token %} {% crispy form %} 
+            {% comment %} <div class="d-flex justify-content-start">
+                <a href="{% url 'laboratorios_cadastrados' %}" class="btn btn-primary">Visualizar Laboratórios Cadastrados</a>
+            </div> {% endcomment %}
+        </div>
+
+{% else %}
+    <div class="container mt-5">
+        <h1 class="text-center">Olá, visitante</h1>
+        <p class="text-center">Faça login para visualizar o sistema</p>
+        <div class="d-flex justify-content-center">
+        <a href="{% url 'account_login' %}" class="btn btn-primary">Clique aqui para logar</a>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}

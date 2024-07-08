@@ -1,8 +1,10 @@
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Fieldset, ButtonHolder, Submit
+from crispy_forms.layout import Layout, Fieldset, ButtonHolder, Submit, HTML, Div
 from django.utils import timezone
 from django.forms import ModelChoiceField
 from django import forms
+from django.utils.html import format_html
+from django.urls import reverse
 from .models import *
 
 
@@ -253,5 +255,39 @@ class IniciarCampanhaForm(forms.Form):
             ),
             ButtonHolder(
                 Submit('submit', 'Prosseguir'),
+            )
+        )
+
+class LaboratorioForm(forms.Form):
+    nome = forms.CharField(label='Nome do laboratório')
+    endereco = forms.CharField(label='Endereço')
+    telefone = forms.CharField(label='Telefone')
+    email = forms.EmailField(label='Email')
+    tipo = forms.CharField(label='Tipo')
+
+    def __init__(self, *args, **kwargs):
+        super(LaboratorioForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Fieldset(
+                'Formulário de Cadastro de Laboratório',
+                'nome',
+                'endereco',
+                'telefone',
+                'email',
+                'tipo'
+            ),
+            ButtonHolder(
+                Layout(
+                    Div(
+                        Submit('submit', 'Salvar'),
+                        css_class='col-6'
+                    ),
+                    Div(
+                        HTML(format_html('<a href="{}" class="btn btn-primary btn-campanha">Laboratórios Cadastrados</a>', reverse('laboratorios_cadastrados'))),
+                        css_class='col-6 text-right'
+                    )
+                ),
+                css_class='row'
             )
         )

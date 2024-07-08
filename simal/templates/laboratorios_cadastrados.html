@@ -1,0 +1,27 @@
+{% extends 'base/base_site.html' %} 
+
+
+{% load django_tables2 %} 
+
+{% load static %}
+
+{% block content %}  
+
+{% block title %}  
+
+
+{% endblock %} 
+
+
+{% block header %}
+   <h2>Laboratórios Cadastrados</h2> 
+
+{% endblock header %}
+    
+<div class="card checklist">
+    {% render_table table_laboratorios %} 
+</div>
+<a href="{% url 'cadastro_laboratorio' %}">
+    <button type="button" class="btn btn-primary">Voltar</button>
+</a>
+{% endblock %}
