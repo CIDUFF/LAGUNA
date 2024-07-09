@@ -7,7 +7,7 @@ from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from datetime import datetime, timedelta
-from django.http import JsonResponse, Http404, HttpResponse
+from django.http import JsonResponse, Http404, HttpResponse, HttpResponseRedirect
 from .forms import *
 from .tables import *
 from .services import get_weather_description
@@ -294,25 +294,44 @@ def checklist_campanha(request):
 
 @login_required
 def gerar_rota_campanha(request):
-    # Assume que a ordem de serviço é passada como parâmetro GET
     ordem_servico = request.GET.get('ordem_servico')
+    campanha = None
+    previsao_tempo = None
+    pontos_coleta = []
 
     if ordem_servico:
         campanha = get_object_or_404(
             ProgramaColeta, ordem_servico=ordem_servico)
         data = campanha.data_coleta_campo
-        
-        previsao_tempo = get_weather_description("Maricá", data.strftime('%Y-%m-%d'))
-        
-        context = {
-            'campanha': campanha,
-            'previsao_tempo': previsao_tempo
-        }
-    else:
-        campanha = None
-        
-    
-    
+        previsao_tempo = get_weather_description(
+            "Maricá", data.strftime('%Y-%m-%d'))
+
+    if request.method == 'POST' and campanha:
+        local_campanha = ProgramaColeta.objects.filter(
+            ordem_servico=ordem_servico).values_list('local_coleta', flat=True).first()
+        pontos_coleta = LocaisColeta.objects.filter(
+            local=local_campanha)
+
+    # Antes do loop for, obtenha a instância de ProgramaColeta
+    programa_coleta_instance = get_object_or_404(
+        ProgramaColeta, ordem_servico=ordem_servico)
+
+    for ponto in pontos_coleta:
+        campo = Campo()
+        # Agora, atribua a instância de ProgramaColeta ao campo ordem_servico
+        campo.ordem_servico = programa_coleta_instance
+        # Supondo que ponto tenha um atributo id
+        campo.codigo_coleta = str(ponto.ponto) + ordem_servico
+        campo.save()
+
+    # Atenção: O redirecionamento não deve estar dentro do loop
+    if request.method == 'POST' and campanha:
+        return HttpResponseRedirect(reverse('home'))
+
+    context = {
+        'campanha': campanha,
+        'previsao_tempo': previsao_tempo
+    }
     return render(request, 'coleta/gerar_rota_campanha.html', context)
 
 
