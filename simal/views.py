@@ -322,6 +322,7 @@ def gerar_rota_campanha(request):
         campo.ordem_servico = programa_coleta_instance
         # Supondo que ponto tenha um atributo id
         campo.codigo_coleta = str(ponto.ponto) + ordem_servico
+        campo.clima = previsao_tempo
         campo.save()
 
     # Atenção: O redirecionamento não deve estar dentro do loop
