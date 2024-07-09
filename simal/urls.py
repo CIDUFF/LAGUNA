@@ -25,5 +25,7 @@ urlpatterns = [
     path('gerar_rota_campanha/', views.gerar_rota_campanha,
          name='gerar_rota_campanha'),
     path('iniciar_campanha/<str:ordem_servico>/',
-         views.iniciar_campanha, name='iniciar_campanha')
+         views.iniciar_campanha, name='iniciar_campanha'),
+    path('checklist_campanha/<str:ordem_servico>/',
+         views.checklist_campanha, name='checklist_campanha'),
 ]

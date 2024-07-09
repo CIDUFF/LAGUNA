@@ -19,5 +19,13 @@
 {% endblock header %}
     
 <div class="card checklist">
-    {% render_table table_agenda_coleta %} {% endblock %}
+    <form method="get">
+        {{ filtro.form.as_p }}
+        <button type="submit">Filtrar</button>
+    </form>
+    <div class="table-responsive">
+        <table class="table">
+    {% render_table table_agenda_coleta %} 
+        </table>
+    {% endblock %}
 </div>

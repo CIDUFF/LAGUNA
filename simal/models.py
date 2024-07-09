@@ -124,13 +124,6 @@ class ProgramaColeta(models.Model):
 
 class Campo(models.Model):
 
-    CLIMA_CHOICES = [
-        ('sol', 'Sol'),
-        ('chuva', 'Chuva'),
-        ('nublado', 'Nublado'),
-        ('vento', 'Vento'),
-    ]
-
     MATRIZ = [
         ('agua_marinha', 'Água marinha'),
         ('agua_doce', 'Água doce'),
@@ -142,8 +135,7 @@ class Campo(models.Model):
         ProgramaColeta, on_delete=models.CASCADE, related_name='ordem_servico_campo')
     codigo_coleta = models.CharField(
         "Código da Coleta", max_length=50, blank=False)
-    clima = models.CharField("Clima", max_length=7,
-                             choices=CLIMA_CHOICES, null=True)
+    clima = models.CharField("Clima", max_length=150, null=True)
     matriz = models.CharField("Matriz", max_length=12,
                               choices=MATRIZ, null=True)
     hora_inicio = models.TimeField(
@@ -205,14 +197,9 @@ class ListaColeta(models.Model):
 
 
 class ChecklistCampo(models.Model):
-
-    STATUS = [
-        ('concluido', 'Concluído'),
-        ('pendente', 'Pendente'),
-    ]
     data_checklist = models.DateField(auto_now=True)
     ordem_servico = models.ForeignKey(
-        ProgramaColeta, on_delete=models.CASCADE, related_name='checklist_ordem_servico')
+        'ProgramaColeta', on_delete=models.CASCADE, related_name='checklist_ordem_servico')
     previsao_tempo = models.BooleanField(
         "Previsão do tempo", blank=True, null=True)
     avisar_labs = models.BooleanField(
@@ -227,6 +214,31 @@ class ChecklistCampo(models.Model):
         "Conferir equipamentos", blank=True, null=True)
     comprar_gelo = models.BooleanField("Comprar gelo", blank=True, null=True)
     observacoes = models.TextField(max_length=500, blank=True)
+    status_checklist = models.BooleanField(default=False)
+    progresso = models.DecimalField(max_digits=5, decimal_places=2, default=0)
 
     def __str__(self):
+        """Representação em string do ChecklistCampo."""
         return f'Checklist da coleta em {self.data_checklist}'
+
+    @property
+    def campos_booleanos(self):
+        """Retorna uma lista de todos os campos booleanos."""
+        return [
+            self.previsao_tempo, self.avisar_labs, self.reservar_carro,
+            self.reservar_barco, self.separar_equipamentos,
+            self.conferir_equipamentos, self.comprar_gelo
+        ]
+
+    @property
+    def percentual_conclusao(self):
+        """Calcula o percentual de conclusão do checklist."""
+        campos_marcados = sum(bool(campo) for campo in self.campos_booleanos)
+        total_campos = len(self.campos_booleanos)
+        return (campos_marcados / total_campos) * 100 if total_campos > 0 else 0
+
+    def save(self, *args, **kwargs):
+        """Sobrescreve o método save para atualizar o status e o progresso antes de salvar."""
+        self.status_checklist = all(self.campos_booleanos)
+        self.progresso = self.percentual_conclusao
+        super().save(*args, **kwargs)

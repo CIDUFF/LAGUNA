@@ -30,7 +30,8 @@ class ColetaCampo(forms.Form):
     Métodos:
         __init__: Inicializa o formulário e define o layout.
     """
-
+    codigo_coleta = forms.CharField(
+        label="Código de coleta", widget=forms.TextInput(attrs={'readonly': 'readonly'}))
     clima = forms.CharField()
     matriz = forms.CharField()
     hora_inicio = forms.TimeField(
@@ -52,6 +53,7 @@ class ColetaCampo(forms.Form):
         self.helper.layout = Layout(
             Fieldset(
                 'Formulário de campo - coleta de dados',
+                'codigo_coleta',
                 'clima',
                 'matriz',
                 'hora_inicio',
@@ -168,7 +170,7 @@ class ChecklistCampoForm(forms.Form):
         widget=forms.HiddenInput(), initial=timezone.now().date)
     ordem_servico = forms.CharField(
         label="Ordem de serviço", widget=forms.TextInput(attrs={'readonly': 'readonly'}))
-    status_checklist = forms.ChoiceField(choices=ChecklistCampo.STATUS)
+    # status_checklist = forms.ChoiceField(choices=ChecklistCampo.STATUS)  # Esta linha foi removida
     observacoes = forms.CharField(
         label='Observações', widget=forms.Textarea, max_length=500, required=False)
 
@@ -207,7 +209,7 @@ class ChecklistCampoForm(forms.Form):
                 'separar_equipamentos',
                 'conferir_equipamentos',
                 'comprar_gelo',
-                'status_checklist',
+                # 'status_checklist',  # Esta linha foi removida
                 'observacoes',
                 css_class='card form-checklist'
             ),

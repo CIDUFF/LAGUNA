@@ -32,7 +32,7 @@ class ProgramaColetaTable(tables.Table):
         'pk')], orderable=False, empty_values=[], text='Atualizar dados')
     deletar = tables.LinkColumn('deletar_programacao', args=[A(
         'pk')], orderable=False, empty_values=[], text='Remover programação')
-    iniciar = tables.LinkColumn('iniciar_campanha', args=[A(
+    iniciar = tables.LinkColumn('checklist_campanha', args=[A(
         'ordem_servico')], orderable=False, empty_values=[], text='Iniciar coleta')
 
     class Meta:
