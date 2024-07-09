@@ -95,8 +95,13 @@ class ProgramaColetaForm(forms.Form):
         __init__: Inicializa o formulário e define o layout.
     """
 
-    data_coleta_campo = forms.DateField( label='Data de coleta de campo',
-        widget=forms.DateInput(attrs={'type': 'date'}))
+    data_coleta_campo = forms.DateField(label='Data de coleta de campo', 
+                                        widget=forms.DateInput(attrs={'type': 'date'},
+                                                               format='%Y/%m/%d'))
+
+    data_fim_coleta_campo = forms.DateField(label='Data de fim de coleta',
+                                            widget=forms.DateInput(attrs={'type': 'date'},
+                                                                   format='%Y/%m/%d'))
 
     equipe_coleta = forms.ChoiceField(label='Equipe de coleta')
 
@@ -115,11 +120,8 @@ class ProgramaColetaForm(forms.Form):
 
     status_coleta = forms.ChoiceField(choices=STATUS, label='Status de coleta')
 
-    observacoes = forms.CharField( label='Observações',
-        widget=forms.Textarea(attrs={'rows': 3, 'cols': 40}))
-
-    data_fim_coleta_campo = forms.DateField( label='Data de fim de coleta',
-        widget=forms.DateInput(attrs={'type': 'date'}))
+    observacoes = forms.CharField(label='Observações',
+                                  widget=forms.Textarea(attrs={'rows': 3, 'cols': 40}))
 
     def __init__(self, *args, **kwargs):
         super(ProgramaColetaForm, self).__init__(*args, **kwargs)
@@ -260,6 +262,7 @@ class IniciarCampanhaForm(forms.Form):
             )
         )
 
+
 class LaboratorioForm(forms.Form):
     nome = forms.CharField(label='Nome do laboratório')
     endereco = forms.CharField(label='Endereço')
@@ -286,7 +289,8 @@ class LaboratorioForm(forms.Form):
                         css_class='col-6'
                     ),
                     Div(
-                        HTML(format_html('<a href="{}" class="btn btn-primary btn-campanha">Laboratórios Cadastrados</a>', reverse('laboratorios_cadastrados'))),
+                        HTML(format_html('<a href="{}" class="btn btn-primary btn-campanha">Laboratórios Cadastrados</a>',
+                             reverse('laboratorios_cadastrados'))),
                         css_class='col-6 text-right'
                     )
                 ),

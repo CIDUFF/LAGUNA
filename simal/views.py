@@ -1,6 +1,6 @@
 # pylint: disable=protected-access,no-member
-
 from django.shortcuts import render, redirect, get_object_or_404
+from django.core.cache import cache
 from django.contrib import messages
 from django_tables2 import RequestConfig
 from django.utils import timezone
@@ -150,29 +150,18 @@ def agenda_coleta(request):
 
 @login_required
 def atualizar_programacao(request, id):
-    """
-    Atualiza a programação de coleta com base nos dados fornecidos pelo formulário.
+    cache_key = f'programacao_{id}'
+    programacao = cache.get(cache_key)
 
-    Args:
-        request (HttpRequest): O objeto HttpRequest que contém os dados da requisição.
-        id (int): O ID da programação de coleta a ser atualizada.
+    if programacao is None:
+        programacao = get_object_or_404(ProgramaColeta, id=id)
+        cache.set(cache_key, programacao, timeout=3600)  # Cache por 1 hora
 
-    Returns:
-        HttpResponse: O objeto HttpResponse que renderiza o template 'coleta/agendar_coleta.html'
-                      com o formulário atualizado ou redireciona para a página 'coletas_agendas'
-                      em caso de sucesso na atualização dos dados.
-
-    Raises:
-        Http404: Se a programação de coleta com o ID fornecido não existir.
-
-    """
-    programacao = get_object_or_404(ProgramaColeta, id=id)
     if request.method == 'POST':
-        form = ProgramaColetaForm(request.POST)
+        form = ProgramaColetaForm(request.POST, instance=programacao)
         if form.is_valid():
-            for field, value in form.cleaned_data.items():
-                setattr(programacao, field, value)
-            programacao.save()
+            form.save()
+            cache.set(cache_key, programacao, timeout=3600)  # Atualiza o cache
             messages.success(request, 'Dados atualizados com sucesso!')
             return redirect('coletas_agendas')
         else:
@@ -180,10 +169,12 @@ def atualizar_programacao(request, id):
     else:
         form_data = {field.name: getattr(
             programacao, field.name) for field in ProgramaColeta._meta.fields}
-        if 'data_coleta' in form_data:
-            form_data['data_coleta'] = form_data['data_coleta'].strftime(
-                '%Y-%m-%d %H:%M:%S')
+        for date_field in ['data_coleta_campo', 'data_fim_coleta_campo']:
+            if date_field in form_data and form_data[date_field]:
+                form_data[date_field] = form_data[date_field].strftime(
+                    '%Y-%m-%d')
         form = ProgramaColetaForm(initial=form_data)
+
     return render(request, 'coleta/agendar_coleta.html', {'form': form})
 
 @login_required
