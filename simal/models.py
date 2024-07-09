@@ -119,7 +119,7 @@ class ProgramaColeta(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f'{self.local_coleta} em {self.data_coleta_campo}, OS: {self.ordem_servico}'
+        return f'{self.ordem_servico}'
 
 
 class Campo(models.Model):
