@@ -10,7 +10,6 @@ admin.site.name = "SIMAL - LAGOA VIVA"
 
 urlpatterns = [
     path('', include('simal.urls')),
-    path('', include('django_dyn_dt.urls')),
     path('admin/', admin.site.urls),
     path('accounts/', include('allauth.urls')),
     
