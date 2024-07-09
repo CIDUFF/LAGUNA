@@ -342,7 +342,7 @@ def gerar_rota_campanha(request):
 
     # Atenção: O redirecionamento não deve estar dentro do loop
     if request.method == 'POST' and campanha:
-        return HttpResponseRedirect(reverse('home'))
+        return HttpResponseRedirect(reverse('coleta/lista_coleta'))
 
     context = {
         'campanha': campanha,
