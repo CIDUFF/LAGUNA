@@ -2,6 +2,9 @@
 {% load crispy_forms_tags %} 
 {% block title%} Registro de coleta de Campo {% endblock %}
 {% block content %} 
-{% csrf_token%}
-{% crispy form %} 
+<h2>Registrar Coleta</h2>
+<div class="card checklist">
+    {% csrf_token%}
+    {% crispy form %} 
+</div>
 {% endblock %}
