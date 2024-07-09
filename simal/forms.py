@@ -30,7 +30,8 @@ class ColetaCampo(forms.Form):
     Métodos:
         __init__: Inicializa o formulário e define o layout.
     """
-
+    codigo_coleta = forms.CharField(
+        label="Código de coleta", widget=forms.TextInput(attrs={'readonly': 'readonly'}))
     clima = forms.CharField()
     matriz = forms.CharField()
     hora_inicio = forms.TimeField(
@@ -52,6 +53,7 @@ class ColetaCampo(forms.Form):
         self.helper.layout = Layout(
             Fieldset(
                 'Formulário de campo - coleta de dados',
+                'codigo_coleta',
                 'clima',
                 'matriz',
                 'hora_inicio',
@@ -93,8 +95,13 @@ class ProgramaColetaForm(forms.Form):
         __init__: Inicializa o formulário e define o layout.
     """
 
-    data_coleta_campo = forms.DateField( label='Data de coleta de campo',
-        widget=forms.DateInput(attrs={'type': 'date'}))
+    data_coleta_campo = forms.DateField(label='Data de coleta de campo', 
+                                        widget=forms.DateInput(attrs={'type': 'date'},
+                                                               format='%Y/%m/%d'))
+
+    data_fim_coleta_campo = forms.DateField(label='Data de fim de coleta',
+                                            widget=forms.DateInput(attrs={'type': 'date'},
+                                                                   format='%Y/%m/%d'))
 
     equipe_coleta = forms.ChoiceField(label='Equipe de coleta')
 
@@ -113,11 +120,8 @@ class ProgramaColetaForm(forms.Form):
 
     status_coleta = forms.ChoiceField(choices=STATUS, label='Status de coleta')
 
-    observacoes = forms.CharField( label='Observações',
-        widget=forms.Textarea(attrs={'rows': 3, 'cols': 40}))
-
-    data_fim_coleta_campo = forms.DateField( label='Data de fim de coleta',
-        widget=forms.DateInput(attrs={'type': 'date'}))
+    observacoes = forms.CharField(label='Observações',
+                                  widget=forms.Textarea(attrs={'rows': 3, 'cols': 40}))
 
     def __init__(self, *args, **kwargs):
         super(ProgramaColetaForm, self).__init__(*args, **kwargs)
@@ -168,7 +172,7 @@ class ChecklistCampoForm(forms.Form):
         widget=forms.HiddenInput(), initial=timezone.now().date)
     ordem_servico = forms.CharField(
         label="Ordem de serviço", widget=forms.TextInput(attrs={'readonly': 'readonly'}))
-    status_checklist = forms.ChoiceField(choices=ChecklistCampo.STATUS)
+    # status_checklist = forms.ChoiceField(choices=ChecklistCampo.STATUS)  # Esta linha foi removida
     observacoes = forms.CharField(
         label='Observações', widget=forms.Textarea, max_length=500, required=False)
 
@@ -207,7 +211,7 @@ class ChecklistCampoForm(forms.Form):
                 'separar_equipamentos',
                 'conferir_equipamentos',
                 'comprar_gelo',
-                'status_checklist',
+                # 'status_checklist',  # Esta linha foi removida
                 'observacoes',
                 css_class='card form-checklist'
             ),
@@ -258,6 +262,7 @@ class IniciarCampanhaForm(forms.Form):
             )
         )
 
+
 class LaboratorioForm(forms.Form):
     nome = forms.CharField(label='Nome do laboratório')
     endereco = forms.CharField(label='Endereço')
@@ -284,7 +289,8 @@ class LaboratorioForm(forms.Form):
                         css_class='col-6'
                     ),
                     Div(
-                        HTML(format_html('<a href="{}" class="btn btn-primary btn-campanha">Laboratórios Cadastrados</a>', reverse('laboratorios_cadastrados'))),
+                        HTML(format_html('<a href="{}" class="btn btn-primary btn-campanha">Laboratórios Cadastrados</a>',
+                             reverse('laboratorios_cadastrados'))),
                         css_class='col-6 text-right'
                     )
                 ),
