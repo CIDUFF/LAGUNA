@@ -8,19 +8,17 @@ from .models import *
 class ColetaCampoTable(tables.Table):
 
     update = tables.LinkColumn('atualizar_coleta', args=[
-                               A('pk')], orderable=False, empty_values=[])
+                               A('pk')], orderable=False, empty_values=[], text='Preencher dados')
 
     class Meta:
         model = Campo
         template_name = 'django_tables2/bootstrap.html'
-        fields = ['codigo_coleta', 'clima', 'matriz', 'hora_inicio', 'hora_fim', 'temperatura', 'ph', 'orp',
-                  'condutividade', 'turbidez', 'od', 'od_pct', 'tds', 'salinidade', 'data', 'update']
+        fields = ['ponto', 'ordem_servico', 'clima', 'update']
         attrs = {'class': 'table table-striped table-bordered table-hover'}
         empty_text = 'Não há dados para exibir'
         orderable = False
         exclude = ('id', 'created_at', 'updated_at', 'campo')
-        sequence = ('codigo_coleta', 'clima', 'matriz', 'hora_inicio', 'hora_fim', 'temperatura', 'ph', 'orp',
-                    'condutividade', 'turbidez', 'od', 'od_pct', 'tds', 'salinidade', 'data', 'update')
+        sequence = ('ponto', 'ordem_servico', 'clima', 'update')
         per_page = 10
         paginator_class = tables.LazyPaginator
         table_pagination = True

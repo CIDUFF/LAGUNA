@@ -79,13 +79,21 @@ def coleta(request):
 # TODO: Atualizar a view de coleta
 @login_required
 def atualizar_coleta(request, id):
-    coleta = ColetaCampo.objects.get(id=id)
-    form = ColetaCampo(instance=coleta)
+    coleta = Campo.objects.get(id=id)
     if request.method == 'POST':
-        form = ColetaCampo(request.POST, instance=coleta)
+        form = ColetaCampo(request.POST)
         if form.is_valid():
-            form.save()
+            # Atualize manualmente a instância coleta com os dados do formulário
+            for field in form.cleaned_data:
+                setattr(coleta, field, form.cleaned_data[field])
+            coleta.save()
             messages.success(request, 'Dados atualizados com sucesso!')
+            return redirect('algum_lugar')
+    else:
+        # Preencha o formulário com os dados da instância coleta
+        form_data = {field: getattr(coleta, field)
+                     for field in ColetaCampo.base_fields}
+        form = ColetaCampo(initial=form_data)
     return render(request, 'coleta/coleta.html', {'form': form})
 
 
@@ -336,6 +344,7 @@ def gerar_rota_campanha(request):
         campo = Campo()
         # Agora, atribua a instância de ProgramaColeta ao campo ordem_servico
         campo.ordem_servico = programa_coleta_instance
+        campo.ponto = str(ponto.ponto)
         campo.codigo_coleta = str(ponto.ponto) + ordem_servico
         campo.clima = previsao_tempo
         campo.save()
