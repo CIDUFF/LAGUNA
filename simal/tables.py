@@ -36,21 +36,24 @@ class ProgramaColetaTable(tables.Table):
     class Meta:
         model = ProgramaColeta
         template_name = 'django_tables2/bootstrap.html'
-        fields = ['usuario','data_coleta_campo', 'equipe_coleta', 'laboratorio', 'solicitante',
-                  'local_coleta', 'status_coleta', 'observacoes', 'ordem_servico']
+        fields = ['ordem_servico', 'usuario', 'data_coleta_campo', 'solicitante',
+                  'local_coleta', 'status_coleta']
         attrs = {'class': 'table table-striped table-bordered table-hover'}
         empty_text = 'Não há dados para exibir'
         orderable = False
         exclude = ('id', 'created_at', 'updated_at', 'campo')
-        sequence = ('usuario','data_coleta_campo', 'equipe_coleta', 'laboratorio', 'solicitante',
-                    'local_coleta', 'status_coleta', 'observacoes', 'ordem_servico')
+        sequence = ('ordem_servico', 'usuario', 'data_coleta_campo', 'solicitante',
+                    'local_coleta', 'status_coleta')
         per_page = 10
         paginator_class = tables.LazyPaginator
         table_pagination = True
 
+
 class LaboratoriosTable(tables.Table):
-    
-    update = tables.LinkColumn('atualizar_laboratorio', args=[A('pk')], orderable=False, empty_values=[], text='EDITAR')
+
+    update = tables.LinkColumn('atualizar_laboratorio', args=[A(
+        'pk')], orderable=False, empty_values=[], text='EDITAR')
+
     class Meta:
         model = Laboratorios
         template_name = 'django_tables2/bootstrap.html'
@@ -63,5 +66,4 @@ class LaboratoriosTable(tables.Table):
         per_page = 10
         paginator_class = tables.LazyPaginator
         table_pagination = True
-#TODO: Criar tabelas para as outras classes
-
+# TODO: Criar tabelas para as outras classes
