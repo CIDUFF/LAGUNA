@@ -33,11 +33,8 @@ class ColetaCampo(forms.Form):
     codigo_coleta = forms.CharField(
         label="Código de coleta", widget=forms.TextInput(attrs={'readonly': 'readonly'}))
     ponto = forms.IntegerField(widget=forms.NumberInput(attrs={'readonly': 'readonly'}))
-    clima = forms.CharField()
-    matriz = forms.CharField()
-    hora_inicio = forms.TimeField(
-        widget=forms.TimeInput(attrs={'type': 'time'}))
-    hora_fim = forms.TimeField(widget=forms.TimeInput(attrs={'type': 'time'}))
+    hora_inicio = forms.TimeField(widget=forms.HiddenInput())
+    hora_fim = forms.TimeField(widget=forms.HiddenInput())
     temperatura = forms.DecimalField()
     ph = forms.DecimalField()
     orp = forms.DecimalField()

@@ -136,13 +136,13 @@ class Campo(models.Model):
     codigo_coleta = models.CharField(
         "Código da Coleta", max_length=50, blank=False)
     clima = models.CharField("Clima", max_length=150, null=True)
-    matriz = models.CharField("Matriz", max_length=12,
-                              choices=MATRIZ, null=True)
+    # matriz = models.CharField("Matriz", max_length=12,
+    #                           choices=MATRIZ, null=True, default='agua_marinha')
+    data = models.DateField(default=date.today, null=True)
     hora_inicio = models.TimeField(
-        "Hora de Início", auto_now=False, auto_now_add=False, blank=True, null=True)
+        "Hora de Início", auto_now=True, auto_now_add=False, blank=True, null=True)
     hora_fim = models.TimeField(
         "Hora de Término", auto_now=False, auto_now_add=False, blank=True, null=True)
-    data = models.DateField(default=date.today, null=True)
     # tempo = models.DurationField("Duração", editable=False, null=True) # Comentado, mas ajustado para seguir o padrão
     ponto = models.IntegerField("Ponto de Coleta", null=True)
     temperatura = models.DecimalField(
@@ -162,10 +162,7 @@ class Campo(models.Model):
         "Salinidade", max_digits=5, decimal_places=2, null=True)
 
     def save(self, *args, **kwargs):
-        if self.hora_inicio is not None and self.hora_fim is not None:
-            datetime_inicio = datetime.combine(date.today(), self.hora_inicio)
-            datetime_fim = datetime.combine(date.today(), self.hora_fim)
-            self.tempo = datetime_fim - datetime_inicio
+        self.hora_fim = datetime.now().time()
         super().save(*args, **kwargs)
 
 
