@@ -83,18 +83,38 @@ def atualizar_coleta(request, id):
     if request.method == 'POST':
         form = ColetaCampo(request.POST)
         if form.is_valid():
-            # Atualize manualmente a instância coleta com os dados do formulário
-            for field in form.cleaned_data:
-                setattr(coleta, field, form.cleaned_data[field])
+
             coleta.save()
             messages.success(request, 'Dados atualizados com sucesso!')
-            return redirect('algum_lugar')
+            return redirect('lista_coleta')
     else:
         # Preencha o formulário com os dados da instância coleta
         form_data = {field: getattr(coleta, field)
                      for field in ColetaCampo.base_fields}
+        # Defina o valor inicial de hora_inicio para o horário atual
+        form_data['hora_inicio'] = timezone.now().strftime('%H:%M')
         form = ColetaCampo(initial=form_data)
     return render(request, 'coleta/coleta.html', {'form': form})
+
+    # if request.method == 'POST':
+    #     form = ProgramaColetaForm(request.POST, instance=programacao)
+    #     if form.is_valid():
+    #         form.save()
+    #         cache.set(cache_key, programacao, timeout=3600)  # Atualiza o cache
+    #         messages.success(request, 'Dados atualizados com sucesso!')
+    #         return redirect('coletas_agendas')
+    #     else:
+    #         print(form.errors)  # Imprime os erros de validação
+    # else:
+    #     form_data = {field.name: getattr(
+    #         programacao, field.name) for field in ProgramaColeta._meta.fields}
+    #     for date_field in ['data_coleta_campo', 'data_fim_coleta_campo']:
+    #         if date_field in form_data and form_data[date_field]:
+    #             form_data[date_field] = form_data[date_field].strftime(
+    #                 '%Y-%m-%d')
+    #     form = ProgramaColetaForm(initial=form_data)
+
+    # return render(request, 'coleta/agendar_coleta.html', {'form': form})
 
 
 

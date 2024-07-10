@@ -1,7 +1,8 @@
 from crispy_forms.helper import FormHelper
+from django.forms import TimeInput
 from crispy_forms.layout import Layout, Fieldset, ButtonHolder, Submit, HTML, Div
 from django.utils import timezone
-from django.forms import ModelChoiceField
+# from django.forms import ModelChoiceField
 from django import forms
 from django.utils.html import format_html
 from django.urls import reverse
@@ -32,18 +33,18 @@ class ColetaCampo(forms.Form):
     """
     codigo_coleta = forms.CharField(
         label="Código de coleta", widget=forms.TextInput(attrs={'readonly': 'readonly'}))
-    ponto = forms.IntegerField(widget=forms.NumberInput(attrs={'readonly': 'readonly'}))
+    ponto = forms.IntegerField(
+        widget=forms.NumberInput(attrs={'readonly': 'readonly'}))
     hora_inicio = forms.TimeField(widget=forms.HiddenInput())
-    hora_fim = forms.TimeField(widget=forms.HiddenInput())
-    temperatura = forms.DecimalField()
-    ph = forms.DecimalField()
-    orp = forms.DecimalField()
-    condutividade = forms.DecimalField()
-    turbidez = forms.DecimalField()
-    od = forms.DecimalField()
-    od_pct = forms.DecimalField()
-    tds = forms.DecimalField()
-    salinidade = forms.DecimalField()
+    temperatura = forms.IntegerField()
+    ph = forms.IntegerField()
+    orp = forms.IntegerField()
+    condutividade = forms.IntegerField()
+    turbidez = forms.IntegerField()
+    od = forms.IntegerField()
+    od_pct = forms.IntegerField()
+    tds = forms.IntegerField()
+    salinidade = forms.IntegerField()
 
     def __init__(self, *args, **kwargs):
         super(ColetaCampo, self).__init__(*args, **kwargs)
@@ -53,10 +54,7 @@ class ColetaCampo(forms.Form):
                 'Formulário de campo - coleta de dados',
                 'codigo_coleta',
                 'ponto',
-                'clima',
-                'matriz',
                 'hora_inicio',
-                'hora_fim',
                 'temperatura',
                 'ph',
                 'orp',
@@ -94,7 +92,7 @@ class ProgramaColetaForm(forms.Form):
         __init__: Inicializa o formulário e define o layout.
     """
 
-    data_coleta_campo = forms.DateField(label='Data de coleta de campo', 
+    data_coleta_campo = forms.DateField(label='Data de coleta de campo',
                                         widget=forms.DateInput(attrs={'type': 'date'},
                                                                format='%Y/%m/%d'))
 

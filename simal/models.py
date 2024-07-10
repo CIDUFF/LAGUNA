@@ -124,13 +124,6 @@ class ProgramaColeta(models.Model):
 
 class Campo(models.Model):
 
-    MATRIZ = [
-        ('agua_marinha', 'Água marinha'),
-        ('agua_doce', 'Água doce'),
-        ('agua_salobra', 'Água salobra'),
-        ('agua_salina', 'Água salina'),
-    ]
-
     ordem_servico = models.ForeignKey(
         ProgramaColeta, on_delete=models.CASCADE, related_name='ordem_servico_campo')
     codigo_coleta = models.CharField(
@@ -140,15 +133,16 @@ class Campo(models.Model):
     #                           choices=MATRIZ, null=True, default='agua_marinha')
     data = models.DateField(default=date.today, null=True)
     hora_inicio = models.TimeField(
-        "Hora de Início", auto_now=True, auto_now_add=False, blank=True, null=True)
+        "Hora de Início", auto_now=False, auto_now_add=False, blank=True, null=True)
     hora_fim = models.TimeField(
-        "Hora de Término", auto_now=False, auto_now_add=False, blank=True, null=True)
+        "Hora de Término", auto_now=True, auto_now_add=False, blank=True, null=True)
     # tempo = models.DurationField("Duração", editable=False, null=True) # Comentado, mas ajustado para seguir o padrão
     ponto = models.IntegerField("Ponto de Coleta", null=True)
     temperatura = models.DecimalField(
         "Temperatura", max_digits=5, decimal_places=2, null=True)
     ph = models.DecimalField("pH", max_digits=5, decimal_places=2, null=True)
-    orp = models.IntegerField("ORP mV", null=True)
+    orp = models.DecimalField("ORP mV", max_digits=5,
+                              decimal_places=2, null=True)
     condutividade = models.DecimalField(
         "Condutividade uS/cm", max_digits=5, decimal_places=2, null=True)
     turbidez = models.DecimalField(
@@ -162,7 +156,7 @@ class Campo(models.Model):
         "Salinidade", max_digits=5, decimal_places=2, null=True)
 
     def save(self, *args, **kwargs):
-        self.hora_fim = datetime.now().time()
+        # self.hora_fim = datetime.now().time()
         super().save(*args, **kwargs)
 
 
