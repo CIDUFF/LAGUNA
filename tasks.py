@@ -4,6 +4,8 @@
 
 # TODO: #53 Mudar o status da campanha automaticamente, se tiver iniciada ja vai para os fomrs de coleta
 
+# Programada, Reprogramada, Cancelada, iniciada, finalizada
+
 # DONE: #49 tirar  a variavel de OS da tabela de lista de coletas e colocar no titulo da tabela
 
 # TODO: #50 Mudar o ponto no proprio formulario
