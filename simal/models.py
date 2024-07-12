@@ -123,40 +123,34 @@ class ProgramaColeta(models.Model):
 
 
 class Campo(models.Model):
-
+    # Supondo que ProgramaColeta e date já foram importados corretamente
     ordem_servico = models.ForeignKey(
         ProgramaColeta, on_delete=models.CASCADE, related_name='ordem_servico_campo')
-    codigo_coleta = models.CharField(
-        "Código da Coleta", max_length=50, blank=False)
+    codigo_coleta = models.CharField("Código da Coleta", max_length=50)
     clima = models.CharField("Clima", max_length=150, null=True)
-    # matriz = models.CharField("Matriz", max_length=12,
-    #                           choices=MATRIZ, null=True, default='agua_marinha')
-    data = models.DateField(default=date.today, null=True)
-    hora_inicio = models.TimeField(
-        "Hora de Início", auto_now=False, auto_now_add=False, blank=True, null=True)
-    hora_fim = models.TimeField(
-        "Hora de Término", auto_now=True, auto_now_add=False, blank=True, null=True)
-    # tempo = models.DurationField("Duração", editable=False, null=True) # Comentado, mas ajustado para seguir o padrão
-    ponto = models.IntegerField("Ponto de Coleta", null=True)
-    temperatura = models.DecimalField(
-        "Temperatura", max_digits=5, decimal_places=2, null=True)
-    ph = models.DecimalField("pH", max_digits=5, decimal_places=2, null=True)
-    orp = models.DecimalField("ORP mV", max_digits=5,
-                              decimal_places=2, null=True)
-    condutividade = models.DecimalField(
-        "Condutividade uS/cm", max_digits=5, decimal_places=2, null=True)
-    turbidez = models.DecimalField(
-        "Turbidez NTU", max_digits=5, decimal_places=2, null=True)
-    od = models.DecimalField("OD mg/L", max_digits=5,
-                             decimal_places=2, null=True)
-    od_pct = models.DecimalField(
-        "OD %", max_digits=5, decimal_places=2, null=True)
-    tds = models.DecimalField("TDS", max_digits=5, decimal_places=2, null=True)
-    salinidade = models.DecimalField(
-        "Salinidade", max_digits=5, decimal_places=2, null=True)
+    data = models.DateField(default=date.today)
+    hora_inicio = models.TimeField("Hora de Início", blank=True, null=True)
+    hora_fim = models.TimeField("Hora de Término", blank=True, null=True)
+    ponto = models.CharField("Ponto de Coleta", default="0")
+    temperatura = models.FloatField("Temperatura", null=True)
+    ph = models.FloatField("pH", null=True)
+    orp = models.FloatField("ORP mV", null=True)
+    condutividade = models.FloatField("Condutividade uS/cm", null=True)
+    turbidez = models.FloatField("Turbidez NTU", null=True)
+    od = models.FloatField("OD mg/L", null=True)
+    od_pct = models.FloatField("OD %", null=True)
+    tds = models.FloatField("TDS", null=True)
+    salinidade = models.FloatField("Salinidade", null=True)
+    status_form = models.CharField("Status", max_length=20, default='Não preenchido')
 
     def save(self, *args, **kwargs):
-        # self.hora_fim = datetime.now().time()
+        campos = [
+            self.clima, self.data, self.hora_inicio, self.hora_fim, self.ponto,
+            self.temperatura, self.ph, self.orp, self.condutividade, self.turbidez,
+            self.od, self.od_pct, self.tds, self.salinidade
+        ]
+        if all(campo is not None for campo in campos):
+            self.status = 'preenchido'
         super().save(*args, **kwargs)
 
 

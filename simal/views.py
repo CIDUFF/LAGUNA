@@ -80,20 +80,26 @@ def coleta(request):
 @login_required
 def atualizar_coleta(request, id):
     coleta = Campo.objects.get(id=id)
-    if request.method == 'POST':
-        form = ColetaCampo(request.POST)
-        if form.is_valid():
+    # Inicializa form fora do bloco condicional
+    form_data = {field: getattr(coleta, field) for field in ColetaCampo.base_fields}
+    form_data['hora_inicio'] = timezone.now().strftime('%H:%M')  # Define o valor inicial de hora_inicio
+    form = ColetaCampo(initial=form_data)  # Inicializa form aqui
 
+    if request.method == 'POST':
+        post_data = request.POST.copy()  # Faz uma cópia mutável dos dados POST
+        post_data['hora_fim'] = timezone.now().strftime('%H:%M')  # Atualiza a cópia com a hora atual
+        form = ColetaCampo(post_data)  # Reatribui form com os dados POST
+
+        if form.is_valid():
+            for field, value in form.cleaned_data.items():
+                setattr(coleta, field, value)
             coleta.save()
             messages.success(request, 'Dados atualizados com sucesso!')
             return redirect('lista_coleta')
-    else:
-        # Preencha o formulário com os dados da instância coleta
-        form_data = {field: getattr(coleta, field)
-                     for field in ColetaCampo.base_fields}
-        # Defina o valor inicial de hora_inicio para o horário atual
-        form_data['hora_inicio'] = timezone.now().strftime('%H:%M')
-        form = ColetaCampo(initial=form_data)
+        else:
+            # Se o formulário não for válido, form já está definido com os erros
+            pass
+
     return render(request, 'coleta/coleta.html', {'form': form})
 
     # if request.method == 'POST':

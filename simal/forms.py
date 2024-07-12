@@ -10,41 +10,22 @@ from .models import *
 
 
 class ColetaCampo(forms.Form):
-    """
-    Representa um formulário para coletar dados de campo.
-
-    Atributos:
-        clima (CharField): Campo para capturar informações sobre o clima.
-        matriz (CharField): Campo para capturar informações sobre a matriz.
-        hora_inicio (TimeField): Campo para capturar a hora de início.
-        hora_fim (TimeField): Campo para capturar a hora de término.
-        temperatura (DecimalField): Campo para capturar a temperatura.
-        ph (DecimalField): Campo para capturar o valor de pH.
-        orp (DecimalField): Campo para capturar o potencial de oxidação-redução.
-        condutividade (DecimalField): Campo para capturar a condutividade.
-        turbidez (DecimalField): Campo para capturar a turbidez.
-        od (DecimalField): Campo para capturar a demanda de oxigênio.
-        od_pct (DecimalField): Campo para capturar a porcentagem de demanda de oxigênio.
-        tds (DecimalField): Campo para capturar os sólidos dissolvidos totais.
-        salinidade (DecimalField): Campo para capturar a salinidade.
-
-    Métodos:
-        __init__: Inicializa o formulário e define o layout.
-    """
+   
     codigo_coleta = forms.CharField(
         label="Código de coleta", widget=forms.TextInput(attrs={'readonly': 'readonly'}))
-    ponto = forms.IntegerField(
-        widget=forms.NumberInput(attrs={'readonly': 'readonly'}))
+    ponto = forms.CharField(
+        widget=forms.TextInput(attrs={'readonly': 'readonly'}))
     hora_inicio = forms.TimeField(widget=forms.HiddenInput())
-    temperatura = forms.IntegerField()
-    ph = forms.IntegerField()
-    orp = forms.IntegerField()
-    condutividade = forms.IntegerField()
-    turbidez = forms.IntegerField()
-    od = forms.IntegerField()
-    od_pct = forms.IntegerField()
-    tds = forms.IntegerField()
-    salinidade = forms.IntegerField()
+    hora_fim = forms.TimeField(widget=forms.HiddenInput())
+    temperatura = forms.FloatField()
+    ph = forms.FloatField()
+    orp = forms.FloatField()
+    condutividade = forms.FloatField()
+    turbidez = forms.FloatField()
+    od = forms.FloatField()
+    od_pct = forms.FloatField()
+    tds = forms.FloatField()
+    salinidade = forms.FloatField()
 
     def __init__(self, *args, **kwargs):
         super(ColetaCampo, self).__init__(*args, **kwargs)
@@ -55,6 +36,7 @@ class ColetaCampo(forms.Form):
                 'codigo_coleta',
                 'ponto',
                 'hora_inicio',
+                'hora_fim',
                 'temperatura',
                 'ph',
                 'orp',
