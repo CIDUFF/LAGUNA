@@ -13,7 +13,6 @@ from .tables import *
 from .filters import *
 from .services import get_weather_description
 
-
 # from django.views.generic import ListView
 # from .models import ColetaCampo
 
@@ -96,7 +95,8 @@ def atualizar_coleta(request, id):
             coleta.save()
             messages.success(request, 'Dados atualizados com sucesso!')
 
-            # Obtenha todos os pontos de coleta da mesma ordem de serviço, ordenados por algum critério que defina a sequência
+            # Obtenha todos os pontos de coleta da mesma ordem de serviço, 
+            # ordenados por algum critério que defina a sequência
             pontos_coleta = Campo.objects.filter(
                 ordem_servico=coleta.ordem_servico).order_by('ponto')
             # Encontre o índice do ponto de coleta atual
@@ -114,8 +114,6 @@ def atualizar_coleta(request, id):
     context = {'form': form, 'codigo_coleta': coleta.codigo_coleta,
                'ponto': coleta.ponto}
     return render(request, 'coleta/coleta.html', context)
-
-
 
 
 @login_required

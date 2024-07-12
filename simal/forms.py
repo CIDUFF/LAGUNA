@@ -46,7 +46,7 @@ class ColetaCampo(forms.Form):
                 'salinidade'
             ),
             ButtonHolder(
-                Submit('submit', 'Salvar')
+                Submit('submit', 'Salvar e ir para o próximo ponto')
             )
         )
 
@@ -88,14 +88,7 @@ class ProgramaColetaForm(forms.Form):
 
     local_coleta = forms.ChoiceField(label='Local de coleta')
 
-    STATUS = [
-        ('programada', 'Programada'),
-        ('reprogramada', 'Reprogramada'),
-        ('realizada', 'Realizada'),
-        ('cancelada', 'Cancelada'),
-    ]
-
-    status_coleta = forms.ChoiceField(choices=STATUS, label='Status de coleta')
+    status_coleta = forms.ChoiceField(label='Status de coleta')
 
     observacoes = forms.CharField(label='Observações',
                                   widget=forms.Textarea(attrs={'rows': 3, 'cols': 40}))
@@ -196,7 +189,6 @@ class ChecklistCampoForm(forms.Form):
                 Submit('submit', 'Salvar e continuar', css_class='btn-primary')
             )
         )
-
 
 class AjudaForm(forms.Form):
     nome = forms.CharField()
