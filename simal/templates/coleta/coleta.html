@@ -1,7 +1,12 @@
 {% extends 'base/base_site.html' %} 
 {% load crispy_forms_tags %} 
-{% block title%} Registro de coleta de Campo {% endblock %}
+{% block title %}Registro de coleta de Campo{% endblock %}
 {% block content %} 
-{% csrf_token%}
+<div class="form-title">
+    <h3>Registro de coleta de Campo - código: {{ codigo_coleta }} - Ponto: {{ponto}}</h2>
+</div>
+{% csrf_token %}
 {% crispy form %} 
+<!-- Botão para voltar para a lista de coletas -->
+<a href="{% url 'lista_coleta' %}" class="btn btn-primary">Voltar para a lista de pontos</a>
 {% endblock %}

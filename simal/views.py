@@ -79,48 +79,41 @@ def coleta(request):
 # TODO: Atualizar a view de coleta
 @login_required
 def atualizar_coleta(request, id):
-    coleta = Campo.objects.get(id=id)
-    # Inicializa form fora do bloco condicional
-    form_data = {field: getattr(coleta, field) for field in ColetaCampo.base_fields}
-    form_data['hora_inicio'] = timezone.now().strftime('%H:%M')  # Define o valor inicial de hora_inicio
-    form = ColetaCampo(initial=form_data)  # Inicializa form aqui
+    coleta = get_object_or_404(Campo, id=id)
+    form_data = {field: getattr(coleta, field)
+                 for field in ColetaCampo.base_fields}
+    form_data['hora_inicio'] = timezone.now().strftime('%H:%M')
+    form = ColetaCampo(initial=form_data)
 
     if request.method == 'POST':
-        post_data = request.POST.copy()  # Faz uma cópia mutável dos dados POST
-        post_data['hora_fim'] = timezone.now().strftime('%H:%M')  # Atualiza a cópia com a hora atual
-        form = ColetaCampo(post_data)  # Reatribui form com os dados POST
+        post_data = request.POST.copy()
+        post_data['hora_fim'] = timezone.now().strftime('%H:%M')
+        form = ColetaCampo(post_data)
 
         if form.is_valid():
             for field, value in form.cleaned_data.items():
                 setattr(coleta, field, value)
             coleta.save()
             messages.success(request, 'Dados atualizados com sucesso!')
-            return redirect('lista_coleta')
+
+            # Obtenha todos os pontos de coleta da mesma ordem de serviço, ordenados por algum critério que defina a sequência
+            pontos_coleta = Campo.objects.filter(
+                ordem_servico=coleta.ordem_servico).order_by('ponto')
+            # Encontre o índice do ponto de coleta atual
+            index_atual = list(pontos_coleta).index(coleta)
+            # Verifique se existe um próximo ponto de coleta
+            if index_atual + 1 < len(pontos_coleta):
+                proximo_ponto = pontos_coleta[index_atual + 1]
+                return redirect(reverse('atualizar_coleta', args=[proximo_ponto.id]))
+            else:
+                # Se não houver próximo ponto, redirecione para a lista de coletas ou página de conclusão
+                return redirect('lista_coleta')
         else:
-            # Se o formulário não for válido, form já está definido com os erros
-            pass
+            pass  # Mantenha o formulário com erros para exibição
 
-    return render(request, 'coleta/coleta.html', {'form': form})
-
-    # if request.method == 'POST':
-    #     form = ProgramaColetaForm(request.POST, instance=programacao)
-    #     if form.is_valid():
-    #         form.save()
-    #         cache.set(cache_key, programacao, timeout=3600)  # Atualiza o cache
-    #         messages.success(request, 'Dados atualizados com sucesso!')
-    #         return redirect('coletas_agendas')
-    #     else:
-    #         print(form.errors)  # Imprime os erros de validação
-    # else:
-    #     form_data = {field.name: getattr(
-    #         programacao, field.name) for field in ProgramaColeta._meta.fields}
-    #     for date_field in ['data_coleta_campo', 'data_fim_coleta_campo']:
-    #         if date_field in form_data and form_data[date_field]:
-    #             form_data[date_field] = form_data[date_field].strftime(
-    #                 '%Y-%m-%d')
-    #     form = ProgramaColetaForm(initial=form_data)
-
-    # return render(request, 'coleta/agendar_coleta.html', {'form': form})
+    context = {'form': form, 'codigo_coleta': coleta.codigo_coleta,
+               'ponto': coleta.ponto}
+    return render(request, 'coleta/coleta.html', context)
 
 
 

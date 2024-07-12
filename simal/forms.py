@@ -10,11 +10,9 @@ from .models import *
 
 
 class ColetaCampo(forms.Form):
-   
-    codigo_coleta = forms.CharField(
-        label="Código de coleta", widget=forms.TextInput(attrs={'readonly': 'readonly'}))
-    ponto = forms.CharField(
-        widget=forms.TextInput(attrs={'readonly': 'readonly'}))
+
+    codigo_coleta = forms.CharField(widget=forms.HiddenInput())
+    ponto = forms.CharField(widget=forms.HiddenInput())
     hora_inicio = forms.TimeField(widget=forms.HiddenInput())
     hora_fim = forms.TimeField(widget=forms.HiddenInput())
     temperatura = forms.FloatField()
@@ -32,7 +30,7 @@ class ColetaCampo(forms.Form):
         self.helper = FormHelper()
         self.helper.layout = Layout(
             Fieldset(
-                'Formulário de campo - coleta de dados',
+                ' ',
                 'codigo_coleta',
                 'ponto',
                 'hora_inicio',
