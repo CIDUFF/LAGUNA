@@ -127,20 +127,16 @@ def deletar_coleta(request, id):
 
 @login_required
 def lista_coleta(request, ordem_servico=None):
-
-    if ordem_servico:
-        # filtro = get_object_or_404(ProgramaColeta, ordem_servico=ordem_servico)
-        filtro = CampoFilter(request.GET, queryset=Campo.objects.filter(
-            ordem_servico=ordem_servico))
-    else:
-        filtro = CampoFilter(request.GET, queryset=Campo.objects.all())
-
+    # filtro = CampoFilter(request.GET, queryset=Campo.objects.all())
+    filtro = CampoFilter(request.GET, queryset=Campo.objects.filter(ordem_servico_id=ordem_servico))
     table = ColetaCampoTable(filtro.qs)
     RequestConfig(request, paginate={"per_page": 25}).configure(table)
     return render(request, 'coleta/lista_coleta.html', {
         'table_campo': table,
         'filtro': filtro,
     })
+
+
 
 
 @login_required
@@ -421,7 +417,7 @@ def gerar_rota_campanha(request, ordem_servico=None):
 
     # Atenção: O redirecionamento não deve estar dentro do loop
     if request.method == 'POST' and campanha:
-        return redirect('lista_coleta', ordem_servico=campanha.ordem_servico)
+        return redirect('lista_coleta', ordem_servico=ordem_servico)
 
     context = {
         'campanha': campanha,
