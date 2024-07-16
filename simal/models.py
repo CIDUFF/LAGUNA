@@ -65,38 +65,29 @@ class LocaisColeta(models.Model):
 
 
 class ProgramaColeta(models.Model):
-    STATUS = [
-        ('programada', 'Programada'),
-        ('reprogramada', 'Reprogramada'),
-        ('realizada', 'Realizada'),
-        ('cancelada', 'Cancelada'),
-    ]
-    ANALISE = [
-        ('Água', 'Sedimentos')
-    ]
+    
 
     ordem_servico = models.CharField(
-        max_length=200, blank=True, verbose_name='Ordem de Serviço')
+        max_length=100, blank=True, verbose_name='Ordem de Serviço')
     data_coleta_campo = models.DateField(
         null=True, verbose_name='Data da Coleta')
     data_fim_coleta_campo = models.DateField(
         null=True, verbose_name='Data Final')
     equipe_coleta = models.CharField(
         max_length=50, default='Equipe 1', verbose_name='Equipe de Coleta')
-    laboratorio = models.CharField(
-        max_length=50, default='Interno', verbose_name='Laboratório')
+    # laboratorio = models.CharField(
+    #     max_length=50, default='Interno', verbose_name='Laboratório')
     solicitante = models.CharField(
         max_length=50, default='João Silva', verbose_name='Responsável')
     local_coleta = models.CharField(
         max_length=50, verbose_name='Local de Coleta')
-    tipos_analise = models.CharField(
-        max_length=50, choices=ANALISE, default='Água', verbose_name='Tipo de Análise')
-    status_coleta = models.CharField(
-        max_length=12, choices=STATUS, default='programada', verbose_name='Status da Coleta')
+    # tipos_analise = models.CharField(null=True, max_length=50)
+    status_coleta = models.CharField(max_length=50, null=True)
     observacoes = models.TextField(
         max_length=500, blank=True, verbose_name='Observações')
     usuario = models.ForeignKey(User, on_delete=models.CASCADE,
                                 verbose_name="Usuário", null=True)  # Adiciona o campo usuario
+    # rota_count = models.CharField(max_length=50, null=True)
 
     # checklist = models.CharField(max_length=1, choices=[(0, 'Não realizada'), (1, 'Realizada')])
 

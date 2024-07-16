@@ -52,44 +52,18 @@ class ColetaCampo(forms.Form):
 
 
 class ProgramaColetaForm(forms.Form):
-    """
-    Classe que define o formulário de programação de coleta.
-
-    Este formulário é usado para capturar informações sobre a programação de coleta de amostras.
-    Ele contém campos para a data de coleta, equipe de coleta, laboratório, solicitante, local de coleta,
-    status da coleta e observações.
-
-    Atributos:
-        data_coleta_campo (DateField): Campo para inserir a data de coleta.
-        equipe_coleta (ChoiceField): Campo para selecionar a equipe de coleta.
-        laboratorio (ChoiceField): Campo para selecionar o laboratório.
-        solicitante (ChoiceField): Campo para selecionar o solicitante.
-        local_coleta (ChoiceField): Campo para selecionar o local de coleta.
-        status_coleta (ChoiceField): Campo para selecionar o status da coleta.
-        observacoes (CharField): Campo para inserir observações sobre a coleta.
-
-    Métodos:
-        __init__: Inicializa o formulário e define o layout.
-    """
 
     data_coleta_campo = forms.DateField(label='Data de coleta de campo',
                                         widget=forms.DateInput(attrs={'type': 'date'},
                                                                format='%Y/%m/%d'))
-
     data_fim_coleta_campo = forms.DateField(label='Data de fim de coleta',
                                             widget=forms.DateInput(attrs={'type': 'date'},
                                                                    format='%Y/%m/%d'))
-
     equipe_coleta = forms.ChoiceField(label='Equipe de coleta')
-
-    laboratorio = forms.ChoiceField()
-
+    # laboratorio = forms.ChoiceField()
     solicitante = forms.ChoiceField()
-
     local_coleta = forms.ChoiceField(label='Local de coleta')
-
-    status_coleta = forms.ChoiceField(label='Status de coleta')
-
+    # status_coleta = forms.ChoiceField(label='Status de coleta')
     observacoes = forms.CharField(label='Observações',
                                   widget=forms.Textarea(attrs={'rows': 3, 'cols': 40}))
 
@@ -102,10 +76,10 @@ class ProgramaColetaForm(forms.Form):
                 'data_coleta_campo',
                 'data_fim_coleta_campo',
                 'equipe_coleta',
-                'laboratorio',
+                # 'laboratorio',
                 'solicitante',
                 'local_coleta',
-                'status_coleta',
+                # 'status_coleta',
                 'observacoes'
             ),
             ButtonHolder(
@@ -125,8 +99,8 @@ class ProgramaColetaForm(forms.Form):
             Coletores, 'equipe')
         self.fields['solicitante'].choices = gerar_opcoes_unicas(
             Solicitantes, 'nome')
-        self.fields['laboratorio'].choices = gerar_opcoes_unicas(
-            Laboratorios, 'nome')
+        # self.fields['laboratorio'].choices = gerar_opcoes_unicas(
+        #     Laboratorios, 'nome')
 
 
 def custom_checkbox_widget():

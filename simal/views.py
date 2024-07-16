@@ -157,12 +157,11 @@ def agenda_coleta(request):
             programa_coleta.data_coleta_campo = form.cleaned_data['data_coleta_campo']
             programa_coleta.data_fim_coleta_campo = form.cleaned_data['data_fim_coleta_campo']
             programa_coleta.equipe_coleta = form.cleaned_data['equipe_coleta']
-            programa_coleta.laboratorio = form.cleaned_data['laboratorio']
+            # programa_coleta.laboratorio = form.cleaned_data['laboratorio']
             programa_coleta.solicitante = form.cleaned_data['solicitante']
-            programa_coleta.local_coleta = form.cleaned_data['local_coleta']
-            programa_coleta.status_coleta = form.cleaned_data['status_coleta']
+            programa_coleta.local_coleta = form.cleaned_data['local_coleta'] 
             programa_coleta.observacoes = form.cleaned_data['observacoes']
-
+            programa_coleta.status_coleta = 'Programada'
             # Salva o modelo no banco de dados
             programa_coleta.save(usuario=request.user)
 
