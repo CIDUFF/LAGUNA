@@ -216,6 +216,36 @@
   }, 4000);
 });
 </script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  // Seleciona todas as divs que contêm mensagens
+  const messages = document.querySelectorAll('.alert');
+  
+  // Define um timeout para esconder as mensagens após 2 segundos (2000 milissegundos)
+  setTimeout(function() {
+    messages.forEach(function(message) {
+      // Esconde a mensagem
+      message.style.display = 'none';
+    });
+  }, 4000);
+
+  // Verifica se existe um ponto selecionado armazenado e atualiza o valor do select
+  const pontoSelecionado = localStorage.getItem('pontoSelecionado');
+  if (pontoSelecionado) {
+    document.getElementById('pontoSelecionado').value = pontoSelecionado;
+  }
+});
+
+document.getElementById('pontoSelecionado').addEventListener('change', function() {
+  var pontoId = this.value;
+  // Armazena o ponto selecionado no localStorage
+  localStorage.setItem('pontoSelecionado', pontoId);
+  // Redireciona para a página de atualização de coleta
+  var urlAtualizacao = `/atualizar_coleta/${pontoId}`;
+  window.location.href = urlAtualizacao;
+});
+</script>
   {% endblock %}
 </body>
 

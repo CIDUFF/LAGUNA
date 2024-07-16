@@ -142,7 +142,7 @@ class Campo(models.Model):
             self.od, self.od_pct, self.tds, self.salinidade
         ]
         if all(campo is not None for campo in campos):
-            self.status = 'preenchido'
+            self.status_form = 'Preenchido'
         super().save(*args, **kwargs)
 
 

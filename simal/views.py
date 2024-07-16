@@ -80,6 +80,10 @@ def coleta(request):
 @login_required
 def atualizar_coleta(request, id):
     coleta = get_object_or_404(Campo, id=id)
+    # Inicialize pontos_coleta no início da função
+    pontos_coleta = Campo.objects.filter(
+        ordem_servico=coleta.ordem_servico).order_by('ponto')
+
     form_data = {field: getattr(coleta, field)
                  for field in ColetaCampo.base_fields}
     form_data['hora_inicio'] = timezone.now().strftime('%H:%M')
@@ -96,13 +100,8 @@ def atualizar_coleta(request, id):
             coleta.save()
             messages.success(request, 'Dados atualizados com sucesso!')
 
-            # Obtenha todos os pontos de coleta da mesma ordem de serviço,
-            # ordenados por algum critério que defina a sequência
-            pontos_coleta = Campo.objects.filter(
-                ordem_servico=coleta.ordem_servico).order_by('ponto')
-            # Encontre o índice do ponto de coleta atual
             index_atual = list(pontos_coleta).index(coleta)
-            # Verifique se existe um próximo ponto de coleta
+
             if index_atual + 1 < len(pontos_coleta):
                 proximo_ponto = pontos_coleta[index_atual + 1]
                 return redirect(reverse('atualizar_coleta', args=[proximo_ponto.id]))
@@ -113,7 +112,8 @@ def atualizar_coleta(request, id):
             pass  # Mantenha o formulário com erros para exibição
 
     context = {'form': form, 'codigo_coleta': coleta.codigo_coleta,
-               'ponto': coleta.ponto}
+               'ponto': coleta.ponto,
+               'pontos_coleta': pontos_coleta}
     return render(request, 'coleta/coleta.html', context)
 
 

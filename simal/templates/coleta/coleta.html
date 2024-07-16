@@ -13,9 +13,18 @@
   </div>
   <div class="col-md-6">
     <div class="card bg-light mb-3">
-      <div class="card-header text-dark text-center">Ponto</div>
+      <div class="card-header text-dark text-center">Ponto atual: {{ ponto }} </div>
       <div class="card-body">
-        <div class="text-dark text-wrap text-break text-center">{{ ponto }}</div>
+        <div class="card-header text-dark text-center">
+          <select name="pontoSelecionado" id="pontoSelecionado" class="form-control" style="color: black;">
+            <option value="" disabled selected>Selecione um ponto</option>
+            {% for ponto in pontos_coleta %}
+              <option value="{{ ponto.id }}">Selecione um novo ponto: {{ ponto.ponto }}</option>
+            {% empty %}
+              <option>Nenhum ponto disponível</option>
+            {% endfor %}
+          </select>
+        </div>
       </div>
     </div>
   </div>
@@ -25,3 +34,4 @@
 <!-- Botão para voltar para a lista de coletas -->
 <a href="{% url 'lista_coleta' %}" class="btn btn-primary">Voltar para a lista de pontos</a>
 {% endblock %}
+
