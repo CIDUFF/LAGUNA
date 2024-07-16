@@ -1,8 +1,8 @@
 # DONE: #52 Hora inicio on load e hora fim os save - ok 
 
-# TODO: #47 No final da OS adicionar o digito 01 para campanha de coleta e remover o codigo dew 4 caracteres
+# DONE: #47 No final da OS adicionar o digito 01 para campanha de coleta e remover o codigo dew 4 caracteres - ok
 
-# TODO: Passar o ponto para o final da string no model de coleta
+# DONE: Passar o ponto para o final da string no model de coleta
 
 # TODO: #53 Mudar o status da campanha automaticamente, se tiver iniciada ja vai para os fomrs de coleta
 
