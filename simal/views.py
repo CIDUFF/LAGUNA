@@ -77,7 +77,6 @@ def coleta(request):
 
 # TODO: Atualizar a view de coleta
 
-
 @login_required
 def atualizar_coleta(request, id):
     coleta = get_object_or_404(Campo, id=id)
@@ -369,12 +368,9 @@ def checklist_campanha(request, ordem_servico=None):
 
         # Verifica se o progresso é igual a 100
 
-
-        if campanha.rota == True:
+        if campanha.rota:
             return redirect('lista_coleta', ordem_servico=campanha.id)
-            
-            # Redireciona para a lista de coletas
-        else: 
+        else:
             return redirect('gerar_rota_campanha', ordem_servico=campanha.ordem_servico)
 
         
