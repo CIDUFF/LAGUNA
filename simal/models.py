@@ -87,6 +87,7 @@ class ProgramaColeta(models.Model):
         max_length=500, blank=True, verbose_name='Observações')
     usuario = models.ForeignKey(User, on_delete=models.CASCADE,
                                 verbose_name="Usuário", null=True)  # Adiciona o campo usuario
+    rota = models.CharField(max_length=25, null=True)
     # rota_count = models.CharField(max_length=50, null=True)
 
     # checklist = models.CharField(max_length=1, choices=[(0, 'Não realizada'), (1, 'Realizada')])

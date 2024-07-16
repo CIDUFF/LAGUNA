@@ -109,7 +109,7 @@ def atualizar_coleta(request, id):
                 return redirect(reverse('atualizar_coleta', args=[proximo_ponto.id]))
             else:
                 # Se não houver próximo ponto, redirecione para a lista de coletas ou página de conclusão
-                return redirect('lista_coleta')
+                return redirect('lista_coleta', ordem_servico=coleta.ordem_servico.id)
         else:
             pass  # Mantenha o formulário com erros para exibição
 
@@ -328,21 +328,21 @@ def iniciar_campanha(request, ordem_servico=None):
 def checklist_campanha(request, ordem_servico=None):
     ordem_servico_selecionada = request.GET.get('ordem_servico', ordem_servico)
     # Busca a instância da ordem de serviço antes de qualquer processamento
-    ordem_servico_instance = get_object_or_404(
+    campanha = get_object_or_404(
         ProgramaColeta, ordem_servico=ordem_servico_selecionada)
 
     # Verifica se a ordem de serviço está cancelada antes de prosseguir
-    if ordem_servico_instance.status_coleta == 'Cancelada':
+    if campanha.status_coleta == 'Cancelada':
         messages.warning(
             request, 'Não é possível iniciar uma campanha cancelada')
         # Redireciona ou renderiza uma página específica para o erro
         return redirect('coletas_agendas')
     try:
         checklist_campanha = ChecklistCampo.objects.get(
-            ordem_servico=ordem_servico_instance)
+            ordem_servico=campanha)
         if checklist_campanha.progresso == 100:
             # Substitua 'lista_coletas' pelo nome correto da sua URL
-            return redirect('lista_coleta')
+            return redirect('lista_coleta', ordem_servico=ProgramaColeta.objects.get(ordem_servico=campanha.ordem_servico).id)
     except ChecklistCampo.DoesNotExist:
         # Se não existir, você pode prosseguir com a criação ou outra lógica
         checklist_campanha = None
@@ -352,9 +352,9 @@ def checklist_campanha(request, ordem_servico=None):
     form = ChecklistCampoForm(
         request.POST or None, ordem_servico_selecionada=ordem_servico_selecionada)
     if request.method == 'POST' and form.is_valid():
-        # A verificação de status foi movida, então esta parte permanece inalterada
+
         checklist_campanha, created = ChecklistCampo.objects.get_or_create(
-            ordem_servico=ordem_servico_instance,
+            ordem_servico=campanha,
             defaults={campo: form.cleaned_data[campo] for campo in (
                 'observacoes', 'previsao_tempo', 'avisar_labs',
                 'reservar_carro', 'reservar_barco', 'separar_equipamentos',
@@ -369,9 +369,17 @@ def checklist_campanha(request, ordem_servico=None):
 
         # Verifica se o progresso é igual a 100
 
-        # ordem_servico_instance.status_coleta = 'Iniciada'
-        ordem_servico_instance.save()
-        return redirect('gerar_rota_campanha', ordem_servico=ordem_servico_instance.ordem_servico)
+
+        if campanha.rota == True:
+            return redirect('lista_coleta', ordem_servico=campanha.id)
+            
+            # Redireciona para a lista de coletas
+        else: 
+            return redirect('gerar_rota_campanha', ordem_servico=campanha.ordem_servico)
+
+        
+    campanha.status_coleta = 'Iniciada'
+    campanha.save()
 
     context = {
         'form': form,
@@ -412,12 +420,15 @@ def gerar_rota_campanha(request, ordem_servico=None):
         campo.codigo_coleta = ordem_servico + str(ponto.ponto)
         campo.clima = previsao_tempo
         campo.save()
-
-    campanha.status_coleta = 'Iniciada'
+        
+    campanha.rota = True
+    campanha.save()
+    
 
     # Atenção: O redirecionamento não deve estar dentro do loop
     if request.method == 'POST' and campanha:
-        return redirect('lista_coleta', ordem_servico=ordem_servico)
+        # campanha.status_coleta = 'Iniciada'
+        return redirect('lista_coleta', ordem_servico=programa_coleta_instance.id)
 
     context = {
         'campanha': campanha,

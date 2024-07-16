@@ -6,8 +6,8 @@ class CampoFilter(django_filters.FilterSet):
     class Meta:
         model = Campo
         fields = {
-            'codigo_coleta': ['icontains'],
-            'clima': ['exact'],
+            'ponto': ['exact'],
+
             # Adicione mais campos conforme necessário
         }
 
