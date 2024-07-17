@@ -8,7 +8,7 @@ class CampoFilter(django_filters.FilterSet):
     class Meta:
         model = Campo
         fields = {
-            'ponto': ['exact'],
+            'ponto': ['icontains'],
 
             # Adicione mais campos conforme necessário
         }
