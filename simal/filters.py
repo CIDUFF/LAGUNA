@@ -1,5 +1,7 @@
+from django import forms
 import django_filters
 from .models import *
+from .forms import *
 
 
 class CampoFilter(django_filters.FilterSet):
@@ -11,15 +13,16 @@ class CampoFilter(django_filters.FilterSet):
             # Adicione mais campos conforme necessário
         }
 
+
 class ProgramaColetaFilter(django_filters.FilterSet):
     class Meta:
         model = ProgramaColeta
         fields = {
             'local_coleta': ['icontains'],
-            'data_coleta_campo': ['exact'],
-            'status_coleta': ['exact'],
+           'data_coleta_campo': ['exact'],
             'equipe_coleta': ['exact'],
-            # Adicione mais campos conforme necessário
+           'status_coleta': ['exact'],
+         # Adicione mais campos conforme necessário
         }
 
 

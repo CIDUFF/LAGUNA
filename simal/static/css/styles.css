@@ -591,3 +591,7 @@ a.sidebar-link:hover {
   position: absolute !important;
   cursor: pointer !important;
 }
+
+.filtro {
+  width: 30%;
+}
