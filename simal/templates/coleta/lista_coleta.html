@@ -1,39 +1,40 @@
-{% extends 'base/base_site.html' %}
-{% load django_tables2 %}
-{% load django_bootstrap5 %}
-{% load static %}
-{% block content %}
-<div class = "card checklist">
+{% extends 'base/base_site.html' %} {% load django_tables2 %} {% load
+django_bootstrap5 %} {% load static %} {% block content %}
+<div class="card checklist">
   <div class="container_coleta">
-    <div class="row align-items-center"> <!-- Adiciona uma linha para alinhar itens horizontalmente -->
-      <div class="col-md-8"> <!-- Coluna para o título -->
-        <h1 class = "d-flex justify-content-left">Lista de Coletas</h1>
+    <div class="row align-items-center">
+      <!-- Adiciona uma linha para alinhar itens horizontalmente -->
+      <div class="col-md-8">
+        <!-- Coluna para o título -->
+        <h1 class="d-flex justify-content-left">Lista de Coletas</h1>
       </div>
-      <div class="col-md-4"> <!-- Coluna para o card -->
+      <div class="col-md-4">
+        <!-- Coluna para o card -->
         <div class="card">
           <div class="card-body">
             <h5 class="card-title">Detalhes da Ordem de Serviço</h5>
-            <br>
+            <br />
             <p>OS: {{ ordem_servico }}</p>
-            <p class = "mb-1">Responsável: {{ responsavel }}</p>
+            <p class="mb-1">Responsável: {{ responsavel }}</p>
           </div>
         </div>
       </div>
     </div>
     <!-- Botão para voltar para a página de coletas agendadas -->
-  {% if filter %}
+    {% if filter %}
     <form method="get" class="form-vertical ml-3">
-      {% bootstrap_form filtro.form layout='floating' %}
-      {% bootstrap_button 'Filtro' %}
+      {% bootstrap_form filtro.form layout='floating' %} {% bootstrap_button
+      'Filtro' %}
     </form>
-  {% endif %}
+    {% endif %}
   </div>
   <div class="table-responsive">
     <table class="table">
       {% render_table table_campo %}
-        <a href="{% url 'coletas_agendas' %}" class="btn btn-primary mt-3">Voltar para Coletas Agendadas</a>
+      <a href="{% url 'coletas_agendas' %}" class="btn btn-primary mt-3"
+        >Voltar para Coletas Agendadas</a
+      >
     </table>
-
   </div>
 </div>
 {% endblock %}
