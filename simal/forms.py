@@ -63,7 +63,7 @@ class ProgramaColetaForm(forms.Form):
     # laboratorio = forms.ChoiceField()
     solicitante = forms.ChoiceField()
     local_coleta = forms.ChoiceField(label='Local de coleta')
-    # status_coleta = forms.ChoiceField(label='Status de coleta')
+
     observacoes = forms.CharField(label='Observações',
                                   widget=forms.Textarea(attrs={'rows': 3, 'cols': 40}))
 
