@@ -11,24 +11,23 @@
               <!-- Primeiro card interno -->
               <div class="col-md-4">
                 <div class="card small-card">
-                  <div class="card-body">
-                    <div class="row">
-                      <div class="col-2">
-                        <div class="d-flex justify-content-center">
-                          <img
-                            src="static/images/icone-calendario.svg"
-                            alt="teste"
-                            class="img-fluid img-larger"
-                          />
+                  <a href="{% url 'coletas_agendas' %}" style="text-decoration: none; color: inherit;">
+                    <div class="card-body">
+                      <div class="row">
+                        <div class="col-2">
+                          <div class="d-flex justify-content-center">
+                            <img src="static/images/icone-calendario.svg" alt="teste" class="img-fluid img-larger"/>
+                          </div>
+                        </div>
+                        <div class="col-10 justify-content-center">
+                          <p class="card-title">Campanha atual</p>
+                          <p class="card-text">{{data_coleta_proxima_formatada}}</p>
+
+                          <p class="card-desc">Status: {{status_coleta}} <br> Local: {{ local_coleta }} </p>
                         </div>
                       </div>
-                      <div class="col-10 justify-content-center">
-                        <p class="card-title">Próxima campanha</p>
-                        <p class="card-text">{{data_coleta_proxima_formatada}}</p>
-                        <p class="card-desc">Status: {{status_coleta}}</p>
-                      </div>
                     </div>
-                  </div>
+                  </a>
                 </div>
               </div>
               <!-- Segundo card interno -->

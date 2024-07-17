@@ -25,7 +25,9 @@
 <div class="table-responsive">
   <table class="table">
     {% render_table table_campo %}
+      <a href="{% url 'coletas_agendas' %}" class="btn btn-primary mt-3">Voltar para Coletas Agendadas</a>
   </table>
+
 </div>
-<a href="{% url 'coletas_agendas' %}" class="btn btn-primary mt-3">Voltar para Coletas Agendadas</a>
+
 {% endblock %}

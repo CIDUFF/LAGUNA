@@ -4,7 +4,7 @@ from django.core.cache import cache
 from django.contrib import messages
 from django_tables2 import RequestConfig
 from django.utils import timezone
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.urls import reverse
 from datetime import datetime, timedelta
 from django.http import JsonResponse, Http404, HttpResponse, HttpResponseRedirect
@@ -17,6 +17,9 @@ from .services import get_weather_description
 # from .models import ColetaCampo
 
 
+def check_admin(user):
+    return user.is_admin
+
 def home(request):
     try:
         data_coleta_proxima = ProgramaColeta.objects.filter(
@@ -26,6 +29,10 @@ def home(request):
         status_coleta = ProgramaColeta.objects.filter(
             data_coleta_campo__gte=timezone.now()
         ).order_by('data_coleta_campo').values_list('status_coleta', flat=True).first()
+        
+        local_coleta = ProgramaColeta.objects.filter(
+            data_coleta_campo__gte=timezone.now()
+        ).order_by('data_coleta_campo').values_list('local_coleta', flat=True).first()
 
         ordem_servico = ProgramaColeta.objects.filter(
             data_coleta_campo__gte=timezone.now()
@@ -51,6 +58,7 @@ def home(request):
             'weather_description': weather_description,
             'data_coleta_proxima_formatada': data_coleta_proxima_formatada,
             'status_coleta': status_coleta,
+            'local_coleta': local_coleta,
             'percentual_checklist': percentual_checklist
         }
 
@@ -123,6 +131,7 @@ def atualizar_coleta(request, id):
 
 
 @login_required
+@user_passes_test(check_admin)
 def deletar_coleta(request, id):
     coleta = ColetaCampo.objects.get(id=id)
     coleta.delete()
@@ -397,42 +406,36 @@ def checklist_campanha(request, ordem_servico=None):
 def gerar_rota_campanha(request, ordem_servico=None):
     ordem_servico = request.GET.get('ordem_servico', ordem_servico)
     campanha = None
-    previsao_tempo = None
-    pontos_coleta = []
-
     if ordem_servico:
         campanha = get_object_or_404(
             ProgramaColeta, ordem_servico=ordem_servico)
+        # Verifica se a rota já está definida como True
+        if campanha.rota:
+            return redirect('lista_coleta', ordem_servico=campanha.id)
+
+    previsao_tempo = None
+    pontos_coleta = []
+    if campanha:
         data = campanha.data_coleta_campo
         previsao_tempo = get_weather_description(
             "Maricá", data.strftime('%Y-%m-%d'))
-
     if request.method == 'POST' and campanha:
         local_campanha = ProgramaColeta.objects.filter(
             ordem_servico=ordem_servico).values_list('local_coleta', flat=True).first()
-        pontos_coleta = LocaisColeta.objects.filter(
-            local=local_campanha)
-
-    # Antes do loop for, obtenha a instância de ProgramaColeta
+        pontos_coleta = LocaisColeta.objects.filter(local=local_campanha)
         programa_coleta_instance = get_object_or_404(
             ProgramaColeta, ordem_servico=ordem_servico)
+        for ponto in pontos_coleta:
+            campo = Campo()
+            campo.ordem_servico = programa_coleta_instance
+            campo.ponto = str(ponto.ponto)
+            campo.codigo_coleta = ordem_servico + str(ponto.ponto)
+            campo.clima = previsao_tempo
+            campo.save()
 
-    for ponto in pontos_coleta:
-        campo = Campo()
-        # Agora, atribua a instância de ProgramaColeta ao campo ordem_servico
-        campo.ordem_servico = programa_coleta_instance
-        campo.ponto = str(ponto.ponto)
-        campo.codigo_coleta = ordem_servico + str(ponto.ponto)
-        campo.clima = previsao_tempo
-        campo.save()
-        
-    campanha.rota = True
-    campanha.save()
-    
+        campanha.rota = True
+        campanha.save()
 
-    # Atenção: O redirecionamento não deve estar dentro do loop
-    if request.method == 'POST' and campanha:
-        # campanha.status_coleta = 'Iniciada'
         return redirect('lista_coleta', ordem_servico=programa_coleta_instance.id)
 
     context = {
