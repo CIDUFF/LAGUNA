@@ -20,8 +20,10 @@
     
 <div class="card checklist">
     <form method="get">
-        {{ filtro.form.as_p }}
-        <button type="submit">Filtrar</button>
+        <div class='filtro'>
+            {{ filtro.form.as_p }}
+        </div>
+        <button type="submit" class="btn-campanha">Filtrar</button>
     </form>
     <div class="table-responsive">
         <table class="table">
