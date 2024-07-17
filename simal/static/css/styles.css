@@ -595,3 +595,8 @@ a.sidebar-link:hover {
 .filtro {
   width: 30%;
 }
+
+.container-coleta {
+  display: flex;
+  justify-content: space-between;
+}
