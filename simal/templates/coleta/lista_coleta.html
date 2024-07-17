@@ -18,8 +18,10 @@
   <!-- Botão para voltar para a página de coletas agendadas -->
   
   <form method="get" class="mt-3">
-    {{ filtro.form.as_p }}
-    <button type="submit">Filtrar</button>
+    <div class='filtro'>
+        {{ filtro.form.as_p }}
+        <button class="btn-campanha" type="submit">Filtrar</button>
+    </div>
   </form>
 </div>
 <div class="table-responsive">

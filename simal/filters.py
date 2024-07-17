@@ -23,3 +23,4 @@ class ProgramaColetaFilter(django_filters.FilterSet):
             'equipe_coleta': ['exact'],
            'status_coleta': ['exact'],
          # Adicione mais campos conforme necessário
+        }
