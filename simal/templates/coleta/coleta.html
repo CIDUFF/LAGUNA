@@ -19,9 +19,9 @@
           <select name="pontoSelecionado" id="pontoSelecionado" class="form-control" style="color: black;">
             <option value="" disabled selected>Selecione um ponto</option>
             {% for ponto in pontos_coleta %}
-              <option value="{{ ponto.id }}">Selecione um novo ponto: {{ ponto.ponto }}</option>
+              <option value="{{ ponto.id }}">{{ ponto.ponto }}</option>
             {% empty %}
-              <option>Nenhum ponto disponível</option>
+            <option value="" disabled selected>Nenhum ponto disponível</option>
             {% endfor %}
           </select>
         </div>

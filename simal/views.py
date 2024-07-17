@@ -80,7 +80,6 @@ def coleta(request):
 @login_required
 def atualizar_coleta(request, id):
     coleta = get_object_or_404(Campo, id=id)
-    # Inicialize pontos_coleta no início da função
     pontos_coleta = Campo.objects.filter(
         ordem_servico=coleta.ordem_servico).order_by('ponto')
 
@@ -100,20 +99,26 @@ def atualizar_coleta(request, id):
             coleta.save()
             messages.success(request, 'Dados atualizados com sucesso!')
 
-            index_atual = list(pontos_coleta).index(coleta)
+            # Verifica se todos os pontos foram coletados
+            todos_pontos_preenchidos = Campo.objects.filter(
+                ordem_servico=coleta.ordem_servico).exclude(status_form='Preenchido').exists()
 
+            if not todos_pontos_preenchidos:
+                campanha = ProgramaColeta.objects.get(id=coleta.ordem_servico.id)
+                campanha.status_coleta = 'Coleta realizada'
+                campanha.save()
+
+            index_atual = list(pontos_coleta).index(coleta)
             if index_atual + 1 < len(pontos_coleta):
                 proximo_ponto = pontos_coleta[index_atual + 1]
                 return redirect(reverse('atualizar_coleta', args=[proximo_ponto.id]))
             else:
-                # Se não houver próximo ponto, redirecione para a lista de coletas ou página de conclusão
                 return redirect('lista_coleta', ordem_servico=coleta.ordem_servico.id)
         else:
             pass  # Mantenha o formulário com erros para exibição
 
     context = {'form': form, 'codigo_coleta': coleta.codigo_coleta,
-               'ponto': coleta.ponto,
-               'pontos_coleta': pontos_coleta}
+               'ponto': coleta.ponto, 'pontos_coleta': pontos_coleta}
     return render(request, 'coleta/coleta.html', context)
 
 
@@ -127,12 +132,16 @@ def deletar_coleta(request, id):
 @login_required
 def lista_coleta(request, ordem_servico=None):
     # filtro = CampoFilter(request.GET, queryset=Campo.objects.all())
+    ordem_servico = ProgramaColeta.objects.get(id=ordem_servico)
+    responsavel = ProgramaColeta.objects.get(id=ordem_servico.id).usuario
     filtro = CampoFilter(request.GET, queryset=Campo.objects.filter(ordem_servico_id=ordem_servico))
     table = ColetaCampoTable(filtro.qs)
     RequestConfig(request, paginate={"per_page": 25}).configure(table)
     return render(request, 'coleta/lista_coleta.html', {
         'table_campo': table,
         'filtro': filtro,
+        'ordem_servico': ordem_servico,
+        'responsavel': responsavel
     })
 
 

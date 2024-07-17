@@ -13,12 +13,12 @@ class ColetaCampoTable(tables.Table):
     class Meta:
         model = Campo
         template_name = 'django_tables2/bootstrap.html'
-        fields = ['ponto', 'ordem_servico', 'status_form', 'update']
+        fields = ['ponto', 'codigo_coleta', 'status_form', 'update']
         attrs = {'class': 'table table-striped table-bordered table-hover'}
         empty_text = 'Não há dados para exibir'
         orderable = False
         exclude = ('id', 'created_at', 'updated_at', 'campo')
-        sequence = ('ponto', 'ordem_servico', 'status_form', 'update')
+        sequence = ('ponto', 'codigo_coleta', 'status_form', 'update')
         per_page = 10
         paginator_class = tables.LazyPaginator
         table_pagination = True
