@@ -600,3 +600,7 @@ a.sidebar-link:hover {
   display: flex;
   justify-content: space-between;
 }
+
+.form-floating {
+  margin: 1rem !important;
+}
