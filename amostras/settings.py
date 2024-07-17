@@ -47,9 +47,10 @@ INSTALLED_APPS = [
     'crispy_forms',
     'crispy_bootstrap3',
     'django_tables2',
-    'debug_toolbar'
+    'debug_toolbar',
+    "django_bootstrap5",
 
-    
+
 ]
 
 AUTHENTICATION_BACKENDS = [
@@ -61,7 +62,6 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 SITE_ID = 1
-
 
 
 MIDDLEWARE = [
@@ -105,7 +105,6 @@ WSGI_APPLICATION = 'amostras.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
-
 
 
 DATABASES = {

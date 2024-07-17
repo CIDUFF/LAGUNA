@@ -33,7 +33,7 @@ class ProgramaColetaTable(tables.Table):
     cancelar = tables.LinkColumn('cancelar_programacao', args=[A(
         'pk')], orderable=False, empty_values=[], text='Cancelar programação')
     iniciar = tables.LinkColumn('checklist_campanha', args=[A(
-        'ordem_servico')], orderable=False, empty_values=[], text='Iniciar coleta')
+        'ordem_servico')], orderable=False, empty_values=[], text='Iniciar campanha')
 
     class Meta:
         model = ProgramaColeta
