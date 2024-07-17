@@ -111,6 +111,7 @@ class ProgramaColetaForm(forms.Form):
 
     local_coleta = forms.ChoiceField(label='Local de coleta')
 
+
     STATUS = [
         ('programada', 'Programada'),
         ('reprogramada', 'Reprogramada'),

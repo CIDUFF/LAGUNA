@@ -585,3 +585,13 @@ a.sidebar-link:hover {
   background-color: #0b5ed7 !important;
   
 }
+
+.lista-campanha {
+  display: block !important;
+  position: absolute !important;
+  cursor: pointer !important;
+}
+
+.filtro {
+  width: 30%;
+}

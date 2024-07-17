@@ -6,16 +6,18 @@
 <form method="post">
   {% csrf_token %}
   <!-- Exibindo detalhes da campanha -->
-  <div>
+  <div class="card checklist">
     <p><strong>Ordem de serviço:</strong> {{ campanha.ordem_servico }}</p>
     <p><strong>Data de Início:</strong> {{ campanha.data_coleta_campo|date:"d/m/Y" }}</p>
     <p><strong>Local:</strong> {{ campanha.local_coleta}}</p>
     <p><strong>Solicitante</strong> {{ campanha.solicitante }}</p>
     <p><strong>Previsão do tempo: </strong>{{ previsao_tempo }}</p> 
     <!--botao para gerar rotas-->
-    <button type="submit" class="btn btn-primary">Gerar rota</button>
-    <!--botao para voltar a pagina inical-->
-    <a href="{% url 'coletas_agendas' %}" class="btn btn-primary">Cancelar</a>
+    <div>
+        <button type="submit" class="btn btn-primary">Gerar rota</button>
+        <!--botao para voltar a pagina inical-->
+        <a href="{% url 'coletas_agendas' %}" class="btn btn-primary">Cancelar</a>
+    </div>
   </div>
 </form>
 
