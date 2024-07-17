@@ -1,7 +1,8 @@
 from crispy_forms.helper import FormHelper
+from django.forms import TimeInput
 from crispy_forms.layout import Layout, Fieldset, ButtonHolder, Submit, HTML, Div
 from django.utils import timezone
-from django.forms import ModelChoiceField
+# from django.forms import ModelChoiceField
 from django import forms
 from django.utils.html import format_html
 from django.urls import reverse
@@ -9,53 +10,29 @@ from .models import *
 
 
 class ColetaCampo(forms.Form):
-    """
-    Representa um formulário para coletar dados de campo.
 
-    Atributos:
-        clima (CharField): Campo para capturar informações sobre o clima.
-        matriz (CharField): Campo para capturar informações sobre a matriz.
-        hora_inicio (TimeField): Campo para capturar a hora de início.
-        hora_fim (TimeField): Campo para capturar a hora de término.
-        temperatura (DecimalField): Campo para capturar a temperatura.
-        ph (DecimalField): Campo para capturar o valor de pH.
-        orp (DecimalField): Campo para capturar o potencial de oxidação-redução.
-        condutividade (DecimalField): Campo para capturar a condutividade.
-        turbidez (DecimalField): Campo para capturar a turbidez.
-        od (DecimalField): Campo para capturar a demanda de oxigênio.
-        od_pct (DecimalField): Campo para capturar a porcentagem de demanda de oxigênio.
-        tds (DecimalField): Campo para capturar os sólidos dissolvidos totais.
-        salinidade (DecimalField): Campo para capturar a salinidade.
-
-    Métodos:
-        __init__: Inicializa o formulário e define o layout.
-    """
-    codigo_coleta = forms.CharField(
-        label="Código de coleta", widget=forms.TextInput(attrs={'readonly': 'readonly'}))
-    clima = forms.CharField()
-    matriz = forms.CharField()
-    hora_inicio = forms.TimeField(
-        widget=forms.TimeInput(attrs={'type': 'time'}))
-    hora_fim = forms.TimeField(widget=forms.TimeInput(attrs={'type': 'time'}))
-    temperatura = forms.DecimalField()
-    ph = forms.DecimalField()
-    orp = forms.DecimalField()
-    condutividade = forms.DecimalField()
-    turbidez = forms.DecimalField()
-    od = forms.DecimalField()
-    od_pct = forms.DecimalField()
-    tds = forms.DecimalField()
-    salinidade = forms.DecimalField()
+    codigo_coleta = forms.CharField(widget=forms.HiddenInput())
+    ponto = forms.CharField(widget=forms.HiddenInput())
+    hora_inicio = forms.TimeField(widget=forms.HiddenInput())
+    hora_fim = forms.TimeField(widget=forms.HiddenInput())
+    temperatura = forms.FloatField()
+    ph = forms.FloatField()
+    orp = forms.FloatField()
+    condutividade = forms.FloatField()
+    turbidez = forms.FloatField()
+    od = forms.FloatField()
+    od_pct = forms.FloatField()
+    tds = forms.FloatField()
+    salinidade = forms.FloatField()
 
     def __init__(self, *args, **kwargs):
         super(ColetaCampo, self).__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.layout = Layout(
             Fieldset(
-                'Formulário de campo - coleta de dados',
+                ' ',
                 'codigo_coleta',
-                'clima',
-                'matriz',
+                'ponto',
                 'hora_inicio',
                 'hora_fim',
                 'temperatura',
@@ -69,57 +46,23 @@ class ColetaCampo(forms.Form):
                 'salinidade'
             ),
             ButtonHolder(
-                Submit('submit', 'Salvar')
+                Submit('submit', 'Salvar e ir para o próximo ponto')
             )
         )
 
 
 class ProgramaColetaForm(forms.Form):
-    """
-    Classe que define o formulário de programação de coleta.
 
-    Este formulário é usado para capturar informações sobre a programação de coleta de amostras.
-    Ele contém campos para a data de coleta, equipe de coleta, laboratório, solicitante, local de coleta,
-    status da coleta e observações.
-
-    Atributos:
-        data_coleta_campo (DateField): Campo para inserir a data de coleta.
-        equipe_coleta (ChoiceField): Campo para selecionar a equipe de coleta.
-        laboratorio (ChoiceField): Campo para selecionar o laboratório.
-        solicitante (ChoiceField): Campo para selecionar o solicitante.
-        local_coleta (ChoiceField): Campo para selecionar o local de coleta.
-        status_coleta (ChoiceField): Campo para selecionar o status da coleta.
-        observacoes (CharField): Campo para inserir observações sobre a coleta.
-
-    Métodos:
-        __init__: Inicializa o formulário e define o layout.
-    """
-
-    data_coleta_campo = forms.DateField(label='Data de coleta de campo', 
+    data_coleta_campo = forms.DateField(label='Data de coleta de campo',
                                         widget=forms.DateInput(attrs={'type': 'date'},
                                                                format='%Y/%m/%d'))
-
     data_fim_coleta_campo = forms.DateField(label='Data de fim de coleta',
                                             widget=forms.DateInput(attrs={'type': 'date'},
                                                                    format='%Y/%m/%d'))
-
     equipe_coleta = forms.ChoiceField(label='Equipe de coleta')
-
-    laboratorio = forms.ChoiceField()
-
+    # laboratorio = forms.ChoiceField()
     solicitante = forms.ChoiceField()
-
     local_coleta = forms.ChoiceField(label='Local de coleta')
-
-
-    STATUS = [
-        ('programada', 'Programada'),
-        ('reprogramada', 'Reprogramada'),
-        ('realizada', 'Realizada'),
-        ('cancelada', 'Cancelada'),
-    ]
-
-    status_coleta = forms.ChoiceField(choices=STATUS, label='Status de coleta')
 
     observacoes = forms.CharField(label='Observações',
                                   widget=forms.Textarea(attrs={'rows': 3, 'cols': 40}))
@@ -133,10 +76,10 @@ class ProgramaColetaForm(forms.Form):
                 'data_coleta_campo',
                 'data_fim_coleta_campo',
                 'equipe_coleta',
-                'laboratorio',
+                # 'laboratorio',
                 'solicitante',
                 'local_coleta',
-                'status_coleta',
+                # 'status_coleta',
                 'observacoes'
             ),
             ButtonHolder(
@@ -156,8 +99,8 @@ class ProgramaColetaForm(forms.Form):
             Coletores, 'equipe')
         self.fields['solicitante'].choices = gerar_opcoes_unicas(
             Solicitantes, 'nome')
-        self.fields['laboratorio'].choices = gerar_opcoes_unicas(
-            Laboratorios, 'nome')
+        # self.fields['laboratorio'].choices = gerar_opcoes_unicas(
+        #     Laboratorios, 'nome')
 
 
 def custom_checkbox_widget():
@@ -220,7 +163,6 @@ class ChecklistCampoForm(forms.Form):
                 Submit('submit', 'Salvar e continuar', css_class='btn-primary')
             )
         )
-
 
 class AjudaForm(forms.Form):
     nome = forms.CharField()

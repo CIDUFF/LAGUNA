@@ -1,10 +1,37 @@
 {% extends 'base/base_site.html' %} 
 {% load crispy_forms_tags %} 
-{% block title%} Registro de coleta de Campo {% endblock %}
+{% block title %}Registro de coleta de Campo{% endblock %}
 {% block content %} 
-<h2>Registrar Coleta</h2>
-<div class="card checklist">
-    {% csrf_token%}
-    {% crispy form %} 
+<div class="row">
+  <div class="col-md-6">
+    <div class="card bg-light mb-3">
+      <div class="card-header text-dark text-center">Código</div>
+      <div class="card-body">
+        <div class="text-dark text-wrap text-break text-center">{{ codigo_coleta }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card bg-light mb-3">
+      <div class="card-header text-dark text-center">Ponto atual: {{ ponto }} </div>
+      <div class="card-body">
+        <div class="card-header text-dark text-center">
+          <select name="pontoSelecionado" id="pontoSelecionado" class="form-control" style="color: black;">
+            <option value="" disabled selected>Selecione um ponto</option>
+            {% for ponto in pontos_coleta %}
+              <option value="{{ ponto.id }}">{{ ponto.ponto }}</option>
+            {% empty %}
+            <option value="" disabled selected>Nenhum ponto disponível</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
+{% csrf_token %}
+{% crispy form %} 
+<!-- Botão para voltar para a lista de coletas -->
+<a href="{% url 'lista_coleta' %}" class="btn btn-primary">Voltar para a lista de pontos</a>
 {% endblock %}
+

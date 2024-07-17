@@ -8,19 +8,17 @@ from .models import *
 class ColetaCampoTable(tables.Table):
 
     update = tables.LinkColumn('atualizar_coleta', args=[
-                               A('pk')], orderable=False, empty_values=[])
+                               A('pk')], orderable=False, empty_values=[], text='Preencher dados')
 
     class Meta:
         model = Campo
         template_name = 'django_tables2/bootstrap.html'
-        fields = ['codigo_coleta', 'clima', 'matriz', 'hora_inicio', 'hora_fim', 'temperatura', 'ph', 'orp',
-                  'condutividade', 'turbidez', 'od', 'od_pct', 'tds', 'salinidade', 'data', 'update']
+        fields = ['ponto', 'codigo_coleta', 'status_form', 'update']
         attrs = {'class': 'table table-striped table-bordered table-hover'}
         empty_text = 'Não há dados para exibir'
         orderable = False
         exclude = ('id', 'created_at', 'updated_at', 'campo')
-        sequence = ('codigo_coleta', 'clima', 'matriz', 'hora_inicio', 'hora_fim', 'temperatura', 'ph', 'orp',
-                    'condutividade', 'turbidez', 'od', 'od_pct', 'tds', 'salinidade', 'data', 'update')
+        sequence = ('ponto', 'codigo_coleta', 'status_form', 'update')
         per_page = 10
         paginator_class = tables.LazyPaginator
         table_pagination = True
@@ -32,27 +30,32 @@ class ProgramaColetaTable(tables.Table):
         'pk')], orderable=False, empty_values=[], text='Atualizar dados')
     deletar = tables.LinkColumn('deletar_programacao', args=[A(
         'pk')], orderable=False, empty_values=[], text='Remover programação')
+    cancelar = tables.LinkColumn('cancelar_programacao', args=[A(
+        'pk')], orderable=False, empty_values=[], text='Cancelar programação')
     iniciar = tables.LinkColumn('checklist_campanha', args=[A(
         'ordem_servico')], orderable=False, empty_values=[], text='Iniciar coleta')
 
     class Meta:
         model = ProgramaColeta
         template_name = 'django_tables2/bootstrap.html'
-        fields = ['usuario','data_coleta_campo', 'equipe_coleta', 'laboratorio', 'solicitante',
-                  'local_coleta', 'status_coleta', 'observacoes', 'ordem_servico']
+        fields = ['ordem_servico', 'usuario', 'data_coleta_campo', 'solicitante',
+                  'local_coleta', 'status_coleta']
         attrs = {'class': 'table table-striped table-bordered table-hover'}
         empty_text = 'Não há dados para exibir'
         orderable = False
         exclude = ('id', 'created_at', 'updated_at', 'campo')
-        sequence = ('usuario','data_coleta_campo', 'equipe_coleta', 'laboratorio', 'solicitante',
-                    'local_coleta', 'status_coleta', 'observacoes', 'ordem_servico')
+        sequence = ('ordem_servico', 'usuario', 'data_coleta_campo', 'solicitante',
+                    'local_coleta', 'status_coleta')
         per_page = 10
         paginator_class = tables.LazyPaginator
         table_pagination = True
 
+
 class LaboratoriosTable(tables.Table):
-    
-    update = tables.LinkColumn('atualizar_laboratorio', args=[A('pk')], orderable=False, empty_values=[], text='EDITAR')
+
+    update = tables.LinkColumn('atualizar_laboratorio', args=[A(
+        'pk')], orderable=False, empty_values=[], text='EDITAR')
+
     class Meta:
         model = Laboratorios
         template_name = 'django_tables2/bootstrap.html'
@@ -65,5 +68,4 @@ class LaboratoriosTable(tables.Table):
         per_page = 10
         paginator_class = tables.LazyPaginator
         table_pagination = True
-#TODO: Criar tabelas para as outras classes
-
+# TODO: Criar tabelas para as outras classes

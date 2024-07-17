@@ -8,8 +8,8 @@ class CampoFilter(django_filters.FilterSet):
     class Meta:
         model = Campo
         fields = {
-            'codigo_coleta': ['icontains'],
-            'clima': ['exact'],
+            'ponto': ['exact'],
+
             # Adicione mais campos conforme necessário
         }
 
@@ -23,4 +23,3 @@ class ProgramaColetaFilter(django_filters.FilterSet):
             'equipe_coleta': ['exact'],
            'status_coleta': ['exact'],
          # Adicione mais campos conforme necessário
-        }
