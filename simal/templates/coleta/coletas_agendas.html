@@ -1,6 +1,7 @@
 {% extends 'base/base_site.html' %} 
 
 {% load django_tables2 %} 
+{% load django_bootstrap5 %}
 {% load static %}
 
 {% block content %}  
@@ -10,11 +11,10 @@
 </div>
 
 <div class="card checklist">
-    <form method="get">
-        <div class='filtro'>
-            {{ filtro.form.as_p }}
-        </div>
-        <button type="submit" class="btn-campanha">Filtrar</button>
+    <form method="get" class="form-inline">
+        {% bootstrap_form filtro.form layout='floating'  %}
+        <br>
+        {% bootstrap_button 'Filtro'%}
     </form>
     <div class="table-responsive">
         <table class="table">
