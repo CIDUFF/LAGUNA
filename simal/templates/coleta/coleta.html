@@ -2,40 +2,44 @@
 {% load crispy_forms_tags %} 
 {% block title %}Registro de coleta de Campo{% endblock %}
 {% block content %} 
-<div class="d-flex align-items-center">
-  <h1 class="mb-0">Registro de coleta de Campo</h1> 
-  <a href="{% url 'lista_coleta' %}" class="btn btn-primary ms-5">Voltar para a lista de pontos</a>
-</div>
-<br>
-<div class="row">
-      <div class="col-md-6">
-        <div class="h-75 card bg-light mb-3">
-          <div class="card-header text-dark text-center">Código</div>
-          <div class="card-body">
-            <div class="text-dark text-wrap text-break text-center">{{ codigo_coleta }}</div>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-6">
-        <div class="h-75 card bg-light mb-3">
-          <div class="card-header text-dark text-center">Ponto atual: {{ ponto }} </div>
-          <div class="card-body">
-            <div class="card-header text-dark text-center">
-              <select name="pontoSelecionado" id="pontoSelecionado" class="form-control" style="color: black;">
-                <option value="" disabled selected>Selecione um ponto</option>
-                {% for ponto in pontos_coleta %}
-                  <option value="{{ ponto.id }}">{{ ponto.ponto }}</option>
-                {% empty %}
-                <option value="" disabled selected>Nenhum ponto disponível</option>
-                {% endfor %}
-              </select>
+<div class = "card checklist">
+
+
+    <h1 class="m-3 d-flex justify-content-center">Registro de coleta de Campo</h1> 
+
+  <br>
+  <div class="row">
+        <div class="col-md-6">
+          <div class="h-75 card bg-light mb-3">
+            <div class="card-header text-dark text-center"><h4><strong>Voltar para lista de pontos</strong></h4></div>
+            <div class="card-body d-flex justify-content-center">
+              <a href="{% url 'lista_coleta' ordem_servico_id %}" class="btn btn-primary">{{ codigo_coleta }}</a>
             </div>
           </div>
         </div>
-      </div>
+        <div class="col-md-6">
+          <div class="h-75 card bg-light mb-3">
+            <div class="card-header text-dark text-center"><h4><strong>Ponto atual: </strong>{{ ponto }}</h3> </div>
+            <div class="card-body">
+              <div class="card-header text-dark text-center">
+                <select name="pontoSelecionado" id="pontoSelecionado" class="form-control" style="color: black;">
+                  <option value="" disabled selected>Selecione um ponto</option>
+                  {% for ponto in pontos_coleta %}
+                    <option value="{{ ponto.id }}">{{ ponto.ponto }}</option>
+                  {% empty %}
+                  <option value="" disabled selected>Nenhum ponto disponível</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+  </div>
+
+  {% csrf_token %}
+  {% crispy form %} 
 </div>
-{% csrf_token %}
-{% crispy form %} 
+
 
 
 
