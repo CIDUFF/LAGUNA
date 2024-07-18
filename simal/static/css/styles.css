@@ -8,7 +8,6 @@
 
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap");
 
-
 /* Estilos gerais */
 body {
   margin: 10px 10px 20px; /* Define as margens do corpo do site */
@@ -199,7 +198,7 @@ h1 {
 }
 
 body {
-  font-family: 'Poppins', sans-serif !important;
+  font-family: "Poppins", sans-serif !important;
 }
 
 .wrapper {
@@ -273,7 +272,6 @@ a.sidebar-link {
 .sidebar-link i {
   font-size: 1.1rem;
   margin-right: 0.75rem;
-
 }
 
 a.sidebar-link:hover {
@@ -295,7 +293,6 @@ a.sidebar-link:hover {
   border-radius: 10px;
   min-width: 16rem;
   display: none;
-
 }
 
 #sidebar:not(.expand) .sidebar-item:hover .has-dropdown + .sidebar-dropdown {
@@ -376,7 +373,7 @@ a.sidebar-link:hover {
   transform: scale(2.5); /* Ajuste o valor conforme necessário */
   margin-top: 2rem;
   margin-bottom: 1.5rem;
-  margin-left: 2rem ;
+  margin-left: 2rem;
 }
 
 .card {
@@ -393,8 +390,6 @@ a.sidebar-link:hover {
   padding: 0.5rem !important;
   outline: none !important; /* Remove o contorno */
 }
-
-
 
 .card-title {
   font-size: 1rem !important;
@@ -426,7 +421,7 @@ a.sidebar-link:hover {
   color: #000000 !important;
   padding-left: 2rem;
   margin-top: 0rem !important; /* Adicione esta linha para diminuir a margem superior */
-  font-family: 'Poppins', sans-serif !important;
+  font-family: "Poppins", sans-serif !important;
 }
 
 .card.cronograma {
@@ -437,7 +432,6 @@ a.sidebar-link:hover {
   margin: 1rem !important;
   width: 50% !important;
   margin-top: 2rem !important;
-  
 }
 .card.calendario {
   background-color: #ffffff;
@@ -456,7 +450,6 @@ a.sidebar-link:hover {
   margin: 1rem !important;
   margin-top: 1rem !important;
 }
-
 
 .container-campanha {
   display: flex;
@@ -485,7 +478,6 @@ a.sidebar-link:hover {
 /*Estilos para a tela de Ajuda*/
 .card.faq {
   margin-top: 20px;
- 
 }
 
 .faq-item {
@@ -562,7 +554,7 @@ a.sidebar-link:hover {
 
 .card.form-checklist {
   background-color: #ffffff !important;
-  border-width: thin !important; 
+  border-width: thin !important;
   border-color: #b0b0b0 !important;
   border-radius: 0.5rem !important;
   box-shadow: 0 1rem 1rem 0 rgba(0, 0, 0, 0.1); /* Ajuste a sombra para aparecer apenas na parte inferior */
@@ -573,17 +565,15 @@ a.sidebar-link:hover {
 
 .btn-campanha {
   background-color: #0d6efd !important;
- display: inline-block !important;
+  display: inline-block !important;
   color: white !important;
-  padding: 10px 20px  !important;
-  border: none  !important;
+  padding: 10px 20px !important;
+  border: none !important;
   border-radius: 5px !important;
   cursor: pointer !important;
-
 }
 .btn-campanha:hover {
   background-color: #0b5ed7 !important;
-  
 }
 
 .lista-campanha {
@@ -604,7 +594,6 @@ a.sidebar-link:hover {
 .form-floating {
   margin: 1rem !important;
 }
-
 
 .btn btn-outline-primary btn-sm:hover {
   color: white !important;
