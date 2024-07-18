@@ -8,6 +8,7 @@ cycler==0.12.1
 decorator==5.1.1
 Django==5.0.4
 django-allauth==0.62.0
+django-bootstrap5==24.2
 django-crispy-forms==2.1
 django-debug-toolbar==4.4.6
 django-dynamic-datatb==1.0.25
