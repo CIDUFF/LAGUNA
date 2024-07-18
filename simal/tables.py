@@ -40,19 +40,19 @@ class ResultadosColetaTable(tables.Table):
     class Meta:
         model = Campo
         template_name = 'django_tables2/bootstrap5-responsive.html'
-        fields = ['ordem_servico', 'codigo_coleta',
-                 'clima', 'data', 'hora_inicio',
+        fields = ['codigo_coleta',
+                 'hora_inicio',
                  'hora_fim', 'ponto', 'temperatura', 'ph',
                  'orp', 'condutividade', 'turbidez', 'od',
-                 'od_pct', 'tds', 'salinidade', 'status_form']
+                 'od_pct', 'tds', 'salinidade']
         empty_text = 'Não há dados para exibir'
         orderable = True
         exclude = ('id', 'created_at', 'updated_at', 'campo')
-        sequence = ('ordem_servico', 'codigo_coleta',
-                    'clima', 'data', 'hora_inicio',
+        sequence = ('codigo_coleta',
+                    'hora_inicio',
                     'hora_fim', 'ponto', 'temperatura', 'ph',
                     'orp', 'condutividade', 'turbidez', 'od',
-                    'od_pct', 'tds', 'salinidade', 'status_form')
+                    'od_pct', 'tds', 'salinidade')
         per_page = 25
         paginator_class = tables.LazyPaginator
         table_pagination = True
