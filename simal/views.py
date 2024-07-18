@@ -143,6 +143,15 @@ def lista_coleta(request, ordem_servico=None):
         'ordem_servico': ordem_servico,
         'responsavel': responsavel
     })
+    
+@login_required
+def resultados(request):
+    filtro = CampoFilter(request.GET, queryset=Campo.objects.all())
+    table = ResultadosColetaTable(filtro.qs)
+    RequestConfig(request, paginate={"per_page": 25}).configure(table)
+    return render(request, 'coleta/resultados_coleta.html', {
+        'table_campo': table,
+    })
 
 
 

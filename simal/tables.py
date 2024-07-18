@@ -24,6 +24,7 @@ class ColetaCampoTable(tables.Table):
         per_page = 10
         paginator_class = tables.LazyPaginator
         table_pagination = True
+
     def render_status_form(self, value):
         status_to_class = {
             "Não preenchido": "bg-warning text-dark",
@@ -33,10 +34,33 @@ class ColetaCampoTable(tables.Table):
         if badge_class:
             return format_html('<span class="badge {}">{}</span>', badge_class, value)
         return value
+    
+class ResultadosColetaTable(tables.Table):
+    
+    class Meta:
+        model = Campo
+        template_name = 'django_tables2/bootstrap5-responsive.html'
+        fields = ['ordem_servico', 'codigo_coleta',
+                 'clima', 'data', 'hora_inicio',
+                 'hora_fim', 'ponto', 'temperatura', 'ph',
+                 'orp', 'condutividade', 'turbidez', 'od',
+                 'od_pct', 'tds', 'salinidade', 'status_form']
+        empty_text = 'Não há dados para exibir'
+        orderable = True
+        exclude = ('id', 'created_at', 'updated_at', 'campo')
+        sequence = ('ordem_servico', 'codigo_coleta',
+                    'clima', 'data', 'hora_inicio',
+                    'hora_fim', 'ponto', 'temperatura', 'ph',
+                    'orp', 'condutividade', 'turbidez', 'od',
+                    'od_pct', 'tds', 'salinidade', 'status_form')
+        per_page = 25
+        paginator_class = tables.LazyPaginator
+        table_pagination = True
 
 
 class ProgramaColetaTable(tables.Table):
-    atualizar = tables.LinkColumn('atualizar_programacao', args=[A('pk')], orderable=False, empty_values=[], text='Atualizar dados', attrs={"a": {"class": "btn btn-info btn-sm"}})
+    atualizar = tables.LinkColumn('atualizar_programacao', args=[A('pk')], orderable=False, empty_values=[
+    ], text='Atualizar dados', attrs={"a": {"class": "btn btn-info btn-sm"}})
     deletar = tables.LinkColumn('deletar_programacao', args=[A('pk')], orderable=False, empty_values=[
     ], text='Remover programação', attrs={"a": {"class": "btn btn-secondary btn-sm"}})
     cancelar = tables.LinkColumn('cancelar_programacao', args=[A('pk')], orderable=False, empty_values=[

@@ -38,4 +38,5 @@ urlpatterns = [
          views.iniciar_campanha, name='iniciar_campanha'),
     path('checklist_campanha/<str:ordem_servico>/',
          views.checklist_campanha, name='checklist_campanha'),
+    path('resultados_coleta/', views.resultados, name='resultados'),
 ]
