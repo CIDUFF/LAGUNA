@@ -21,3 +21,10 @@
 
 # TODO: Adicionar botóes para exportação dos dados em todas as telas com tabelas
 
+# mudar as cores dos botoes da tabela campanhas
+
+#colocar OS no lugar de local na tela inicial
+
+#colocar link para o checklist na campanha atual
+
+#TODO: #62 Falar com os pesquisadores para estabelecer a faixa de cada parametro das amostras

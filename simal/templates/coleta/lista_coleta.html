@@ -7,14 +7,15 @@
   <div class="container_coleta">
     <div class="row align-items-center"> <!-- Adiciona uma linha para alinhar itens horizontalmente -->
       <div class="col-md-8"> <!-- Coluna para o título -->
-        <h1 class = "d-flex justify-content-center">Lista de Coletas</h1>
+        <h1 class = "d-flex justify-content-left">Lista de Coletas</h1>
       </div>
       <div class="col-md-4"> <!-- Coluna para o card -->
-        <div class="card" style="width: 18rem;">
+        <div class="card">
           <div class="card-body">
             <h5 class="card-title">Detalhes da Ordem de Serviço</h5>
+            <br>
             <p>OS: {{ ordem_servico }}</p>
-            <p>Responsável: {{ responsavel }}</p>
+            <p class = "mb-1">Responsável: {{ responsavel }}</p>
           </div>
         </div>
       </div>
