@@ -57,9 +57,9 @@ class ProgramaColetaForm(forms.Form):
     data_coleta_campo = forms.DateField(label='Data de coleta de campo',
                                         widget=forms.DateInput(attrs={'type': 'date'},
                                                                format='%Y/%m/%d'))
-    data_fim_coleta_campo = forms.DateField(label='Data de fim de coleta',
-                                            widget=forms.DateInput(attrs={'type': 'date'},
-                                                                   format='%Y/%m/%d'))
+    # data_fim_coleta_campo = forms.DateField(label='Data de fim de coleta',
+    #                                         widget=forms.DateInput(attrs={'type': 'date'},
+    #                                                                format='%Y/%m/%d'))
     equipe_coleta = forms.ChoiceField(label='Equipe de coleta')
     # laboratorio = forms.ChoiceField()
     solicitante = forms.ChoiceField()
@@ -71,7 +71,7 @@ class ProgramaColetaForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super(ProgramaColetaForm, self).__init__(*args, **kwargs)
         campo = [
-            'data_coleta_campo', 'data_fim_coleta_campo',
+            'data_coleta_campo',
             'equipe_coleta', 'solicitante', 'local_coleta', 'observacoes'
         ]
         self.helper = FormHelper()

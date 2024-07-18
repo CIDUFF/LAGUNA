@@ -24,11 +24,19 @@ class ColetaCampoTable(tables.Table):
         per_page = 10
         paginator_class = tables.LazyPaginator
         table_pagination = True
+    def render_status_form(self, value):
+        status_to_class = {
+            "Não preenchido": "bg-warning text-dark",
+            "Preenchido": "bg-success",
+        }
+        badge_class = status_to_class.get(value, "")
+        if badge_class:
+            return format_html('<span class="badge {}">{}</span>', badge_class, value)
+        return value
 
 
 class ProgramaColetaTable(tables.Table):
-    atualizar = tables.LinkColumn('atualizar_programacao', args=[A('pk')], orderable=False, empty_values=[
-    ], text='Atualizar dados', attrs={"a": {"class": "btn btn-info btn-sm"}})
+    atualizar = tables.LinkColumn('atualizar_programacao', args=[A('pk')], orderable=False, empty_values=[], text='Atualizar dados', attrs={"a": {"class": "btn btn-info btn-sm"}})
     deletar = tables.LinkColumn('deletar_programacao', args=[A('pk')], orderable=False, empty_values=[
     ], text='Remover programação', attrs={"a": {"class": "btn btn-secondary btn-sm"}})
     cancelar = tables.LinkColumn('cancelar_programacao', args=[A('pk')], orderable=False, empty_values=[
