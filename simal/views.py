@@ -20,54 +20,44 @@ from .services import get_weather_description
 def check_admin(user):
     return user.is_admin
 
+
 def home(request):
     try:
-        data_coleta_proxima = ProgramaColeta.objects.filter(
+        # Busca o primeiro ProgramaColeta que não está cancelado e é posterior à data atual
+        proxima_coleta = ProgramaColeta.objects.exclude(
+            status_coleta='Cancelada'
+        ).filter(
             data_coleta_campo__gte=timezone.now()
-        ).order_by('data_coleta_campo').values_list('data_coleta_campo', flat=True).first()
+        ).order_by('data_coleta_campo').first()
 
-        status_coleta = ProgramaColeta.objects.filter(
-            data_coleta_campo__gte=timezone.now()
-        ).order_by('data_coleta_campo').values_list('status_coleta', flat=True).first()
-        
-        local_coleta = ProgramaColeta.objects.filter(
-            data_coleta_campo__gte=timezone.now()
-        ).order_by('data_coleta_campo').values_list('local_coleta', flat=True).first()
+        # Se existe uma próxima coleta, busca o percentual do checklist correspondente
+        percentual_checklist = None
+        if proxima_coleta:
+            percentual_checklist = ChecklistCampo.objects.filter(
+                ordem_servico=proxima_coleta.id
+            ).values_list('progresso', flat=True).first()
 
-        ordem_servico = ProgramaColeta.objects.filter(
-            data_coleta_campo__gte=timezone.now()
-        ).order_by('data_coleta_campo').values_list('id', flat=True).first()
-
-        percentual_checklist = ChecklistCampo.objects.filter(
-            ordem_servico=ordem_servico).values_list('progresso', flat=True).first()
-
-        if data_coleta_proxima:
-            data_coleta_proxima_formatada = data_coleta_proxima.strftime(
-                '%Y-%m-%d')
-            weather_description = get_weather_description(
-                "Maricá", data_coleta_proxima_formatada)
-            # Atualiza a formatação da data após confirmar que ela existe
-            data_coleta_proxima_formatada = data_coleta_proxima.strftime(
+            # Formata a data da próxima coleta para exibição
+            data_coleta_proxima_formatada = proxima_coleta.data_coleta_campo.strftime(
                 '%d/%m/%Y')
+            weather_description = get_weather_description(
+                "Maricá", proxima_coleta.data_coleta_campo.strftime('%Y-%m-%d'))
         else:
             data_coleta_proxima_formatada = None
             weather_description = None
 
-        # Criando a variável context para organizar os dados passados para o template
         context = {
             'weather_description': weather_description,
             'data_coleta_proxima_formatada': data_coleta_proxima_formatada,
-            'status_coleta': status_coleta,
-            'local_coleta': local_coleta,
+            'status_coleta': proxima_coleta.status_coleta if proxima_coleta else None,
+            'local_coleta': proxima_coleta.local_coleta if proxima_coleta else None,
             'percentual_checklist': percentual_checklist
         }
 
         return render(request, 'home.html', context)
     except ProgramaColeta.DoesNotExist:
-        # Tratamento para o caso de não encontrar ProgramaColeta
         return HttpResponse("Nenhum programa de coleta encontrado.", status=404)
     except Exception as e:
-        # Tratamento genérico de erro
         return HttpResponse(f"Erro ao carregar a página: {str(e)}", status=500)
 
 
@@ -177,7 +167,7 @@ def agenda_coleta(request):
 
             # Atribui os dados do formulário aos campos do modelo
             programa_coleta.data_coleta_campo = form.cleaned_data['data_coleta_campo']
-            programa_coleta.data_fim_coleta_campo = form.cleaned_data['data_fim_coleta_campo']
+            # programa_coleta.data_fim_coleta_campo = form.cleaned_data['data_fim_coleta_campo']
             programa_coleta.equipe_coleta = form.cleaned_data['equipe_coleta']
             # programa_coleta.laboratorio = form.cleaned_data['laboratorio']
             programa_coleta.solicitante = form.cleaned_data['solicitante']
@@ -217,7 +207,7 @@ def atualizar_programacao(request, id):
     else:
         form_data = {field.name: getattr(
             programacao, field.name) for field in ProgramaColeta._meta.fields}
-        for date_field in ['data_coleta_campo', 'data_fim_coleta_campo']:
+        for date_field in ['data_coleta_campo']:
             if date_field in form_data and form_data[date_field]:
                 form_data[date_field] = form_data[date_field].strftime(
                     '%Y-%m-%d')

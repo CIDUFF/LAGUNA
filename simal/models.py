@@ -71,8 +71,8 @@ class ProgramaColeta(models.Model):
         max_length=100, blank=True, verbose_name='Ordem de Serviço')
     data_coleta_campo = models.DateField(
         null=True, verbose_name='Data da Coleta')
-    data_fim_coleta_campo = models.DateField(
-        null=True, verbose_name='Data Final')
+    # data_fim_coleta_campo = models.DateField(
+    #     null=True, verbose_name='Data Final')
     equipe_coleta = models.CharField(
         max_length=50, default='Equipe 1', verbose_name='Equipe de Coleta')
     # laboratorio = models.CharField(
@@ -119,6 +119,7 @@ class Campo(models.Model):
     ordem_servico = models.ForeignKey(
         ProgramaColeta, on_delete=models.CASCADE, related_name='ordem_servico_campo')
     codigo_coleta = models.CharField("Código da Coleta", max_length=50)
+    ordem = models.FloatField("Ordem", null=True)
     clima = models.CharField("Clima", max_length=150, null=True)
     data = models.DateField(default=date.today)
     hora_inicio = models.TimeField("Hora de Início", blank=True, null=True)

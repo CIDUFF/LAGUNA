@@ -2,7 +2,10 @@
 {% load crispy_forms_tags %} 
 {% block title %}Registro de coleta de Campo{% endblock %}
 {% block content %} 
-<h1>Registro de coleta de Campo</h1>
+<div class="d-flex align-items-center">
+  <h1 class="mb-0">Registro de coleta de Campo</h1> 
+  <a href="{% url 'lista_coleta' %}" class="btn btn-primary ms-5">Voltar para a lista de pontos</a>
+</div>
 <br>
 <div class="row">
       <div class="col-md-6">
@@ -33,8 +36,7 @@
 </div>
 {% csrf_token %}
 {% crispy form %} 
-<!-- Botão para voltar para a lista de coletas -->
-<a href="{% url 'lista_coleta' %}" class="btn btn-primary">Voltar para a lista de pontos</a>
+
 
 
 {% endblock %}
