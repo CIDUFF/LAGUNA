@@ -116,7 +116,8 @@ def atualizar_coleta(request, id):
             pass  # Mantenha o formulário com erros para exibição
 
     context = {'form': form, 'codigo_coleta': coleta.codigo_coleta,
-               'ponto': coleta.ponto, 'pontos_coleta': pontos_coleta}
+               'ponto': coleta.ponto, 'pontos_coleta': pontos_coleta,
+               'ordem_servico_id': coleta.ordem_servico.id,}
     return render(request, 'coleta/coleta.html', context)
 
 
