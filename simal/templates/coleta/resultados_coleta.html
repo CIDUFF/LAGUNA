@@ -4,15 +4,22 @@
 {% load static %}
 {% block content %}
 
-<div>Dados de coleta</div>
-
+<div class="card m-3">
+    <h1 class= "m-3 d-flex justify-content-center">Dados de coleta</h1>
+    
+    {% if filter %}
+    <form method="get" class="form-vertical ml-3">
+        {% bootstrap_form filtro.form layout='floating' %}
+        {% bootstrap_button 'Filtro' %}
+    </form>
+    {% endif %}
+    
+    <div class="table-responsive">
+        <table class="table">
+            {% render_table table_campo %}
+        </table>
+        <a href="{% url 'coletas_agendas' %}" class="btn btn-primary mt-3">Voltar para Coletas Agendadas</a>
+    </div>
+    
 </div>
-<div class="table-responsive">
-<table class="table">
-    {% render_table table_campo %}
-    <a href="{% url 'coletas_agendas' %}" class="btn btn-primary mt-3">Voltar para Coletas Agendadas</a>
-</table>
-
-</div>
-
 {% endblock %}
