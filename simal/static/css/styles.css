@@ -604,3 +604,8 @@ a.sidebar-link:hover {
 .form-floating {
   margin: 1rem !important;
 }
+
+.td .Cancelada {
+  background-color: red !important; /* Define a cor de fundo para vermelho */
+  color: white !important; /* Define a cor do texto para branco */
+}

@@ -12,7 +12,7 @@ class ColetaCampoTable(tables.Table):
 
     class Meta:
         model = Campo
-        template_name = 'django_tables2/bootstrap.html'
+        template_name = 'django_tables2/bootstrap5-responsive.html'
         fields = ['ponto', 'codigo_coleta', 'status_form', 'update']
         attrs = {'class': 'table table-striped table-bordered table-hover'}
         empty_text = 'Não há dados para exibir'
@@ -37,7 +37,7 @@ class ProgramaColetaTable(tables.Table):
 
     class Meta:
         model = ProgramaColeta
-        template_name = 'django_tables2/bootstrap.html'
+        template_name = 'django_tables2/bootstrap5-responsive.html'
         fields = ['ordem_servico', 'usuario', 'data_coleta_campo', 'solicitante',
                   'local_coleta', 'status_coleta']
         attrs = {'class': 'table table-striped table-bordered table-hover'}
@@ -58,7 +58,7 @@ class LaboratoriosTable(tables.Table):
 
     class Meta:
         model = Laboratorios
-        template_name = 'django_tables2/bootstrap.html'
+        template_name = 'django_tables2/bootstrap5-responsive.html'
         fields = ['nome', 'email', 'telefone', 'endereco', 'tipo']
         attrs = {'class': 'table table-striped table-bordered table-hover'}
         empty_text = 'Não há dados para exibir'
