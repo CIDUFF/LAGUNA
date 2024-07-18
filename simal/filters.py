@@ -15,12 +15,20 @@ class CampoFilter(django_filters.FilterSet):
 
 
 class ProgramaColetaFilter(django_filters.FilterSet):
+    
     class Meta:
         model = ProgramaColeta
         fields = {
             'local_coleta': ['icontains'],
            'data_coleta_campo': ['exact'],
-            'equipe_coleta': ['exact'],
            'status_coleta': ['exact'],
          # Adicione mais campos conforme necessário
         }
+        
+class ResultadosColetaFilter(django_filters.FilterSet):
+    ponto = django_filters.CharFilter(
+        lookup_expr='icontains', label='Ponto')
+    codigo_coleta = django_filters.CharFilter(
+        lookup_expr='icontains', label='Código da Coleta')
+
+
