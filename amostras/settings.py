@@ -45,7 +45,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'simal',
     'crispy_forms',
-    'crispy_bootstrap3',
+    "crispy_bootstrap5",
     'django_tables2',
     'debug_toolbar',
     "django_bootstrap5",
@@ -176,7 +176,10 @@ DATE_INPUT_FORMATS = ['%d/%m/%Y']
 
 DATETIME_INPUT_FORMATS = ['%d/%m/%Y %H:%M']
 
-CRISPY_TEMPLATE_PACK = 'bootstrap3'
+
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
+
+CRISPY_TEMPLATE_PACK = 'bootstrap5'
 
 DJANGO_TABLES2_TEMPLATE = 'django_tables2/bootstrap.html'
 
