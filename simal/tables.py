@@ -62,7 +62,7 @@ class ResultadosColetaTable(tables.Table):
 class ProgramaColetaTable(tables.Table):
     # Define os atributos comuns
     common_attrs = {"a": {"class": "btn btn-primary btn-sm active ",
-                          "style": "font-weight: normal; font-size: 0.8em; background-color: #5783b6"}}
+                          "style": "font-weight: normal; font-size: 0.7em; background-color: #5783b6"}}
 
     atualizar = tables.LinkColumn('atualizar_programacao', args=[A('pk')], orderable=False, empty_values=[],
                                   text='Atualizar dados', attrs=common_attrs)
