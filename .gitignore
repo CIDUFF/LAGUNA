@@ -60,4 +60,5 @@ staticfiles/
 
 .env
 
-.pyc
+*.pyc
+
