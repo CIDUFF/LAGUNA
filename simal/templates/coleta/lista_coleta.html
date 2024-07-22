@@ -3,34 +3,36 @@
 {% load django_bootstrap5 %}
 {% load static %}
 {% block content %}
-<div class="container_coleta">
-  <div class="row align-items-center"> <!-- Adiciona uma linha para alinhar itens horizontalmente -->
-    <div class="col-md-8"> <!-- Coluna para o título -->
-      <h1>Lista de Coletas</h1>
-    </div>
-    <div class="col-md-4"> <!-- Coluna para o card -->
-      <div class="card" style="width: 18rem;">
-        <div class="card-body">
-          <h5 class="card-title">Detalhes da Ordem de Serviço</h5>
-          <p>OS: {{ ordem_servico }}</p>
-          <p>Responsável: {{ responsavel }}</p>
+<div class = "card checklist">
+  <div class="container_coleta">
+    <div class="row align-items-center"> <!-- Adiciona uma linha para alinhar itens horizontalmente -->
+      <div class="col-md-8"> <!-- Coluna para o título -->
+        <h1 class = "d-flex justify-content-center">Lista de Coletas</h1>
+      </div>
+      <div class="col-md-4"> <!-- Coluna para o card -->
+        <div class="card" style="width: 18rem;">
+          <div class="card-body">
+            <h5 class="card-title">Detalhes da Ordem de Serviço</h5>
+            <p>OS: {{ ordem_servico }}</p>
+            <p>Responsável: {{ responsavel }}</p>
+          </div>
         </div>
       </div>
     </div>
+    <!-- Botão para voltar para a página de coletas agendadas -->
+  {% if filter %}
+    <form method="get" class="form-vertical ml-3">
+      {% bootstrap_form filtro.form layout='floating' %}
+      {% bootstrap_button 'Filtro' %}
+    </form>
+  {% endif %}
   </div>
-  <!-- Botão para voltar para a página de coletas agendadas -->
-  
-  <form method="get" class="form">
-    {% bootstrap_form filtro.form  %}
-    {% bootstrap_button 'Filtro' %}
-  </form>
-</div>
-<div class="table-responsive">
-  <table class="table">
-    {% render_table table_campo %}
-      <a href="{% url 'coletas_agendas' %}" class="btn btn-primary mt-3">Voltar para Coletas Agendadas</a>
-  </table>
+  <div class="table-responsive">
+    <table class="table">
+      {% render_table table_campo %}
+        <a href="{% url 'coletas_agendas' %}" class="btn btn-primary mt-3">Voltar para Coletas Agendadas</a>
+    </table>
 
+  </div>
 </div>
-
 {% endblock %}

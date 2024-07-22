@@ -1,5 +1,5 @@
 from crispy_forms.helper import FormHelper
-from django.forms import TimeInput
+from crispy_bootstrap5.bootstrap5 import FloatingField, Switch
 from crispy_forms.layout import Layout, Fieldset, ButtonHolder, Submit, HTML, Div
 from django.utils import timezone
 # from django.forms import ModelChoiceField
@@ -24,9 +24,16 @@ class ColetaCampo(forms.Form):
     od_pct = forms.FloatField()
     tds = forms.FloatField()
     salinidade = forms.FloatField()
-
+    
+    campos = [
+        'temperatura','ph', 'orp', 'condutividade', 'turbidez', 'od', 'od_pct', 'tds', 'salinidade'
+    ]
+    
     def __init__(self, *args, **kwargs):
         super(ColetaCampo, self).__init__(*args, **kwargs)
+        campos = [
+            'temperatura', 'ph', 'orp', 'condutividade', 'turbidez', 'od', 'od_pct', 'tds', 'salinidade'
+        ]
         self.helper = FormHelper()
         self.helper.layout = Layout(
             Fieldset(
@@ -35,15 +42,9 @@ class ColetaCampo(forms.Form):
                 'ponto',
                 'hora_inicio',
                 'hora_fim',
-                'temperatura',
-                'ph',
-                'orp',
-                'condutividade',
-                'turbidez',
-                'od',
-                'od_pct',
-                'tds',
-                'salinidade'
+                *[FloatingField(campo) for campo in campos]
+                
+
             ),
             ButtonHolder(
                 Submit('submit', 'Salvar e ir para o próximo ponto')
@@ -56,9 +57,9 @@ class ProgramaColetaForm(forms.Form):
     data_coleta_campo = forms.DateField(label='Data de coleta de campo',
                                         widget=forms.DateInput(attrs={'type': 'date'},
                                                                format='%Y/%m/%d'))
-    data_fim_coleta_campo = forms.DateField(label='Data de fim de coleta',
-                                            widget=forms.DateInput(attrs={'type': 'date'},
-                                                                   format='%Y/%m/%d'))
+    # data_fim_coleta_campo = forms.DateField(label='Data de fim de coleta',
+    #                                         widget=forms.DateInput(attrs={'type': 'date'},
+    #                                                                format='%Y/%m/%d'))
     equipe_coleta = forms.ChoiceField(label='Equipe de coleta')
     # laboratorio = forms.ChoiceField()
     solicitante = forms.ChoiceField()
@@ -69,18 +70,15 @@ class ProgramaColetaForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super(ProgramaColetaForm, self).__init__(*args, **kwargs)
+        campo = [
+            'data_coleta_campo',
+            'equipe_coleta', 'solicitante', 'local_coleta', 'observacoes'
+        ]
         self.helper = FormHelper()
         self.helper.layout = Layout(
             Fieldset(
-                'Formulário de Programação de Coleta',
-                'data_coleta_campo',
-                'data_fim_coleta_campo',
-                'equipe_coleta',
-                # 'laboratorio',
-                'solicitante',
-                'local_coleta',
-                # 'status_coleta',
-                'observacoes'
+                ' ',
+                *[FloatingField(campo) for campo in campo]
             ),
             ButtonHolder(
                 Submit('submit', 'Salvar')
@@ -148,17 +146,18 @@ class ChecklistCampoForm(forms.Form):
                 'Checklist de Campo',
                 'data_checklist',
                 'ordem_servico',
-                'previsao_tempo',
-                'avisar_labs',
-                'reservar_carro',
-                'reservar_barco',
-                'separar_equipamentos',
-                'conferir_equipamentos',
-                'comprar_gelo',
+                Switch('previsao_tempo'),
+                Switch('avisar_labs'),
+                Switch('reservar_carro'),
+                Switch('reservar_barco'),
+                Switch('separar_equipamentos'),
+                Switch('conferir_equipamentos'),
+                Switch('comprar_gelo'),
                 # 'status_checklist',  # Esta linha foi removida
                 'observacoes',
                 css_class='card form-checklist'
             ),
+            
             ButtonHolder(
                 Submit('submit', 'Salvar e continuar', css_class='btn-primary')
             )

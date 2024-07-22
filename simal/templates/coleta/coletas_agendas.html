@@ -5,22 +5,25 @@
 {% load static %}
 
 {% block content %}  
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h2>Lista de Campanhas agendadas</h2>
 
-</div>
 
-<div class="card checklist">
-    <form method="get" class="form-inline">
-        {% bootstrap_form filtro.form layout='floating' %}
-        <br>
-        {% bootstrap_button 'Filtro'%}
-    </form>
-    <div class="table-responsive">
-        <table class="table">
-            {% render_table table_agenda_coleta %} 
-        </table>
-            <a href="{% url 'agendar_coleta' %}" class="btn btn-success">Criar Nova Campanha</a>
+<div class="card">
+
+    <h2 class = "m-3">Lista de Campanhas agendadas</h2>
+
+  <form method="get" class="form-inline">
+    {% bootstrap_form filtro.form layout='floating' %}
+    {% bootstrap_button 'Filtro' %}
+  </form>
+  <div class = "m-3">
+
+      {% render_table table_agenda_coleta %} 
+
+    <div class="d-flex justify-content-center m-3">
+        <a href="{% url 'agendar_coleta' %}" class="btn btn-success">Criar Nova Campanha</a>
     </div>
+
+  </div>
+
 </div>
 {% endblock %}
