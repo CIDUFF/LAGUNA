@@ -57,14 +57,10 @@ class ProgramaColetaForm(forms.Form):
     data_coleta_campo = forms.DateField(label='Data de coleta de campo',
                                         widget=forms.DateInput(attrs={'type': 'date'},
                                                                format='%Y/%m/%d'))
-    # data_fim_coleta_campo = forms.DateField(label='Data de fim de coleta',
-    #                                         widget=forms.DateInput(attrs={'type': 'date'},
-    #                                                                format='%Y/%m/%d'))
+
     equipe_coleta = forms.ChoiceField(label='Equipe de coleta')
-    # laboratorio = forms.ChoiceField()
     solicitante = forms.ChoiceField()
     local_coleta = forms.ChoiceField(label='Local de coleta')
-
     observacoes = forms.CharField(label='Observações',
                                   widget=forms.Textarea(attrs={'rows': 3, 'cols': 40}))
 

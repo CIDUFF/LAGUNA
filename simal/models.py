@@ -96,7 +96,8 @@ class ProgramaColeta(models.Model):
 
     def save(self, usuario=None, *args, **kwargs):
         if not self.ordem_servico:
-            ordem_servico_raw = f"{self.local_coleta}{self.data_coleta_campo}{'01'}"
+            hora = datetime.now().strftime('%H%M%S')
+            ordem_servico_raw = f"{self.local_coleta}{self.data_coleta_campo}{hora}"
             ordem_servico_normalized = unicodedata.normalize(
                 'NFKD', ordem_servico_raw)
             ordem_servico_ascii = ordem_servico_normalized.encode(

@@ -73,7 +73,6 @@ def coleta(request):
         form = ColetaCampo()
     return render(request, 'coleta/coleta.html', {'form': form})
 
-# TODO: Atualizar a view de coleta
 
 @login_required
 def atualizar_coleta(request, id):
@@ -201,29 +200,36 @@ def atualizar_programacao(request, id):
     cache_key = f'programacao_{id}'
     programacao = cache.get(cache_key)
 
-    if programacao is None:
+    if not programacao:
         programacao = get_object_or_404(ProgramaColeta, id=id)
-        cache.set(cache_key, programacao, timeout=3600)  # Cache por 1 hora
+        cache.set(cache_key, programacao, timeout=3600)
+
+    # Verifica se o status da programação é 'Cancelada'
+    if programacao.status_coleta == 'Cancelada':
+        messages.warning(request, 'Não é possível alterar campanhas canceladas.')
+        return redirect('coletas_agendas')
 
     if request.method == 'POST':
-        form = ProgramaColetaForm(request.POST, instance=programacao)
+        form = ProgramaColetaForm(request.POST)
         if form.is_valid():
-            form.save()
-            cache.set(cache_key, programacao, timeout=3600)  # Atualiza o cache
+            for field, value in form.cleaned_data.items():
+                setattr(programacao, field, value)
+            programacao.save()
+            cache.set(cache_key, programacao, timeout=3600)
             messages.success(request, 'Dados atualizados com sucesso!')
             return redirect('coletas_agendas')
         else:
-            print(form.errors)  # Imprime os erros de validação
+            print(form.errors)
     else:
-        form_data = {field.name: getattr(
-            programacao, field.name) for field in ProgramaColeta._meta.fields}
+        form_data = {field.name: getattr(programacao, field.name) for field in ProgramaColeta._meta.fields}
         for date_field in ['data_coleta_campo']:
             if date_field in form_data and form_data[date_field]:
-                form_data[date_field] = form_data[date_field].strftime(
-                    '%Y-%m-%d')
+                form_data[date_field] = form_data[date_field].strftime('%Y-%m-%d')
         form = ProgramaColetaForm(initial=form_data)
-
     return render(request, 'coleta/agendar_coleta.html', {'form': form})
+
+
+
 
 
 @login_required

@@ -34,17 +34,18 @@ class ColetaCampoTable(tables.Table):
         if badge_class:
             return format_html('<span class="badge {}">{}</span>', badge_class, value)
         return value
-    
+
+
 class ResultadosColetaTable(tables.Table):
-    
+
     class Meta:
         model = Campo
         template_name = 'django_tables2/bootstrap5-responsive.html'
         fields = ['codigo_coleta',
-                 'hora_inicio',
-                 'hora_fim', 'ponto', 'temperatura', 'ph',
-                 'orp', 'condutividade', 'turbidez', 'od',
-                 'od_pct', 'tds', 'salinidade']
+                  'hora_inicio',
+                  'hora_fim', 'ponto', 'temperatura', 'ph',
+                  'orp', 'condutividade', 'turbidez', 'od',
+                  'od_pct', 'tds', 'salinidade']
         empty_text = 'Não há dados para exibir'
         orderable = True
         exclude = ('id', 'created_at', 'updated_at', 'campo')
@@ -59,14 +60,18 @@ class ResultadosColetaTable(tables.Table):
 
 
 class ProgramaColetaTable(tables.Table):
-    atualizar = tables.LinkColumn('atualizar_programacao', args=[A('pk')], orderable=False, empty_values=[
-    ], text='Atualizar dados', attrs={"a": {"class": "btn btn-info btn-sm"}})
-    deletar = tables.LinkColumn('deletar_programacao', args=[A('pk')], orderable=False, empty_values=[
-    ], text='Remover programação', attrs={"a": {"class": "btn btn-secondary btn-sm"}})
-    cancelar = tables.LinkColumn('cancelar_programacao', args=[A('pk')], orderable=False, empty_values=[
-    ], text='Cancelar programação', attrs={"a": {"class": "btn btn-danger btn-sm"}})
-    iniciar = tables.LinkColumn('checklist_campanha', args=[A('ordem_servico')], orderable=False, empty_values=[
-    ], text='Iniciar campanha', attrs={"a": {"class": "btn btn-success btn-sm"}})
+    # Define os atributos comuns
+    common_attrs = {"a": {"class": "btn btn-primary btn-sm active ",
+                          "style": "font-weight: normal; font-size: 0.8em; background-color: #5783b6"}}
+
+    atualizar = tables.LinkColumn('atualizar_programacao', args=[A('pk')], orderable=False, empty_values=[],
+                                  text='Atualizar dados', attrs=common_attrs)
+    deletar = tables.LinkColumn('deletar_programacao', args=[A('pk')], orderable=False, empty_values=[],
+                                text='Remover programação', attrs=common_attrs)
+    cancelar = tables.LinkColumn('cancelar_programacao', args=[A('pk')], orderable=False, empty_values=[],
+                                 text='Cancelar programação', attrs=common_attrs)
+    iniciar = tables.LinkColumn('checklist_campanha', args=[A('ordem_servico')], orderable=False, empty_values=[],
+                                text='Iniciar campanha', attrs=common_attrs)
 
     class Meta:
         model = ProgramaColeta
@@ -84,9 +89,9 @@ class ProgramaColetaTable(tables.Table):
 
     def render_status_coleta(self, value):
         status_to_class = {
-            "Iniciada": "bg-success",
+            "Iniciada": "bg-primary",
             "Cancelada": "bg-danger",
-            "Coleta realizada": "bg-primary",
+            "Coleta realizada": "bg-success",
             "Programada": "bg-warning text-dark",
         }
         badge_class = status_to_class.get(value, "")
