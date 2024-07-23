@@ -257,7 +257,7 @@ def deletar_programacao(request, id):
 
 def cancelar_programacao(request, id):
     """
-    Cancela a programação de coleta com base no ID fornecido.
+    Cancela a programação de coleta com base no ID fornecido, a menos que a coleta já tenha sido realizada ou iniciada.
 
     Args:
         request (HttpRequest): O objeto HttpRequest que contém os dados da requisição.
@@ -265,17 +265,22 @@ def cancelar_programacao(request, id):
 
     Returns:
         HttpResponse: O objeto HttpResponse que redireciona para a página 'coletas_agendas'
-                      em caso de sucesso no cancelamento dos dados.
+                      em caso de sucesso no cancelamento dos dados, ou permanece na mesma página
+                      com uma mensagem de aviso se a coleta já foi realizada ou iniciada.
 
     Raises:
         Http404: Se a programação de coleta com o ID fornecido não existir.
 
     """
     programacao = get_object_or_404(ProgramaColeta, id=id)
-    programacao.status_coleta = 'Cancelada'
-    programacao.save()
-    messages.success(request, 'Programação de coleta cancelada com sucesso!')
-    return redirect('coletas_agendas')
+    if programacao.status_coleta in ['Coleta realizada', 'Iniciada']:
+        messages.warning(request, 'Não é possível cancelar uma coleta que já foi iniciada ou realizada.')
+        return redirect('coletas_agendas')
+    else:
+        programacao.status_coleta = 'Cancelada'
+        programacao.save()
+        messages.success(request, 'Programação de coleta cancelada com sucesso!')
+        return redirect('coletas_agendas')
 
 # ----------------------------------------------------------------------------------
 
