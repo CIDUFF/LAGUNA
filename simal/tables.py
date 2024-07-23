@@ -63,15 +63,17 @@ class ProgramaColetaTable(tables.Table):
     # Define os atributos comuns
     common_attrs = {"a": {"class": "btn btn-primary btn-sm active ",
                           "style": "font-weight: normal; font-size: 0.7em; background-color: #5783b6"}}
-    delete_attrs = {"a": {"class": "btn btn-primary btn-sm active btn-remover-campanha",
+    delete_attrs = {"a": {"class": "btn btn-primary btn-sm active delete-campaign-btn",
                           "style": "font-weight: normal; font-size: 0.7em; background-color: #5783b6"}}
+    cancel_attrs = {"a": {"class": "btn btn-primary btn-sm active cancel-campaign-btn",
+                            "style": "font-weight: normal; font-size: 0.7em; background-color: #5783b6"}}
 
     atualizar = tables.LinkColumn('atualizar_programacao', args=[A('pk')], orderable=False, empty_values=[],
                                   text='Atualizar dados', attrs=common_attrs)
     deletar = tables.LinkColumn('deletar_programacao', args=[A('pk')], orderable=False, empty_values=[],
                                 text='Remover programação', attrs=delete_attrs)
     cancelar = tables.LinkColumn('cancelar_programacao', args=[A('pk')], orderable=False, empty_values=[],
-                                 text='Cancelar programação', attrs=common_attrs)
+                                 text='Cancelar programação', attrs=cancel_attrs)
     iniciar = tables.LinkColumn('checklist_campanha', args=[A('ordem_servico')], orderable=False, empty_values=[],
                                 text='Iniciar campanha', attrs=common_attrs)
 
