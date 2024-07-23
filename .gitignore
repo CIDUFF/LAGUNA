@@ -64,4 +64,6 @@ staticfiles/
 
 *.cpython
 
+/simal/__pycache__/
+
 simal/__pycache__/tables.cpython-310.pyc
