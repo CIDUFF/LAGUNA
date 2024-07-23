@@ -34,11 +34,11 @@ TODO #63:
   - Descrição: Ao tentar atualizar os dados de uma campanha e salvar, ocorre um erro. O problema persiste mesmo sem alterações nos dados. Necessário investigar e corrigir o erro no botão de salvar.
 
 TODO:
-- [ ] **Adicionar Confirmação ao Remover Campanha**
+- [x] **Adicionar Confirmação ao Remover Campanha**
   - Descrição: Atualmente, o botão de remover campanha não solicita confirmação do usuário. Implementar um diálogo de confirmação ("Tem certeza?") antes de prosseguir com a remoção. Além disso, é necessário adicionar um campo para que o usuário possa escrever o motivo da remoção.
 
 TODO:
-- [ ] **Adicionar Confirmação ao Cancelar Campanha**
+- [x] **Adicionar Confirmação ao Cancelar Campanha**
   - Descrição: Similar ao botão de remover, o botão de cancelar campanha também não solicita confirmação do usuário. Implementar um diálogo de confirmação ("Tem certeza?") antes de efetuar o cancelamento. Incluir um campo para escrita do motivo do cancelamento e adicionar a opção de descancelar a campanha.
 
 TODO #64:
