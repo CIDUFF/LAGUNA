@@ -1,0 +1,26 @@
+{% extends 'base/base_site.html' %}
+{% load django_tables2 %}
+{% load django_bootstrap5 %}
+{% load static %}
+{% block content %}
+
+<div class="card m-3">
+    <h1 class= "m-3 d-flex justify-content-center">Dados de coleta</h1>
+    <div>
+
+        <form method="get" class="form-inline ml-3">
+            {% bootstrap_form filtro.form layout='floating' %}
+            {% bootstrap_button 'Filtro' %}
+        </form>
+
+    </div>
+    
+    <div class="table-responsive">
+        <table class="table">
+            {% render_table table_campo %}
+        </table>
+        <a href="{% url 'coletas_agendas' %}" class="btn btn-primary mt-3">Voltar para Coletas Agendadas</a>
+    </div>
+    
+</div>
+{% endblock %}

@@ -52,10 +52,16 @@ Dockerfile
 
 # Cache
 *.cache
-__pycache__/
+*__pycache__/
 *.py[cod]
 *$py.class
 
 staticfiles/
 
 .env
+
+*.pyc
+
+*.cpython
+
+simal/__pycache__/tables.cpython-310.pyc

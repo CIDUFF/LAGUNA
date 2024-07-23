@@ -602,5 +602,10 @@ a.sidebar-link:hover {
 }
 
 .form-floating {
-  margin: 0.5rem;
+  margin: 1rem !important;
+}
+
+
+.btn btn-outline-primary btn-sm:hover {
+  color: white !important;
 }

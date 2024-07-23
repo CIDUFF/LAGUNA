@@ -41,7 +41,7 @@
                   <span>Início</span>
                 </a>                                                            
                 <li class="sidebar-item">
-                <a href="{% url 'home' %}" class="sidebar-link">
+                <a href="{% url 'resultados' %}" class="sidebar-link">
                   <i class="bi bi-bar-chart-line"></i>
                   <span>Dashboard</span>
                 </a>
@@ -247,6 +247,31 @@ document.getElementById('pontoSelecionado').addEventListener('change', function(
   window.location.href = urlAtualizacao;
 });
 </script>
+
+<script>
+
+  document.addEventListener('DOMContentLoaded', function() {
+      const buttons = document.querySelectorAll('.delete-campaign-btn, .cancel-campaign-btn');
+  
+      buttons.forEach(button => {
+          button.addEventListener('click', function(e) {
+              e.preventDefault();
+              let confirmationMessage = `Tem certeza que deseja deletar a campanha ?`;
+  
+              if (this.classList.contains('cancel-campaign-btn')) {
+                  confirmationMessage = `Tem certeza que deseja cancelar a campanha ?`;
+              }
+  
+              const confirmation = confirm(confirmationMessage);
+  
+              if (confirmation) {
+                  window.location.href = this.getAttribute('href');
+              }
+          });
+      });
+  });
+</script>
+
   {% endblock %}
 </body>
 
