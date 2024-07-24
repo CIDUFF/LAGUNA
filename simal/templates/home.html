@@ -11,7 +11,7 @@
               <!-- Primeiro card interno -->
               <div class="col-md-4">
                 <div class="card small-card">
-                  <a href="{% url 'coletas_agendas' %}" style="text-decoration: none; color: inherit;">
+                  <a href="{% url 'checklist_campanha' ordem_servico %}" style="text-decoration: none; color: inherit;">
                     <div class="card-body">
                       <div class="row">
                         <div class="col-2">
@@ -20,10 +20,10 @@
                           </div>
                         </div>
                         <div class="col-10 justify-content-center">
-                          <p class="card-title">Campanha atual</p>
-                          <p class="card-text">{{data_coleta_proxima_formatada}}</p>
+                          <p class="card-title">Campanha atual:</p>
+                          <p class="card-text">{{local_coleta}}</p>
 
-                          <p class="card-desc">Status: {{status_coleta}} <br> Local: {{ local_coleta }} </p>
+                          <p class="card-desc">Status: {{status_coleta}} <br> Data: {{data_coleta_proxima_formatada}} </p>
                         </div>
                       </div>
                     </div>
