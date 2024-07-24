@@ -1,4 +1,7 @@
-{% extends 'base/base_site.html' %} {% block content %}
+{% extends 'base/base_site.html' %} 
+{% load django_tables2 %} 
+{% load django_bootstrap5 %}
+{% block content %}
 {% if user.is_authenticated %}
   <p class="home-title">Olá, {{ user.username }}</p>
   <div class="container mt-5">
@@ -22,8 +25,9 @@
                         <div class="col-10 justify-content-center">
                           <p class="card-title">Campanha atual:</p>
                           <p class="card-text">{{local_coleta}}</p>
-
-                          <p class="card-desc">Status: {{status_coleta}} <br> Data: {{data_coleta_proxima_formatada}} </p>
+                          <p class="card-desc">Status: {{status_coleta}} <br>
+                             Data: {{data_coleta_proxima_formatada}} <br>
+                             OS: {{ ordem_servico }}</p>
                         </div>
                       </div>
                     </div>
@@ -33,27 +37,29 @@
               <!-- Segundo card interno -->
               <div class="col-md-4">
                 <div class="card small-card">
-                  <div class="card-body">
-                    <div class="row">
-                      <div class="col-2">
-                        <div class="d-flex justify-content-center">
-                          <img
-                            src="static/images/icone-termometro.svg"
-                            alt="teste"
-                            class="img-fluid img-larger"
-                          />
+                  <a href="https://www.climatempo.com.br/previsao-do-tempo/15-dias/cidade/309/marica-rj" style="text-decoration: none; color: inherit;">
+                    <div class="card-body">
+                      <div class="row">
+                        <div class="col-2">
+                          <div class="d-flex justify-content-center">
+                            <img
+                              src="static/images/icone-termometro.svg"
+                              alt="teste"
+                              class="img-fluid img-larger"
+                            />
+                          </div>
+                        </div>
+                        <div class="col-10 justify-content-center">
+                          <p class="card-title">Previsão do tempo</p>
+                          <p class="card-text">{{weather_description}}</p>
+                          {% comment %} 
+                          TODO: #28 adicionar api call para previsão do tempo
+                          {% endcomment %}
+                          <p class="card-desc"></p> 
                         </div>
                       </div>
-                      <div class="col-10 justify-content-center">
-                        <p class="card-title">Previsão do tempo</p>
-                        <p class="card-text">{{weather_description}}</p>
-                        {% comment %} 
-                        TODO: #28 adicionar api call para previsão do tempo
-                        {% endcomment %}
-                        <p class="card-desc"></p> 
-                      </div>
                     </div>
-                  </div>
+                  </a>
                 </div>
               </div>
               <!-- Terceiro card interno -->
@@ -76,7 +82,7 @@
                         {% comment %} 
                         TODO: #28 adicionar api call para previsão do tempo
                         {% endcomment %}
-                        <p class="card-desc">Dentro do prazo</p> 
+                        <p class="card-desc">Progresso</p> 
                       </div>
                     </div>
                   </div>
@@ -107,9 +113,7 @@
   </div>
     <div class="card campanha">
       <p class="title-campanha">Campanhas
-        <br>
-        <br>
-        <br>
+        {% render_table table_top3 %} 
       </p>
     </div>
   {% else %}
