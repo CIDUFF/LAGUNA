@@ -51,7 +51,9 @@ def home(request):
             'data_coleta_proxima_formatada': data_coleta_proxima_formatada,
             'status_coleta': proxima_coleta.status_coleta if proxima_coleta else None,
             'local_coleta': proxima_coleta.local_coleta if proxima_coleta else None,
-            'percentual_checklist': percentual_checklist
+            'percentual_checklist': percentual_checklist if percentual_checklist else 0,
+            'ordem_servico': proxima_coleta.ordem_servico
+            
         }
 
         return render(request, 'home.html', context)
@@ -101,13 +103,15 @@ def atualizar_coleta(request, id):
                 ordem_servico=coleta.ordem_servico).exclude(status_form='Preenchido').exists()
 
             if not todos_pontos_preenchidos:
-                campanha = ProgramaColeta.objects.get(id=coleta.ordem_servico.id)
+                campanha = ProgramaColeta.objects.get(
+                    id=coleta.ordem_servico.id)
                 campanha.status_coleta = 'Coleta realizada'
                 campanha.save()
 
-            index_atual = list(pontos_coleta).index(coleta)
-            if index_atual + 1 < len(pontos_coleta):
-                proximo_ponto = pontos_coleta[index_atual + 1]
+            pontos_coleta_list = list(pontos_coleta)
+            index_atual = pontos_coleta_list.index(coleta)
+            if index_atual + 1 < len(pontos_coleta_list):
+                proximo_ponto = pontos_coleta_list[index_atual + 1]
                 return redirect(reverse('atualizar_coleta', args=[proximo_ponto.id]))
             else:
                 return redirect('lista_coleta', ordem_servico=coleta.ordem_servico.id)
@@ -116,7 +120,7 @@ def atualizar_coleta(request, id):
 
     context = {'form': form, 'codigo_coleta': coleta.codigo_coleta,
                'ponto': coleta.ponto, 'pontos_coleta': pontos_coleta,
-               'ordem_servico_id': coleta.ordem_servico.id,}
+               'ordem_servico_id': coleta.ordem_servico.id, }
     return render(request, 'coleta/coleta.html', context)
 
 
