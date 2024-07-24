@@ -23,12 +23,15 @@ def check_admin(user):
 
 def home(request):
     try:
-        # Busca o primeiro ProgramaColeta que não está cancelado e é posterior à data atual
-        proxima_coleta = ProgramaColeta.objects.exclude(
-            status_coleta='Cancelada'
-        ).filter(
+        # Busca o primeiro ProgramaColeta que está com status "Iniciada" ou "Programada" e é posterior à data atual
+        proxima_coleta = ProgramaColeta.objects.filter(
+            status_coleta__in=['Iniciada', 'Programada'],
             data_coleta_campo__gte=timezone.now()
         ).order_by('data_coleta_campo').first()
+        table = TopCampanhas(ProgramaColeta.objects.all())
+        RequestConfig(request, paginate={"per_page": 3}).configure(table)
+
+        # O restante do código permanece o mesmo...
 
         # Se existe uma próxima coleta, busca o percentual do checklist correspondente
         percentual_checklist = None
@@ -52,7 +55,8 @@ def home(request):
             'status_coleta': proxima_coleta.status_coleta if proxima_coleta else None,
             'local_coleta': proxima_coleta.local_coleta if proxima_coleta else None,
             'percentual_checklist': percentual_checklist if percentual_checklist else 0,
-            'ordem_servico': proxima_coleta.ordem_servico
+            'ordem_servico': proxima_coleta.ordem_servico,
+            'table_top3': table,
             
         }
 
