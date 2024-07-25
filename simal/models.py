@@ -2,6 +2,7 @@ from datetime import datetime, date
 from django.conf import settings
 from django.db import models
 from django.utils.crypto import get_random_string
+from django.shortcuts import get_object_or_404
 from django.core.exceptions import ValidationError
 import re
 import unicodedata
@@ -11,6 +12,17 @@ from django.contrib.auth.models import User  # Importa o modelo User
 
 
 class Coletores(models.Model):
+    """
+    Representa um coletor de dados.
+
+    Atributos:
+        nome (str): O nome do coletor.
+        email (str): O email do coletor.
+        telefone (str): O telefone do coletor.
+        filiacao (str): A filiação do coletor.
+        equipe (str): A equipe do coletor.
+    """
+
     nome = models.CharField(max_length=100, default='Nome do Coletor')
     email = models.EmailField(max_length=100, default='seuemail@email.com')
     telefone = models.CharField(max_length=15, default='(21) 99999-9999')
@@ -22,6 +34,16 @@ class Coletores(models.Model):
 
 
 class Ajuda(models.Model):
+    """
+    Classe que representa uma solicitação de ajuda.
+
+    Atributos:
+        nome (str): O nome do solicitante.
+        email (str): O endereço de e-mail do solicitante.
+        pergunta (str): A pergunta ou descrição da solicitação de ajuda.
+        data (datetime): A data e hora em que a solicitação foi feita.
+    """
+
     nome = models.CharField(max_length=15)
     email = models.EmailField(max_length=100, default='seuemail@email.com')
     pergunta = models.TextField(max_length=250)
@@ -32,6 +54,19 @@ class Ajuda(models.Model):
 
 
 class Laboratorios(models.Model):
+    """
+    Classe que representa um laboratório.
+
+    Atributos:
+        nome (str): O nome do laboratório.
+        email (str): O email do laboratório.
+        telefone (str): O telefone do laboratório.
+        endereco (str): O endereço do laboratório.
+        tipo (str): O tipo de laboratório.
+
+    Métodos:
+        __str__(): Retorna uma representação em string do objeto Laboratorios.
+    """
 
     nome = models.CharField(max_length=100)
     email = models.EmailField(max_length=100)
@@ -44,6 +79,15 @@ class Laboratorios(models.Model):
 
 
 class Solicitantes(models.Model):
+    """
+    Classe que representa os solicitantes.
+
+    Atributos:
+        nome (str): O nome do solicitante.
+        email (str): O email do solicitante.
+        telefone (str): O telefone do solicitante.
+    """
+
     nome = models.CharField(max_length=100)
     email = models.EmailField(max_length=100)
     telefone = models.CharField(max_length=15)
@@ -53,11 +97,20 @@ class Solicitantes(models.Model):
 
 
 class LocaisColeta(models.Model):
+    """
+    Classe que representa os locais de coleta no banco de dados.
+
+    Atributos:
+        local (str): O nome do local de coleta.
+        local_codigo (str): O código numérico do local de coleta.
+        ponto (str): O ponto de coleta.
+        codigo_str (str): O código em formato de string.
+    """
+
     local = models.CharField(max_length=50)
-    # Código numérico começando em 01 para cada local no DB
     local_codigo = models.CharField(max_length=50, default='00')
     ponto = models.CharField(max_length=60, blank=False)
-    codigo = models.CharField(max_length=60, blank=False)
+    codigo_str = models.CharField(max_length=60, blank=False)
     # rota = models.CharField(max_length=100, blank=True)
 
     def __str__(self):
@@ -65,46 +118,40 @@ class LocaisColeta(models.Model):
 
 
 class ProgramaColeta(models.Model):
-    
 
     ordem_servico = models.CharField(
         max_length=100, blank=True, verbose_name='Ordem de Serviço')
     data_coleta_campo = models.DateField(
         null=True, verbose_name='Data da Coleta')
-    # data_fim_coleta_campo = models.DateField(
-    #     null=True, verbose_name='Data Final')
     equipe_coleta = models.CharField(
         max_length=50, default='Equipe 1', verbose_name='Equipe de Coleta')
-    # laboratorio = models.CharField(
-    #     max_length=50, default='Interno', verbose_name='Laboratório')
     solicitante = models.CharField(
         max_length=50, default='João Silva', verbose_name='Responsável')
     local_coleta = models.CharField(
         max_length=50, verbose_name='Local de Coleta')
-    # tipos_analise = models.CharField(null=True, max_length=50)
     status_coleta = models.CharField(max_length=50, null=True)
     observacoes = models.TextField(
         max_length=500, blank=True, verbose_name='Observações')
     usuario = models.ForeignKey(User, on_delete=models.CASCADE,
                                 verbose_name="Usuário", null=True)  # Adiciona o campo usuario
     rota = models.CharField(max_length=25, null=True)
-    # rota_count = models.CharField(max_length=50, null=True)
-
-    # checklist = models.CharField(max_length=1, choices=[(0, 'Não realizada'), (1, 'Realizada')])
-
-    # Modifica o método save para aceitar um argumento adicional 'usuario'
 
     def save(self, usuario=None, *args, **kwargs):
+
         if not self.ordem_servico:
             hora = datetime.now().strftime('%H%M%S')
-            ordem_servico_raw = f"{self.local_coleta}{self.data_coleta_campo}{hora}"
-            ordem_servico_normalized = unicodedata.normalize(
-                'NFKD', ordem_servico_raw)
-            ordem_servico_ascii = ordem_servico_normalized.encode(
-                'ASCII', 'ignore').decode('ASCII')
-            ordem_servico_clean = re.sub(
-                r'[\s\W_]+', '', ordem_servico_ascii).lower()
-            self.ordem_servico = ordem_servico_clean
+            localizacao = LocaisColeta.objects.filter(local=self.local_coleta).first()
+
+            if localizacao:
+                codigo = localizacao.codigo_str
+                ordem_servico_raw = f"{codigo}{self.data_coleta_campo}{hora}"
+                ordem_servico_normalized = unicodedata.normalize(
+                    'NFKD', ordem_servico_raw)
+                ordem_servico_ascii = ordem_servico_normalized.encode(
+                    'ASCII', 'ignore').decode('ASCII')
+                self.ordem_servico = re.sub(r'[\s\W_]+', '', ordem_servico_ascii)
+            else:
+                raise ValueError("Localização não encontrada")
 
         if usuario:  # Atribui o usuário recebido ao campo usuario
             self.usuario = usuario
@@ -135,7 +182,8 @@ class Campo(models.Model):
     od_pct = models.FloatField("OD %", null=True)
     tds = models.FloatField("TDS", null=True)
     salinidade = models.FloatField("Salinidade", null=True)
-    status_form = models.CharField("Status", max_length=20, default='Não preenchido')
+    status_form = models.CharField(
+        "Status", max_length=20, default='Não preenchido')
 
     def save(self, *args, **kwargs):
         campos = [
