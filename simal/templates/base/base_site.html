@@ -165,7 +165,7 @@
         </aside>
         <div class="main p-3">
           <main class="main-content">
-            <div class="container">
+            <div class="container-flex">
                 {% if messages %}
                   {% for message in messages %}
                       <div class="alert alert-{{ message.tags }}">
@@ -269,6 +269,19 @@ document.getElementById('pontoSelecionado').addEventListener('change', function(
               }
           });
       });
+  });
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const sidebar = document.getElementById('sidebar');
+
+    sidebar.addEventListener('mouseenter', function() {
+      sidebar.classList.add('expand');
+    });
+
+    sidebar.addEventListener('mouseleave', function() {
+      sidebar.classList.remove('expand');
+    });
   });
 </script>
 
