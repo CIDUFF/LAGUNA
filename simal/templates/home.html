@@ -9,19 +9,19 @@
       <div class="row">
         <div class="d-flex justify-content-center">
           <div class="card-body">
-            <div class="row">
+            <div class="row align-items-stretch">
               <!-- Primeiro card interno -->
               <div class="col-md-4 d-flex">
-                <div class="card small-card flex-fill">
+                <div class="card small-card flex-fill h-100">
                   <a href="{% url 'checklist_campanha' ordem_servico %}" style="text-decoration: none; color: inherit;">
-                    <div class="card-body">
-                      <div class="row">
+                    <div class="card-body d-flex flex-column">
+                      <div class="row align-items-center flex-grow-1">
                         <div class="col-2 d-none d-md-flex">
                           <div class="d-flex justify-content-center">
                             <img src="static/images/icone-calendario.svg" alt="teste" class="img-fluid img-larger d-none d-md-block"/>
                           </div>
                         </div>
-                        <div class="col-12 col-md-10 justify-content-center">
+                        <div class="col-12 col-md-10 d-flex flex-column justify-content-center">
                           <p class="card-title fs-6">Campanha atual:</p>
                           <p class="card-text fs-3">{{local_coleta}}</p>
                           <p class="card-desc fs-6">Status: {{status_coleta}} <br>
@@ -35,16 +35,16 @@
               </div>
               <!-- Segundo card interno -->
               <div class="col-md-4 d-flex">
-                <div class="card small-card flex-fill">
+                <div class="card small-card flex-fill h-100">
                   <a href="https://www.climatempo.com.br/previsao-do-tempo/15-dias/cidade/309/marica-rj" style="text-decoration: none; color: inherit;">
-                    <div class="card-body">
-                      <div class="row">
+                    <div class="card-body d-flex flex-column">
+                      <div class="row align-items-center flex-grow-1">
                         <div class="col-2 d-none d-md-flex">
                           <div class="d-flex justify-content-center">
                             <img src="static/images/icone-termometro.svg" alt="teste" class="img-fluid img-larger d-none d-md-block"/>
                           </div>
                         </div>
-                        <div class="col-12 col-md-10 justify-content-center">
+                        <div class="col-12 col-md-10 d-flex flex-column justify-content-center">
                           <p class="card-title fs-6">Previsão do tempo</p>
                           <p class="card-text fs-3">{{weather_description}}</p>
                           <p class="card-desc fs-6"></p> 
@@ -56,20 +56,17 @@
               </div>
               <!-- Terceiro card interno -->
               <div class="col-md-4 d-flex">
-                <div class="card small-card flex-fill" >
-                  <div class="card-body">
-                    <div class="row">
+                <div class="card small-card flex-fill h-100">
+                  <div class="card-body d-flex flex-column">
+                    <div class="row align-items-center flex-grow-1">
                       <div class="col-2 d-none d-md-flex">
                         <div class="d-flex justify-content-center">
                           <img src="static/images/icone-checklist.svg" alt="teste" class="img-fluid img-larger d-none d-md-block"/>
                         </div>
                       </div>
-                      <div class="col-12 col-md-10 justify-content-center">
+                      <div class="col-12 col-md-10 d-flex flex-column justify-content-center">
                         <p class="card-title fs-6">Checklist</p>
                         <p class="card-text fs-3">{{percentual_checklist}}%</p>
-                        {% comment %} 
-                        TODO: #28 adicionar api call para previsão do tempo
-                        {% endcomment %}
                         <p class="card-desc fs-6">Progresso</p> 
                       </div>
                     </div>
