@@ -225,8 +225,8 @@ body {
 }
 
 #sidebar.expand {
-  width: 260px;
-  min-width: 260px;
+  width: 17.5rem;
+  min-width: 17.5rem;
 }
 
 .toggle-btn {
@@ -345,7 +345,8 @@ a.sidebar-link:hover {
 }
 
 .menu-itens {
-  position: fixed;
+  max-height: 100vh; /* Define a altura máxima do contêiner */
+  overflow-y: auto; /* Permite a rolagem vertical */
 }
 
 .sidebar-link {
@@ -386,12 +387,14 @@ a.sidebar-link:hover {
   padding: 0.5rem;
 }
 
+
 .small-card {
   background-color: #ffffff !important;
   border: none !important; /* Remove a borda */
-  box-shadow: none !important; /* Remove a sombra */
+  box-shadow: 0 1rem 1rem 0 rgba(0, 0, 0, 0.1) !important; /* Remove a sombra */
   padding: 0.5rem !important;
   outline: none !important; /* Remove o contorno */
+  margin-bottom: 1rem !important; /* Adicione esta linha para diminuir a margem inferior */
 }
 
 

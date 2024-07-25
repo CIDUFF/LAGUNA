@@ -1,17 +1,21 @@
 # pylint: disable=protected-access,no-member
-from django.shortcuts import render, redirect, get_object_or_404
-from django.core.cache import cache
+# Django imports
 from django.contrib import messages
-from django_tables2 import RequestConfig
-from django.utils import timezone
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.core.cache import cache
+from django.http import  HttpResponse
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from datetime import datetime, timedelta
-from django.http import JsonResponse, Http404, HttpResponse, HttpResponseRedirect
-from .forms import *
-from .tables import *
+from django.utils import timezone
+
+# Third-party imports
+from django_tables2 import RequestConfig
+
+# Local imports
 from .filters import *
+from .forms import *
 from .services import get_weather_description
+from .tables import *
 
 # from django.views.generic import ListView
 # from .models import ColetaCampo
@@ -59,7 +63,6 @@ def home(request):
             'table_top3': table,
             
         }
-
         return render(request, 'home.html', context)
     except ProgramaColeta.DoesNotExist:
         return HttpResponse("Nenhum programa de coleta encontrado.", status=404)
