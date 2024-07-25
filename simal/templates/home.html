@@ -4,71 +4,63 @@
 {% block content %}
   {% if user.is_authenticated %}
     <p class="home-title fs-1">Olá, {{ user.username }}</p>
-    <div class="container mt-5 justify-content-center">
-      <!-- Início da nova box -->
-      <div class="row">
-        <div class="d-flex justify-content-center">
-          <div class="card-body">
-            <div class="row align-items-stretch">
-              <!-- Primeiro card interno -->
-              <div class="col-md-4 d-flex">
-                <div class="card small-card flex-fill h-100">
-                  <a href="{% url 'checklist_campanha' ordem_servico %}" style="text-decoration: none; color: inherit;">
-                    <div class="card-body d-flex flex-column">
-                      <div class="row align-items-center flex-grow-1">
-                        <div class="col-2 d-none d-md-flex">
-                          <div class="d-flex justify-content-center">
-                            <img src="static/images/icone-calendario.svg" alt="teste" class="img-fluid img-larger d-none d-md-block"/>
-                          </div>
-                        </div>
-                        <div class="col-12 col-md-10 d-flex flex-column justify-content-center">
-                          <p class="card-title fs-6">Campanha atual:</p>
-                          <p class="card-text fs-3">{{local_coleta}}</p>
-                          <p class="card-desc fs-6">Status: {{status_coleta}} <br>
-                            Data: {{data_coleta_proxima_formatada}} <br>
-                            OS: {{ ordem_servico }}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </a>
-                </div>
-              </div>
-              <!-- Segundo card interno -->
-              <div class="col-md-4 d-flex">
-                <div class="card small-card flex-fill h-100">
-                  <a href="https://www.climatempo.com.br/previsao-do-tempo/15-dias/cidade/309/marica-rj" style="text-decoration: none; color: inherit;">
-                    <div class="card-body d-flex flex-column">
-                      <div class="row align-items-center flex-grow-1">
-                        <div class="col-2 d-none d-md-flex">
-                          <div class="d-flex justify-content-center">
-                            <img src="static/images/icone-termometro.svg" alt="teste" class="img-fluid img-larger d-none d-md-block"/>
-                          </div>
-                        </div>
-                        <div class="col-12 col-md-10 d-flex flex-column justify-content-center">
-                          <p class="card-title fs-6">Previsão do tempo</p>
-                          <p class="card-text fs-3">{{weather_description}}</p>
-                          <p class="card-desc fs-6"></p> 
-                        </div>
-                      </div>
-                    </div>
-                  </a>
-                </div>
-              </div>
-              <!-- Terceiro card interno -->
-              <div class="col-md-4 d-flex">
-                <div class="card small-card flex-fill h-100">
+    <div class="container mt-5">
+      <div class="row justify-content-center">
+        <div class="card-body">
+          <div class="row d-flex align-items-stretch">
+            <!-- Primeiro card interno -->
+            <div class="col-md-4 d-flex">
+              <div class="card small-card flex-fill h-100">
+                <a href="{% url 'checklist_campanha' ordem_servico %}" class="text-decoration-none text-dark">
                   <div class="card-body d-flex flex-column">
                     <div class="row align-items-center flex-grow-1">
-                      <div class="col-2 d-none d-md-flex">
-                        <div class="d-flex justify-content-center">
-                          <img src="static/images/icone-checklist.svg" alt="teste" class="img-fluid img-larger d-none d-md-block"/>
-                        </div>
+                      <div class="col-2 d-none d-md-flex justify-content-center">
+                        <img src="static/images/icone-calendario.svg" alt="Calendário" class="img-fluid img-larger"/>
                       </div>
                       <div class="col-12 col-md-10 d-flex flex-column justify-content-center">
-                        <p class="card-title fs-6">Checklist</p>
-                        <p class="card-text fs-3">{{percentual_checklist}}%</p>
-                        <p class="card-desc fs-6">Progresso</p> 
+                        <p class="card-title fs-6">Campanha atual:</p>
+                        <p class="card-text fs-3">{{local_coleta}}</p>
+                        <p class="card-desc fs-6">
+                          Status: {{status_coleta}} <br>
+                          Data: {{data_coleta_proxima_formatada}} <br>
+                          OS: {{ ordem_servico }}
+                        </p>
                       </div>
+                    </div>
+                  </div>
+                </a>
+              </div>
+            </div>
+            <!-- Segundo card interno -->
+            <div class="col-md-4 d-flex">
+              <div class="card small-card flex-fill h-100">
+                <a href="https://www.climatempo.com.br/previsao-do-tempo/15-dias/cidade/309/marica-rj" class="text-decoration-none text-dark">
+                  <div class="card-body d-flex flex-column">
+                    <div class="row align-items-center flex-grow-1">
+                      <div class="col-2 d-none d-md-flex justify-content-center">
+                        <img src="static/images/icone-termometro.svg" alt="Termômetro" class="img-fluid img-larger"/>
+                      </div>
+                      <div class="col-12 col-md-10 d-flex flex-column justify-content-center">
+                        <p class="card-title fs-6">Previsão do tempo</p>
+                        <p class="card-text fs-3">{{weather_description}}</p>
+                      </div>
+                    </div>
+                  </div>
+                </a>
+              </div>
+            </div>
+            <!-- Terceiro card interno -->
+            <div class="col-md-4 d-flex">
+              <div class="card small-card flex-fill h-100">
+                <div class="card-body d-flex flex-column">
+                  <div class="row align-items-center flex-grow-1">
+                    <div class="col-2 d-none d-md-flex justify-content-center">
+                      <img src="static/images/icone-checklist.svg" alt="Checklist" class="img-fluid img-larger"/>
+                    </div>
+                    <div class="col-12 col-md-10 d-flex flex-column justify-content-center">
+                      <p class="card-title fs-6">Checklist</p>
+                      <p class="card-text fs-3">{{percentual_checklist}}%</p>
+                      <p class="card-desc fs-6">Progresso</p> 
                     </div>
                   </div>
                 </div>
@@ -80,33 +72,22 @@
     </div>
     <div class="container-campanha">
       <div class="card cronograma">
-        <p class="title-campanha fs-1">Cronograma da Campanha
-          <br>
-          <br>
-          <br>
-        </p>
+        <p class="title-campanha fs-1">Cronograma da Campanha</p>
       </div>
       <div class="card calendario">
         <p class="title-campanha fs-1">Calendário da Campanha</p>
-        <p class="subtitulo-campanha fs-4"> Dias planejados para coleta de amostras.</p>
-        <br>
-        <br>
-        <br>
+        <p class="subtitulo-campanha fs-4">Dias planejados para coleta de amostras.</p>
       </div>
     </div>
     <div class="card campanha">
-      <p class="title-campanha fs-1">Campanhas
-        {% render_table table_top3 %} 
-      </p>
+      <p class="title-campanha fs-1">Campanhas</p>
+      {% render_table table_top3 %} 
     </div>
   {% else %}
-    <div class="container mt-5">
-      <h1 class="text-center fs-1">Olá, visitante</h1>
-      <p class="text-center fs-4">Faça login para visualizar o sistema</p>
-      <div class="d-flex justify-content-center">
-        <a href="{% url 'account_login' %}" class="btn btn-primary">Clique aqui para logar</a>
-      </div>
+    <div class="container mt-5 text-center">
+      <h1 class="fs-1">Olá, visitante</h1>
+      <p class="fs-4">Faça login para visualizar o sistema</p>
+      <a href="{% url 'account_login' %}" class="btn btn-primary">Clique aqui para logar</a>
     </div>
   {% endif %}
 {% endblock %}
-
