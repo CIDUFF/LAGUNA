@@ -285,6 +285,47 @@ document.getElementById('pontoSelecionado').addEventListener('change', function(
   });
 </script>
 
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const dropdownLinks = document.querySelectorAll('.sidebar-link.collapsed.has-dropdown');
+
+    dropdownLinks.forEach(link => {
+      const dropdown = link.nextElementSibling;
+
+      link.addEventListener('mouseover', function() {
+        if (dropdown && dropdown.classList.contains('sidebar-dropdown')) {
+          dropdown.style.display = 'block';
+          dropdown.style.maxHeight = '500px'; // Ajuste conforme necessário
+        }
+      });
+
+      link.addEventListener('mouseout', function(event) {
+        if (dropdown && dropdown.classList.contains('sidebar-dropdown')) {
+          const relatedTarget = event.relatedTarget;
+          if (!dropdown.contains(relatedTarget)) {
+            dropdown.style.display = 'none';
+            dropdown.style.maxHeight = '0';
+          }
+        }
+      });
+
+      if (dropdown) {
+        dropdown.addEventListener('mouseover', function() {
+          dropdown.style.display = 'block';
+          dropdown.style.maxHeight = '500px'; // Ajuste conforme necessário
+        });
+
+        dropdown.addEventListener('mouseout', function(event) {
+          const relatedTarget = event.relatedTarget;
+          if (!link.contains(relatedTarget) && !dropdown.contains(relatedTarget)) {
+            dropdown.style.display = 'none';
+            dropdown.style.maxHeight = '0';
+          }
+        });
+      }
+    });
+  });
+</script>
   {% endblock %}
 </body>
 
