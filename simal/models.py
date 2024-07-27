@@ -184,6 +184,9 @@ class Campo(models.Model):
     salinidade = models.FloatField("Salinidade", null=True)
     status_form = models.CharField(
         "Status", max_length=20, default='Não preenchido')
+    observacoes = models.TextField("Observações", max_length=500, blank=True)
+    foto = models.ImageField(
+        upload_to='fotos_coleta/', null=True, verbose_name='Foto')
 
     def save(self, *args, **kwargs):
         campos = [
