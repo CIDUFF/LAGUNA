@@ -601,3 +601,12 @@ a.sidebar-link:hover {
 .btn btn-outline-primary btn-sm:hover {
   color: white !important;
 }
+<<<<<<< HEAD
+=======
+
+.calendar-container {
+  width: 30% !important; /* Ajuste a largura conforme necessário */
+  height: 50vh !important; /* Ajuste a altura conforme necessário */
+  margin: 0 auto; /* Centraliza o calendário horizontalmente */
+}
+>>>>>>> 80c900f (Atualizar página inicial com link para o calendário de campanhas)
