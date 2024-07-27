@@ -125,7 +125,7 @@ class LaboratoriosTable(tables.Table):
         model = Laboratorios
         template_name = 'django_tables2/bootstrap5-responsive.html'
         fields = ['nome', 'email', 'telefone', 'endereco', 'tipo']
-        attrs = {'class': 'table table-striped table-bordered table-hover'}
+        # attrs = {'class': 'table table-striped table-bordered table-hover'}
         empty_text = 'Não há dados para exibir'
         orderable = False
         exclude = ('id', 'created_at', 'updated_at')
