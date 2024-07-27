@@ -187,11 +187,12 @@
   {% block js %}
   <!-- Aqui você pode incluir arquivos JavaScript globais -->
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+  <script src="{% static 'scripts/scripts.js/' %}"></script>
+  <script src="{% static 'scripts/jquery.formset.js/' %}"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/pt.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
-  <script src="{% static 'scripts/scripts.js/' %}"></script>
 
   <script>
     window.addEventListener("DOMContentLoaded", function () {
@@ -326,7 +327,22 @@ document.getElementById('pontoSelecionado').addEventListener('change', function(
     });
   });
 </script>
-  {% endblock %}
+
+<script type="text/javascript">
+
+    $(function() {
+        $('.inlineform').formset({
+            prefix: '{{ formset.prefix }}',
+            addText: 'Adicionar nova análise',
+            deleteText: 'Remover esta análise',
+            addCssClass: 'btn btn-primary m-2',
+            deleteCssClass: 'btn btn-danger ',
+        });
+    })
+</script>
+
+
+{% endblock js %}
 </body>
 
 </html>

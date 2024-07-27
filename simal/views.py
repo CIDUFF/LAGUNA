@@ -1,6 +1,7 @@
 # pylint: disable=protected-access,no-member
 # Django imports
 from django.contrib import messages
+from django.forms import inlineformset_factory
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.cache import cache
 from django.http import  HttpResponse
@@ -467,24 +468,25 @@ def gerar_rota_campanha(request, ordem_servico=None):
     return render(request, 'coleta/gerar_rota_campanha.html', context)
 
 
+
 @login_required
 def cadastro_laboratorio(request):
+    AnaliseFormSet = inlineformset_factory(
+        Laboratorios, Analises, form=AnaliseForm, extra=1, fields='__all__'
+    )
     if request.method == 'POST':
         form = LaboratorioForm(request.POST)
-        if form.is_valid():
-            laboratorio = Laboratorios()
-            laboratorio.nome = form.cleaned_data['nome']
-            laboratorio.email = form.cleaned_data['email']
-            laboratorio.telefone = form.cleaned_data['telefone']
-            laboratorio.endereco = form.cleaned_data['endereco']
-            laboratorio.tipo = form.cleaned_data['tipo']
-            laboratorio.save()
+        formset = AnaliseFormSet(request.POST)
+        if form.is_valid() and formset.is_valid():
+            laboratorio = form.save()
+            formset.instance = laboratorio
+            formset.save()
             return redirect('laboratorios_cadastrados')
-
     else:
         form = LaboratorioForm()
+        formset = AnaliseFormSet()
 
-    return render(request, 'cadastro_laboratorio.html', {'form': form})
+    return render(request, 'cadastro_laboratorio.html', {'form': form, 'formset': formset})
 
 
 @login_required
@@ -499,18 +501,25 @@ def laboratorios_cadastrados(request):
 @login_required
 def atualizar_laboratorio(request, id):
     laboratorio = get_object_or_404(Laboratorios, id=id)
+    AnaliseFormSet = inlineformset_factory(
+        Laboratorios, Analises, form=AnaliseForm, extra=0, fields='__all__'
+    )
+
     if request.method == 'POST':
-        form = LaboratorioForm(request.POST)
-        if form.is_valid():
-            for field, value in form.cleaned_data.items():
-                setattr(laboratorio, field, value)
-            laboratorio.save()
+        form = LaboratorioForm(request.POST, instance=laboratorio)
+        formset = AnaliseFormSet(request.POST, instance=laboratorio)
+
+        if form.is_valid() and formset.is_valid():
+            laboratorio = form.save()
+            formset.instance = laboratorio
+            formset.save()
             messages.success(request, 'Dados atualizados com sucesso!')
             return redirect('laboratorios_cadastrados')
         else:
             print(form.errors)  # Imprime os erros de validação
+            print(formset.errors)  # Imprime os erros de validação do formset
     else:
-        form_data = {field.name: getattr(
-            laboratorio, field.name) for field in Laboratorios._meta.fields}
-        form = LaboratorioForm(initial=form_data)
-    return render(request, 'cadastro_laboratorio.html', {'form': form})
+        form = LaboratorioForm(instance=laboratorio)
+        formset = AnaliseFormSet(instance=laboratorio)
+
+    return render(request, 'cadastro_laboratorio.html', {'form': form, 'formset': formset})

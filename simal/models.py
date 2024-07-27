@@ -78,6 +78,16 @@ class Laboratorios(models.Model):
         return f'{self.nome}'
 
 
+class Analises(models.Model):
+    laboratorio = models.ForeignKey(Laboratorios, on_delete=models.CASCADE)
+    analise = models.CharField(max_length=100, null=True)
+
+
+
+    def __str__(self):
+        return f"Análise Laboratorial {self.analise}"
+
+
 class Solicitantes(models.Model):
     """
     Classe que representa os solicitantes.
@@ -140,7 +150,8 @@ class ProgramaColeta(models.Model):
 
         if not self.ordem_servico:
             hora = datetime.now().strftime('%H%M%S')
-            localizacao = LocaisColeta.objects.filter(local=self.local_coleta).first()
+            localizacao = LocaisColeta.objects.filter(
+                local=self.local_coleta).first()
 
             if localizacao:
                 codigo = localizacao.codigo_str
@@ -149,7 +160,8 @@ class ProgramaColeta(models.Model):
                     'NFKD', ordem_servico_raw)
                 ordem_servico_ascii = ordem_servico_normalized.encode(
                     'ASCII', 'ignore').decode('ASCII')
-                self.ordem_servico = re.sub(r'[\s\W_]+', '', ordem_servico_ascii)
+                self.ordem_servico = re.sub(
+                    r'[\s\W_]+', '', ordem_servico_ascii)
             else:
                 raise ValueError("Localização não encontrada")
 
@@ -197,6 +209,11 @@ class Campo(models.Model):
         if all(campo is not None for campo in campos):
             self.status_form = 'Preenchido'
         super().save(*args, **kwargs)
+
+
+
+
+
 
 
 class ListaColeta(models.Model):
