@@ -73,7 +73,7 @@ def home(request):
 @login_required
 def coleta(request):
     if request.method == 'POST':
-        form = ColetaCampo(request.POST)
+        form = ColetaCampo(request.POST, request.FILES)
         if form.is_valid():
             form.save()
             return redirect('lista_coleta')
@@ -97,7 +97,7 @@ def atualizar_coleta(request, id):
     if request.method == 'POST':
         post_data = request.POST.copy()
         post_data['hora_fim'] = timezone.now().strftime('%H:%M')
-        form = ColetaCampo(post_data)
+        form = ColetaCampo(post_data, request.FILES)
 
         if form.is_valid():
             for field, value in form.cleaned_data.items():

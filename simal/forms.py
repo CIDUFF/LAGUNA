@@ -10,7 +10,6 @@ from .models import *
 
 
 class ColetaCampo(forms.Form):
-
     codigo_coleta = forms.CharField(widget=forms.HiddenInput())
     ponto = forms.CharField(widget=forms.HiddenInput())
     hora_inicio = forms.TimeField(widget=forms.HiddenInput())
@@ -24,15 +23,26 @@ class ColetaCampo(forms.Form):
     od_pct = forms.FloatField()
     tds = forms.FloatField()
     salinidade = forms.FloatField()
-    
-    campos = [
-        'temperatura','ph', 'orp', 'condutividade', 'turbidez', 'od', 'od_pct', 'tds', 'salinidade'
-    ]
-    
+    observacoes = forms.CharField(
+        label='Observações',
+        widget=forms.Textarea(attrs={'rows': 3, 'cols': 40}),
+        required=False
+    )
+    foto = forms.ImageField(
+        label='Foto',
+        required=False,
+        widget=forms.ClearableFileInput(attrs={'capture': 'camera'})
+    )
+
+    # campos = [
+    #     'temperatura', 'ph', 'orp', 'condutividade', 'turbidez', 'od', 'od_pct', 'tds', 'salinidade', 'observacoes'
+    # ]
+
+
     def __init__(self, *args, **kwargs):
         super(ColetaCampo, self).__init__(*args, **kwargs)
         campos = [
-            'temperatura', 'ph', 'orp', 'condutividade', 'turbidez', 'od', 'od_pct', 'tds', 'salinidade'
+            'temperatura', 'ph', 'orp', 'condutividade', 'turbidez', 'od', 'od_pct', 'tds', 'salinidade', 'observacoes'
         ]
         self.helper = FormHelper()
         self.helper.layout = Layout(
@@ -42,9 +52,8 @@ class ColetaCampo(forms.Form):
                 'ponto',
                 'hora_inicio',
                 'hora_fim',
-                *[FloatingField(campo) for campo in campos]
-                
-
+                *[FloatingField(campo) for campo in campos],
+                'foto'  # Adiciona o campo foto diretamente no Fieldset
             ),
             ButtonHolder(
                 Submit('submit', 'Salvar e ir para o próximo ponto')
