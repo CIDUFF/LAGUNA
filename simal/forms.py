@@ -295,18 +295,7 @@ class LaboratorioForm(forms.ModelForm):
                 'tipo'
             ),
             ButtonHolder(
-                Layout(
-                    Div(
-                        Submit('submit', 'Salvar'),
-                        css_class='col-6'
-                    ),
-                    Div(
-                        HTML(format_html('<a href="{}" class="btn btn-primary btn-campanha">Laboratórios Cadastrados</a>',
-                             reverse('laboratorios_cadastrados'))),
-                        css_class='col-6 text'
-                    )
-                ),
-                css_class='row'
+                Submit('submit', 'Salvar'),
             )
         )
         

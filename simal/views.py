@@ -8,6 +8,7 @@ from django.http import  HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
+import json
 
 # Third-party imports
 from django_tables2 import RequestConfig
@@ -36,8 +37,6 @@ def home(request):
         table = TopCampanhas(ProgramaColeta.objects.all())
         RequestConfig(request, paginate={"per_page": 3}).configure(table)
 
-        # O restante do código permanece o mesmo...
-
         # Se existe uma próxima coleta, busca o percentual do checklist correspondente
         percentual_checklist = None
         if proxima_coleta:
@@ -54,15 +53,36 @@ def home(request):
             data_coleta_proxima_formatada = None
             weather_description = None
 
+        # Lógica do calendário
+        campanhas = ProgramaColeta.objects.all()
+        eventos = []
+
+        for campanha in campanhas:
+            evento = {
+                'title': campanha.ordem_servico,
+                'start': campanha.data_coleta_campo.isoformat(),
+                'end': campanha.data_coleta_campo.isoformat(),
+                'url': f'/checklist_campanha/{campanha.ordem_servico}/'
+            }
+            if campanha.status_coleta == 'Programada':
+                evento['className'] = 'evento-programado'
+            elif campanha.status_coleta == 'Iniciada':
+                evento['className'] = 'evento-iniciado'
+            elif campanha.status_coleta == 'Coleta realizada':
+                evento['className'] = 'evento-realizado'
+            elif campanha.status_coleta == 'Cancelada':
+                evento['className'] = 'evento-cancelado'
+            eventos.append(evento)
+
         context = {
             'weather_description': weather_description,
             'data_coleta_proxima_formatada': data_coleta_proxima_formatada,
             'status_coleta': proxima_coleta.status_coleta if proxima_coleta else None,
             'local_coleta': proxima_coleta.local_coleta if proxima_coleta else None,
             'percentual_checklist': percentual_checklist if percentual_checklist else 0,
-            'ordem_servico': proxima_coleta.ordem_servico,
+            'ordem_servico': proxima_coleta.ordem_servico if proxima_coleta else None,
             'table_top3': table,
-            
+            'eventos': json.dumps(eventos)
         }
         return render(request, 'home.html', context)
     except ProgramaColeta.DoesNotExist:
@@ -523,3 +543,25 @@ def atualizar_laboratorio(request, id):
         formset = AnaliseFormSet(instance=laboratorio)
 
     return render(request, 'cadastro_laboratorio.html', {'form': form, 'formset': formset})
+
+
+def calendario_campanhas(request):
+    campanhas = ProgramaColeta.objects.all()
+    eventos = []
+
+    for campanha in campanhas:
+        eventos.append({
+            # Substitua 'id' por um campo existente apropriado
+            'title': campanha.ordem_servico,
+            'start': campanha.data_coleta_campo.isoformat(),
+            'end': campanha.data_coleta_campo.isoformat(),
+            # URL corrigida para detalhes da campanha
+            'url': f'/checklist_campanha/{campanha.ordem_servico}/'
+        })
+
+    context = {
+        'eventos': json.dumps(eventos)
+    }
+    return render(request, 'calendario.html', context)
+
+

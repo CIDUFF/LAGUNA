@@ -71,13 +71,16 @@
       </div>
     </div>
     <div class="container-campanha">
-      <div class="card cronograma">
-        <p class="title-campanha fs-1">Cronograma da Campanha</p>
-      </div>
-      <div class="card calendario">
-        <p class="title-campanha fs-1">Calendário da Campanha</p>
-        <p class="subtitulo-campanha fs-4">Dias planejados para coleta de amostras.</p>
-      </div>
+        <div class="card cronograma d-none d-sm-block">
+            <p class="title-campanha fs-1">Cronograma da Campanha</p>
+        </div>
+        <div class="card calendario d-none d-lg-block">
+            <p class="title-campanha fs-1">Calendário da Campanha</p>
+            <div class="calendar-container mx-auto w-100" id="calendar-container-large"></div>
+        </div>
+    </div>
+    <div class="small-calendar d-lg-none" id="calendar-container-small">
+      <p class="title-campanha fs-1">Calendário da Campanha</p>
     </div>
     <div class="card campanha">
       <p class="title-campanha fs-1">Campanhas</p>
@@ -90,4 +93,55 @@
       <a href="{% url 'account_login' %}" class="btn btn-primary">Clique aqui para logar</a>
     </div>
   {% endif %}
+<link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.css' rel='stylesheet' />
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js'></script>
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/locales-all.min.js'></script>
+<style>
+  .evento-programado {
+    background-color: #ffc107; /* Amarelo */
+    color: white;
+  }
+  .evento-iniciado {
+    background-color: #17a2b8; /* Azul */
+    color: white;
+  }
+  .evento-realizado {
+    background-color: #28a745; /* Verde */
+    color: white;
+  }
+  .evento-cancelado {
+    background-color: #dc3545; /* Vermelho */
+    color: white;
+  }
+  
+</style>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var calendarEl = document.createElement('div');
+    calendarEl.id = 'calendar';
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        locale: 'pt-br',  // Configura o idioma para português
+        events: {{ eventos|safe }}
+    });
+    calendar.render();
+
+    function moveCalendar() {
+        var smallContainer = document.getElementById('calendar-container-small');
+        var largeContainer = document.getElementById('calendar-container-large');
+        if (window.innerWidth >= 992) {
+            if (largeContainer && !largeContainer.contains(calendarEl)) {
+                largeContainer.appendChild(calendarEl);
+            }
+        } else {
+            if (smallContainer && !smallContainer.contains(calendarEl)) {
+                smallContainer.appendChild(calendarEl);
+            }
+        }
+    }
+
+    window.addEventListener('resize', moveCalendar);
+    moveCalendar();  // Inicializa a posição correta do calendário
+});
+</script>
 {% endblock %}

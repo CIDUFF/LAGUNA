@@ -613,3 +613,8 @@ a.sidebar-link:hover {
   color: white !important;
 }
 
+.calendar-container {
+  width: 30% !important; /* Ajuste a largura conforme necessário */
+  height: 50vh !important; /* Ajuste a altura conforme necessário */
+  margin: 0 auto; /* Centraliza o calendário horizontalmente */
+}

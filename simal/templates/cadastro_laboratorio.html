@@ -1,5 +1,5 @@
 {% extends 'base/base_site.html' %} 
-{% load crispy_forms_tags %}
+{% load django_bootstrap5 %}
 {% block title %} Cadastro de Laboratórios {% endblock %}
 {% block content %} 
 {% if user.is_authenticated %}
@@ -9,7 +9,12 @@
     </div>
     <form method="post">
         {% csrf_token %}
-        {{ form|crispy }}
+        <div>
+            <h4>
+                Informações do Laboratório
+            </h4>
+        </div>
+        {% bootstrap_form form layout='floating' %}
         {{ formset.management_form }}
         <div>
             <h4>
@@ -18,7 +23,7 @@
         </div>
         {% for fs in formset %}
         <div class="inlineform">
-            {{ fs|crispy }}
+            {% bootstrap_form fs layout='floating' %}
         </div>
         {% endfor %}
         <button type="submit" class="btn btn-primary">Salvar</button>
@@ -33,10 +38,4 @@
         </div>
     </div>
 {% endif %}
-
-
-    
-
 {% endblock %}
-
-
