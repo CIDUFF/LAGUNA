@@ -4,12 +4,26 @@
 {% block content %} 
 {% if user.is_authenticated %}
 <div class="card checklist">
-            {% csrf_token %} {% crispy form %} 
-            {% comment %} <div class="d-flex justify-content-start">
-                <a href="{% url 'laboratorios_cadastrados' %}" class="btn btn-primary">Visualizar Laboratórios Cadastrados</a>
-            </div> {% endcomment %}
+    <div class="card-header">
+        <h3 class="text-center mb-3">Cadastro de Laboratórios</h3>
+    </div>
+    <form method="post">
+        {% csrf_token %}
+        {{ form|crispy }}
+        {{ formset.management_form }}
+        <div>
+            <h4>
+                Análises Disponíveis no laboratório
+            </h4>
         </div>
-
+        {% for fs in formset %}
+        <div class="inlineform">
+            {{ fs|crispy }}
+        </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary">Salvar</button>
+    </form>
+</div>
 {% else %}
     <div class="container mt-5">
         <h1 class="text-center">Olá, visitante</h1>
@@ -19,4 +33,10 @@
         </div>
     </div>
 {% endif %}
+
+
+    
+
 {% endblock %}
+
+

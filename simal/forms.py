@@ -14,15 +14,34 @@ class ColetaCampo(forms.Form):
     ponto = forms.CharField(widget=forms.HiddenInput())
     hora_inicio = forms.TimeField(widget=forms.HiddenInput())
     hora_fim = forms.TimeField(widget=forms.HiddenInput())
-    temperatura = forms.FloatField()
-    ph = forms.FloatField()
-    orp = forms.FloatField()
-    condutividade = forms.FloatField()
-    turbidez = forms.FloatField()
-    od = forms.FloatField()
-    od_pct = forms.FloatField()
-    tds = forms.FloatField()
-    salinidade = forms.FloatField()
+    temperatura = forms.FloatField(
+        required=False, label='Temperatura (°C)', widget=forms.NumberInput(attrs={'step': '0.1'})
+    )
+    ph = forms.FloatField(
+        required=False, label='pH', widget=forms.NumberInput(attrs={'step': '0.1'})
+    )
+    orp = forms.FloatField(
+        required=False, label='ORP (mV)', widget=forms.NumberInput(attrs={'step': '0.1'})
+    )
+    condutividade = forms.FloatField(
+        required=False, label='Condutividade (µS/cm)', widget=forms.NumberInput(attrs={'step': '0.1'})
+    )
+    turbidez = forms.FloatField(
+        required=False, label='Turbidez (NTU)', widget=forms.NumberInput(attrs={'step': '0.1'})
+    )
+    od = forms.FloatField(
+        required=False, label='OD (mg/L)', widget=forms.NumberInput(attrs={'step': '0.1'})
+    )
+    od_pct = forms.FloatField(
+        required=False, label='OD (%)', widget=forms.NumberInput(attrs={'step': '0.1'})
+    )
+    tds = forms.FloatField(
+        required=False, label='TDS (mg/L)', widget=forms.NumberInput(attrs={'step': '0.1'})
+    )
+    salinidade = forms.FloatField(
+        required=False, label='Salinidade (ppt)', widget=forms.NumberInput(attrs={'step': '0.1'})
+        
+    )
     observacoes = forms.CharField(
         label='Observações',
         widget=forms.Textarea(attrs={'rows': 3, 'cols': 40}),
@@ -56,7 +75,7 @@ class ColetaCampo(forms.Form):
                 'foto'  # Adiciona o campo foto diretamente no Fieldset
             ),
             ButtonHolder(
-                Submit('submit', 'Salvar e ir para o próximo ponto')
+                Submit('submit', 'Salvar e ir para o próximo')
             )
         )
 
@@ -210,12 +229,58 @@ class IniciarCampanhaForm(forms.Form):
         )
 
 
-class LaboratorioForm(forms.Form):
-    nome = forms.CharField(label='Nome do laboratório')
-    endereco = forms.CharField(label='Endereço')
-    telefone = forms.CharField(label='Telefone')
-    email = forms.EmailField(label='Email')
-    tipo = forms.CharField(label='Tipo')
+# class LaboratorioForm(forms.Form):
+#     nome = forms.CharField(label='Nome do laboratório')
+#     endereco = forms.CharField(label='Endereço')
+#     telefone = forms.CharField(label='Telefone')
+#     email = forms.EmailField(label='Email')
+#     tipo = forms.CharField(label='Tipo')
+
+#     def __init__(self, *args, **kwargs):
+#         super(LaboratorioForm, self).__init__(*args, **kwargs)
+#         self.helper = FormHelper()
+#         self.helper.layout = Layout(
+#             Fieldset(
+#                 'Formulário de Cadastro de Laboratório',
+#                 'nome',
+#                 'endereco',
+#                 'telefone',
+#                 'email',
+#                 'tipo'
+#             ),
+#             ButtonHolder(
+#                 Layout(
+#                     Div(
+#                         Submit('submit', 'Salvar'),
+#                         css_class='col-6'
+#                     ),
+#                     Div(
+#                         HTML(format_html('<a href="{}" class="btn btn-primary btn-campanha">Laboratórios Cadastrados</a>',
+#                              reverse('laboratorios_cadastrados'))),
+#                         css_class='col-6 text-right'
+#                     )
+#                 ),
+#                 css_class='row'
+#             )
+#         )
+
+
+# class AnaliseForm(forms.ModelForm):
+#     class Meta:
+#         model = Analises
+#         fields = ['analise']
+
+class LaboratorioForm(forms.ModelForm):
+    class Meta:
+        model = Laboratorios
+        fields = '__all__'
+        labels = {
+            'nome': 'Nome do laboratório',
+            'endereco': 'Endereço',
+            'telefone': 'Telefone',
+            'email': 'Email',
+            'tipo': 'Tipo'
+        }
 
     def __init__(self, *args, **kwargs):
         super(LaboratorioForm, self).__init__(*args, **kwargs)
@@ -238,9 +303,34 @@ class LaboratorioForm(forms.Form):
                     Div(
                         HTML(format_html('<a href="{}" class="btn btn-primary btn-campanha">Laboratórios Cadastrados</a>',
                              reverse('laboratorios_cadastrados'))),
-                        css_class='col-6 text-right'
+                        css_class='col-6 text'
                     )
                 ),
                 css_class='row'
             )
         )
+        
+class AnaliseForm(forms.ModelForm):
+    class Meta:
+        model = Analises
+        fields = '__all__'
+        labels = {
+            'analise': 'Análise'
+        }
+        
+    def __init__(self, *args, **kwargs):
+        super(AnaliseForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Fieldset(
+                'Formulário de Cadastro de Análise',
+                'analise'
+            ),
+            ButtonHolder(
+                        Submit('submit', 'Salvar'),
+            )
+        )
+
+
+                
+        
