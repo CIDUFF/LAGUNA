@@ -138,7 +138,6 @@ class ChecklistCampoForm(forms.Form):
         widget=forms.HiddenInput(), initial=timezone.now().date)
     ordem_servico = forms.CharField(
         label="Ordem de serviço", widget=forms.TextInput(attrs={'readonly': 'readonly'}))
-    # status_checklist = forms.ChoiceField(choices=ChecklistCampo.STATUS)  # Esta linha foi removida
     observacoes = forms.CharField(
         label='Observações', widget=forms.Textarea, max_length=500, required=False)
 
@@ -161,9 +160,19 @@ class ChecklistCampoForm(forms.Form):
     def __init__(self, *args, **kwargs):
         ordem_servico_selecionada = kwargs.pop(
             'ordem_servico_selecionada', None)
+        checklist_campo_instance = kwargs.pop('instance', None)
         super(ChecklistCampoForm, self).__init__(*args, **kwargs)
         if ordem_servico_selecionada:
             self.fields['ordem_servico'].initial = ordem_servico_selecionada
+        if checklist_campo_instance:
+            self.fields['previsao_tempo'].initial = checklist_campo_instance.previsao_tempo
+            self.fields['avisar_labs'].initial = checklist_campo_instance.avisar_labs
+            self.fields['reservar_carro'].initial = checklist_campo_instance.reservar_carro
+            self.fields['reservar_barco'].initial = checklist_campo_instance.reservar_barco
+            self.fields['separar_equipamentos'].initial = checklist_campo_instance.separar_equipamentos
+            self.fields['conferir_equipamentos'].initial = checklist_campo_instance.conferir_equipamentos
+            self.fields['comprar_gelo'].initial = checklist_campo_instance.comprar_gelo
+            self.fields['observacoes'].initial = checklist_campo_instance.observacoes
         self.helper = FormHelper()
         self.helper.layout = Layout(
             Fieldset(
@@ -177,11 +186,9 @@ class ChecklistCampoForm(forms.Form):
                 Switch('separar_equipamentos'),
                 Switch('conferir_equipamentos'),
                 Switch('comprar_gelo'),
-                # 'status_checklist',  # Esta linha foi removida
                 'observacoes',
                 css_class='card form-checklist'
             ),
-            
             ButtonHolder(
                 Submit('submit', 'Salvar e continuar', css_class='btn-primary')
             )

@@ -79,10 +79,9 @@ class Laboratorios(models.Model):
 
 
 class Analises(models.Model):
-    laboratorio = models.ForeignKey(Laboratorios, on_delete=models.CASCADE)
+    laboratorio = models.ForeignKey(
+        Laboratorios, on_delete=models.CASCADE, related_name='analises')
     analise = models.CharField(max_length=100, null=True)
-
-
 
     def __str__(self):
         return f"Análise Laboratorial {self.analise}"
@@ -211,11 +210,6 @@ class Campo(models.Model):
         super().save(*args, **kwargs)
 
 
-
-
-
-
-
 class ListaColeta(models.Model):
     STATUS = [
         ('programada', 'Programada'),
@@ -245,22 +239,25 @@ class ListaColeta(models.Model):
 
 class ChecklistCampo(models.Model):
     data_checklist = models.DateField(auto_now=True)
+    data_limite = models.DateField(auto_now=False, null=True, blank=True)
     ordem_servico = models.ForeignKey(
         'ProgramaColeta', on_delete=models.CASCADE, related_name='checklist_ordem_servico')
     previsao_tempo = models.BooleanField(
-        "Previsão do tempo", blank=True, null=True)
+        "Previsão do tempo", blank=True, null=True, default=False)
     avisar_labs = models.BooleanField(
-        "Avisar laboratórios", blank=True, null=True)
+        "Avisar laboratórios", blank=True, null=True, default=False)
     reservar_carro = models.BooleanField(
-        "Reservar carro", blank=True, null=True)
+        "Reservar carro", blank=True, null=True, default=False)
     reservar_barco = models.BooleanField(
-        "Reservar barco", blank=True, null=True)
+        "Reservar barco", blank=True, null=True, default=False)
     separar_equipamentos = models.BooleanField(
-        "Separar equipamentos", blank=True, null=True)
+        "Separar equipamentos", blank=True, null=True, default=False)
     conferir_equipamentos = models.BooleanField(
-        "Conferir equipamentos", blank=True, null=True)
-    comprar_gelo = models.BooleanField("Comprar gelo", blank=True, null=True)
-    observacoes = models.TextField(max_length=500, blank=True)
+        "Conferir equipamentos", blank=True, null=True, default=False)
+    comprar_gelo = models.BooleanField(
+        "Comprar gelo", blank=True, null=True, default=False)
+    observacoes = models.TextField(
+        max_length=500, blank=True, default=False)
     status_checklist = models.BooleanField(default=False)
     progresso = models.DecimalField(max_digits=5, decimal_places=2, default=0)
 

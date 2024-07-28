@@ -98,7 +98,7 @@ class ProgramaColetaTable(tables.Table):
         orderable = True
         exclude = ('id', 'created_at', 'updated_at', 'campo')
         sequence = ('ordem_servico', 'usuario', 'data_coleta_campo', 'solicitante',
-                    'local_coleta', 'status_coleta', 'atualizar', 'deletar', 'cancelar', 'iniciar')
+                    'local_coleta', 'status_coleta', 'iniciar', 'atualizar', 'cancelar', 'deletar')
         per_page = 10
         paginator_class = tables.LazyPaginator
         table_pagination = True
@@ -117,23 +117,26 @@ class ProgramaColetaTable(tables.Table):
 
 
 class LaboratoriosTable(tables.Table):
-
     update = tables.LinkColumn('atualizar_laboratorio', args=[A(
         'pk')], orderable=False, empty_values=[], text='EDITAR')
+    analises = tables.Column(
+        empty_values=(), orderable=False, verbose_name='Análises')
+
+    def render_analises(self, record):
+        return ', '.join([analise.analise for analise in record.analises.all()])
 
     class Meta:
         model = Laboratorios
         template_name = 'django_tables2/bootstrap5-responsive.html'
         fields = ['nome', 'email', 'telefone', 'endereco', 'tipo']
-        # attrs = {'class': 'table table-striped table-bordered table-hover'}
         empty_text = 'Não há dados para exibir'
         orderable = False
         exclude = ('id', 'created_at', 'updated_at')
-        sequence = ('nome', 'email', 'telefone', 'endereco', 'tipo')
+        sequence = ('nome', 'email', 'telefone',
+                    'endereco', 'tipo', 'analises')
         per_page = 10
         paginator_class = tables.LazyPaginator
         table_pagination = True
-# TODO: Criar tabelas para as outras classes
 
 
 class TopCampanhas(tables.Table):
