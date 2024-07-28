@@ -1,6 +1,7 @@
 # pylint: disable=protected-access,no-member
 # Django imports
 from django.contrib import messages
+import csv
 from django.forms import inlineformset_factory
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.cache import cache
@@ -387,32 +388,23 @@ def iniciar_campanha(request, ordem_servico=None):
 @login_required
 def checklist_campanha(request, ordem_servico=None):
     ordem_servico_selecionada = request.GET.get('ordem_servico', ordem_servico)
-    # Busca a instância da ordem de serviço antes de qualquer processamento
     campanha = get_object_or_404(
         ProgramaColeta, ordem_servico=ordem_servico_selecionada)
-
-    # Verifica se a ordem de serviço está cancelada antes de prosseguir
     if campanha.status_coleta == 'Cancelada':
         messages.warning(
             request, 'Não é possível iniciar uma campanha cancelada')
-        # Redireciona ou renderiza uma página específica para o erro
         return redirect('coletas_agendas')
     try:
         checklist_campanha = ChecklistCampo.objects.get(
             ordem_servico=campanha)
         if checklist_campanha.progresso == 100:
-            # Substitua 'lista_coletas' pelo nome correto da sua URL
             return redirect('lista_coleta', ordem_servico=ProgramaColeta.objects.get(ordem_servico=campanha.ordem_servico).id)
     except ChecklistCampo.DoesNotExist:
-        # Se não existir, você pode prosseguir com a criação ou outra lógica
         checklist_campanha = None
-        # Continue com a lógica para criar um novo ChecklistCampo ou outra ação
-    # Continua com a lógica original se a ordem de serviço não estiver cancelada
-    checklist_campanha = None
-    form = ChecklistCampoForm(
-        request.POST or None, ordem_servico_selecionada=ordem_servico_selecionada)
-    if request.method == 'POST' and form.is_valid():
 
+    form = ChecklistCampoForm(
+        request.POST or None, instance=checklist_campanha, ordem_servico_selecionada=ordem_servico_selecionada)
+    if request.method == 'POST' and form.is_valid():
         checklist_campanha, created = ChecklistCampo.objects.get_or_create(
             ordem_servico=campanha,
             defaults={campo: form.cleaned_data[campo] for campo in (
@@ -426,18 +418,13 @@ def checklist_campanha(request, ordem_servico=None):
                           'conferir_equipamentos', 'comprar_gelo'):
                 setattr(checklist_campanha, campo, form.cleaned_data[campo])
             checklist_campanha.save()
-
-        # Verifica se o progresso é igual a 100
-
         if campanha.rota:
             return redirect('lista_coleta', ordem_servico=campanha.id)
         else:
             return redirect('gerar_rota_campanha', ordem_servico=campanha.ordem_servico)
 
-        
     campanha.status_coleta = 'Iniciada'
     campanha.save()
-
     context = {
         'form': form,
         'checklist_campanha': checklist_campanha
@@ -565,3 +552,17 @@ def calendario_campanhas(request):
     return render(request, 'calendario.html', context)
 
 
+def exportar_resultados_csv(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="resultados_coleta.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(['Código Coleta', 'Hora Início', 'Hora Fim', 'Ponto', 'Temperatura',
+                    'pH', 'ORP', 'Condutividade', 'Turbidez', 'OD', 'OD %', 'TDS', 'Salinidade'])
+
+    resultados = Campo.objects.all().values_list('codigo_coleta', 'hora_inicio', 'hora_fim', 'ponto',
+                                                 'temperatura', 'ph', 'orp', 'condutividade', 'turbidez', 'od', 'od_pct', 'tds', 'salinidade')
+    for resultado in resultados:
+        writer.writerow(resultado)
+
+    return response

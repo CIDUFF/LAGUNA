@@ -14,8 +14,9 @@
         </form>
 
     </div>
-    
+
     <div class="table-responsive">
+        <a href="{% url 'exportar_resultados_csv' %}" class="btn btn-primary">Exportar resultados para CSV</a>
         <table class="table">
             {% render_table table_campo %}
         </table>
