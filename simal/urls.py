@@ -39,4 +39,7 @@ urlpatterns = [
     path('checklist_campanha/<str:ordem_servico>/',
          views.checklist_campanha, name='checklist_campanha'),
     path('resultados_coleta/', views.resultados, name='resultados'),
+    path('calendario/', views.calendario_campanhas, name='calendario_campanhas'),
+    path('exportar_resultados/', views.exportar_resultados_csv,
+         name='exportar_resultados_csv'),
 ]

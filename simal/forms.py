@@ -10,29 +10,58 @@ from .models import *
 
 
 class ColetaCampo(forms.Form):
-
     codigo_coleta = forms.CharField(widget=forms.HiddenInput())
     ponto = forms.CharField(widget=forms.HiddenInput())
     hora_inicio = forms.TimeField(widget=forms.HiddenInput())
     hora_fim = forms.TimeField(widget=forms.HiddenInput())
-    temperatura = forms.FloatField()
-    ph = forms.FloatField()
-    orp = forms.FloatField()
-    condutividade = forms.FloatField()
-    turbidez = forms.FloatField()
-    od = forms.FloatField()
-    od_pct = forms.FloatField()
-    tds = forms.FloatField()
-    salinidade = forms.FloatField()
-    
-    campos = [
-        'temperatura','ph', 'orp', 'condutividade', 'turbidez', 'od', 'od_pct', 'tds', 'salinidade'
-    ]
-    
+    temperatura = forms.FloatField(
+        required=False, label='Temperatura (°C)', widget=forms.NumberInput(attrs={'step': '0.1'})
+    )
+    ph = forms.FloatField(
+        required=False, label='pH', widget=forms.NumberInput(attrs={'step': '0.1'})
+    )
+    orp = forms.FloatField(
+        required=False, label='ORP (mV)', widget=forms.NumberInput(attrs={'step': '0.1'})
+    )
+    condutividade = forms.FloatField(
+        required=False, label='Condutividade (µS/cm)', widget=forms.NumberInput(attrs={'step': '0.1'})
+    )
+    turbidez = forms.FloatField(
+        required=False, label='Turbidez (NTU)', widget=forms.NumberInput(attrs={'step': '0.1'})
+    )
+    od = forms.FloatField(
+        required=False, label='OD (mg/L)', widget=forms.NumberInput(attrs={'step': '0.1'})
+    )
+    od_pct = forms.FloatField(
+        required=False, label='OD (%)', widget=forms.NumberInput(attrs={'step': '0.1'})
+    )
+    tds = forms.FloatField(
+        required=False, label='TDS (mg/L)', widget=forms.NumberInput(attrs={'step': '0.1'})
+    )
+    salinidade = forms.FloatField(
+        required=False, label='Salinidade (ppt)', widget=forms.NumberInput(attrs={'step': '0.1'})
+        
+    )
+    observacoes = forms.CharField(
+        label='Observações',
+        widget=forms.Textarea(attrs={'rows': 3, 'cols': 40}),
+        required=False
+    )
+    foto = forms.ImageField(
+        label='Foto',
+        required=False,
+        widget=forms.ClearableFileInput(attrs={'capture': 'camera'})
+    )
+
+    # campos = [
+    #     'temperatura', 'ph', 'orp', 'condutividade', 'turbidez', 'od', 'od_pct', 'tds', 'salinidade', 'observacoes'
+    # ]
+
+
     def __init__(self, *args, **kwargs):
         super(ColetaCampo, self).__init__(*args, **kwargs)
         campos = [
-            'temperatura', 'ph', 'orp', 'condutividade', 'turbidez', 'od', 'od_pct', 'tds', 'salinidade'
+            'temperatura', 'ph', 'orp', 'condutividade', 'turbidez', 'od', 'od_pct', 'tds', 'salinidade', 'observacoes'
         ]
         self.helper = FormHelper()
         self.helper.layout = Layout(
@@ -42,12 +71,11 @@ class ColetaCampo(forms.Form):
                 'ponto',
                 'hora_inicio',
                 'hora_fim',
-                *[FloatingField(campo) for campo in campos]
-                
-
+                *[FloatingField(campo) for campo in campos],
+                'foto'  # Adiciona o campo foto diretamente no Fieldset
             ),
             ButtonHolder(
-                Submit('submit', 'Salvar e ir para o próximo ponto')
+                Submit('submit', 'Salvar e ir para o próximo')
             )
         )
 
@@ -110,7 +138,6 @@ class ChecklistCampoForm(forms.Form):
         widget=forms.HiddenInput(), initial=timezone.now().date)
     ordem_servico = forms.CharField(
         label="Ordem de serviço", widget=forms.TextInput(attrs={'readonly': 'readonly'}))
-    # status_checklist = forms.ChoiceField(choices=ChecklistCampo.STATUS)  # Esta linha foi removida
     observacoes = forms.CharField(
         label='Observações', widget=forms.Textarea, max_length=500, required=False)
 
@@ -133,9 +160,19 @@ class ChecklistCampoForm(forms.Form):
     def __init__(self, *args, **kwargs):
         ordem_servico_selecionada = kwargs.pop(
             'ordem_servico_selecionada', None)
+        checklist_campo_instance = kwargs.pop('instance', None)
         super(ChecklistCampoForm, self).__init__(*args, **kwargs)
         if ordem_servico_selecionada:
             self.fields['ordem_servico'].initial = ordem_servico_selecionada
+        if checklist_campo_instance:
+            self.fields['previsao_tempo'].initial = checklist_campo_instance.previsao_tempo
+            self.fields['avisar_labs'].initial = checklist_campo_instance.avisar_labs
+            self.fields['reservar_carro'].initial = checklist_campo_instance.reservar_carro
+            self.fields['reservar_barco'].initial = checklist_campo_instance.reservar_barco
+            self.fields['separar_equipamentos'].initial = checklist_campo_instance.separar_equipamentos
+            self.fields['conferir_equipamentos'].initial = checklist_campo_instance.conferir_equipamentos
+            self.fields['comprar_gelo'].initial = checklist_campo_instance.comprar_gelo
+            self.fields['observacoes'].initial = checklist_campo_instance.observacoes
         self.helper = FormHelper()
         self.helper.layout = Layout(
             Fieldset(
@@ -149,11 +186,9 @@ class ChecklistCampoForm(forms.Form):
                 Switch('separar_equipamentos'),
                 Switch('conferir_equipamentos'),
                 Switch('comprar_gelo'),
-                # 'status_checklist',  # Esta linha foi removida
                 'observacoes',
                 css_class='card form-checklist'
             ),
-            
             ButtonHolder(
                 Submit('submit', 'Salvar e continuar', css_class='btn-primary')
             )
@@ -201,12 +236,58 @@ class IniciarCampanhaForm(forms.Form):
         )
 
 
-class LaboratorioForm(forms.Form):
-    nome = forms.CharField(label='Nome do laboratório')
-    endereco = forms.CharField(label='Endereço')
-    telefone = forms.CharField(label='Telefone')
-    email = forms.EmailField(label='Email')
-    tipo = forms.CharField(label='Tipo')
+# class LaboratorioForm(forms.Form):
+#     nome = forms.CharField(label='Nome do laboratório')
+#     endereco = forms.CharField(label='Endereço')
+#     telefone = forms.CharField(label='Telefone')
+#     email = forms.EmailField(label='Email')
+#     tipo = forms.CharField(label='Tipo')
+
+#     def __init__(self, *args, **kwargs):
+#         super(LaboratorioForm, self).__init__(*args, **kwargs)
+#         self.helper = FormHelper()
+#         self.helper.layout = Layout(
+#             Fieldset(
+#                 'Formulário de Cadastro de Laboratório',
+#                 'nome',
+#                 'endereco',
+#                 'telefone',
+#                 'email',
+#                 'tipo'
+#             ),
+#             ButtonHolder(
+#                 Layout(
+#                     Div(
+#                         Submit('submit', 'Salvar'),
+#                         css_class='col-6'
+#                     ),
+#                     Div(
+#                         HTML(format_html('<a href="{}" class="btn btn-primary btn-campanha">Laboratórios Cadastrados</a>',
+#                              reverse('laboratorios_cadastrados'))),
+#                         css_class='col-6 text-right'
+#                     )
+#                 ),
+#                 css_class='row'
+#             )
+#         )
+
+
+# class AnaliseForm(forms.ModelForm):
+#     class Meta:
+#         model = Analises
+#         fields = ['analise']
+
+class LaboratorioForm(forms.ModelForm):
+    class Meta:
+        model = Laboratorios
+        fields = '__all__'
+        labels = {
+            'nome': 'Nome do laboratório',
+            'endereco': 'Endereço',
+            'telefone': 'Telefone',
+            'email': 'Email',
+            'tipo': 'Tipo'
+        }
 
     def __init__(self, *args, **kwargs):
         super(LaboratorioForm, self).__init__(*args, **kwargs)
@@ -221,17 +302,31 @@ class LaboratorioForm(forms.Form):
                 'tipo'
             ),
             ButtonHolder(
-                Layout(
-                    Div(
-                        Submit('submit', 'Salvar'),
-                        css_class='col-6'
-                    ),
-                    Div(
-                        HTML(format_html('<a href="{}" class="btn btn-primary btn-campanha">Laboratórios Cadastrados</a>',
-                             reverse('laboratorios_cadastrados'))),
-                        css_class='col-6 text-right'
-                    )
-                ),
-                css_class='row'
+                Submit('submit', 'Salvar'),
             )
         )
+        
+class AnaliseForm(forms.ModelForm):
+    class Meta:
+        model = Analises
+        fields = '__all__'
+        labels = {
+            'analise': 'Análise'
+        }
+        
+    def __init__(self, *args, **kwargs):
+        super(AnaliseForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Fieldset(
+                'Formulário de Cadastro de Análise',
+                'analise'
+            ),
+            ButtonHolder(
+                        Submit('submit', 'Salvar'),
+            )
+        )
+
+
+                
+        
