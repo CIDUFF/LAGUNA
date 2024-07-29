@@ -132,6 +132,14 @@ class ProgramaColeta(models.Model):
         max_length=100, blank=True, verbose_name='Ordem de Serviço')
     data_coleta_campo = models.DateField(
         null=True, verbose_name='Data da Coleta')
+    data_check_forecast = models.DateField(
+        null=True, verbose_name='Data do Check Forecast')
+    data_check_lab = models.DateField(
+        null=True, verbose_name='Data do Check Lab')
+    data_check_car = models.DateField(
+        null=True, verbose_name='Data do Check Car')
+    data_check_material = models.DateField(
+        null=True, verbose_name='Data do Check Material')
     equipe_coleta = models.CharField(
         max_length=50, default='Equipe 1', verbose_name='Equipe de Coleta')
     solicitante = models.CharField(
@@ -144,6 +152,7 @@ class ProgramaColeta(models.Model):
     usuario = models.ForeignKey(User, on_delete=models.CASCADE,
                                 verbose_name="Usuário", null=True)  # Adiciona o campo usuario
     rota = models.CharField(max_length=25, null=True)
+    
 
     def save(self, usuario=None, *args, **kwargs):
 
@@ -195,6 +204,7 @@ class Campo(models.Model):
     salinidade = models.FloatField("Salinidade", null=True)
     status_form = models.CharField(
         "Status", max_length=20, default='Não preenchido')
+    check_amostras= models.BooleanField("Check Amostras", default=False)
     observacoes = models.TextField("Observações", max_length=500, blank=True)
     foto = models.ImageField(
         upload_to='fotos_coleta/', null=True, verbose_name='Foto')
