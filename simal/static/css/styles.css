@@ -393,6 +393,8 @@ a.sidebar-link:hover {
   padding: 0.5rem !important;
   outline: none !important; /* Remove o contorno */
   margin-bottom: 1rem !important; /* Adicione esta linha para diminuir a margem inferior */
+  height:10rem !important;
+  margin:0.5rem;
 }
 
 .card-title {
@@ -611,3 +613,4 @@ a.sidebar-link:hover {
   margin: 0 auto; /* Centraliza o calendário horizontalmente */
 }
 >>>>>>> 80c900f (Atualizar página inicial com link para o calendário de campanhas)
+
