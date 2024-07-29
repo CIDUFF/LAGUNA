@@ -1,4 +1,4 @@
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from django.conf import settings
 from django.db import models
 from django.utils.crypto import get_random_string
@@ -175,6 +175,8 @@ class ProgramaColeta(models.Model):
 
         if usuario:  # Atribui o usuário recebido ao campo usuario
             self.usuario = usuario
+        
+        self.data_check_forecast= self.data_coleta_campo - timedelta(days=10)
 
         super().save(*args, **kwargs)
 
@@ -218,6 +220,11 @@ class Campo(models.Model):
         if all(campo is not None for campo in campos):
             self.status_form = 'Preenchido'
         super().save(*args, **kwargs)
+        
+        
+        
+class analises_biocentro(models.Model):
+    
 
 
 class ListaColeta(models.Model):
