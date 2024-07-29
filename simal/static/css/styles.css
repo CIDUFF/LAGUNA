@@ -392,6 +392,8 @@ a.sidebar-link:hover {
   box-shadow: none !important; /* Remove a sombra */
   padding: 0.5rem !important;
   outline: none !important; /* Remove o contorno */
+  height:10rem !important;
+  margin:0.5rem;
 }
 
 

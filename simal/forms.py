@@ -59,7 +59,7 @@ class ProgramaColetaForm(forms.Form):
                                                                format='%Y/%m/%d'))
 
     equipe_coleta = forms.ChoiceField(label='Equipe de coleta')
-    solicitante = forms.ChoiceField()
+    solicitante = forms.ChoiceField(label='Solicitante')
     local_coleta = forms.ChoiceField(label='Local de coleta')
     observacoes = forms.CharField(label='Observações',
                                   widget=forms.Textarea(attrs={'rows': 3, 'cols': 40}))

@@ -1,11 +1,10 @@
 {% extends 'base/base_site.html' %} {% block content %}
 {% if user.is_authenticated %}
   <p class="home-title">Olá, {{ user.username }}</p>
-  <div class="container mt-5">
+  <div class="container">
     <!-- Início da nova box -->
     <div class="row">
-      <div class="col-md-12">
-        <div class="card d-flex justify-content-center">
+        <div>
           <div class="card-body">
             <div class="row">
               <!-- Primeiro card interno -->
@@ -85,7 +84,6 @@
             </div>
           </div>
         </div>
-      </div>
     </div>
   </div>
   <div class="container-campanha">
