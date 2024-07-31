@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap");
+
 /* Variáveis de cores */
 :root {
   --primary-color: #ffffff; /* Define a cor primária do site */
@@ -383,7 +385,6 @@ a.sidebar-link:hover {
   box-shadow: 0 1rem 1rem 0 rgba(0, 0, 0, 0.1); /* Ajuste a sombra para aparecer apenas na parte inferior */
   padding: 0.5rem;
 }
-
 
 .small-card {
   background-color: #ffffff !important;
