@@ -1,7 +1,11 @@
 # pylint: disable=protected-access,no-member
 # Django imports
 from django.contrib import messages
+from datetime import timedelta
 import csv
+import pandas as pd
+import plotly.express as px
+from plotly.offline import plot
 from django.forms import inlineformset_factory
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.cache import cache
@@ -30,7 +34,6 @@ def check_admin(user):
 
 def home(request):
     try:
-        # Busca o primeiro ProgramaColeta que está com status "Iniciada" ou "Programada" e é posterior à data atual
         proxima_coleta = ProgramaColeta.objects.filter(
             status_coleta__in=['Iniciada', 'Programada'],
             data_coleta_campo__gte=timezone.now()
@@ -38,26 +41,89 @@ def home(request):
         table = TopCampanhas(ProgramaColeta.objects.all())
         RequestConfig(request, paginate={"per_page": 3}).configure(table)
 
-        # Se existe uma próxima coleta, busca o percentual do checklist correspondente
         percentual_checklist = None
         if proxima_coleta:
             percentual_checklist = ChecklistCampo.objects.filter(
                 ordem_servico=proxima_coleta.id
             ).values_list('progresso', flat=True).first()
-
-            # Formata a data da próxima coleta para exibição
             data_coleta_proxima_formatada = proxima_coleta.data_coleta_campo.strftime(
                 '%d/%m/%Y')
             weather_description = get_weather_description(
                 "Maricá", proxima_coleta.data_coleta_campo.strftime('%Y-%m-%d'))
+            
+            
+            dados_gantt = [
+                dict(Tarefa="Programação", Inicio=proxima_coleta.data_programacao,
+                     Termino=proxima_coleta.data_coleta_campo),
+                dict(Tarefa="Coleta de Campo", Inicio=proxima_coleta.data_coleta_campo,
+                     Termino=proxima_coleta.data_coleta_campo),
+                dict(Tarefa="Verificar previsão do tempo", Inicio=proxima_coleta.data_programacao,
+                     Termino=proxima_coleta.data_check_forecast),
+                dict(Tarefa="Contatar Laboratórios", Inicio=proxima_coleta.data_check_lab,
+                     Termino=proxima_coleta.data_check_lab + timedelta(days=2)),
+                dict(Tarefa="Reservar Carro", Inicio=proxima_coleta.data_check_car,
+                     Termino=proxima_coleta.data_check_car + timedelta(days=2)),
+            ]
+            
+            df = pd.DataFrame(dados_gantt)
+
+            # Converte as colunas para datetime
+            df['Inicio'] = pd.to_datetime(df['Inicio'])
+            df['Termino'] = pd.to_datetime(df['Termino'])
+
+            # Calcula a duração
+            df['Duracao'] = (df['Termino'] - df['Inicio']).dt.total_seconds()
+
+            # Ordena o DataFrame pela duração em ordem decrescente
+            df = df.sort_values(by='Duracao', ascending=False)
+
+            fig = px.timeline(df, x_start="Inicio", x_end="Termino", y="Tarefa", color="Tarefa")
+
+            # Adiciona bolinhas para tarefas com duração zero
+            for i, row in df.iterrows():
+                if row['Duracao'] == 0:
+                    fig.add_scatter(
+                        x=[row['Inicio']],
+                        y=[row['Tarefa']],
+                        mode='markers',
+                        marker=dict(size=20, color='blue'),
+                        name=row['Tarefa']
+                    )
+
+            fig.update_yaxes(autorange="reversed")
+
+            # Remove a legenda
+            fig.update_layout(showlegend=False, template="simple_white")
+
+            # Configura o locale para português e coloca as datas na parte inferior
+            fig.update_layout(
+                xaxis=dict(
+                    side="top",
+                    tickformat="%d/%m/%Y",
+                    tickformatstops=[
+                        dict(dtickrange=[None, 86400000], value="%d/%m/%Y"),  # daily ticks
+                        dict(dtickrange=[86400000, None], value="%d/%m/%Y"),  # larger than daily ticks
+                    ]
+                ),
+                autosize=True,
+                height=None,  # Remove a altura fixa
+                width=None,   # Remove a largura fixa
+                margin=dict(l=20, r=20, t=20, b=20),  # Ajuste as margens conforme necessário
+            )
+
+            # Torna o gráfico responsivo
+            fig.update_layout(
+                autosize=True
+            )
+
+            gantt_div = plot(fig, output_type="div")
         else:
             data_coleta_proxima_formatada = None
             weather_description = None
+            gantt_div = None
 
-        # Lógica do calendário
         campanhas = ProgramaColeta.objects.all()
         eventos = []
-
         for campanha in campanhas:
             evento = {
                 'title': campanha.ordem_servico,
@@ -83,7 +149,8 @@ def home(request):
             'percentual_checklist': percentual_checklist if percentual_checklist else 0,
             'ordem_servico': proxima_coleta.ordem_servico if proxima_coleta else None,
             'table_top3': table,
-            'eventos': json.dumps(eventos)
+            'eventos': json.dumps(eventos),
+            'gantt_div': gantt_div
         }
         return render(request, 'home.html', context)
     except ProgramaColeta.DoesNotExist:
