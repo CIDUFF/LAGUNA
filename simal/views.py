@@ -63,6 +63,8 @@ def home(request):
                      Termino=proxima_coleta.data_check_lab + timedelta(days=2)),
                 dict(Tarefa="Reservar Carro", Inicio=proxima_coleta.data_check_car,
                      Termino=proxima_coleta.data_check_car + timedelta(days=2)),
+                dict(Tarefa="Preparar Equipamentos", Inicio=proxima_coleta.data_check_material,
+                     Termino=proxima_coleta.data_check_material + timedelta(days=3)),
             ]
             
             df = pd.DataFrame(dados_gantt)
