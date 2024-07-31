@@ -384,15 +384,6 @@ def cancelar_programacao(request, id):
         messages.success(request, 'Programação de coleta cancelada com sucesso!')
         return redirect('coletas_agendas')
 
-# ----------------------------------------------------------------------------------
-
-# front_end
-
-
-# @login_required
-# def weather(request):
-#     weather_description = get_weather_description("Niterói, BR")
-#     return render(request, 'home.html', {'weather_description': weather_description})
 
 
 # pagina de ajuda
