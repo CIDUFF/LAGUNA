@@ -92,7 +92,7 @@ def home(request):
                         name=row['Tarefa']
                     )
 
-            fig.update_yaxes(autorange="reversed")
+            # fig.update_yaxes(autorange="reversed")
 
             # Remove a legenda
             fig.update_layout(showlegend=False, template="simple_white")
