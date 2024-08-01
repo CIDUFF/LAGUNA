@@ -99,7 +99,7 @@ class Solicitantes(models.Model):
 
     nome = models.CharField(max_length=100, blank=True, null=True)
     email = models.EmailField(max_length=100, blank=True, null=True)
-    telefone = models.CharField(max_length=15,blank=True, null=True)
+    telefone = models.CharField(max_length=15, blank=True, null=True)
 
     def __str__(self):
         return f'{self.nome}'
@@ -133,7 +133,7 @@ class ProgramaColeta(models.Model):
     data_coleta_campo = models.DateField(
         null=True, verbose_name='Data da Coleta')
     data_programacao = models.DateField(
-        auto_now_add=True,null=True, verbose_name='Data da Programação')
+        auto_now_add=True, null=True, verbose_name='Data da Programação')
     data_check_forecast = models.DateField(
         null=True, verbose_name='Data do Check Forecast')
     data_check_lab = models.DateField(
@@ -154,7 +154,6 @@ class ProgramaColeta(models.Model):
     usuario = models.ForeignKey(User, on_delete=models.CASCADE,
                                 verbose_name="Usuário", null=True)  # Adiciona o campo usuario
     rota = models.CharField(max_length=25, null=True)
-    
 
     def save(self, usuario=None, *args, **kwargs):
 
@@ -177,12 +176,11 @@ class ProgramaColeta(models.Model):
 
         if usuario:  # Atribui o usuário recebido ao campo usuario
             self.usuario = usuario
-        
-        self.data_check_forecast= self.data_coleta_campo - timedelta(days=10)
-        self.data_check_material= self.data_coleta_campo - timedelta(days=3)
-        self.data_check_car= self.data_coleta_campo - timedelta(days=5)
-        self.data_check_lab= self.data_coleta_campo - timedelta(days=7)
-        
+
+        self.data_check_forecast = self.data_coleta_campo - timedelta(days=10)
+        self.data_check_material = self.data_coleta_campo - timedelta(days=3)
+        self.data_check_car = self.data_coleta_campo - timedelta(days=5)
+        self.data_check_lab = self.data_coleta_campo - timedelta(days=7)
 
         super().save(*args, **kwargs)
 
@@ -212,7 +210,7 @@ class Campo(models.Model):
     salinidade = models.FloatField("Salinidade", null=True)
     status_form = models.CharField(
         "Status", max_length=20, default='Não preenchido')
-    check_amostras= models.BooleanField("Check Amostras", default=False)
+    check_amostras = models.BooleanField("Check Amostras", default=False)
     observacoes = models.TextField("Observações", max_length=500, blank=True)
     foto = models.ImageField(
         upload_to='fotos_coleta/', null=True, verbose_name='Foto')
@@ -226,8 +224,8 @@ class Campo(models.Model):
         if all(campo is not None for campo in campos):
             self.status_form = 'Preenchido'
         super().save(*args, **kwargs)
-        
-        
+
+
 class AnalisesLista(models.Model):
     ordem_servico = models.ForeignKey(
         ProgramaColeta, on_delete=models.CASCADE, related_name='analises_lista')
@@ -259,9 +257,7 @@ class AnalisesLista(models.Model):
     zinco = models.FloatField(null=True, blank=True)
 
     def __str__(self):
-        return f"Análises Lista {self.id}"
-
-    
+        return f"Análises Lista {self.ordem_servico}"
 
 
 class ListaColeta(models.Model):
