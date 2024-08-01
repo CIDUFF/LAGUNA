@@ -223,8 +223,7 @@ class Campo(models.Model):
         
         
         
-class analises_biocentro(models.Model):
-    
+  
 
 
 class ListaColeta(models.Model):
