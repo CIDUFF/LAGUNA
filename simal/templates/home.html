@@ -3,8 +3,8 @@
 {% load django_bootstrap5 %}
 {% block content %}
   {% if user.is_authenticated %}
-    <p class="home-title fs-1">Olá, {{ user.username }}</p>
-    <div class="container mt-5">
+    <p class="home-title fs-1 mb-0">Olá, {{ user.username }}</p>
+    <div class="container mt-0">
       <div class="row justify-content-center">
         <div class="card-body">
           <div class="row d-flex align-items-stretch">
@@ -75,7 +75,7 @@
           <p class="title-campanha fs-1">Cronograma da Campanha</p>
           {{ gantt_div|safe }}
       </div>
-      <div class="card calendario d-none d-sm-block">
+      <div class="card calendario d-none d-sm-block px-3 pb-3">
         <p class="title-campanha fs-1 ">Calendário de campanhas</p>
         <div class="calendar-container mx-auto w-100" id="calendar"></div>
       </div>
@@ -119,6 +119,7 @@
   document.addEventListener('DOMContentLoaded', function() {
     var calendarEl = document.getElementById('calendar');
     var calendar = new FullCalendar.Calendar(calendarEl, {
+      
       initialView: 'dayGridMonth',
       locale: 'pt-br',  // Configura o idioma para português
       events: {{ eventos|safe }}
