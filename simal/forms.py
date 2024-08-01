@@ -85,7 +85,6 @@ class ProgramaColetaForm(forms.Form):
     data_coleta_campo = forms.DateField(label='Data de coleta de campo',
                                         widget=forms.DateInput(attrs={'type': 'date'},
                                                                format='%Y/%m/%d'))
-
     equipe_coleta = forms.ChoiceField(label='Equipe de coleta')
     solicitante = forms.ChoiceField(label='Solicitante')
     local_coleta = forms.ChoiceField(label='Local de coleta')

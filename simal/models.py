@@ -97,9 +97,9 @@ class Solicitantes(models.Model):
         telefone (str): O telefone do solicitante.
     """
 
-    nome = models.CharField(max_length=100)
-    email = models.EmailField(max_length=100)
-    telefone = models.CharField(max_length=15)
+    nome = models.CharField(max_length=100, blank=True, null=True)
+    email = models.EmailField(max_length=100, blank=True, null=True)
+    telefone = models.CharField(max_length=15,blank=True, null=True)
 
     def __str__(self):
         return f'{self.nome}'
@@ -132,6 +132,8 @@ class ProgramaColeta(models.Model):
         max_length=100, blank=True, verbose_name='Ordem de Serviço')
     data_coleta_campo = models.DateField(
         null=True, verbose_name='Data da Coleta')
+    data_programacao = models.DateField(
+        auto_now_add=True,null=True, verbose_name='Data da Programação')
     data_check_forecast = models.DateField(
         null=True, verbose_name='Data do Check Forecast')
     data_check_lab = models.DateField(
@@ -177,6 +179,10 @@ class ProgramaColeta(models.Model):
             self.usuario = usuario
         
         self.data_check_forecast= self.data_coleta_campo - timedelta(days=10)
+        self.data_check_material= self.data_coleta_campo - timedelta(days=3)
+        self.data_check_car= self.data_coleta_campo - timedelta(days=5)
+        self.data_check_lab= self.data_coleta_campo - timedelta(days=7)
+        
 
         super().save(*args, **kwargs)
 
@@ -222,8 +228,40 @@ class Campo(models.Model):
         super().save(*args, **kwargs)
         
         
-        
-  
+class AnalisesLista(models.Model):
+    ordem_servico = models.ForeignKey(
+        ProgramaColeta, on_delete=models.CASCADE, related_name='analises_lista')
+    codigo_coleta = models.ForeignKey(
+        Campo, on_delete=models.CASCADE, related_name='analises_lista')
+    clorofila = models.FloatField(null=True, blank=True)
+    # Material Particulado em Suspensão
+    mps = models.FloatField(null=True, blank=True)
+    amonia = models.FloatField(null=True, blank=True)  # Amônia
+    nitrito = models.FloatField(null=True, blank=True)
+    nitrato = models.FloatField(null=True, blank=True)
+    nitrogenio_total = models.FloatField(
+        null=True, blank=True)  # Nitrogênio Total
+    # Ortofosfato como P (Fósforo Reativo Solúvel)
+    ortofosfato_como_p = models.FloatField(null=True, blank=True)
+    fosfato_total = models.FloatField(null=True, blank=True)
+    fosforo_total = models.FloatField(null=True, blank=True)  # Fósforo Total
+    # Demanda Bioquímica de Oxigênio
+    dbo = models.FloatField(null=True, blank=True)
+    materia_organica = models.FloatField(null=True, blank=True)
+    cot = models.FloatField(null=True, blank=True)  # Carbono Orgânico Total
+    arsenio = models.FloatField(null=True, blank=True)
+    cadmio = models.FloatField(null=True, blank=True)
+    chumbo = models.FloatField(null=True, blank=True)
+    cobre = models.FloatField(null=True, blank=True)
+    cromo = models.FloatField(null=True, blank=True)
+    mercurio = models.FloatField(null=True, blank=True)
+    niquel = models.FloatField(null=True, blank=True)
+    zinco = models.FloatField(null=True, blank=True)
+
+    def __str__(self):
+        return f"Análises Lista {self.id}"
+
+    
 
 
 class ListaColeta(models.Model):
