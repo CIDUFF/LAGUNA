@@ -21,7 +21,7 @@ from django_tables2 import RequestConfig
 # Local imports
 from .filters import *
 from .forms import *
-from .services import get_weather_description
+from .services import get_weather_description, gerar_etiquetas
 from .tables import *
 
 # from django.views.generic import ListView
@@ -626,3 +626,8 @@ def exportar_resultados_csv(request):
         writer.writerow(resultado)
 
     return response
+
+def gerar_etiquetas(request, id):
+
+
+
