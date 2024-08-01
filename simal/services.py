@@ -136,7 +136,7 @@ def gerar_etiquetas(codigos, data, responsavel, codigo_servico):
             os.remove(path)
         except OSError as e:
             print(f"Erro ao remover o arquivo {path}: {e}")
-    return print(pdf_path)
+    return pdf_path
 
 # from simal.models import *
 
