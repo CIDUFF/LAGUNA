@@ -3,6 +3,7 @@ astroid==3.2.3
 asttokens==2.4.1
 barcode==1.0.4
 certifi==2024.6.2
+chardet==5.2.0
 charset-normalizer==3.3.2
 comm==0.2.2
 contourpy==1.2.1
@@ -59,6 +60,7 @@ pylint==3.2.5
 pylint-django==2.5.5
 pylint-plugin-utils==0.8.2
 pyparsing==3.1.2
+pypng==0.20220715.0
 python-barcode==0.15.1
 python-dateutil==2.9.0.post0
 python-decouple==3.8
@@ -66,7 +68,9 @@ python-dotenv==1.0.1
 python-Levenshtein==0.25.1
 pytz==2024.1
 pyzmq==26.0.3
+qrcode==7.4.2
 rapidfuzz==3.9.5
+reportlab==4.2.2
 requests==2.32.3
 six==1.16.0
 sqlparse==0.5.0
