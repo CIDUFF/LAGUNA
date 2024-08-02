@@ -388,9 +388,10 @@ a.sidebar-link:hover {
   background-color: #ffffff !important;
   border: none !important; /* Remove a borda */
   box-shadow: 0 1rem 1rem 0 rgba(0, 0, 0, 0.1) !important; /* Remove a sombra */
-  padding: 0.5rem !important;
+  /* padding: 0.5rem !important; */
   outline: none !important; /* Remove o contorno */
-  margin-bottom: 1rem !important; /* Adicione esta linha para diminuir a margem inferior */
+  /* height:10rem !important; */
+  /* margin:0; */
 }
 
 .card-title {
@@ -599,10 +600,4 @@ a.sidebar-link:hover {
 
 .btn btn-outline-primary btn-sm:hover {
   color: white !important;
-}
-
-.calendar-container {
-  width: 30% !important; /* Ajuste a largura conforme necessário */
-  height: 50vh !important; /* Ajuste a altura conforme necessário */
-  margin: 0 auto; /* Centraliza o calendário horizontalmente */
 }
