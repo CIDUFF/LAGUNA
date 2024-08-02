@@ -20,9 +20,19 @@ Checklist de campanha
           <p><strong>Local:</strong> {{ campanha.local_coleta}}</p>
           <p><strong>Solicitante</strong> {{ campanha.solicitante }}</p>
           <p><strong>Previsão do tempo: </strong>{{ previsao_tempo }}</p> 
+          <p><strong>Status da rota: </strong> 
+              {% if rota_gerada %}
+                  <span class="badge badge-danger">Não gerada</span>
+              {% else %}
+                  <span class="badge badge-success">Gerada</span>
+              {% endif %}
+          </p>
           <div>
+            {% comment %} TODO: DEVE APARECER UM NOVO BOTÃO DESABILITADO INFORMANDO QUE A ROTA ; DESABILITAR O BOTAO, NAO SUMIR COM ELE {% endcomment %}
             {% if not campanha.rota %}
             <a href="{% url 'gerar_rota_campanha' ordem_servico %}" class="btn btn-primary m-2" title="Clique aqui para gerar os formulários de coleta físico-quimica">Gerar rota</a>
+            {% else %}
+            <a href="{% url 'gerar_rota_campanha' ordem_servico %}" class="btn btn-primary m-2 disabled" title="A rota já foi gerada">Gerar rota</a>
             {% endif %}
             <a href="{% url 'etiquetagem' ordem_servico %}" class="btn btn-primary" title="Clique aqui para baixar as etiquetas">Gerar etiquetas</a>
           </div>
