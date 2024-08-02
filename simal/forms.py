@@ -190,7 +190,7 @@ class ChecklistCampoForm(forms.Form):
                         ButtonHolder(
                             Layout(
                                 Div(
-                                    Submit('submit', 'Salvar'),
+                                    Submit('submit', 'Salvar e ir para o formulário de coleta'),
                                     css_class='col-6'
                                 ),
                                 Div(
