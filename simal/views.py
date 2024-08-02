@@ -52,36 +52,54 @@ def home(request):
             weather_description = get_weather_description(
                 "Maricá", proxima_coleta.data_coleta_campo.strftime('%Y-%m-%d'))
 
-            dados_gantt = [
-                dict(Tarefa="Programação", Inicio=proxima_coleta.data_programacao,
-                     Termino=proxima_coleta.data_coleta_campo),
-                dict(Tarefa="Coleta de Campo", Inicio=proxima_coleta.data_coleta_campo,
-                     Termino=proxima_coleta.data_coleta_campo),
-                dict(Tarefa="Verificar previsão do tempo", Inicio=proxima_coleta.data_programacao,
-                     Termino=proxima_coleta.data_check_forecast),
-                dict(Tarefa="Contatar Laboratórios", Inicio=proxima_coleta.data_check_lab,
-                     Termino=proxima_coleta.data_check_lab + timedelta(days=2)),
-                dict(Tarefa="Reservar Carro", Inicio=proxima_coleta.data_check_car,
-                     Termino=proxima_coleta.data_check_car + timedelta(days=2)),
-                dict(Tarefa="Preparar Equipamentos", Inicio=proxima_coleta.data_check_material,
-                     Termino=proxima_coleta.data_check_material + timedelta(days=3)),
-            ]
+            checklist = ChecklistCampo.objects.filter(ordem_servico=proxima_coleta).first()
 
+            if checklist:
+                dados_gantt = [
+                    dict(Tarefa="Coleta de Campo", Inicio=proxima_coleta.data_coleta_campo,
+                         Termino=proxima_coleta.data_coleta_campo, Cor='#2ca02c' if checklist.previsao_tempo else '#d62728'),  # Verde moderno se verdadeiro, vermelho moderno se falso
+                    dict(Tarefa="Verificar previsão do tempo", Inicio=proxima_coleta.data_programacao,
+                         Termino=proxima_coleta.data_check_forecast, Cor='#2ca02c' if checklist.previsao_tempo else '#d62728'),
+                    dict(Tarefa="Contatar Laboratórios", Inicio=proxima_coleta.data_check_lab,
+                         Termino=proxima_coleta.data_check_lab + timedelta(days=2), Cor='#2ca02c' if checklist.avisar_labs else '#d62728'),
+                    dict(Tarefa="Reservar Carro", Inicio=proxima_coleta.data_check_car,
+                         Termino=proxima_coleta.data_check_car + timedelta(days=2), Cor='#2ca02c' if checklist.reservar_carro else '#d62728'),
+                    dict(Tarefa="Preparar Equipamentos", Inicio=proxima_coleta.data_check_material,
+                         Termino=proxima_coleta.data_check_material + timedelta(days=3), Cor='#2ca02c' if checklist.separar_equipamentos else '#d62728'),
+                ]
+            else:
+                dados_gantt = [
+                    dict(Tarefa="Coleta de Campo", Inicio=proxima_coleta.data_coleta_campo,
+                         Termino=proxima_coleta.data_coleta_campo, Cor='#2ca02c'),  # Verde moderno para tarefas já feitas
+                    dict(Tarefa="Verificar previsão do tempo", Inicio=proxima_coleta.data_programacao,
+                         Termino=proxima_coleta.data_check_forecast, Cor='#2ca02c'),  # Verde moderno para tarefas já feitas
+                    dict(Tarefa="Contatar Laboratórios", Inicio=proxima_coleta.data_check_lab,
+                         Termino=proxima_coleta.data_check_lab + timedelta(days=2), Cor='#2ca02c'),  # Verde moderno para tarefas já feitas
+                    dict(Tarefa="Reservar Carro", Inicio=proxima_coleta.data_check_car,
+                         Termino=proxima_coleta.data_check_car + timedelta(days=2), Cor='#2ca02c'),  # Verde moderno para tarefas já feitas
+                    dict(Tarefa="Preparar Equipamentos", Inicio=proxima_coleta.data_check_material,
+                         Termino=proxima_coleta.data_check_material + timedelta(days=3), Cor='#2ca02c'),  # Verde moderno para tarefas já feitas
+                ]
+            
+            # Adiciona a tarefa "Programação" com a cor azul
+            dados_gantt.append(dict(Tarefa="Programação", Inicio=proxima_coleta.data_programacao,
+                                    Termino=proxima_coleta.data_coleta_campo, Cor='#2ca02c'))
+            
             df = pd.DataFrame(dados_gantt)
-
+            
             # Converte as colunas para datetime
             df['Inicio'] = pd.to_datetime(df['Inicio'])
             df['Termino'] = pd.to_datetime(df['Termino'])
-
+            
             # Calcula a duração
             df['Duracao'] = (df['Termino'] - df['Inicio']).dt.total_seconds()
-
+            
             # Ordena o DataFrame pela duração em ordem decrescente
-            df = df.sort_values(by='Duracao', ascending=False)
-
+            df = df.sort_values(by='Duracao', ascending=True)
+            
             fig = px.timeline(df, x_start="Inicio",
-                              x_end="Termino", y="Tarefa", color="Tarefa")
-
+                              x_end="Termino", y="Tarefa", color="Cor")
+            
             # Adiciona bolinhas para tarefas com duração zero
             for i, row in df.iterrows():
                 if row['Duracao'] == 0:
@@ -89,15 +107,15 @@ def home(request):
                         x=[row['Inicio']],
                         y=[row['Tarefa']],
                         mode='markers',
-                        marker=dict(size=20, color='blue'),
+                        marker=dict(size=20, color='#1f77b4'),  # Azul moderno
                         name=row['Tarefa']
                     )
-
+            
             # fig.update_yaxes(autorange="reversed")
-
+            
             # Remove a legenda
             fig.update_layout(showlegend=False, template="simple_white")
-
+            
             # Configura o locale para português e coloca as datas na parte inferior
             fig.update_layout(
                 xaxis=dict(
@@ -110,18 +128,19 @@ def home(request):
                         dict(dtickrange=[86400000, None], value="%d/%m/%Y"),
                     ]
                 ),
-                autosize=True,
                 height=None,  # Remove a altura fixa
                 width=None,   # Remove a largura fixa
                 # Ajuste as margens conforme necessário
                 margin=dict(l=20, r=20, t=20, b=20),
             )
-
+            
             # Torna o gráfico responsivo
             fig.update_layout(
                 autosize=True
             )
-
+            
+            
+            
             gantt_div = plot(fig, output_type="div")
         else:
             data_coleta_proxima_formatada = None
@@ -558,7 +577,7 @@ def etiquetagem(request, ordem_servico=None):
             ordem_servico=campanha).values_list('codigo_coleta', flat=True)
 
         if not codigos:
-            messages.error(
+            messages.warning(
                 request, 'Nenhum código de coleta encontrado para a ordem de serviço fornecida.')
             return redirect('checklist_campanha', ordem_servico=ordem_servico)
 

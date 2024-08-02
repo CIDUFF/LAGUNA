@@ -13,7 +13,7 @@
     <div class="d-flex flex-column align-items-stretch d-md-flex flex-md-row">
             <!-- Primeiro card interno -->
             <div class="col-md-4 d-flex m-1">
-              <div class="card small-card flex-fill h-100 align-items-stretch">
+              <div class="card small-card flex-fill h-100 align-items-stretch overflow-auto">
                 <a href="{% url 'checklist_campanha' ordem_servico %}" class="text-decoration-none text-dark">
                     <div class="card-body flex-row d-flex justify-content-center">
                         <div class="d-none d-md-flex">
@@ -73,13 +73,18 @@
             </div>
           </div>
     <div class="container-campanha">
-      <div class="card cronograma d-none d-sm-block">
+      
+      <div class="card cronograma d-none d-sm-block px-3 pb-3 overflow-auto" id="gantt-div">
+
           <p class="title-campanha fs-1">Cronograma da Campanha</p>
           {{ gantt_div|safe }}
+
       </div>
+      
       <div class="card calendario d-none d-sm-block px-3 pb-3">
         <p class="title-campanha fs-1 ">Calendário de campanhas</p>
-        <div class="calendar-container mx-auto w-100" id="calendar"></div>
+        <div class="calendar-container mx-auto w-100" id="calendar">
+        </div>
       </div>
 
     </div>
@@ -115,7 +120,7 @@
     background-color: #dc3545; /* Vermelho */
     color: white;
   }
-  
+
 </style>
 <script>
   document.addEventListener('DOMContentLoaded', function() {
@@ -130,6 +135,16 @@
       height: 'auto',
     });
     calendar.render();
+
+    // Zoom logic for Gantt div
+    var ganttDiv = document.getElementById('gantt-div');
+    ganttDiv.classList.add('zoom');
+    setTimeout(function() {
+      ganttDiv.classList.remove('zoom');
+    }, 100); // Ajuste o tempo conforme necessário
   });
 </script>
+
+
+
 {% endblock %}
