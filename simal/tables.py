@@ -81,13 +81,13 @@ class ProgramaColetaTable(tables.Table):
     }
     
     atualizar = tables.LinkColumn('atualizar_programacao', args=[A('pk')], orderable=False, empty_values=[],
-                                  text='Atualizar dados', attrs=common_attrs)
+                                  text='', attrs=common_attrs)
     deletar = tables.LinkColumn('deletar_programacao', args=[A('pk')], orderable=False, empty_values=[],
-                                text='Remover programação', attrs=delete_attrs)
+                                text='', attrs=delete_attrs)
     cancelar = tables.LinkColumn('cancelar_programacao', args=[A('pk')], orderable=False, empty_values=[],
-                                 text='Cancelar programação', attrs=cancel_attrs)
+                                 text='', attrs=cancel_attrs)
     iniciar = tables.LinkColumn('checklist_campanha', args=[A('ordem_servico')], orderable=False, empty_values=[],
-                                text='Iniciar campanha', attrs=common_attrs)
+                                text='', attrs=common_attrs)
     
     class Meta:
         model = ProgramaColeta

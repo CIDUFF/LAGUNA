@@ -50,27 +50,28 @@ def get_weather_description(city, date):
 # import string
 
 
-def gerar_codigos_unicos(prefixo, quantidade):
-    codigos = set()
-    while len(codigos) < quantidade:
-        sufixo = ''.join(random.choices(string.digits, k=16))
-        codigo = f"{prefixo}{sufixo}"
-        codigos.add(codigo)
-    return list(codigos)
+# def gerar_codigos_unicos(prefixo, quantidade):
+#     codigos = set()
+#     while len(codigos) < quantidade:
+#         sufixo = ''.join(random.choices(string.digits, k=16))
+#         codigo = f"{prefixo}{sufixo}"
+#         codigos.add(codigo)
+#     return list(codigos)
 
 
 def gerar_qr_code(codigo, data, responsavel, codigo_servico):
-    qr_data = f"Responsável: {responsavel}\nData: {data}\nCódigo de Serviço: {codigo_servico}"
+    qr_data = f"Responsável: {responsavel}\nData da coleta: {data}\nCódigo de Serviço: {codigo_servico}"
     qr = qrcode.make(qr_data)
     qr_path = os.path.join('media', f"qr_{codigo}.png")
     qr.save(qr_path)
     return qr_path
 
 
-def adicionar_etiqueta(c, qr_path, codigo, data, x, y):
+def adicionar_etiqueta(c, qr_path, codigo, data, responsavel, x, y):
     c.drawImage(qr_path, x, y, width=20*mm, height=20*mm)
     c.drawString(x + 25*mm, y + 15*mm, f"Código: {codigo}")
-    c.drawString(x + 25*mm, y + 5*mm, f"Data: {data}")
+    c.drawString(x + 25*mm, y + 7*mm, f"Data da coleta: {data}")
+    c.drawString(x + 25*mm, y + -1*mm, f"Responsável: {responsavel}")
 
 
 def desenhar_linhas_tracejadas(c, largura_pagina, altura_pagina, largura_etiqueta, altura_etiqueta, espacamento_x, espacamento_y):
@@ -113,7 +114,7 @@ def gerar_etiquetas(codigos, data, responsavel, codigo_servico):
     for codigo in codigos:
         qr_path = gerar_qr_code(codigo, data, responsavel, codigo_servico)
         qr_paths.append(qr_path)
-        adicionar_etiqueta(c, qr_path, codigo, data, x, y)
+        adicionar_etiqueta(c, qr_path, codigo, data,responsavel, x, y)
         y -= altura_etiqueta + espacamento_y
         contador_etiquetas += 1
 
