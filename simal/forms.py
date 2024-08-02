@@ -186,12 +186,22 @@ class ChecklistCampoForm(forms.Form):
                 Switch('conferir_equipamentos'),
                 Switch('comprar_gelo'),
                 'observacoes',
-                css_class='card form-checklist'
             ),
-            ButtonHolder(
-                Submit('submit', 'Salvar e continuar', css_class='btn-primary')
-            )
-        )
+                        ButtonHolder(
+                            Layout(
+                                Div(
+                                    Submit('submit', 'Salvar'),
+                                    css_class='col-6'
+                                ),
+                                Div(
+                                    HTML(format_html('<a href="{}" class="btn btn-primary btn-campanha">Voltar</a>',
+                                         reverse('coletas_agendas'))),
+                                    css_class='col-6 text-right'
+                                )
+                            ),
+                            css_class='row'
+                        )
+                    )
 
 class AjudaForm(forms.Form):
     nome = forms.CharField()

@@ -30,8 +30,6 @@ urlpatterns = [
          name='laboratorios_cadastrados'),
     path('cadastro_laboratorio/<int:id>/',
          views.atualizar_laboratorio, name='atualizar_laboratorio'),
-    path('gerar_rota_campanha/', views.gerar_rota_campanha,
-         name='gerar_rota_campanha'),
         path('gerar_rota_campanha/<str:ordem_servico>/',
              views.gerar_rota_campanha, name='gerar_rota_campanha'),
     path('iniciar_campanha/<str:ordem_servico>/',
@@ -42,4 +40,6 @@ urlpatterns = [
     path('calendario/', views.calendario_campanhas, name='calendario_campanhas'),
     path('exportar_resultados/', views.exportar_resultados_csv,
          name='exportar_resultados_csv'),
+    path('etiquetagem/<str:ordem_servico>/',
+         views.etiquetagem, name='etiquetagem'),
 ]

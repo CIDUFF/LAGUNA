@@ -1,23 +1,46 @@
 {% extends 'base/base_site.html' %} 
-
 {% load crispy_forms_tags %} 
-
 {% block title %}
 Checklist de campanha
 {% endblock %} 
-
 {% block content %}
 
 <div class="container">
+  
   <div class="row">
+    
     <div class="col-md-12">
-      <h1>Checklist de campanha</h1>
+      
+      
+
+
+
+    <!--botao para gerar rotas-->
+
+      
       {% csrf_token %} 
-      <div class="card checklist">
-          {% crispy form %}
-        </div> 
+        <div class="card form-checklist">
+          <h1>Checklist de campanha</h1>
+
+          <p><strong>Ordem de serviço:</strong> {{ campanha.ordem_servico }}</p>
+          <p><strong>Data de Início:</strong> {{ campanha.data_coleta_campo|date:"d/m/Y" }}</p>
+          <p><strong>Local:</strong> {{ campanha.local_coleta}}</p>
+          <p><strong>Solicitante</strong> {{ campanha.solicitante }}</p>
+          <p><strong>Previsão do tempo: </strong>{{ previsao_tempo }}</p> 
+          <div>
+            {% if not campanha.rota %}
+            <a href="{% url 'gerar_rota_campanha' ordem_servico %}" class="btn btn-primary m-2">Gerar rota</a>
+            {% endif %}
+            <a href="{% url 'etiquetagem' ordem_servico %}" class="btn btn-primary">Gerar etiquetas</a>
+          </div>
+        </div>
+      <div class="card form-checklist" >
+        {% crispy form %}
+      </div>
+
+
+
     </div>
   </div>
 </div>
-
 {% endblock %}

@@ -9,11 +9,12 @@ from plotly.offline import plot
 from django.forms import inlineformset_factory
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.cache import cache
-from django.http import  HttpResponse
+from django.http import HttpResponse, FileResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 import json
+import os
 
 # Third-party imports
 from django_tables2 import RequestConfig
@@ -50,8 +51,7 @@ def home(request):
                 '%d/%m/%Y')
             weather_description = get_weather_description(
                 "Maricá", proxima_coleta.data_coleta_campo.strftime('%Y-%m-%d'))
-            
-            
+
             dados_gantt = [
                 dict(Tarefa="Programação", Inicio=proxima_coleta.data_programacao,
                      Termino=proxima_coleta.data_coleta_campo),
@@ -66,7 +66,7 @@ def home(request):
                 dict(Tarefa="Preparar Equipamentos", Inicio=proxima_coleta.data_check_material,
                      Termino=proxima_coleta.data_check_material + timedelta(days=3)),
             ]
-            
+
             df = pd.DataFrame(dados_gantt)
 
             # Converte as colunas para datetime
@@ -79,7 +79,8 @@ def home(request):
             # Ordena o DataFrame pela duração em ordem decrescente
             df = df.sort_values(by='Duracao', ascending=False)
 
-            fig = px.timeline(df, x_start="Inicio", x_end="Termino", y="Tarefa", color="Tarefa")
+            fig = px.timeline(df, x_start="Inicio",
+                              x_end="Termino", y="Tarefa", color="Tarefa")
 
             # Adiciona bolinhas para tarefas com duração zero
             for i, row in df.iterrows():
@@ -103,14 +104,17 @@ def home(request):
                     side="top",
                     tickformat="%d/%m/%Y",
                     tickformatstops=[
-                        dict(dtickrange=[None, 86400000], value="%d/%m/%Y"),  # daily ticks
-                        dict(dtickrange=[86400000, None], value="%d/%m/%Y"),  # larger than daily ticks
+                        dict(dtickrange=[None, 86400000],
+                             value="%d/%m/%Y"),  # daily ticks
+                        # larger than daily ticks
+                        dict(dtickrange=[86400000, None], value="%d/%m/%Y"),
                     ]
                 ),
                 autosize=True,
                 height=None,  # Remove a altura fixa
                 width=None,   # Remove a largura fixa
-                margin=dict(l=20, r=20, t=20, b=20),  # Ajuste as margens conforme necessário
+                # Ajuste as margens conforme necessário
+                margin=dict(l=20, r=20, t=20, b=20),
             )
 
             # Torna o gráfico responsivo
@@ -235,7 +239,8 @@ def lista_coleta(request, ordem_servico=None):
     # filtro = CampoFilter(request.GET, queryset=Campo.objects.all())
     ordem_servico = ProgramaColeta.objects.get(id=ordem_servico)
     responsavel = ProgramaColeta.objects.get(id=ordem_servico.id).usuario
-    filtro = CampoFilter(request.GET, queryset=Campo.objects.filter(ordem_servico_id=ordem_servico))
+    filtro = CampoFilter(request.GET, queryset=Campo.objects.filter(
+        ordem_servico_id=ordem_servico))
     table = ColetaCampoTable(filtro.qs)
     RequestConfig(request, paginate={"per_page": 25}).configure(table)
     return render(request, 'coleta/lista_coleta.html', {
@@ -244,7 +249,8 @@ def lista_coleta(request, ordem_servico=None):
         'ordem_servico': ordem_servico,
         'responsavel': responsavel
     })
-    
+
+
 @login_required
 def resultados(request):
     filtro = ResultadosColetaFilter(request.GET, queryset=Campo.objects.all())
@@ -254,7 +260,6 @@ def resultados(request):
         'table_campo': table,
         'filtro': filtro,
     })
-
 
 
 @login_required
@@ -308,7 +313,8 @@ def atualizar_programacao(request, id):
 
     # Verifica se o status da programação é 'Cancelada'
     if programacao.status_coleta == 'Cancelada':
-        messages.warning(request, 'Não é possível alterar campanhas canceladas.')
+        messages.warning(
+            request, 'Não é possível alterar campanhas canceladas.')
         return redirect('coletas_agendas')
 
     if request.method == 'POST':
@@ -323,15 +329,14 @@ def atualizar_programacao(request, id):
         else:
             print(form.errors)
     else:
-        form_data = {field.name: getattr(programacao, field.name) for field in ProgramaColeta._meta.fields}
+        form_data = {field.name: getattr(
+            programacao, field.name) for field in ProgramaColeta._meta.fields}
         for date_field in ['data_coleta_campo']:
             if date_field in form_data and form_data[date_field]:
-                form_data[date_field] = form_data[date_field].strftime('%Y-%m-%d')
+                form_data[date_field] = form_data[date_field].strftime(
+                    '%Y-%m-%d')
         form = ProgramaColetaForm(initial=form_data)
     return render(request, 'coleta/agendar_coleta.html', {'form': form})
-
-
-
 
 
 @login_required
@@ -376,14 +381,15 @@ def cancelar_programacao(request, id):
     """
     programacao = get_object_or_404(ProgramaColeta, id=id)
     if programacao.status_coleta in ['Coleta realizada', 'Iniciada']:
-        messages.warning(request, 'Não é possível cancelar uma coleta que já foi iniciada ou realizada.')
+        messages.warning(
+            request, 'Não é possível cancelar uma coleta que já foi iniciada ou realizada.')
         return redirect('coletas_agendas')
     else:
         programacao.status_coleta = 'Cancelada'
         programacao.save()
-        messages.success(request, 'Programação de coleta cancelada com sucesso!')
+        messages.success(
+            request, 'Programação de coleta cancelada com sucesso!')
         return redirect('coletas_agendas')
-
 
 
 # pagina de ajuda
@@ -457,8 +463,8 @@ def checklist_campanha(request, ordem_servico=None):
     try:
         checklist_campanha = ChecklistCampo.objects.get(
             ordem_servico=campanha)
-        if checklist_campanha.progresso == 100:
-            return redirect('lista_coleta', ordem_servico=ProgramaColeta.objects.get(ordem_servico=campanha.ordem_servico).id)
+        # if checklist_campanha.progresso == 100:
+        #     return redirect('lista_coleta', ordem_servico=ProgramaColeta.objects.get(ordem_servico=campanha.ordem_servico).id)
     except ChecklistCampo.DoesNotExist:
         checklist_campanha = None
 
@@ -481,13 +487,24 @@ def checklist_campanha(request, ordem_servico=None):
         if campanha.rota:
             return redirect('lista_coleta', ordem_servico=campanha.id)
         else:
-            return redirect('gerar_rota_campanha', ordem_servico=campanha.ordem_servico)
+            return redirect('checklist_campanha', ordem_servico=campanha.ordem_servico)
+        
 
-    campanha.status_coleta = 'Iniciada'
+    if campanha.status_coleta == 'Programada':
+        campanha.status_coleta = 'Iniciada'
+
     campanha.save()
+
+    data = campanha.data_coleta_campo
+    previsao_tempo = get_weather_description(
+    "Maricá", data.strftime('%Y-%m-%d'))
+    
     context = {
         'form': form,
-        'checklist_campanha': checklist_campanha
+        'checklist_campanha': checklist_campanha,
+        'ordem_servico': campanha.ordem_servico,
+        'previsao_tempo': previsao_tempo,
+        'campanha': campanha
     }
     return render(request, 'coleta/checklist_campanha.html', context)
 
@@ -499,9 +516,6 @@ def gerar_rota_campanha(request, ordem_servico=None):
     if ordem_servico:
         campanha = get_object_or_404(
             ProgramaColeta, ordem_servico=ordem_servico)
-        # Verifica se a rota já está definida como True
-        if campanha.rota:
-            return redirect('lista_coleta', ordem_servico=campanha.id)
 
     previsao_tempo = None
     pontos_coleta = []
@@ -509,7 +523,6 @@ def gerar_rota_campanha(request, ordem_servico=None):
         data = campanha.data_coleta_campo
         previsao_tempo = get_weather_description(
             "Maricá", data.strftime('%Y-%m-%d'))
-    if request.method == 'POST' and campanha:
         local_campanha = ProgramaColeta.objects.filter(
             ordem_servico=ordem_servico).values_list('local_coleta', flat=True).first()
         pontos_coleta = LocaisColeta.objects.filter(local=local_campanha)
@@ -526,13 +539,41 @@ def gerar_rota_campanha(request, ordem_servico=None):
         campanha.rota = True
         campanha.save()
 
-        return redirect('lista_coleta', ordem_servico=programa_coleta_instance.id)
+    return redirect('checklist_campanha', ordem_servico=ordem_servico)
 
-    context = {
-        'campanha': campanha,
-        'previsao_tempo': previsao_tempo
-    }
-    return render(request, 'coleta/gerar_rota_campanha.html', context)
+
+
+
+def etiquetagem(request, ordem_servico=None):
+    ordem_servico = request.GET.get('ordem_servico', ordem_servico)
+    campanha = None
+    if ordem_servico:
+        campanha = get_object_or_404(
+            ProgramaColeta, ordem_servico=ordem_servico)
+
+        data = campanha.data_coleta_campo.strftime('%d/%m/%Y')
+        responsavel = campanha.usuario
+        codigo_servico = campanha.ordem_servico
+        codigos = Campo.objects.filter(
+            ordem_servico=campanha).values_list('codigo_coleta', flat=True)
+
+        if not codigos:
+            messages.error(
+                request, 'Nenhum código de coleta encontrado para a ordem de serviço fornecida.')
+            return redirect('checklist_campanha', ordem_servico=ordem_servico)
+
+        pdf_path = gerar_etiquetas(codigos, data, responsavel, codigo_servico)
+
+        # Retorna o PDF como uma resposta HTTP
+        response = FileResponse(
+            open(pdf_path, 'rb'), as_attachment=True, filename=os.path.basename(pdf_path))
+
+        # Apaga o arquivo PDF após o download
+        os.remove(pdf_path)
+
+        return response
+
+    return redirect('checklist_campanha', ordem_servico=ordem_servico)
 
 
 
@@ -626,6 +667,9 @@ def exportar_resultados_csv(request):
         writer.writerow(resultado)
 
     return response
+
+
+
 
 
 
