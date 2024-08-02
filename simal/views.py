@@ -627,7 +627,7 @@ def exportar_resultados_csv(request):
 
     return response
 
-def gerar_etiquetas(request, id):
+
 
 
 
