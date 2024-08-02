@@ -3,7 +3,13 @@
 {% load django_bootstrap5 %}
 {% block content %}
   {% if user.is_authenticated %}
-    <p class="home-title fs-1 mb-0">Olá, {{ user.username }}</p>
+    <p id="welcome-message" class="home-title fs-5 mb-0">Olá, {{ user.username }}!</p>
+    
+    <script>
+    document.getElementById('welcome-message').addEventListener('click', function() {
+        this.style.display = 'none';
+    });
+    </script>
     <div class="d-flex flex-column align-items-stretch d-md-flex flex-md-row">
             <!-- Primeiro card interno -->
             <div class="col-md-4 d-flex m-1">
@@ -118,7 +124,10 @@
       
       initialView: 'dayGridMonth',
       locale: 'pt-br',  // Configura o idioma para português
-      events: {{ eventos|safe }}
+      events: {{ eventos|safe }},
+      themeSystem: 'litera',
+      timeZone: 'America/Sao_Paulo',
+      height: 'auto',
     });
     calendar.render();
   });
