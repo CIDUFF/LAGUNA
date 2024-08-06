@@ -5,7 +5,11 @@
 {% if user.is_authenticated %}
 <div class="container mt-5">
     <h1 class="text-center">Usuários Cadastrados</h1>
+
     <div class="card">
+            <div class="d-flex justify-content-begin m-3">
+        <a href="{% url 'cadastro_usuarios' %}" class="btn btn-success">Cadastrar Novo Usuário</a>
+    </div>
         <div class="card-body">
             <table class="table table-striped">
                 <thead>
