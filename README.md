@@ -37,4 +37,10 @@ Para rodar o sistema, execute o comando:
 python manage.py runserver
 ```
 
+para gerar o diagrama ER dos modelos, execute o comando:
+
+```bash
+python manage.py graph_models simal -o EntidadeRelacionamento.png
+```
+
 

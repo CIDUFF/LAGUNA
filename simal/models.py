@@ -269,32 +269,6 @@ class AnalisesLista(models.Model):
         return f"Análises Lista {self.ordem_servico}"
 
 
-# class ListaColeta(models.Model):
-#     STATUS = [
-#         ('programada', 'Programada'),
-#         ('reprogramada', 'Reprogramada'),
-#         ('realizada', 'Realizada'),
-#         ('cancelada', 'Cancelada'),
-#     ]
-
-#     data_coleta_campo = models.DateField(auto_now=False, auto_now_add=False)
-#     equipe_coleta = models.ForeignKey(
-#         UsuarioSistema, on_delete=models.CASCADE, related_name='lista_coletor')
-#     laboratorio = models.ForeignKey(
-#         Laboratorios, on_delete=models.CASCADE, related_name='lista_laboratorio')
-#     solicitante = models.ForeignKey(
-#         Solicitantes, on_delete=models.CASCADE, related_name='lista_solicitante')
-#     ponto_coleta = models.ForeignKey(
-#         LocaisColeta, on_delete=models.CASCADE, related_name='lista_ponto_coleta')
-#     status_coleta = models.CharField(
-#         max_length=12, choices=STATUS, default='programada')
-#     observacoes = models.TextField(max_length=500, blank=True)
-#     campo = models.OneToOneField(
-#         Campo, on_delete=models.CASCADE, related_name='campo')
-
-#     def __str__(self):
-#         return f'Coleta da água em {self.ponto_coleta} em {self.data_coleta_campo}'
-
 
 class ChecklistCampo(models.Model):
     data_checklist = models.DateField(auto_now=True)

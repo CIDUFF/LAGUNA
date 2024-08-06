@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'django_tables2',
     'debug_toolbar',
     "django_bootstrap5",
+    'django_extensions',
 
 
 ]
