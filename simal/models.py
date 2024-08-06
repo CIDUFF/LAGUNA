@@ -1,17 +1,12 @@
 from datetime import datetime, date, timedelta
-from django.conf import settings
-from django.db import models
-from django.utils.crypto import get_random_string
-from django.shortcuts import get_object_or_404
-from django.core.exceptions import ValidationError
 import re
 import unicodedata
+from django.db import models
 from django.contrib.auth.models import User  # Importa o modelo User
-# import random
-# import string
 
 
-class Coletores(models.Model):
+
+class UsuariosSistema(models.Model):
     """
     Representa um coletor de dados.
 
@@ -270,7 +265,7 @@ class ListaColeta(models.Model):
 
     data_coleta_campo = models.DateField(auto_now=False, auto_now_add=False)
     equipe_coleta = models.ForeignKey(
-        Coletores, on_delete=models.CASCADE, related_name='lista_coletor')
+        UsuariosSistema, on_delete=models.CASCADE, related_name='lista_coletor')
     laboratorio = models.ForeignKey(
         Laboratorios, on_delete=models.CASCADE, related_name='lista_laboratorio')
     solicitante = models.ForeignKey(

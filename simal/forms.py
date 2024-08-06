@@ -117,7 +117,7 @@ class ProgramaColetaForm(forms.Form):
         self.fields['local_coleta'].choices = gerar_opcoes_unicas(
             LocaisColeta, 'local')
         self.fields['equipe_coleta'].choices = gerar_opcoes_unicas(
-            Coletores, 'equipe')
+            UsuariosSistema, 'equipe')
         self.fields['solicitante'].choices = gerar_opcoes_unicas(
             Solicitantes, 'nome')
         # self.fields['laboratorio'].choices = gerar_opcoes_unicas(
