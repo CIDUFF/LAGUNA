@@ -4,6 +4,7 @@ from crispy_forms.layout import Layout, Fieldset, ButtonHolder, Submit, HTML, Di
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.forms import UserCreationForm
 from django.utils import timezone
+from django.contrib.auth.models import Group
 # from django.forms import ModelChoiceField
 from django import forms
 from django.utils.html import format_html
@@ -42,7 +43,7 @@ class ColetaCampo(forms.Form):
     )
     salinidade = forms.FloatField(
         required=False, label='Salinidade (ppt)', widget=forms.NumberInput(attrs={'step': '0.1'})
-        
+
     )
     observacoes = forms.CharField(
         label='Observações',
@@ -54,11 +55,6 @@ class ColetaCampo(forms.Form):
         required=False,
         widget=forms.ClearableFileInput(attrs={'capture': 'camera'})
     )
-
-    # campos = [
-    #     'temperatura', 'ph', 'orp', 'condutividade', 'turbidez', 'od', 'od_pct', 'tds', 'salinidade', 'observacoes'
-    # ]
-
 
     def __init__(self, *args, **kwargs):
         super(ColetaCampo, self).__init__(*args, **kwargs)
@@ -88,7 +84,7 @@ class ProgramaColetaForm(forms.Form):
                                         widget=forms.DateInput(attrs={'type': 'date'},
                                                                format='%Y/%m/%d'))
     equipe_coleta = forms.ChoiceField(label='Equipe de coleta')
-    solicitante = forms.ChoiceField(label='Solicitante')
+    # solicitante = forms.ChoiceField(label='Solicitante')
     local_coleta = forms.ChoiceField(label='Local de coleta')
     observacoes = forms.CharField(label='Observações',
                                   widget=forms.Textarea(attrs={'rows': 3, 'cols': 40}))
@@ -97,7 +93,7 @@ class ProgramaColetaForm(forms.Form):
         super(ProgramaColetaForm, self).__init__(*args, **kwargs)
         campo = [
             'data_coleta_campo',
-            'equipe_coleta', 'solicitante', 'local_coleta', 'observacoes'
+            'equipe_coleta', 'local_coleta', 'observacoes'
         ]
         self.helper = FormHelper()
         self.helper.layout = Layout(
@@ -118,10 +114,10 @@ class ProgramaColetaForm(forms.Form):
         # Agora você pode usar essa função para gerar as opções únicas para cada campo
         self.fields['local_coleta'].choices = gerar_opcoes_unicas(
             LocaisColeta, 'local')
-        self.fields['equipe_coleta'].choices = gerar_opcoes_unicas(
-            UsuarioSistema, 'equipe')
-        self.fields['solicitante'].choices = gerar_opcoes_unicas(
-            Solicitantes, 'nome')
+        self.fields['equipe_coleta'].choices = [
+            (group.id, group.name) for group in Group.objects.all()]
+        # self.fields['solicitante'].choices = gerar_opcoes_unicas(
+        #     User, 'nome')
         # self.fields['laboratorio'].choices = gerar_opcoes_unicas(
         #     Laboratorios, 'nome')
 
@@ -189,21 +185,23 @@ class ChecklistCampoForm(forms.Form):
                 Switch('comprar_gelo'),
                 'observacoes',
             ),
-                        ButtonHolder(
-                            Layout(
-                                Div(
-                                    Submit('submit', 'Salvar e ir para o formulário de coleta'),
-                                    css_class='col-6'
-                                ),
-                                Div(
-                                    HTML(format_html('<a href="{}" class="btn btn-primary btn-campanha">Voltar</a>',
+            ButtonHolder(
+                Layout(
+                    Div(
+                        Submit(
+                            'submit', 'Salvar e ir para o formulário de coleta'),
+                        css_class='col-6'
+                    ),
+                    Div(
+                        HTML(format_html('<a href="{}" class="btn btn-primary btn-campanha">Voltar</a>',
                                          reverse('coletas_agendas'))),
-                                    css_class='col-6 text-right'
-                                )
-                            ),
-                            css_class='row'
-                        )
+                        css_class='col-6 text-right'
                     )
+                ),
+                css_class='row'
+            )
+        )
+
 
 class AjudaForm(forms.Form):
     nome = forms.CharField()
@@ -227,9 +225,15 @@ class AjudaForm(forms.Form):
         )
 
 
-class IniciarCampanhaForm(forms.Form):
-    ordem_servico = forms.ModelChoiceField(queryset=ProgramaColeta.objects.all(
-    ), label="Selecione a campanha que deseja iniciar")
+class IniciarCampanhaForm(forms.ModelForm):
+    ordem_servico = forms.ModelChoiceField(
+        queryset=ProgramaColeta.objects.filter(status_coleta='Programada'),
+        label="Selecione a campanha que deseja iniciar"
+    )
+
+    class Meta:
+        model = ProgramaColeta
+        fields = ['ordem_servico']
 
     def __init__(self, *args, **kwargs):
         super(IniciarCampanhaForm, self).__init__(*args, **kwargs)
@@ -316,7 +320,8 @@ class LaboratorioForm(forms.ModelForm):
                 Submit('submit', 'Salvar'),
             )
         )
-        
+
+
 class AnaliseForm(forms.ModelForm):
     class Meta:
         model = Analises
@@ -324,7 +329,7 @@ class AnaliseForm(forms.ModelForm):
         labels = {
             'analise': 'Análise'
         }
-        
+
     def __init__(self, *args, **kwargs):
         super(AnaliseForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper()
@@ -334,11 +339,11 @@ class AnaliseForm(forms.ModelForm):
                 'analise'
             ),
             ButtonHolder(
-                        Submit('submit', 'Salvar'),
+                Submit('submit', 'Salvar'),
             )
         )
-        
-        
+
+
 class CustomUserCreationForm(UserCreationForm):
     email = forms.EmailField(required=True)
     groups = forms.ModelMultipleChoiceField(
@@ -359,6 +364,3 @@ class CustomUserCreationForm(UserCreationForm):
             user.save()
             user.groups.set(self.cleaned_data['groups'])
         return user
-
-                
-        

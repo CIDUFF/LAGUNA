@@ -22,26 +22,23 @@ class equipes(models.Model):
     def __str__(self):
         return f'{self.nome}'
 
-class UsuarioSistema(models.Model):
-    """
-    Representa um coletor de dados.
+# class UsuarioSistema(models.Model):
+#     """
+#     Representa um coletor de dados.
 
-    Atributos:
-        nome (str): O nome do coletor.
-        email (str): O email do coletor.
-        telefone (str): O telefone do coletor.
-        filiacao (str): A filiação do coletor.
-        equipe (str): A equipe do coletor.
-    """
+#     Atributos:
+#         nome (str): O nome do coletor.
+#         email (str): O email do coletor.
+#         telefone (str): O telefone do coletor.
+#         filiacao (str): A filiação do coletor.
+#         equipe (str): A equipe do coletor.
+#     """
 
-    nome = models.CharField(max_length=100, default='Nome do Coletor')
-    email = models.EmailField(max_length=100, default='seuemail@email.com')
-    telefone = models.CharField(max_length=15, default='(21) 99999-9999')
-    filiacao = models.CharField(max_length=100, default='UFF')
-    equipe = models.CharField(max_length=25, default='Equipe 1')
+#     nome = models.ForeignKey(User, on_delete=models.CASCADE)
 
-    def __str__(self):
-        return f'{self.nome}'
+
+#     def __str__(self):
+#         return f'{self.nome}'
 
 
 
@@ -156,8 +153,8 @@ class ProgramaColeta(models.Model):
         null=True, verbose_name='Data do Check Material')
     equipe_coleta = models.CharField(
         max_length=50, default='Equipe 1', verbose_name='Equipe de Coleta')
-    solicitante = models.CharField(
-        max_length=50, default='João Silva', verbose_name='Responsável')
+    # solicitante = models.CharField(
+    #     max_length=50, default='João Silva', verbose_name='Responsável')
     local_coleta = models.CharField(
         max_length=50, verbose_name='Local de Coleta')
     status_coleta = models.CharField(max_length=50, null=True)
@@ -272,31 +269,31 @@ class AnalisesLista(models.Model):
         return f"Análises Lista {self.ordem_servico}"
 
 
-class ListaColeta(models.Model):
-    STATUS = [
-        ('programada', 'Programada'),
-        ('reprogramada', 'Reprogramada'),
-        ('realizada', 'Realizada'),
-        ('cancelada', 'Cancelada'),
-    ]
+# class ListaColeta(models.Model):
+#     STATUS = [
+#         ('programada', 'Programada'),
+#         ('reprogramada', 'Reprogramada'),
+#         ('realizada', 'Realizada'),
+#         ('cancelada', 'Cancelada'),
+#     ]
 
-    data_coleta_campo = models.DateField(auto_now=False, auto_now_add=False)
-    equipe_coleta = models.ForeignKey(
-        UsuarioSistema, on_delete=models.CASCADE, related_name='lista_coletor')
-    laboratorio = models.ForeignKey(
-        Laboratorios, on_delete=models.CASCADE, related_name='lista_laboratorio')
-    solicitante = models.ForeignKey(
-        Solicitantes, on_delete=models.CASCADE, related_name='lista_solicitante')
-    ponto_coleta = models.ForeignKey(
-        LocaisColeta, on_delete=models.CASCADE, related_name='lista_ponto_coleta')
-    status_coleta = models.CharField(
-        max_length=12, choices=STATUS, default='programada')
-    observacoes = models.TextField(max_length=500, blank=True)
-    campo = models.OneToOneField(
-        Campo, on_delete=models.CASCADE, related_name='campo')
+#     data_coleta_campo = models.DateField(auto_now=False, auto_now_add=False)
+#     equipe_coleta = models.ForeignKey(
+#         UsuarioSistema, on_delete=models.CASCADE, related_name='lista_coletor')
+#     laboratorio = models.ForeignKey(
+#         Laboratorios, on_delete=models.CASCADE, related_name='lista_laboratorio')
+#     solicitante = models.ForeignKey(
+#         Solicitantes, on_delete=models.CASCADE, related_name='lista_solicitante')
+#     ponto_coleta = models.ForeignKey(
+#         LocaisColeta, on_delete=models.CASCADE, related_name='lista_ponto_coleta')
+#     status_coleta = models.CharField(
+#         max_length=12, choices=STATUS, default='programada')
+#     observacoes = models.TextField(max_length=500, blank=True)
+#     campo = models.OneToOneField(
+#         Campo, on_delete=models.CASCADE, related_name='campo')
 
-    def __str__(self):
-        return f'Coleta da água em {self.ponto_coleta} em {self.data_coleta_campo}'
+#     def __str__(self):
+#         return f'Coleta da água em {self.ponto_coleta} em {self.data_coleta_campo}'
 
 
 class ChecklistCampo(models.Model):
