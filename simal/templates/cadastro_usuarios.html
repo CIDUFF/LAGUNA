@@ -1,17 +1,27 @@
-{% extends 'base/base_site.html' %} 
+{% extends 'base/base_site.html' %}
 {% load django_bootstrap5 %}
 {% block title %} Cadastro de Usuários {% endblock %}
-{% block content %} 
+{% block content %}
 {% if user.is_authenticated %}
-
-
-{% else %}
-    <div class="container mt-5">
-        <h1 class="text-center">Olá, visitante</h1>
-        <p class="text-center">Faça login para visualizar o sistema</p>
-        <div class="d-flex justify-content-center">
-        <a href="{% url 'account_login' %}" class="btn btn-primary">Clique aqui para logar</a>
+<div class="container mt-5">
+    <h1 class="text-center">Cadastro de Usuários</h1>
+    <div class="card">
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                {% bootstrap_form form layout='floating' %}
+                <button type="submit" class="btn btn-primary">Cadastrar</button>
+            </form>
         </div>
     </div>
+</div>
+{% else %}
+<div class="container mt-5">
+    <h1 class="text-center">Olá, visitante</h1>
+    <p class="text-center">Faça login para visualizar o sistema</p>
+    <div class="d-flex justify-content-center">
+        <a href="{% url 'account_login' %}" class="btn btn-primary">Clique aqui para logar</a>
+    </div>
+</div>
 {% endif %}
 {% endblock %}

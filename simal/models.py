@@ -6,7 +6,23 @@ from django.contrib.auth.models import User  # Importa o modelo User
 
 
 
-class UsuariosSistema(models.Model):
+class equipes(models.Model):
+    """
+    Classe que representa as equipes que usam o sistema.
+
+    Atributos:
+        nome (str): O nome da equipe.
+        descricao (str): A descrição da equipe.
+    """
+
+    nome = models.CharField(max_length=50)
+    descricao = models.TextField(max_length=100)
+    responsavel = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'{self.nome}'
+
+class UsuarioSistema(models.Model):
     """
     Representa um coletor de dados.
 
@@ -26,6 +42,7 @@ class UsuariosSistema(models.Model):
 
     def __str__(self):
         return f'{self.nome}'
+
 
 
 class Ajuda(models.Model):
@@ -265,7 +282,7 @@ class ListaColeta(models.Model):
 
     data_coleta_campo = models.DateField(auto_now=False, auto_now_add=False)
     equipe_coleta = models.ForeignKey(
-        UsuariosSistema, on_delete=models.CASCADE, related_name='lista_coletor')
+        UsuarioSistema, on_delete=models.CASCADE, related_name='lista_coletor')
     laboratorio = models.ForeignKey(
         Laboratorios, on_delete=models.CASCADE, related_name='lista_laboratorio')
     solicitante = models.ForeignKey(

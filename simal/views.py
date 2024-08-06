@@ -18,7 +18,7 @@ import os
 
 # Third-party imports
 from django_tables2 import RequestConfig
-
+from django.contrib.auth.forms import UserCreationForm
 # Local imports
 from .filters import *
 from .forms import *
@@ -29,8 +29,47 @@ from .tables import *
 # from .models import ColetaCampo
 
 
+
+
 def check_admin(user):
-    return user.is_admin
+    return user.is_superuser
+
+
+@login_required
+@user_passes_test(check_admin)
+def cadastro_usuarios(request):
+    if request.method == 'POST':
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            # Redirecione para a página de usuários cadastrados
+            return redirect('usuarios_cadastrados')
+    else:
+        form = CustomUserCreationForm()
+
+    return render(request, 'cadastro_usuarios.html', {'form': form})
+
+
+@login_required
+@user_passes_test(check_admin)
+def editar_usuario(request, user_id):
+    usuario = get_object_or_404(User, id=user_id)
+    if request.method == 'POST':
+        form = CustomUserCreationForm(request.POST, instance=usuario)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Usuário atualizado com sucesso.')
+            return redirect('usuarios_cadastrados')
+    else:
+        form = CustomUserCreationForm(instance=usuario)
+
+    return render(request, 'editar_usuario.html', {'form': form, 'usuario': usuario})
+
+@login_required
+@user_passes_test(check_admin)
+def usuarios_cadastrados(request):
+    usuarios = User.objects.all()
+    return render(request, 'usuarios_cadastrados.html', {'usuarios': usuarios})
 
 
 def home(request):
