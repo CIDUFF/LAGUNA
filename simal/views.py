@@ -344,7 +344,7 @@ def agenda_coleta(request):
             # programa_coleta.data_fim_coleta_campo = form.cleaned_data['data_fim_coleta_campo']
             programa_coleta.equipe_coleta = form.cleaned_data['equipe_coleta']
             # programa_coleta.laboratorio = form.cleaned_data['laboratorio']
-            programa_coleta.solicitante = form.cleaned_data['solicitante']
+            # programa_coleta.solicitante = form.cleaned_data['solicitante']
             programa_coleta.local_coleta = form.cleaned_data['local_coleta']
             programa_coleta.observacoes = form.cleaned_data['observacoes']
             programa_coleta.status_coleta = 'Programada'
@@ -369,10 +369,10 @@ def atualizar_programacao(request, id):
         programacao = get_object_or_404(ProgramaColeta, id=id)
         cache.set(cache_key, programacao, timeout=3600)
 
-    # Verifica se o status da programação é 'Cancelada'
-    if programacao.status_coleta == 'Cancelada':
+    # Verifica se o status da programação é 'Cancelada' ou se a rota é True
+    if programacao.status_coleta == 'Cancelada' or programacao.rota:
         messages.warning(
-            request, 'Não é possível alterar campanhas canceladas.')
+            request, 'Não é possível alterar campanhas canceladas ou com rota definida.')
         return redirect('coletas_agendas')
 
     if request.method == 'POST':
