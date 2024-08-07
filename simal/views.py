@@ -542,14 +542,14 @@ def checklist_campanha(request, ordem_servico=None):
             defaults={campo: form.cleaned_data[campo] for campo in (
                 'observacoes', 'previsao_tempo', 'avisar_labs',
                 'reservar_carro', 'reservar_barco', 'separar_equipamentos',
-                'conferir_equipamentos', 'comprar_gelo')}
+                'conferir_equipamentos', 'comprar_gelo', 'etiquetar_frascos')}
         )
         if not created:
             for campo in ('observacoes', 'previsao_tempo', 'avisar_labs',
                           'reservar_carro', 'reservar_barco', 'separar_equipamentos',
-                          'conferir_equipamentos', 'comprar_gelo'):
+                          'conferir_equipamentos', 'comprar_gelo', 'etiquetar_frascos'):
                 setattr(checklist_campanha, campo, form.cleaned_data[campo])
-            checklist_campanha.save()
+            checklist_campanha.save(usuario=request.user)
         if campanha.rota:
             return redirect('lista_coleta', ordem_servico=campanha.id)
         else:

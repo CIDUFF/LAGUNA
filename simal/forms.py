@@ -137,7 +137,6 @@ class ChecklistCampoForm(forms.Form):
         label="Ordem de serviço", widget=forms.TextInput(attrs={'readonly': 'readonly'}))
     observacoes = forms.CharField(
         label='Observações', widget=forms.Textarea, max_length=500, required=False)
-
     # Campos booleanos utilizando a função auxiliar para o widget
     previsao_tempo = forms.BooleanField(
         label="Previsão do tempo", required=False, widget=custom_checkbox_widget())

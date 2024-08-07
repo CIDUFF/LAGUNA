@@ -332,9 +332,42 @@ class ChecklistCampo(models.Model):
         campos_marcados = sum(bool(campo) for campo in self.campos_booleanos)
         total_campos = len(self.campos_booleanos)
         return (campos_marcados / total_campos) * 100 if total_campos > 0 else 0
-
+        
     def save(self, *args, **kwargs):
-        """Sobrescreve o método save para atualizar o status e o progresso antes de salvar."""
+        """Sobrescreve o método save para atualizar o status e o progresso antes de salvar e registrar logs de alterações."""
+        user = kwargs.pop('usuario', None)
+        if self.pk:
+            # Obter o estado atual do objeto do banco de dados
+            old_instance = ChecklistCampo.objects.get(pk=self.pk)
+            # Verificar alterações e registrar logs
+            for field in self._meta.fields:
+                field_name = field.name
+                # Ignorar campos que não queremos logar
+                if field_name not in ['id', 'data_checklist']:
+                    old_value = getattr(old_instance, field_name)
+                    new_value = getattr(self, field_name)
+                    if old_value != new_value:
+                        ChecklistCampoLog.objects.create(
+                            checklist=self,
+                            campo_alterado=field_name,
+                            valor_antigo=str(old_value),
+                            valor_novo=str(new_value),
+                            usuario=user
+                        )
+
         self.status_checklist = all(self.campos_booleanos)
         self.progresso = self.percentual_conclusao
         super().save(*args, **kwargs)
+
+
+class ChecklistCampoLog(models.Model):
+    checklist = models.ForeignKey(
+        ChecklistCampo, on_delete=models.CASCADE, related_name='logs')
+    data_alteracao = models.DateTimeField(auto_now=True)
+    campo_alterado = models.CharField(max_length=100)
+    valor_antigo = models.TextField(null=True, blank=True)
+    valor_novo = models.TextField(null=True, blank=True)
+    usuario = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+
+    def __str__(self):
+        return f'Log de {self.checklist} em {self.data_alteracao} por {self.usuario}'
