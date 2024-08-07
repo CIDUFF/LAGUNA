@@ -99,12 +99,16 @@ def home(request):
                          Termino=proxima_coleta.data_coleta_campo, Cor='#2ca02c' if checklist.previsao_tempo else '#d62728'),  # Verde moderno se verdadeiro, vermelho moderno se falso
                     dict(Tarefa="Verificar previsão do tempo", Inicio=proxima_coleta.data_programacao,
                          Termino=proxima_coleta.data_check_forecast, Cor='#2ca02c' if checklist.previsao_tempo else '#d62728'),
-                    dict(Tarefa="Contatar Laboratórios", Inicio=proxima_coleta.data_check_lab,
+                    dict(Tarefa="Avisar Laboratórios", Inicio=proxima_coleta.data_check_lab,
                          Termino=proxima_coleta.data_check_lab + timedelta(days=2), Cor='#2ca02c' if checklist.avisar_labs else '#d62728'),
-                    dict(Tarefa="Reservar Carro", Inicio=proxima_coleta.data_check_car,
+                    dict(Tarefa="Reservar Carro e barco", Inicio=proxima_coleta.data_check_car,
                          Termino=proxima_coleta.data_check_car + timedelta(days=2), Cor='#2ca02c' if checklist.reservar_carro else '#d62728'),
-                    dict(Tarefa="Preparar Equipamentos", Inicio=proxima_coleta.data_check_material,
+                    dict(Tarefa="Checar Equipamentos", Inicio=proxima_coleta.data_check_material,
                          Termino=proxima_coleta.data_check_material + timedelta(days=3), Cor='#2ca02c' if checklist.separar_equipamentos else '#d62728'),
+                    dict(Tarefa="Etiquetar frascos", Inicio=proxima_coleta.data_check_material + timedelta(days=3),
+                         Termino=proxima_coleta.data_check_material + timedelta(days=3), Cor='#2ca02c' if checklist.conferir_equipamentos else '#d62728'),
+                    dict(Tarefa="Comprar gelo", Inicio=proxima_coleta.data_check_material + timedelta(days=3),
+                         Termino=proxima_coleta.data_check_material + timedelta(days=3), Cor='#2ca02c' if checklist.conferir_equipamentos else '#d62728'),
                 ]
             else:
                 dados_gantt = [
@@ -118,6 +122,10 @@ def home(request):
                          Termino=proxima_coleta.data_check_car + timedelta(days=2), Cor='#2ca02c'),  # Verde moderno para tarefas já feitas
                     dict(Tarefa="Preparar Equipamentos", Inicio=proxima_coleta.data_check_material,
                          Termino=proxima_coleta.data_check_material + timedelta(days=3), Cor='#2ca02c'),  # Verde moderno para tarefas já feitas
+                    dict(Tarefa="Etiquetar frascos", Inicio=proxima_coleta.data_check_material,
+                            Termino=proxima_coleta.data_check_material + timedelta(days=3), Cor='#2ca02c'),  # Verde moderno para tarefas já feitas
+                    dict(Tarefa="Comprar gelo", Inicio=proxima_coleta.data_coleta_campo,
+                            Termino=proxima_coleta.data_coleta_campo, Cor='#2ca02c'),  # Verde moderno para tarefas já feitas
                 ]
             
             # Adiciona a tarefa "Programação" com a cor azul

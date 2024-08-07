@@ -133,6 +133,23 @@ class LocaisColeta(models.Model):
 
     def __str__(self):
         return f'{self.local}'
+    
+# class PontosColeta(models.Model):
+#     """
+#     Classe que representa os pontos de coleta no banco de dados.
+
+#     Atributos:
+#         ponto (str): O ponto de coleta.
+#         local (str): O local de coleta.
+#         codigo_str (str): O código em formato de string.
+#     """
+
+#     local = models.ForeignKey(LocaisColeta, on_delete=models.CASCADE)
+#     ponto = models.CharField(max_length=5, null=True, blank=True)
+#     codigo_pt = models.CharField(max_length=60, blank=False)
+
+#     def __str__(self):
+#         return f'{self.ponto}'
 
 
 class ProgramaColeta(models.Model):
@@ -289,6 +306,8 @@ class ChecklistCampo(models.Model):
         "Conferir equipamentos", blank=True, null=True, default=False)
     comprar_gelo = models.BooleanField(
         "Comprar gelo", blank=True, null=True, default=False)
+    etiquetar_frascos = models.BooleanField(
+        "Estiquetar frascos", blank=True, null=True, default=False)
     observacoes = models.TextField(
         max_length=500, blank=True, default=False)
     status_checklist = models.BooleanField(default=False)

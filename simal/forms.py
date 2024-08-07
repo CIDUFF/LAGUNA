@@ -153,6 +153,8 @@ class ChecklistCampoForm(forms.Form):
         label="Conferir equipamentos", required=False, widget=custom_checkbox_widget())
     comprar_gelo = forms.BooleanField(
         label="Comprar gelo", required=False, widget=custom_checkbox_widget())
+    etiquetar_frascos = forms.BooleanField(
+        label="Etiquetar frascos", required=False, widget=custom_checkbox_widget())
 
     def __init__(self, *args, **kwargs):
         ordem_servico_selecionada = kwargs.pop(
@@ -169,6 +171,7 @@ class ChecklistCampoForm(forms.Form):
             self.fields['separar_equipamentos'].initial = checklist_campo_instance.separar_equipamentos
             self.fields['conferir_equipamentos'].initial = checklist_campo_instance.conferir_equipamentos
             self.fields['comprar_gelo'].initial = checklist_campo_instance.comprar_gelo
+            self.fields['etiquetar_frascos'].initial = checklist_campo_instance.etiquetar_frascos
             self.fields['observacoes'].initial = checklist_campo_instance.observacoes
         self.helper = FormHelper()
         self.helper.layout = Layout(
@@ -183,6 +186,7 @@ class ChecklistCampoForm(forms.Form):
                 Switch('separar_equipamentos'),
                 Switch('conferir_equipamentos'),
                 Switch('comprar_gelo'),
+                Switch('etiquetar_frascos'),
                 'observacoes',
             ),
             ButtonHolder(
