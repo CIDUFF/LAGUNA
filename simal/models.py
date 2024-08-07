@@ -133,6 +133,23 @@ class LocaisColeta(models.Model):
 
     def __str__(self):
         return f'{self.local}'
+    
+# class PontosColeta(models.Model):
+#     """
+#     Classe que representa os pontos de coleta no banco de dados.
+
+#     Atributos:
+#         ponto (str): O ponto de coleta.
+#         local (str): O local de coleta.
+#         codigo_str (str): O código em formato de string.
+#     """
+
+#     local = models.ForeignKey(LocaisColeta, on_delete=models.CASCADE)
+#     ponto = models.CharField(max_length=5, null=True, blank=True)
+#     codigo_pt = models.CharField(max_length=60, blank=False)
+
+#     def __str__(self):
+#         return f'{self.ponto}'
 
 
 class ProgramaColeta(models.Model):
@@ -289,6 +306,8 @@ class ChecklistCampo(models.Model):
         "Conferir equipamentos", blank=True, null=True, default=False)
     comprar_gelo = models.BooleanField(
         "Comprar gelo", blank=True, null=True, default=False)
+    etiquetar_frascos = models.BooleanField(
+        "Estiquetar frascos", blank=True, null=True, default=False)
     observacoes = models.TextField(
         max_length=500, blank=True, default=False)
     status_checklist = models.BooleanField(default=False)
@@ -313,9 +332,42 @@ class ChecklistCampo(models.Model):
         campos_marcados = sum(bool(campo) for campo in self.campos_booleanos)
         total_campos = len(self.campos_booleanos)
         return (campos_marcados / total_campos) * 100 if total_campos > 0 else 0
-
+        
     def save(self, *args, **kwargs):
-        """Sobrescreve o método save para atualizar o status e o progresso antes de salvar."""
+        """Sobrescreve o método save para atualizar o status e o progresso antes de salvar e registrar logs de alterações."""
+        user = kwargs.pop('usuario', None)
+        if self.pk:
+            # Obter o estado atual do objeto do banco de dados
+            old_instance = ChecklistCampo.objects.get(pk=self.pk)
+            # Verificar alterações e registrar logs
+            for field in self._meta.fields:
+                field_name = field.name
+                # Ignorar campos que não queremos logar
+                if field_name not in ['id', 'data_checklist']:
+                    old_value = getattr(old_instance, field_name)
+                    new_value = getattr(self, field_name)
+                    if old_value != new_value:
+                        ChecklistCampoLog.objects.create(
+                            checklist=self,
+                            campo_alterado=field_name,
+                            valor_antigo=str(old_value),
+                            valor_novo=str(new_value),
+                            usuario=user
+                        )
+
         self.status_checklist = all(self.campos_booleanos)
         self.progresso = self.percentual_conclusao
         super().save(*args, **kwargs)
+
+
+class ChecklistCampoLog(models.Model):
+    checklist = models.ForeignKey(
+        ChecklistCampo, on_delete=models.CASCADE, related_name='logs')
+    data_alteracao = models.DateTimeField(auto_now=True)
+    campo_alterado = models.CharField(max_length=100)
+    valor_antigo = models.TextField(null=True, blank=True)
+    valor_novo = models.TextField(null=True, blank=True)
+    usuario = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+
+    def __str__(self):
+        return f'Log de {self.checklist} em {self.data_alteracao} por {self.usuario}'

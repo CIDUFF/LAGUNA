@@ -8,6 +8,8 @@
   --quaternary-color: #9197b3; /* Define a cor quaternária do site */
 }
 
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap");
+
 /* Estilos gerais */
 body {
   margin: 10px 10px 20px; /* Define as margens do corpo do site */
@@ -390,8 +392,9 @@ a.sidebar-link:hover {
   box-shadow: 0 1rem 1rem 0 rgba(0, 0, 0, 0.1) !important; /* Remove a sombra */
   /* padding: 0.5rem !important; */
   outline: none !important; /* Remove o contorno */
-  /* height:10rem !important; */
-  /* margin:0; */
+  margin-bottom: 1rem !important; /* Adicione esta linha para diminuir a margem inferior */
+  height:10rem !important;
+  margin:0.5rem;
 }
 
 .card-title {
@@ -601,4 +604,13 @@ a.sidebar-link:hover {
 .btn btn-outline-primary btn-sm:hover {
   color: white !important;
 }
+<<<<<<< HEAD
+=======
+
+.calendar-container {
+  width: 30% !important; /* Ajuste a largura conforme necessário */
+  height: 50vh !important; /* Ajuste a altura conforme necessário */
+  margin: 0 auto; /* Centraliza o calendário horizontalmente */
+}
+>>>>>>> 80c900f (Atualizar página inicial com link para o calendário de campanhas)
 

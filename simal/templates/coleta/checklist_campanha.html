@@ -10,7 +10,6 @@ Checklist de campanha
   <div class="row">
     
     <div class="col-md-12">
-      
     <!--botao para gerar rotas-->
       {% csrf_token %} 
         <div class="card form-checklist">
@@ -28,7 +27,6 @@ Checklist de campanha
               {% endif %}
           </p>
           <div>
-            {% comment %} TODO: DEVE APARECER UM NOVO BOTÃO DESABILITADO INFORMANDO QUE A ROTA ; DESABILITAR O BOTAO, NAO SUMIR COM ELE {% endcomment %}
             {% if not campanha.rota %}
             <a href="{% url 'gerar_rota_campanha' ordem_servico %}" class="btn btn-primary m-2" title="Clique aqui para gerar os formulários de coleta físico-quimica">Gerar rota</a>
             {% else %}
