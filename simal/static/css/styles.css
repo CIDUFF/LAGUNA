@@ -393,8 +393,8 @@ a.sidebar-link:hover {
   /* padding: 0.5rem !important; */
   outline: none !important; /* Remove o contorno */
   margin-bottom: 1rem !important; /* Adicione esta linha para diminuir a margem inferior */
-  height:10rem !important;
-  margin:0.5rem;
+  height: 10rem !important;
+  margin: 0.5rem;
 }
 
 .card-title {
@@ -604,13 +604,28 @@ a.sidebar-link:hover {
 .btn btn-outline-primary btn-sm:hover {
   color: white !important;
 }
-<<<<<<< HEAD
-=======
 
 .calendar-container {
   width: 30% !important; /* Ajuste a largura conforme necessário */
   height: 50vh !important; /* Ajuste a altura conforme necessário */
   margin: 0 auto; /* Centraliza o calendário horizontalmente */
 }
->>>>>>> 80c900f (Atualizar página inicial com link para o calendário de campanhas)
 
+.nav-link-checklist {
+  background-color: #ffcccc; /* Cor para a aba Checklist */
+}
+.nav-link-form {
+  background-color: #ccffcc; /* Cor para a aba Formulário */
+}
+.nav-link-checklist.active {
+  background-color: #ff9999; /* Cor para a aba Checklist ativa */
+}
+.nav-link-form.active {
+  background-color: #99ff99; /* Cor para a aba Formulário ativa */
+}
+.nav-link-checklist:not(.active) {
+  background-color: #aaebff; /* Cor para a aba Checklist inativa */
+}
+.nav-link-form:not(.active) {
+  background-color: #ccffcc; /* Cor para a aba Formulário inativa */
+}
