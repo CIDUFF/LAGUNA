@@ -344,6 +344,64 @@ document.getElementById('pontoSelecionado').addEventListener('change', function(
             deleteCssClass: 'btn btn-danger mb-3 ',
         });
     })
+
+</script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    function setDateToday(inputId) {
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById(inputId).value = today;
+    }
+
+    document.getElementById('previsao_tempo_switch').addEventListener('change', function () {
+      if (this.checked) {
+        setDateToday('data_previsao');
+      }
+    });
+
+    document.getElementById('avisar_labs_switch').addEventListener('change', function () {
+      if (this.checked) {
+        setDateToday('data_avisa_labs');
+      }
+    });
+
+    document.getElementById('reservar_carro_switch').addEventListener('change', function () {
+      if (this.checked) {
+        setDateToday('data_reserva_carro');
+      }
+    });
+
+    document.getElementById('reservar_barco_switch').addEventListener('change', function () {
+      if (this.checked) {
+        setDateToday('data_reserva_barco');
+      }
+    });
+
+    document.getElementById('separar_equipamentos_switch').addEventListener('change', function () {
+      if (this.checked) {
+        setDateToday('data_separa_equipamentos');
+      }
+    });
+
+    document.getElementById('conferir_equipamentos_switch').addEventListener('change', function () {
+      if (this.checked) {
+        setDateToday('data_conferencia_equipamentos');
+      }
+    });
+
+    document.getElementById('comprar_gelo_switch').addEventListener('change', function () {
+      if (this.checked) {
+        setDateToday('data_compra_gelo');
+      }
+    });
+
+    document.getElementById('etiquetar_frascos_switch').addEventListener('change', function () {
+      if (this.checked) {
+        setDateToday('data_etiquetagem');
+      }
+    });
+  });
 </script>
 
 

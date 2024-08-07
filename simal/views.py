@@ -529,8 +529,6 @@ def checklist_campanha(request, ordem_servico=None):
     try:
         checklist_campanha = ChecklistCampo.objects.get(
             ordem_servico=campanha)
-        # if checklist_campanha.progresso == 100:
-        #     return redirect('lista_coleta', ordem_servico=ProgramaColeta.objects.get(ordem_servico=campanha.ordem_servico).id)
     except ChecklistCampo.DoesNotExist:
         checklist_campanha = None
 
@@ -540,21 +538,22 @@ def checklist_campanha(request, ordem_servico=None):
         checklist_campanha, created = ChecklistCampo.objects.get_or_create(
             ordem_servico=campanha,
             defaults={campo: form.cleaned_data[campo] for campo in (
-                'observacoes', 'previsao_tempo', 'avisar_labs',
-                'reservar_carro', 'reservar_barco', 'separar_equipamentos',
-                'conferir_equipamentos', 'comprar_gelo', 'etiquetar_frascos')}
+                'previsao_tempo', 'data_previsao', 'observacoes_previsao', 'avisar_labs', 'data_avisa_labs', 'observacao_avisar_labs',
+                'reservar_carro', 'data_reserva_carro', 'observacao_reservar_carro', 'reservar_barco', 'data_reserva_barco', 'observacao_reservar_barco',
+                'separar_equipamentos', 'data_separa_equipamentos', 'observacao_separar_equipamentos', 'conferir_equipamentos', 'data_conferencia_equipamentos', 'observacao_conferir_equipamentos',
+                'comprar_gelo', 'data_compra_gelo', 'observacao_comprar_gelo', 'etiquetar_frascos', 'data_etiquetagem', 'observacao_etiquetar_frascos')}
         )
         if not created:
-            for campo in ('observacoes', 'previsao_tempo', 'avisar_labs',
-                          'reservar_carro', 'reservar_barco', 'separar_equipamentos',
-                          'conferir_equipamentos', 'comprar_gelo', 'etiquetar_frascos'):
+            for campo in ('previsao_tempo', 'data_previsao', 'observacoes_previsao', 'avisar_labs', 'data_avisa_labs', 'observacao_avisar_labs',
+                          'reservar_carro', 'data_reserva_carro', 'observacao_reservar_carro', 'reservar_barco', 'data_reserva_barco', 'observacao_reservar_barco',
+                          'separar_equipamentos', 'data_separa_equipamentos', 'observacao_separar_equipamentos', 'conferir_equipamentos', 'data_conferencia_equipamentos', 'observacao_conferir_equipamentos',
+                          'comprar_gelo', 'data_compra_gelo', 'observacao_comprar_gelo', 'etiquetar_frascos', 'data_etiquetagem', 'observacao_etiquetar_frascos'):
                 setattr(checklist_campanha, campo, form.cleaned_data[campo])
             checklist_campanha.save(usuario=request.user)
         if campanha.rota:
             return redirect('lista_coleta', ordem_servico=campanha.id)
         else:
             return redirect('checklist_campanha', ordem_servico=campanha.ordem_servico)
-        
 
     if campanha.status_coleta == 'Programada':
         campanha.status_coleta = 'Iniciada'
@@ -563,8 +562,8 @@ def checklist_campanha(request, ordem_servico=None):
 
     data = campanha.data_coleta_campo
     previsao_tempo = get_weather_description(
-    "Maricá", data.strftime('%Y-%m-%d'))
-    
+        "Maricá", data.strftime('%Y-%m-%d'))
+
     context = {
         'form': form,
         'checklist_campanha': checklist_campanha,

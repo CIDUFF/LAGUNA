@@ -294,22 +294,53 @@ class ChecklistCampo(models.Model):
         'ProgramaColeta', on_delete=models.CASCADE, related_name='checklist_ordem_servico')
     previsao_tempo = models.BooleanField(
         "Previsão do tempo", blank=True, null=True, default=False)
+    data_previsao = models.DateField(
+        "Data da previsão", blank=True, null=True)
+    observacoes_previsao = models.TextField(
+        "Observações da previsão", blank=True, null=True)
     avisar_labs = models.BooleanField(
         "Avisar laboratórios", blank=True, null=True, default=False)
+    data_avisa_labs = models.DateField(
+        "Data do aviso", blank=True, null=True)
+    observacao_avisa_labs = models.TextField(
+        "Observações do aviso", blank=True, null=True)
     reservar_carro = models.BooleanField(
         "Reservar carro", blank=True, null=True, default=False)
+    observacao_reserva_carro = models.TextField(
+        "Observações da reserva", blank=True, null=True)
+    data_reserva_carro = models.DateField(
+        "Data da reserva", blank=True, null=True)
     reservar_barco = models.BooleanField(
         "Reservar barco", blank=True, null=True, default=False)
+    observacao_reserva_barco = models.TextField(
+        "Observações da reserva", blank=True, null=True)
+    data_reserva_barco = models.DateField(
+        "Data da reserva", blank=True, null=True)
     separar_equipamentos = models.BooleanField(
         "Separar equipamentos", blank=True, null=True, default=False)
+    data_separa_equipamentos = models.DateField(
+        "Data da separação", blank=True, null=True)
+    observacao_separa_equipamentos = models.TextField(
+        "Observações da separação", blank=True, null=True)
     conferir_equipamentos = models.BooleanField(
         "Conferir equipamentos", blank=True, null=True, default=False)
+    data_conferencia_equipamentos = models.DateField(
+        "Data da conferência", blank=True, null=True)
+    observacao_conferencia_equipamentos = models.TextField(
+        "Observações da conferência", blank=True, null=True)
     comprar_gelo = models.BooleanField(
         "Comprar gelo", blank=True, null=True, default=False)
+    data_compra_gelo = models.DateField(
+        "Data da compra", blank=True, null=True)
+    observacao_compra_gelo = models.TextField(
+        "Observações da compra", blank=True, null=True)
     etiquetar_frascos = models.BooleanField(
         "Estiquetar frascos", blank=True, null=True, default=False)
-    observacoes = models.TextField(
-        max_length=500, blank=True, default=False)
+    data_etiquetagem = models.DateField(
+        "Data da etiquetagem", blank=True, null=True)
+    observacao_etiquetagem = models.TextField(
+        "Observações da etiquetagem", blank=True, null=True)
+        
     status_checklist = models.BooleanField(default=False)
     progresso = models.DecimalField(max_digits=5, decimal_places=2, default=0)
 

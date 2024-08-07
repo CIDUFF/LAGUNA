@@ -1,6 +1,6 @@
 from crispy_forms.helper import FormHelper
 from crispy_bootstrap5.bootstrap5 import FloatingField, Switch
-from crispy_forms.layout import Layout, Fieldset, ButtonHolder, Submit, HTML, Div
+from crispy_forms.layout import Layout, Fieldset, Row, Column, ButtonHolder, Div, Submit, HTML
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.forms import UserCreationForm
 from django.utils import timezone
@@ -122,11 +122,14 @@ class ProgramaColetaForm(forms.Form):
         #     Laboratorios, 'nome')
 
 
-def custom_checkbox_widget():
+def custom_checkbox_widget(attrs=None):
     """
     Retorna um widget CheckboxInput com a classe CSS 'custom-checkbox' aplicada.
     """
-    return forms.CheckboxInput(attrs={'class': 'custom-checkbox'})
+    final_attrs = {'class': 'custom-checkbox'}
+    if attrs:
+        final_attrs.update(attrs)
+    return forms.CheckboxInput(attrs=final_attrs)
 
 
 class ChecklistCampoForm(forms.Form):
@@ -137,23 +140,63 @@ class ChecklistCampoForm(forms.Form):
         label="Ordem de serviço", widget=forms.TextInput(attrs={'readonly': 'readonly'}))
     observacoes = forms.CharField(
         label='Observações', widget=forms.Textarea, max_length=500, required=False)
-    # Campos booleanos utilizando a função auxiliar para o widget
+    
+    # Campos booleanos e suas observações
     previsao_tempo = forms.BooleanField(
-        label="Previsão do tempo", required=False, widget=custom_checkbox_widget())
+        label="Previsão do tempo", required=False, widget=custom_checkbox_widget(attrs={'id': 'previsao_tempo_switch'}))
+    data_previsao = forms.DateField(
+        label="Data da previsão", required=False, widget=forms.DateInput(attrs={'type': 'date', 'id': 'data_previsao'}))
+    observacoes_previsao = forms.CharField(
+        label="Observação", required=False, widget=forms.TextInput(attrs={'id': 'observacao_previsao_tempo'}))
+    
     avisar_labs = forms.BooleanField(
-        label="Avisar laboratórios", required=False, widget=custom_checkbox_widget())
+        label="Avisar laboratórios", required=False, widget=custom_checkbox_widget(attrs={'id': 'avisar_labs_switch'}))
+    data_avisa_labs = forms.DateField(
+        label="Data do aviso", required=False, widget=forms.DateInput(attrs={'type': 'date', 'id': 'data_avisa_labs'}))
+    observacao_avisar_labs = forms.CharField(
+        label="Observação", required=False, widget=forms.TextInput(attrs={'id': 'observacao_avisar_labs'}))
+    
     reservar_carro = forms.BooleanField(
-        label="Reservar carro", required=False, widget=custom_checkbox_widget())
+        label="Reservar carro", required=False, widget=custom_checkbox_widget(attrs={'id': 'reservar_carro_switch'}))
+    data_reserva_carro = forms.DateField(
+        label="Data da reserva", required=False, widget=forms.DateInput(attrs={'type': 'date', 'id': 'data_reserva_carro'}))
+    observacao_reservar_carro = forms.CharField(
+        label="Observação", required=False, widget=forms.TextInput(attrs={'id': 'observacao_reservar_carro'}))
+    
     reservar_barco = forms.BooleanField(
-        label="Reservar barco", required=False, widget=custom_checkbox_widget())
+        label="Reservar barco", required=False, widget=custom_checkbox_widget(attrs={'id': 'reservar_barco_switch'}))
+    data_reserva_barco = forms.DateField(
+        label="Data da reserva", required=False, widget=forms.DateInput(attrs={'type': 'date', 'id': 'data_reserva_barco'}))
+    observacao_reservar_barco = forms.CharField(
+        label="Observação", required=False, widget=forms.TextInput(attrs={'id': 'observacao_reservar_barco'}))
+    
     separar_equipamentos = forms.BooleanField(
-        label="Separar equipamentos", required=False, widget=custom_checkbox_widget())
+        label="Separar equipamentos", required=False, widget=custom_checkbox_widget(attrs={'id': 'separar_equipamentos_switch'}))
+    data_separa_equipamentos = forms.DateField(
+        label="Data da separação", required=False, widget=forms.DateInput(attrs={'type': 'date', 'id': 'data_separa_equipamentos'}))
+    observacao_separar_equipamentos = forms.CharField(
+        label="Observação", required=False, widget=forms.TextInput(attrs={'id': 'observacao_separar_equipamentos'}))
+    
     conferir_equipamentos = forms.BooleanField(
-        label="Conferir equipamentos", required=False, widget=custom_checkbox_widget())
+        label="Conferir equipamentos", required=False, widget=custom_checkbox_widget(attrs={'id': 'conferir_equipamentos_switch'}))
+    data_conferencia_equipamentos = forms.DateField(
+        label="Data da conferência", required=False, widget=forms.DateInput(attrs={'type': 'date', 'id': 'data_conferencia_equipamentos'}))
+    observacao_conferir_equipamentos = forms.CharField(
+        label="Observação", required=False, widget=forms.TextInput(attrs={'id': 'observacao_conferir_equipamentos'}))
+    
     comprar_gelo = forms.BooleanField(
-        label="Comprar gelo", required=False, widget=custom_checkbox_widget())
+        label="Comprar gelo", required=False, widget=custom_checkbox_widget(attrs={'id': 'comprar_gelo_switch'}))
+    data_compra_gelo = forms.DateField(
+        label="Data da compra", required=False, widget=forms.DateInput(attrs={'type': 'date', 'id': 'data_compra_gelo'}))
+    observacao_comprar_gelo = forms.CharField(
+        label="Observação", required=False, widget=forms.TextInput(attrs={'id': 'observacao_comprar_gelo'}))
+    
     etiquetar_frascos = forms.BooleanField(
-        label="Etiquetar frascos", required=False, widget=custom_checkbox_widget())
+        label="Etiquetar frascos", required=False, widget=custom_checkbox_widget(attrs={'id': 'etiquetar_frascos_switch'}))
+    data_etiquetagem = forms.DateField(
+        label="Data da etiquetagem", required=False, widget=forms.DateInput(attrs={'type': 'date', 'id': 'data_etiquetagem'}))
+    observacao_etiquetar_frascos = forms.CharField(
+        label="Observação", required=False, widget=forms.TextInput(attrs={'id': 'observacao_etiquetar_frascos'}))
 
     def __init__(self, *args, **kwargs):
         ordem_servico_selecionada = kwargs.pop(
@@ -164,44 +207,87 @@ class ChecklistCampoForm(forms.Form):
             self.fields['ordem_servico'].initial = ordem_servico_selecionada
         if checklist_campo_instance:
             self.fields['previsao_tempo'].initial = checklist_campo_instance.previsao_tempo
+            self.fields['data_previsao'].initial = checklist_campo_instance.data_previsao
+            self.fields['observacoes_previsao'].initial = checklist_campo_instance.observacoes_previsao
             self.fields['avisar_labs'].initial = checklist_campo_instance.avisar_labs
+            self.fields['data_avisa_labs'].initial = checklist_campo_instance.data_avisa_labs
+            self.fields['observacao_avisar_labs'].initial = checklist_campo_instance.observacao_avisa_labs
             self.fields['reservar_carro'].initial = checklist_campo_instance.reservar_carro
+            self.fields['data_reserva_carro'].initial = checklist_campo_instance.data_reserva_carro
+            self.fields['observacao_reservar_carro'].initial = checklist_campo_instance.observacao_reserva_carro
             self.fields['reservar_barco'].initial = checklist_campo_instance.reservar_barco
+            self.fields['data_reserva_barco'].initial = checklist_campo_instance.data_reserva_barco
+            self.fields['observacao_reservar_barco'].initial = checklist_campo_instance.observacao_reserva_barco
             self.fields['separar_equipamentos'].initial = checklist_campo_instance.separar_equipamentos
+            self.fields['data_separa_equipamentos'].initial = checklist_campo_instance.data_separa_equipamentos
+            self.fields['observacao_separar_equipamentos'].initial = checklist_campo_instance.observacao_separa_equipamentos
             self.fields['conferir_equipamentos'].initial = checklist_campo_instance.conferir_equipamentos
+            self.fields['data_conferencia_equipamentos'].initial = checklist_campo_instance.data_conferencia_equipamentos
+            self.fields['observacao_conferir_equipamentos'].initial = checklist_campo_instance.observacao_conferencia_equipamentos
             self.fields['comprar_gelo'].initial = checklist_campo_instance.comprar_gelo
+            self.fields['data_compra_gelo'].initial = checklist_campo_instance.data_compra_gelo
+            self.fields['observacao_comprar_gelo'].initial = checklist_campo_instance.observacao_compra_gelo
             self.fields['etiquetar_frascos'].initial = checklist_campo_instance.etiquetar_frascos
-            self.fields['observacoes'].initial = checklist_campo_instance.observacoes
+            self.fields['data_etiquetagem'].initial = checklist_campo_instance.data_etiquetagem
+            self.fields['observacao_etiquetar_frascos'].initial = checklist_campo_instance.observacao_etiquetagem
         self.helper = FormHelper()
         self.helper.layout = Layout(
             Fieldset(
                 'Checklist de Campo',
                 'data_checklist',
                 'ordem_servico',
-                Switch('previsao_tempo'),
-                Switch('avisar_labs'),
-                Switch('reservar_carro'),
-                Switch('reservar_barco'),
-                Switch('separar_equipamentos'),
-                Switch('conferir_equipamentos'),
-                Switch('comprar_gelo'),
-                Switch('etiquetar_frascos'),
-                'observacoes',
+                Row(
+                    Column(Switch('previsao_tempo'), css_class='col-md-4'),
+                    Column(Div('data_previsao', css_class='form-group'), css_class='col-md-4'),
+                    Column(Div('observacoes_previsao',
+                           css_class='form-group'), css_class='col-md-4')
+                ),
+                Row(
+                    Column(Switch('avisar_labs'), css_class='col-md-4'),
+                    Column(Div('data_avisa_labs', css_class='form-group'), css_class='col-md-4'),
+                    Column(Div('observacao_avisar_labs', css_class='form-group'), css_class='col-md-4')
+                ),
+                Row(
+                    Column(Switch('reservar_carro'), css_class='col-md-4'),
+                    Column(Div('data_reserva_carro', css_class='form-group'), css_class='col-md-4'),
+                    Column(Div('observacao_reservar_carro', css_class='form-group'), css_class='col-md-4')
+                ),
+                Row(
+                    Column(Switch('reservar_barco'), css_class='col-md-4'),
+                    Column(Div('data_reserva_barco', css_class='form-group'), css_class='col-md-4'),
+                    Column(Div('observacao_reservar_barco', css_class='form-group'), css_class='col-md-4')
+                ),
+                Row(
+                    Column(Switch('separar_equipamentos'), css_class='col-md-4'),
+                    Column(Div('data_separa_equipamentos', css_class='form-group'), css_class='col-md-4'),
+                    Column(Div('observacao_separar_equipamentos', css_class='form-group'), css_class='col-md-4')
+                ),
+                Row(
+                    Column(Switch('conferir_equipamentos'), css_class='col-md-4'),
+                    Column(Div('data_conferencia_equipamentos', css_class='form-group'), css_class='col-md-4'),
+                    Column(Div('observacao_conferir_equipamentos', css_class='form-group'), css_class='col-md-4')
+                ),
+                Row(
+                    Column(Switch('comprar_gelo'), css_class='col-md-4'),
+                    Column(Div('data_compra_gelo', css_class='form-group'), css_class='col-md-4'),
+                    Column(Div('observacao_comprar_gelo', css_class='form-group'), css_class='col-md-4')
+                ),
+                Row(
+                    Column(Switch('etiquetar_frascos'), css_class='col-md-4'),
+                    Column(Div('data_etiquetagem', css_class='form-group'), css_class='col-md-4'),
+                    Column(Div('observacao_etiquetar_frascos', css_class='form-group'), css_class='col-md-4')
+                ),
             ),
             ButtonHolder(
-                Layout(
+                Div(
                     Div(
-                        Submit(
-                            'submit', 'Salvar e ir para o formulário de coleta'),
-                        css_class='col-6'
-                    ),
-                    Div(
+                        Submit('submit', 'Salvar e ir para o formulário de coleta'),
                         HTML(format_html('<a href="{}" class="btn btn-primary btn-campanha">Voltar</a>',
                                          reverse('coletas_agendas'))),
-                        css_class='col-6 text-right'
-                    )
-                ),
-                css_class='row'
+                        css_class='d-flex justify-content-between'
+                    ),
+                    css_class='text-left'
+                )
             )
         )
 
