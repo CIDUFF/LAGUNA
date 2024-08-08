@@ -33,10 +33,10 @@ Checklist de campanha
             <p><strong>Solicitante:</strong> {{ campanha.solicitante }}</p>
             <p><strong>Previsão do tempo:</strong> {{ previsao_tempo }}</p> 
             <p><strong>Status da rota:</strong> 
-                {% if rota_gerada %}
-                    <span class="badge badge-danger">Não gerada</span>
-                {% else %}
+                {% if campanha.rota %}
                     <span class="badge badge-success">Gerada</span>
+                {% else %}
+                    <span class="badge badge-danger">Não Gerada</span>
                 {% endif %}
             </p>
             <div>

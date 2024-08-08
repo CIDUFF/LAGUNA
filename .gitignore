@@ -60,9 +60,11 @@ staticfiles/
 
 .env
 
-*.pyc
+**.pyc
 
-*.cpython
+**.cpython
+
+**/__pycache__/
 
 /simal/__pycache__/
-/simal/__pycache__/tables.cpython-310.pyc
+**/amostras/__pycache__/
