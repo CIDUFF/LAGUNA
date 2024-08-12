@@ -29,8 +29,6 @@ from .tables import *
 # from .models import ColetaCampo
 
 
-
-
 def check_admin(user):
     return user.is_superuser
 
@@ -65,6 +63,7 @@ def editar_usuario(request, user_id):
 
     return render(request, 'editar_usuario.html', {'form': form, 'usuario': usuario})
 
+
 @login_required
 @user_passes_test(check_admin)
 def usuarios_cadastrados(request):
@@ -91,7 +90,8 @@ def home(request):
             weather_description = get_weather_description(
                 "Maricá", proxima_coleta.data_coleta_campo.strftime('%Y-%m-%d'))
 
-            checklist = ChecklistCampo.objects.filter(ordem_servico=proxima_coleta).first()
+            checklist = ChecklistCampo.objects.filter(
+                ordem_servico=proxima_coleta).first()
 
             if checklist:
                 dados_gantt = [
@@ -123,30 +123,30 @@ def home(request):
                     dict(Tarefa="Preparar Equipamentos", Inicio=proxima_coleta.data_check_material,
                          Termino=proxima_coleta.data_check_material + timedelta(days=3), Cor='#2ca02c'),  # Verde moderno para tarefas já feitas
                     dict(Tarefa="Etiquetar frascos", Inicio=proxima_coleta.data_check_material,
-                            Termino=proxima_coleta.data_check_material + timedelta(days=3), Cor='#2ca02c'),  # Verde moderno para tarefas já feitas
+                         Termino=proxima_coleta.data_check_material + timedelta(days=3), Cor='#2ca02c'),  # Verde moderno para tarefas já feitas
                     dict(Tarefa="Comprar gelo", Inicio=proxima_coleta.data_coleta_campo,
-                            Termino=proxima_coleta.data_coleta_campo, Cor='#2ca02c'),  # Verde moderno para tarefas já feitas
+                         Termino=proxima_coleta.data_coleta_campo, Cor='#2ca02c'),  # Verde moderno para tarefas já feitas
                 ]
-            
+
             # Adiciona a tarefa "Programação" com a cor azul
             dados_gantt.append(dict(Tarefa="Programação", Inicio=proxima_coleta.data_programacao,
                                     Termino=proxima_coleta.data_coleta_campo, Cor='#2ca02c'))
-            
+
             df = pd.DataFrame(dados_gantt)
-            
+
             # Converte as colunas para datetime
             df['Inicio'] = pd.to_datetime(df['Inicio'])
             df['Termino'] = pd.to_datetime(df['Termino'])
-            
+
             # Calcula a duração
             df['Duracao'] = (df['Termino'] - df['Inicio']).dt.total_seconds()
-            
+
             # Ordena o DataFrame pela duração em ordem decrescente
             df = df.sort_values(by='Duracao', ascending=True)
-            
+
             fig = px.timeline(df, x_start="Inicio",
                               x_end="Termino", y="Tarefa", color="Cor")
-            
+
             # Adiciona bolinhas para tarefas com duração zero
             for i, row in df.iterrows():
                 if row['Duracao'] == 0:
@@ -157,12 +157,12 @@ def home(request):
                         marker=dict(size=20, color='#1f77b4'),  # Azul moderno
                         name=row['Tarefa']
                     )
-            
+
             # fig.update_yaxes(autorange="reversed")
-            
+
             # Remove a legenda
             fig.update_layout(showlegend=False, template="simple_white")
-            
+
             # Configura o locale para português e coloca as datas na parte inferior
             fig.update_layout(
                 xaxis=dict(
@@ -180,14 +180,12 @@ def home(request):
                 # Ajuste as margens conforme necessário
                 margin=dict(l=20, r=20, t=20, b=20),
             )
-            
+
             # Torna o gráfico responsivo
             fig.update_layout(
                 autosize=True
             )
-            
-            
-            
+
             gantt_div = plot(fig, output_type="div")
         else:
             data_coleta_proxima_formatada = None
@@ -538,16 +536,17 @@ def checklist_campanha(request, ordem_servico=None):
         checklist_campanha, created = ChecklistCampo.objects.get_or_create(
             ordem_servico=campanha,
             defaults={campo: form.cleaned_data[campo] for campo in (
-                'previsao_tempo', 'data_previsao', 'observacoes_previsao', 'avisar_labs', 'data_avisa_labs', 'observacao_avisar_labs',
-                'reservar_carro', 'data_reserva_carro', 'observacao_reservar_carro', 'reservar_barco', 'data_reserva_barco', 'observacao_reservar_barco',
-                'separar_equipamentos', 'data_separa_equipamentos', 'observacao_separar_equipamentos', 'conferir_equipamentos', 'data_conferencia_equipamentos', 'observacao_conferir_equipamentos',
-                'comprar_gelo', 'data_compra_gelo', 'observacao_comprar_gelo', 'etiquetar_frascos', 'data_etiquetagem', 'observacao_etiquetar_frascos')}
+                ('previsao_tempo', 'data_previsao_tempo', 'observacao_previsao_tempo', 'avisar_labs', 'data_avisar_labs', 'observacao_avisar_labs',
+                 'reservar_carro', 'observacao_reservar_carro', 'data_reservar_carro', 'reservar_barco', 'observacao_reservar_barco', 'data_reservar_barco', 'separar_equipamentos',
+                 'data_separar_equipamentos', 'observacao_separar_equipamentos', 'conferir_equipamentos', 'data_conferir_equipamentos',
+                 'observacao_conferir_equipamentos', 'comprar_gelo', 'data_comprar_gelo', 'observacao_comprar_gelo', 'etiquetar_frascos', 'data_etiquetar_frascos', 'observacao_etiquetar_frascos', )
+            )}
         )
         if not created:
-            for campo in ('previsao_tempo', 'data_previsao', 'observacoes_previsao', 'avisar_labs', 'data_avisa_labs', 'observacao_avisar_labs',
-                          'reservar_carro', 'data_reserva_carro', 'observacao_reservar_carro', 'reservar_barco', 'data_reserva_barco', 'observacao_reservar_barco',
-                          'separar_equipamentos', 'data_separa_equipamentos', 'observacao_separar_equipamentos', 'conferir_equipamentos', 'data_conferencia_equipamentos', 'observacao_conferir_equipamentos',
-                          'comprar_gelo', 'data_compra_gelo', 'observacao_comprar_gelo', 'etiquetar_frascos', 'data_etiquetagem', 'observacao_etiquetar_frascos'):
+            for campo in ('previsao_tempo', 'data_previsao_tempo', 'observacao_previsao_tempo', 'avisar_labs', 'data_avisar_labs', 'observacao_avisar_labs',
+                          'reservar_carro', 'observacao_reservar_carro', 'data_reservar_carro', 'reservar_barco', 'observacao_reservar_barco', 'data_reservar_barco', 'separar_equipamentos',
+                          'data_separar_equipamentos', 'observacao_separar_equipamentos', 'conferir_equipamentos', 'data_conferir_equipamentos',
+                          'observacao_conferir_equipamentos', 'comprar_gelo', 'data_comprar_gelo', 'observacao_comprar_gelo', 'etiquetar_frascos', 'data_etiquetar_frascos', 'observacao_etiquetar_frascos',):
                 setattr(checklist_campanha, campo, form.cleaned_data[campo])
             checklist_campanha.save(usuario=request.user)
         if campanha.rota:
@@ -607,8 +606,6 @@ def gerar_rota_campanha(request, ordem_servico=None):
     return redirect('checklist_campanha', ordem_servico=ordem_servico)
 
 
-
-
 def etiquetagem(request, ordem_servico=None):
     ordem_servico = request.GET.get('ordem_servico', ordem_servico)
     campanha = None
@@ -639,7 +636,6 @@ def etiquetagem(request, ordem_servico=None):
         return response
 
     return redirect('checklist_campanha', ordem_servico=ordem_servico)
-
 
 
 @login_required
@@ -732,11 +728,3 @@ def exportar_resultados_csv(request):
         writer.writerow(resultado)
 
     return response
-
-
-
-
-
-
-
-

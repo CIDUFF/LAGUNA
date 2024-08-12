@@ -135,22 +135,38 @@ class LocaisColeta(models.Model):
     def __str__(self):
         return f'{self.local}'
     
-# class PontosColeta(models.Model):
-#     """
-#     Classe que representa os pontos de coleta no banco de dados.
 
-#     Atributos:
-#         ponto (str): O ponto de coleta.
-#         local (str): O local de coleta.
-#         codigo_str (str): O código em formato de string.
-#     """
+class Locais(models.Model):
+    codigo = models.CharField(max_length=50)
+    desc = models.CharField(max_length=50)
+    lat = models.FloatField(null=True, blank=True)
+    long = models.FloatField(null=True, blank=True)
 
-#     local = models.ForeignKey(LocaisColeta, on_delete=models.CASCADE)
-#     ponto = models.CharField(max_length=5, null=True, blank=True)
-#     codigo_pt = models.CharField(max_length=60, blank=False)
+    def __str__(self):
+        return f'{self.descricao}'
 
-#     def __str__(self):
-#         return f'{self.ponto}'
+class PontosColeta(models.Model):
+
+    setor = models.ForeignKey('Setor', on_delete=models.CASCADE, related_name='pontos')
+    local = models.ForeignKey(Locais, on_delete=models.CASCADE, related_name='pontos')
+    ponto = models.CharField(max_length=5, null=True, blank=True)
+    desc = models.CharField(max_length=50, blank=False)
+    codigo_pt = models.CharField(max_length=60, blank=False)
+    lat = models.FloatField(null=True, blank=True)
+    long = models.FloatField(null=True, blank=True)
+
+    def __str__(self):
+        return f'{self.ponto}'
+    
+class Setor(models.Model):
+    codigo = models.CharField(max_length=50)
+    desc = models.CharField(max_length=50)
+    local = models.ForeignKey(Locais, on_delete=models.CASCADE, related_name='setor')
+    lat = models.FloatField(null=True, blank=True)
+    long = models.FloatField(null=True, blank=True)
+    
+    def __str__(self):
+        return f'{self.descricao}'
 
 
 class ProgramaColeta(models.Model):
@@ -232,7 +248,6 @@ class Campo(models.Model):
     condutividade = models.FloatField("Condutividade uS/cm", null=True)
     turbidez = models.FloatField("Turbidez NTU", null=True)
     od = models.FloatField("OD mg/L", null=True)
-    od_pct = models.FloatField("OD %", null=True)
     tds = models.FloatField("TDS", null=True)
     salinidade = models.FloatField("Salinidade", null=True)
     status_form = models.CharField(
@@ -295,51 +310,51 @@ class ChecklistCampo(models.Model):
         'ProgramaColeta', on_delete=models.CASCADE, related_name='checklist_ordem_servico')
     previsao_tempo = models.BooleanField(
         "Previsão do tempo", blank=True, null=True, default=False)
-    data_previsao = models.DateField(
+    data_previsao_tempo = models.DateField(
         "Data da previsão", blank=True, null=True)
-    observacoes_previsao = models.TextField(
+    observacao_previsao_tempo = models.TextField(
         "Observações da previsão", blank=True, null=True)
     avisar_labs = models.BooleanField(
         "Avisar laboratórios", blank=True, null=True, default=False)
-    data_avisa_labs = models.DateField(
+    data_avisar_labs = models.DateField(
         "Data do aviso", blank=True, null=True)
-    observacao_avisa_labs = models.TextField(
+    observacao_avisar_labs = models.TextField(
         "Observações do aviso", blank=True, null=True)
     reservar_carro = models.BooleanField(
         "Reservar carro", blank=True, null=True, default=False)
-    observacao_reserva_carro = models.TextField(
+    observacao_reservar_carro = models.TextField(
         "Observações da reserva", blank=True, null=True)
-    data_reserva_carro = models.DateField(
+    data_reservar_carro = models.DateField(
         "Data da reserva", blank=True, null=True)
     reservar_barco = models.BooleanField(
         "Reservar barco", blank=True, null=True, default=False)
-    observacao_reserva_barco = models.TextField(
+    observacao_reservar_barco = models.TextField(
         "Observações da reserva", blank=True, null=True)
-    data_reserva_barco = models.DateField(
+    data_reservar_barco = models.DateField(
         "Data da reserva", blank=True, null=True)
     separar_equipamentos = models.BooleanField(
         "Separar equipamentos", blank=True, null=True, default=False)
-    data_separa_equipamentos = models.DateField(
+    data_separar_equipamentos = models.DateField(
         "Data da separação", blank=True, null=True)
-    observacao_separa_equipamentos = models.TextField(
+    observacao_separar_equipamentos = models.TextField(
         "Observações da separação", blank=True, null=True)
     conferir_equipamentos = models.BooleanField(
         "Conferir equipamentos", blank=True, null=True, default=False)
-    data_conferencia_equipamentos = models.DateField(
+    data_conferir_equipamentos = models.DateField(
         "Data da conferência", blank=True, null=True)
-    observacao_conferencia_equipamentos = models.TextField(
+    observacao_conferir_equipamentos = models.TextField(
         "Observações da conferência", blank=True, null=True)
     comprar_gelo = models.BooleanField(
         "Comprar gelo", blank=True, null=True, default=False)
-    data_compra_gelo = models.DateField(
+    data_comprar_gelo = models.DateField(
         "Data da compra", blank=True, null=True)
-    observacao_compra_gelo = models.TextField(
+    observacao_comprar_gelo = models.TextField(
         "Observações da compra", blank=True, null=True)
     etiquetar_frascos = models.BooleanField(
         "Estiquetar frascos", blank=True, null=True, default=False)
-    data_etiquetagem = models.DateField(
+    data_etiquetar_frascos = models.DateField(
         "Data da etiquetagem", blank=True, null=True)
-    observacao_etiquetagem = models.TextField(
+    observacao_etiquetar_frascos = models.TextField(
         "Observações da etiquetagem", blank=True, null=True)
         
     status_checklist = models.BooleanField(default=False)
