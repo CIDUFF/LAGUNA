@@ -35,9 +35,6 @@ class ColetaCampo(forms.Form):
     od = forms.FloatField(
         required=False, label='OD (mg/L)', widget=forms.NumberInput(attrs={'step': '0.1'})
     )
-    od_pct = forms.FloatField(
-        required=False, label='OD (%)', widget=forms.NumberInput(attrs={'step': '0.1'})
-    )
     tds = forms.FloatField(
         required=False, label='TDS (mg/L)', widget=forms.NumberInput(attrs={'step': '0.1'})
     )
@@ -59,7 +56,7 @@ class ColetaCampo(forms.Form):
     def __init__(self, *args, **kwargs):
         super(ColetaCampo, self).__init__(*args, **kwargs)
         campos = [
-            'temperatura', 'ph', 'orp', 'condutividade', 'turbidez', 'od', 'od_pct', 'tds', 'salinidade', 'observacoes'
+            'temperatura', 'ph', 'orp', 'condutividade', 'turbidez', 'od', 'tds', 'salinidade', 'observacoes'
         ]
         self.helper = FormHelper()
         self.helper.layout = Layout(

@@ -261,7 +261,7 @@ class Campo(models.Model):
         campos = [
             self.clima, self.data, self.hora_inicio, self.hora_fim, self.ponto,
             self.temperatura, self.ph, self.orp, self.condutividade, self.turbidez,
-            self.od, self.od_pct, self.tds, self.salinidade
+            self.od, self.tds, self.salinidade
         ]
         if all(campo is not None for campo in campos):
             self.status_form = 'Preenchido'
