@@ -57,7 +57,6 @@ psycopg2-binary==2.9.9
 ptyprocess==0.7.0
 pure-eval==0.2.2
 Pygments==2.18.0
-pygraphviz==1.13
 pylint==3.2.5
 pylint-django==2.5.5
 pylint-plugin-utils==0.8.2

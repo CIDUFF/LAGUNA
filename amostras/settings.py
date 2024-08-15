@@ -109,28 +109,28 @@ WSGI_APPLICATION = 'amostras.wsgi.application'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'lagoaviva',
-#         'USER': 'lagoaviva',
-#         'PASSWORD': 'l4g04uff',
-#         'HOST': 'db.cid-uff.net',
-#         'PORT': '5432',
-#     }
-# }
-
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'lagoaviva',
         'USER': 'lagoaviva',
         'PASSWORD': 'l4g04uff',
-        'HOST': 'ultron.local',
+        'HOST': 'db.cid-uff.net',
         'PORT': '5432',
     }
 }
+
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'lagoaviva',
+#         'USER': 'lagoaviva',
+#         'PASSWORD': 'l4g04uff',
+#         'HOST': 'ultron.local',
+#         'PORT': '5432',
+#     }
+# }
 
 
 # Password validation

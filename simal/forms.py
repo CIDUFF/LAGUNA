@@ -55,8 +55,10 @@ class ColetaCampo(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super(ColetaCampo, self).__init__(*args, **kwargs)
+
+
         campos = [
-            'temperatura', 'ph', 'orp', 'condutividade', 'turbidez', 'od', 'tds', 'salinidade', 'observacoes'
+            'temperatura', 'ph', 'orp', 'condutividade', 'turbidez', 'od', 'tds', 'salinidade'
         ]
         self.helper = FormHelper()
         self.helper.layout = Layout(
@@ -66,7 +68,13 @@ class ColetaCampo(forms.Form):
                 'ponto',
                 'hora_inicio',
                 'hora_fim',
-                *[FloatingField(campo) for campo in campos],
+                *[
+                    Row(
+                        Column(FloatingField(campos[i]), css_class='col-md-6'),
+                        Column(FloatingField(campos[i + 1]), css_class='col-md-6')
+                    ) for i in range(0, len(campos), 2)
+                ],
+                'observacoes',  # Adiciona o campo observacoes diretamente no Fieldset
                 'foto'  # Adiciona o campo foto diretamente no Fieldset
             ),
             ButtonHolder(

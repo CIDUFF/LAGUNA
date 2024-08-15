@@ -1,23 +1,8 @@
-// {
-//   "sqltools.connections": [
-//     {
-//       "previewLimit": 50,
-//       "server": "db.cid-uff.net",
-//       "port": 5432,
-//       "driver": "PostgreSQL",
-//       "name": "Lagoa Viva",
-//       "database": "lagoaviva",
-//       "username": "lagoaviva",
-//       "password": "l4g04uff"
-//     }
-//   ]
-// }
-
 {
   "sqltools.connections": [
     {
       "previewLimit": 50,
-      "server": "ultron.local",
+      "server": "db.cid-uff.net",
       "port": 5432,
       "driver": "PostgreSQL",
       "name": "Lagoa Viva",
@@ -27,4 +12,19 @@
     }
   ]
 }
+
+// {
+//   "sqltools.connections": [
+//     {
+//       "previewLimit": 50,
+//       "server": "ultron.local",
+//       "port": 5432,
+//       "driver": "PostgreSQL",
+//       "name": "Lagoa Viva",
+//       "database": "lagoaviva",
+//       "username": "lagoaviva",
+//       "password": "l4g04uff"
+//     }
+//   ]
+// }
 
