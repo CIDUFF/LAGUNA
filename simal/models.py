@@ -265,6 +265,8 @@ class Campo(models.Model):
         ]
         if all(campo is not None for campo in campos):
             self.status_form = 'Preenchido'
+        else:
+            self.status_form = 'Não preenchido'
         super().save(*args, **kwargs)
 
 
