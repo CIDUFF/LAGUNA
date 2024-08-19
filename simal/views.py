@@ -723,7 +723,7 @@ def exportar_resultados_csv(request):
                     'pH', 'ORP', 'Condutividade', 'Turbidez', 'OD', 'OD %', 'TDS', 'Salinidade'])
 
     resultados = Campo.objects.all().values_list('codigo_coleta', 'hora_inicio', 'hora_fim', 'ponto',
-                                                 'temperatura', 'ph', 'orp', 'condutividade', 'turbidez', 'od', 'od_pct', 'tds', 'salinidade')
+                                                 'temperatura', 'ph', 'orp', 'condutividade', 'turbidez', 'od', 'tds', 'salinidade')
     for resultado in resultados:
         writer.writerow(resultado)
 
