@@ -235,10 +235,11 @@ class Campo(models.Model):
     # Supondo que ProgramaColeta e date já foram importados corretamente
     ordem_servico = models.ForeignKey(
         ProgramaColeta, on_delete=models.CASCADE, related_name='ordem_servico_campo')
-    codigo_coleta = models.CharField("Código da Coleta", max_length=50)
+    codigo_coleta = models.CharField("Código da Coleta", max_length=50, null=True)
     ordem = models.FloatField("Ordem", null=True)
     clima = models.CharField("Clima", max_length=150, null=True)
     data = models.DateField(default=date.today)
+    data_coleta = models.DateField("Data da Coleta", null=True)
     hora_inicio = models.TimeField("Hora de Início", blank=True, null=True)
     hora_fim = models.TimeField("Hora de Término", blank=True, null=True)
     ponto = models.CharField("Ponto de Coleta", default="0")
@@ -268,6 +269,53 @@ class Campo(models.Model):
         else:
             self.status_form = 'Não preenchido'
         super().save(*args, **kwargs)
+
+class MetadadosCampo(models.Model):
+    ACESSOS = [
+        'Ponte',
+        'Caiaque',
+        'Margem',
+    ]
+    AVALIACAO = [
+        (-1, 'Negativo'),
+        (0, 'Neutro'),
+        (1, 'Positivo'),
+    ]
+    
+        
+    codigo_coleta = models.ForeignKey(
+        Campo, on_delete=models.CASCADE, related_name='metadados_campo')
+    acesso_ponto= models.CharField(
+        max_length=50, choices=[(acesso, acesso) for acesso in ACESSOS], null=True)
+    dragagem = models.IntegerField(
+        "Dragagem", choices=AVALIACAO, null=True)
+    gigoga = models.IntegerField(
+        "Quantidade de gigoga", choices=AVALIACAO, null=True)
+    odor = models.IntegerField(
+        "Odor", choices=AVALIACAO, null=True)
+    fezes = models.IntegerField(
+        "Fezes", choices=AVALIACAO, null=True)
+    oleo = models.IntegerField(
+        "Óleo", choices=AVALIACAO, null=True)
+    residuos_solidos = models.IntegerField(
+        "Resíduos Sólidos", choices=AVALIACAO, null=True)
+    lodo = models.IntegerField(
+        "Lodo", choices=AVALIACAO, null=True)
+    animais_presentes = models.IntegerField(
+        "Animais Presentes", choices=AVALIACAO, null=True)
+    pescadores = models.IntegerField(
+        "Pescadores", choices=AVALIACAO, null=True)
+    contato_populacao = models.IntegerField(
+        "Contato com a população", choices=AVALIACAO, null=True)
+    observacoes = models.TextField(
+        "Observações", max_length=500, blank=True)
+    
+    def __str__(self):
+        return f"Metadados do campo {self.codigo_coleta}"
+        
+        
+        
+    
 
 
 class AnalisesLista(models.Model):

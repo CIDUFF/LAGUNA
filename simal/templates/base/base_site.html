@@ -244,14 +244,47 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 });
 
-document.getElementById('pontoSelecionado').addEventListener('change', function() {
-  var pontoId = this.value;
-  // Armazena o ponto selecionado no localStorage
-  localStorage.setItem('pontoSelecionado', pontoId);
-  // Redireciona para a página de atualização de coleta
-  var urlAtualizacao = `/atualizar_coleta/${pontoId}`;
-  window.location.href = urlAtualizacao;
-});
+
+</script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Verifica se existe um ponto selecionado armazenado e se o redirecionamento já foi feito
+    const pontoSelecionado = localStorage.getItem('pontoSelecionado');
+    const redirecionado = localStorage.getItem('redirecionado');
+
+    if (pontoSelecionado && !redirecionado) {
+      // Define a flag de redirecionamento
+      localStorage.setItem('redirecionado', 'true');
+      // Redireciona para a página de atualização de coleta
+      var urlAtualizacao = `/atualizar_coleta/${pontoSelecionado}`;
+      window.location.href = urlAtualizacao;
+    }
+
+    document.getElementById('pontoSelecionado').addEventListener('change', function() {
+      var pontoId = this.value;
+      // Armazena o ponto selecionado no localStorage
+      localStorage.setItem('pontoSelecionado', pontoId);
+      // Remove a flag de redirecionamento para permitir futuros redirecionamentos
+      localStorage.removeItem('redirecionado');
+      // Redireciona para a página de atualização de coleta
+      var urlAtualizacao = `/atualizar_coleta/${pontoId}`;
+      window.location.href = urlAtualizacao;
+    });
+
+    // Atualiza o valor da caixa de seleção com o ID do ponto atual
+    const pontoAtual = "{{ ponto }}";
+    if (pontoAtual) {
+      const selectElement = document.getElementById('pontoSelecionado');
+      for (let i = 0; i < selectElement.options.length; i++) {
+        if (selectElement.options[i].text === pontoAtual) {
+          selectElement.selectedIndex = i;
+          localStorage.setItem('pontoSelecionado', selectElement.options[i].value);
+          break;
+        }
+      }
+    }
+  });
 </script>
 
 <script>

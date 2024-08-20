@@ -47,6 +47,16 @@ class ColetaCampo(forms.Form):
         widget=forms.Textarea(attrs={'rows': 3, 'cols': 40}),
         required=False
     )
+    check_amostras = forms.BooleanField(
+        label='As amostras de laboratório foram coletadas?',
+        required=False,
+        widget=forms.CheckboxInput(attrs={'id': 'check_amostras'})
+    )
+    data_coleta = forms.DateField(
+        label='Data de coleta de campo',
+        widget=forms.DateInput(attrs={'type': 'date'}, format='%Y/%m/%d'),
+        required=False
+    )
     foto = forms.ImageField(
         label='Foto',
         required=False,
@@ -74,8 +84,10 @@ class ColetaCampo(forms.Form):
                         Column(FloatingField(campos[i + 1]), css_class='col-md-6')
                     ) for i in range(0, len(campos), 2)
                 ],
+                Switch('check_amostras'),
                 'observacoes',  # Adiciona o campo observacoes diretamente no Fieldset
-                'foto'  # Adiciona o campo foto diretamente no Fieldset
+                'data_coleta',
+                'foto',  # Adiciona o campo foto diretamente no Fieldset
             ),
             ButtonHolder(
                 Submit('submit', 'Salvar e ir para o próximo')

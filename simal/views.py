@@ -265,10 +265,10 @@ def atualizar_coleta(request, id):
             messages.success(request, 'Dados atualizados com sucesso!')
 
             # Verifica se todos os pontos foram coletados
-            todos_pontos_preenchidos = Campo.objects.filter(
+            todos_pontos_preenchidos = not Campo.objects.filter(
                 ordem_servico=coleta.ordem_servico).exclude(status_form='Preenchido').exists()
 
-            if not todos_pontos_preenchidos:
+            if todos_pontos_preenchidos:
                 campanha = ProgramaColeta.objects.get(
                     id=coleta.ordem_servico.id)
                 campanha.status_coleta = 'Coleta realizada'
@@ -276,11 +276,14 @@ def atualizar_coleta(request, id):
 
             pontos_coleta_list = list(pontos_coleta)
             index_atual = pontos_coleta_list.index(coleta)
-            if index_atual + 1 < len(pontos_coleta_list):
-                proximo_ponto = pontos_coleta_list[index_atual + 1]
-                return redirect(reverse('atualizar_coleta', args=[proximo_ponto.id]))
-            else:
-                return redirect('lista_coleta', ordem_servico=coleta.ordem_servico.id)
+
+            while not todos_pontos_preenchidos:
+                index_atual = (index_atual + 1) % len(pontos_coleta_list)
+                proximo_ponto = pontos_coleta_list[index_atual]
+                if proximo_ponto.status_form != 'Preenchido':
+                    return redirect(reverse('atualizar_coleta', args=[proximo_ponto.id]))
+
+            return redirect('lista_coleta', ordem_servico=coleta.ordem_servico.id)
         else:
             pass  # Mantenha o formulário com erros para exibição
 
