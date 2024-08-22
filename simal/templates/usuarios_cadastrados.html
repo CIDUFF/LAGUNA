@@ -1,0 +1,52 @@
+{% extends 'base/base_site.html' %}
+{% load django_bootstrap5 %}
+{% block title %} Usuários Cadastrados {% endblock %}
+{% block content %}
+{% if user.is_authenticated %}
+<div class="container mt-5">
+    <h1 class="text-center">Usuários Cadastrados</h1>
+
+    <div class="card">
+            <div class="d-flex justify-content-begin m-3">
+        <a href="{% url 'cadastro_usuarios' %}" class="btn btn-success">Cadastrar Novo Usuário</a>
+    </div>
+        <div class="card-body">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome de Usuário</th>
+                        <th>Email</th>
+                        <th>Data de Criação</th>
+                        <th>Equipe</th>
+                        <th>Ações</th> <!-- Adiciona a coluna Ações -->
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for usuario in usuarios %}
+                    <tr>
+                        <td>{{ usuario.id }}</td>
+                        <td>{{ usuario.username }}</td>
+                        <td>{{ usuario.email }}</td>
+                        <td>{{ usuario.date_joined }}</td>
+                        <td>{{ usuario.groups.all|join:", " }}</td>
+                        <td>
+                            <a href="{% url 'editar_usuario' usuario.id %}" class="btn btn-warning btn-sm">Editar</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="container mt-5">
+    <h1 class="text-center">Olá, visitante</h1>
+    <p class="text-center">Faça login para visualizar o sistema</p>
+    <div class="d-flex justify-content-center">
+        <a href="{% url 'account_login' %}" class="btn btn-primary">Clique aqui para logar</a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,26 +1,29 @@
 {% extends 'base/base_site.html' %} 
 
-
 {% load django_tables2 %} 
-
+{% load django_bootstrap5 %}
 {% load static %}
 
 {% block content %}  
 
-{% block title %}  
 
+<div class="card">
 
-{% endblock %} 
+    <h2 class = "m-3">Lista de Campanhas agendadas</h2>
 
+  <form method="get" class="form-inline">
+    {% bootstrap_form filtro.form layout='floating' %}
+    {% bootstrap_button 'Filtro' %}
+  </form>
+  <div class = "m-3">
 
-{% block header %}
-   <h1>
+      {% render_table table_agenda_coleta %} 
 
-       Lista de Coletas agendadas
+    <div class="d-flex justify-content-center m-3">
+        <a href="{% url 'agendar_coleta' %}" class="btn btn-primary">Criar Nova Campanha</a>
+    </div>
 
-   </h1> 
+  </div>
 
-{% endblock header %}
-    
-
-{% render_table table_agenda_coleta %} {% endblock %}
+</div>
+{% endblock %}

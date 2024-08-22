@@ -1,8 +1,23 @@
+// {
+//   "sqltools.connections": [
+//     {
+//       "previewLimit": 50,
+//       "server": "db.cid-uff.net",
+//       "port": 5432,
+//       "driver": "PostgreSQL",
+//       "name": "Lagoa Viva",
+//       "database": "lagoaviva",
+//       "username": "lagoaviva",
+//       "password": "l4g04uff"
+//     }
+//   ]
+// }
+
 {
   "sqltools.connections": [
     {
       "previewLimit": 50,
-      "server": "db.cid-uff.net",
+      "server": "ultron.local",
       "port": 5432,
       "driver": "PostgreSQL",
       "name": "Lagoa Viva",
@@ -12,3 +27,27 @@
     }
   ]
 }
+
+// # DATABASES = {
+// #     'default': {
+// #         'ENGINE': 'django.db.backends.postgresql',
+// #         'NAME': 'lagoaviva',
+// #         'USER': 'lagoaviva',
+// #         'PASSWORD': 'l4g04uff',
+// #         'HOST': 'db.cid-uff.net',
+// #         'PORT': '5432',
+// #     }
+// # }
+
+
+// # DATABASES = {
+// #     'default': {
+// #         'ENGINE': 'django.db.backends.postgresql',
+// #         'NAME': 'lagoaviva',
+// #         'USER': 'lagoaviva',
+// #         'PASSWORD': 'l4g04uff',
+// #         'HOST': 'ultron.local',
+// #         'PORT': '5432',
+// #     }
+// # }
+

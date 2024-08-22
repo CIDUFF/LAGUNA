@@ -1,0 +1,45 @@
+{% extends 'base/base_site.html' %} 
+{% load crispy_forms_tags %}
+{% block title %} Ajuda {% endblock %}
+{% block content %} 
+{% if user.is_authenticated %}
+    <div class="container">
+        <h1>Ajuda</h1>
+        <div class="card faq">
+            <h2 class="title-campanha">Perguntas Frequentes</h2>
+            <div class="faq-item">
+                <div class="card faq-question">Como faço para redefinir minha senha?</div>
+                <div class="faq-answer">
+                    Vá na aba "usuário" (último ícone localizado embaixo no canto esquerdo).<br>
+                    Logo em seguida clique na parte da "senha", modifique e salve as alterações.
+                </div>
+            </div>
+            <div class="faq-item">
+                <div class="card faq-question">Como faço para cadastrar uma nova campanha?</div>
+                <div class="faq-answer">[Instruções para cadastrar uma nova campanha]</div>
+            </div>
+            <div class="faq-item">
+                <div class="card faq-question">Como entro em contato com o suporte?</div>
+                <div class="faq-answer">[Instruções para contato com o suporte]</div>
+            </div>
+        </div>
+        <div class="card help-section">
+            {% csrf_token %} {% crispy form %} 
+        </div>
+        <div class="footer">
+            Suporte Técnico <br>
+            Telefone: (21) xxxxx-xxxx <br>
+            Email: suporte@exemplo.com
+        </div>
+    </div>
+
+{% else %}
+    <div class="container mt-5">
+        <h1 class="text-center">Olá, visitante</h1>
+        <p class="text-center">Faça login para visualizar o sistema</p>
+        <div class="d-flex justify-content-center">
+        <a href="{% url 'account_login' %}" class="btn btn-primary">Clique aqui para logar</a>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}

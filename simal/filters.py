@@ -1,0 +1,34 @@
+from django import forms
+import django_filters
+from .models import *
+from .forms import *
+
+
+class CampoFilter(django_filters.FilterSet):
+    class Meta:
+        model = Campo
+        fields = {
+            'ponto': ['icontains'],
+
+            # Adicione mais campos conforme necessário
+        }
+
+
+class ProgramaColetaFilter(django_filters.FilterSet):
+    
+    class Meta:
+        model = ProgramaColeta
+        fields = {
+            'local_coleta': ['icontains'],
+           'data_coleta_campo': ['exact'],
+           'status_coleta': ['exact'],
+         # Adicione mais campos conforme necessário
+        }
+        
+class ResultadosColetaFilter(django_filters.FilterSet):
+    ponto = django_filters.CharFilter(
+        lookup_expr='icontains', label='Ponto')
+    codigo_coleta = django_filters.CharFilter(
+        lookup_expr='icontains', label='Código da Coleta')
+
+

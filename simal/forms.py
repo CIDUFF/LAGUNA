@@ -1,125 +1,122 @@
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Fieldset, ButtonHolder, Submit
+from crispy_bootstrap5.bootstrap5 import FloatingField, Switch
+from crispy_forms.layout import Layout, Fieldset, Row, Column, ButtonHolder, Div, Submit, HTML
+from django.contrib.auth.models import User, Group
+from django.contrib.auth.forms import UserCreationForm
+from django.utils import timezone
+from django.contrib.auth.models import Group
+# from django.forms import ModelChoiceField
 from django import forms
+from django.utils.html import format_html
+from django.urls import reverse
 from .models import *
 
+
 class ColetaCampo(forms.Form):
-    """
-    Representa um formulário para coletar dados de campo.
+    codigo_coleta = forms.CharField(widget=forms.HiddenInput())
+    ponto = forms.CharField(widget=forms.HiddenInput())
+    hora_inicio = forms.TimeField(widget=forms.HiddenInput())
+    hora_fim = forms.TimeField(widget=forms.HiddenInput())
+    temperatura = forms.FloatField(
+        required=False, label='Temperatura (°C)', widget=forms.NumberInput(attrs={'step': '0.1'})
+    )
+    ph = forms.FloatField(
+        required=False, label='pH', widget=forms.NumberInput(attrs={'step': '0.1'})
+    )
+    orp = forms.FloatField(
+        required=False, label='ORP (mV)', widget=forms.NumberInput(attrs={'step': '0.1'})
+    )
+    condutividade = forms.FloatField(
+        required=False, label='Condutividade (µS/cm)', widget=forms.NumberInput(attrs={'step': '0.1'})
+    )
+    turbidez = forms.FloatField(
+        required=False, label='Turbidez (NTU)', widget=forms.NumberInput(attrs={'step': '0.1'})
+    )
+    od = forms.FloatField(
+        required=False, label='OD (mg/L)', widget=forms.NumberInput(attrs={'step': '0.1'})
+    )
+    tds = forms.FloatField(
+        required=False, label='TDS (mg/L)', widget=forms.NumberInput(attrs={'step': '0.1'})
+    )
+    salinidade = forms.FloatField(
+        required=False, label='Salinidade (ppt)', widget=forms.NumberInput(attrs={'step': '0.1'})
 
-    Atributos:
-        clima (CharField): Campo para capturar informações sobre o clima.
-        matriz (CharField): Campo para capturar informações sobre a matriz.
-        hora_inicio (TimeField): Campo para capturar a hora de início.
-        hora_fim (TimeField): Campo para capturar a hora de término.
-        temperatura (DecimalField): Campo para capturar a temperatura.
-        ph (DecimalField): Campo para capturar o valor de pH.
-        orp (DecimalField): Campo para capturar o potencial de oxidação-redução.
-        condutividade (DecimalField): Campo para capturar a condutividade.
-        turbidez (DecimalField): Campo para capturar a turbidez.
-        od (DecimalField): Campo para capturar a demanda de oxigênio.
-        od_pct (DecimalField): Campo para capturar a porcentagem de demanda de oxigênio.
-        tds (DecimalField): Campo para capturar os sólidos dissolvidos totais.
-        salinidade (DecimalField): Campo para capturar a salinidade.
+    )
+    observacoes = forms.CharField(
+        label='Observações',
+        widget=forms.Textarea(attrs={'rows': 3, 'cols': 40}),
+        required=False
+    )
+    check_amostras = forms.BooleanField(
+        label='As amostras de laboratório foram coletadas?',
+        required=False,
+        widget=forms.CheckboxInput(attrs={'id': 'check_amostras'})
+    )
+    data_coleta = forms.DateField(
+        label='Data de coleta de campo',
+        widget=forms.DateInput(attrs={'type': 'date'}, format='%Y/%m/%d'),
+        required=False
+    )
+    foto = forms.ImageField(
+        label='Foto',
+        required=False,
+        widget=forms.ClearableFileInput(attrs={'capture': 'camera'})
+    )
 
-    Métodos:
-        __init__: Inicializa o formulário e define o layout.
-    """
-
-    clima = forms.CharField()
-    matriz = forms.CharField()
-    hora_inicio = forms.TimeField(widget=forms.TimeInput(attrs={'type': 'time'}))
-    hora_fim = forms.TimeField(widget=forms.TimeInput(attrs={'type': 'time'}))
-    temperatura = forms.DecimalField()
-    ph = forms.DecimalField()
-    orp = forms.DecimalField()
-    condutividade = forms.DecimalField()
-    turbidez = forms.DecimalField()
-    od = forms.DecimalField()
-    od_pct = forms.DecimalField()
-    tds = forms.DecimalField()
-    salinidade = forms.DecimalField()
-
-    def __init__(self,*args,**kwargs):
+    def __init__(self, *args, **kwargs):
         super(ColetaCampo, self).__init__(*args, **kwargs)
+
+
+        campos = [
+            'temperatura', 'ph', 'orp', 'condutividade', 'turbidez', 'od', 'tds', 'salinidade'
+        ]
         self.helper = FormHelper()
         self.helper.layout = Layout(
             Fieldset(
-                'Formulário de campo - coleta de dados',
-                'clima',
-                'matriz',
+                ' ',
+                'codigo_coleta',
+                'ponto',
                 'hora_inicio',
                 'hora_fim',
-                'temperatura',
-                'ph',
-                'orp',
-                'condutividade',
-                'turbidez',
-                'od',
-                'od_pct',
-                'tds',
-                'salinidade'
+                *[
+                    Row(
+                        Column(FloatingField(campos[i]), css_class='col-md-6'),
+                        Column(FloatingField(campos[i + 1]), css_class='col-md-6')
+                    ) for i in range(0, len(campos), 2)
+                ],
+                Switch('check_amostras'),
+                'observacoes',  # Adiciona o campo observacoes diretamente no Fieldset
+                'data_coleta',
+                'foto',  # Adiciona o campo foto diretamente no Fieldset
             ),
             ButtonHolder(
-                Submit('submit', 'Salvar')
+                Submit('submit', 'Salvar e ir para o próximo')
             )
         )
 
+
 class ProgramaColetaForm(forms.Form):
-    """
-    Classe que define o formulário de programação de coleta.
 
-    Este formulário é usado para capturar informações sobre a programação de coleta de amostras.
-    Ele contém campos para a data de coleta, equipe de coleta, laboratório, solicitante, local de coleta,
-    status da coleta e observações.
+    data_coleta_campo = forms.DateField(label='Data de coleta de campo',
+                                        widget=forms.DateInput(attrs={'type': 'date'},
+                                                               format='%Y/%m/%d'))
+    equipe_coleta = forms.ChoiceField(label='Equipe de coleta')
+    # solicitante = forms.ChoiceField(label='Solicitante')
+    local_coleta = forms.ChoiceField(label='Local de coleta')
+    observacoes = forms.CharField(label='Observações',
+                                  widget=forms.Textarea(attrs={'rows': 3, 'cols': 40}))
 
-    Atributos:
-        data_coleta_campo (DateField): Campo para inserir a data de coleta.
-        equipe_coleta (ChoiceField): Campo para selecionar a equipe de coleta.
-        laboratorio (ChoiceField): Campo para selecionar o laboratório.
-        solicitante (ChoiceField): Campo para selecionar o solicitante.
-        local_coleta (ChoiceField): Campo para selecionar o local de coleta.
-        status_coleta (ChoiceField): Campo para selecionar o status da coleta.
-        observacoes (CharField): Campo para inserir observações sobre a coleta.
-
-    Métodos:
-        __init__: Inicializa o formulário e define o layout.
-    """
-    
-    data_coleta_campo = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
-    
-    equipe_coleta = forms.ChoiceField()
-        
-    laboratorio = forms.ChoiceField()
-    
-    solicitante = forms.ChoiceField()
-    
-    local_coleta = forms.ChoiceField()
-    
-    STATUS = [
-        ('programada', 'Programada'),
-        ('reprogramada', 'Reprogramada'), 
-        ('realizada', 'Realizada'),
-        ('cancelada', 'Cancelada'),
-        ]
-    
-    status_coleta = forms.ChoiceField(choices=STATUS)
-    
-    observacoes = forms.CharField(widget=forms.Textarea(attrs={'rows': 3, 'cols': 40}))
-
-    def __init__(self,*args,**kwargs):
+    def __init__(self, *args, **kwargs):
         super(ProgramaColetaForm, self).__init__(*args, **kwargs)
+        campo = [
+            'data_coleta_campo',
+            'equipe_coleta', 'local_coleta', 'observacoes'
+        ]
         self.helper = FormHelper()
         self.helper.layout = Layout(
             Fieldset(
-                'Formulário de Programação de Coleta',
-                'data_coleta_campo',
-                'equipe_coleta',
-                'laboratorio',
-                'solicitante',
-                'local_coleta',
-                'status_coleta',
-                'observacoes'
+                ' ',
+                *[FloatingField(campo) for campo in campo]
             ),
             ButtonHolder(
                 Submit('submit', 'Salvar')
@@ -127,36 +124,282 @@ class ProgramaColetaForm(forms.Form):
         )
 
         def gerar_opcoes_unicas(modelo, campo):
-            valores_unicos = modelo.objects.values_list(campo, flat=True).distinct()
+            valores_unicos = modelo.objects.values_list(
+                campo, flat=True).distinct()
             return [(valor, valor) for valor in valores_unicos]
 
         # Agora você pode usar essa função para gerar as opções únicas para cada campo
-        self.fields['local_coleta'].choices = gerar_opcoes_unicas(LocaisColeta, 'local')
-        self.fields['equipe_coleta'].choices = gerar_opcoes_unicas(Coletores, 'equipe')
-        self.fields['solicitante'].choices = gerar_opcoes_unicas(Solicitantes, 'nome')
-        self.fields['laboratorio'].choices = gerar_opcoes_unicas(Laboratorios, 'nome')
-        
+        self.fields['local_coleta'].choices = gerar_opcoes_unicas(
+            LocaisColeta, 'local')
+        self.fields['equipe_coleta'].choices = [
+            (group.id, group.name) for group in Group.objects.all()]
+        # self.fields['solicitante'].choices = gerar_opcoes_unicas(
+        #     User, 'nome')
+        # self.fields['laboratorio'].choices = gerar_opcoes_unicas(
+        #     Laboratorios, 'nome')
+
+
+def custom_checkbox_widget(attrs=None):
+    """
+    Retorna um widget CheckboxInput com a classe CSS 'custom-checkbox' aplicada.
+    """
+    final_attrs = {'class': 'custom-checkbox'}
+    if attrs:
+        final_attrs.update(attrs)
+    return forms.CheckboxInput(attrs=final_attrs)
+
+
+# Função auxiliar para criar campos booleanos e suas observações
+def create_boolean_field(name, label):
+    return forms.BooleanField(
+        label=label, required=False, widget=custom_checkbox_widget(attrs={'id': f'{name}_switch'})
+    )
+
+
+def create_date_field(name, label):
+    return forms.DateField(
+        label=label, required=False, widget=forms.DateInput(attrs={'type': 'date', 'id': f'data_{name}'})
+    )
+
+
+def create_observation_field(name):
+    return forms.CharField(
+        label="Observação", required=False, widget=forms.TextInput(attrs={'id': f'observacao_{name}'})
+    )
+
 
 class ChecklistCampoForm(forms.Form):
-    
-    data_checklist = forms.DateField()
-    # ordem_servico = forms.ModelChoiceField(queryset=ProgramaColeta.objects.all())
-    status_checklist = forms.ChoiceField(choices=ChecklistCampo.STATUS)
-    observacoes = forms.CharField(widget=forms.Textarea, max_length=500, required=False)
-    
-    def __init__(self,*args,**kwargs):
+    # Campos básicos do formulário
+    data_checklist = forms.DateField(
+        widget=forms.HiddenInput(), initial=timezone.now().date)
+    ordem_servico = forms.CharField(
+        label="Ordem de serviço", widget=forms.TextInput(attrs={'readonly': 'readonly'}))
+    observacoes = forms.CharField(
+        label='Observações', widget=forms.Textarea, max_length=500, required=False)
+
+    # Campos booleanos e suas observações
+    boolean_fields = [
+        ('previsao_tempo', 'Previsão do tempo'),
+        ('avisar_labs', 'Avisar laboratórios'),
+        ('reservar_carro', 'Reservar carro'),
+        ('reservar_barco', 'Reservar barco'),
+        ('separar_equipamentos', 'Separar equipamentos'),
+        ('conferir_equipamentos', 'Conferir equipamentos'),
+        ('comprar_gelo', 'Comprar gelo'),
+        ('etiquetar_frascos', 'Etiquetar frascos')
+    ]
+
+    def __init__(self, *args, **kwargs):
+        ordem_servico_selecionada = kwargs.pop(
+            'ordem_servico_selecionada', None)
+        checklist_campo_instance = kwargs.pop('instance', None)
         super(ChecklistCampoForm, self).__init__(*args, **kwargs)
+
+        for name, label in self.boolean_fields:
+            self.fields[name] = create_boolean_field(name, label)
+            self.fields[f'data_{name}'] = create_date_field(
+                name, f'Data da {label.lower()}')
+            self.fields[f'observacao_{name}'] = create_observation_field(name)
+
+            if checklist_campo_instance:
+                self.fields[name].initial = getattr(
+                    checklist_campo_instance, name)
+                self.fields[f'data_{name}'].initial = getattr(
+                    checklist_campo_instance, f'data_{name}')
+                self.fields[f'observacao_{name}'].initial = getattr(
+                    checklist_campo_instance, f'observacao_{name}')
+
+        if ordem_servico_selecionada:
+            self.fields['ordem_servico'].initial = ordem_servico_selecionada
+
         self.helper = FormHelper()
         self.helper.layout = Layout(
             Fieldset(
-                'Formulário de Checklist de Campo',
+                'Checklist de Campo',
                 'data_checklist',
                 'ordem_servico',
-                'status_checklist',
-                'observacoes'
+                *[
+                    Row(
+                        Column(Switch(name), css_class='col-md-4'),
+                        Column(
+                            Div(f'data_{name}', css_class='form-group'), css_class='col-md-4'),
+                        Column(
+                            Div(f'observacao_{name}', css_class='form-group'), css_class='col-md-4')
+                    ) for name, _ in self.boolean_fields
+                ]
             ),
             ButtonHolder(
-                Submit('submit', 'Salvar')
+                Div(
+                    Div(
+                        Submit('submit', 'Salvar e ir para o formulário de coleta'),
+                        HTML(format_html('<a href="{}" class="btn btn-primary btn-campanha">Voltar</a>',
+                                         reverse('coletas_agendas'))),
+                        css_class='d-flex justify-content-between'
+                    ),
+                    css_class='text-left'
+                )
             )
         )
-  
+
+
+class AjudaForm(forms.Form):
+    nome = forms.CharField()
+    email = forms.EmailField()
+    pergunta = forms.CharField(
+        widget=forms.Textarea, max_length=500, required=False)
+
+    def __init__(self, *args, **kwargs):
+        super(AjudaForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Fieldset(
+                'Formulário de Ajuda',
+                'nome',
+                'email',
+                'pergunta'
+            ),
+            ButtonHolder(
+                Submit('submit', 'Enviar')
+            )
+        )
+
+
+class IniciarCampanhaForm(forms.ModelForm):
+    ordem_servico = forms.ModelChoiceField(
+        queryset=ProgramaColeta.objects.filter(status_coleta='Programada'),
+        label="Selecione a campanha que deseja iniciar"
+    )
+
+    class Meta:
+        model = ProgramaColeta
+        fields = ['ordem_servico']
+
+    def __init__(self, *args, **kwargs):
+        super(IniciarCampanhaForm, self).__init__(*args, **kwargs)
+        self.fields['ordem_servico'].empty_label = "Selecione uma campanha"
+
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Fieldset(
+                'Iniciar Campanha',
+                'ordem_servico',
+            ),
+            ButtonHolder(
+                Submit('submit', 'Prosseguir'),
+            )
+        )
+
+
+# class LaboratorioForm(forms.Form):
+#     nome = forms.CharField(label='Nome do laboratório')
+#     endereco = forms.CharField(label='Endereço')
+#     telefone = forms.CharField(label='Telefone')
+#     email = forms.EmailField(label='Email')
+#     tipo = forms.CharField(label='Tipo')
+
+#     def __init__(self, *args, **kwargs):
+#         super(LaboratorioForm, self).__init__(*args, **kwargs)
+#         self.helper = FormHelper()
+#         self.helper.layout = Layout(
+#             Fieldset(
+#                 'Formulário de Cadastro de Laboratório',
+#                 'nome',
+#                 'endereco',
+#                 'telefone',
+#                 'email',
+#                 'tipo'
+#             ),
+#             ButtonHolder(
+#                 Layout(
+#                     Div(
+#                         Submit('submit', 'Salvar'),
+#                         css_class='col-6'
+#                     ),
+#                     Div(
+#                         HTML(format_html('<a href="{}" class="btn btn-primary btn-campanha">Laboratórios Cadastrados</a>',
+#                              reverse('laboratorios_cadastrados'))),
+#                         css_class='col-6 text-right'
+#                     )
+#                 ),
+#                 css_class='row'
+#             )
+#         )
+
+
+# class AnaliseForm(forms.ModelForm):
+#     class Meta:
+#         model = Analises
+#         fields = ['analise']
+
+class LaboratorioForm(forms.ModelForm):
+    class Meta:
+        model = Laboratorios
+        fields = '__all__'
+        labels = {
+            'nome': 'Nome do laboratório',
+            'endereco': 'Endereço',
+            'telefone': 'Telefone',
+            'email': 'Email',
+            'tipo': 'Tipo'
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(LaboratorioForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Fieldset(
+                'Formulário de Cadastro de Laboratório',
+                'nome',
+                'endereco',
+                'telefone',
+                'email',
+                'tipo'
+            ),
+            ButtonHolder(
+                Submit('submit', 'Salvar'),
+            )
+        )
+
+
+class AnaliseForm(forms.ModelForm):
+    class Meta:
+        model = Analises
+        fields = '__all__'
+        labels = {
+            'analise': 'Análise'
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(AnaliseForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Fieldset(
+                'Formulário de Cadastro de Análise',
+                'analise'
+            ),
+            ButtonHolder(
+                Submit('submit', 'Salvar'),
+            )
+        )
+
+
+class CustomUserCreationForm(UserCreationForm):
+    email = forms.EmailField(required=True)
+    groups = forms.ModelMultipleChoiceField(
+        queryset=Group.objects.all(),
+        required=False,
+        widget=forms.CheckboxSelectMultiple,
+        label="Equipe"
+    )
+
+    class Meta:
+        model = User
+        fields = ('username', 'email', 'password1', 'password2', 'groups')
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.email = self.cleaned_data['email']
+        if commit:
+            user.save()
+            user.groups.set(self.cleaned_data['groups'])
+        return user

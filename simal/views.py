@@ -1,173 +1,733 @@
 # pylint: disable=protected-access,no-member
-
-from django.shortcuts import render, redirect, get_object_or_404
+# Django imports
 from django.contrib import messages
+from datetime import timedelta
+import csv
+import pandas as pd
+import plotly.express as px
+from plotly.offline import plot
+from django.forms import inlineformset_factory
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.core.cache import cache
+from django.http import HttpResponse, FileResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
+from django.utils import timezone
+import json
+import os
+
+# Third-party imports
 from django_tables2 import RequestConfig
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import UserCreationForm
+# Local imports
+from .filters import *
 from .forms import *
+from .services import get_weather_description, gerar_etiquetas
 from .tables import *
-
-
 
 # from django.views.generic import ListView
 # from .models import ColetaCampo
 
-def home(request):
-    
-    return render(request, 'home.html')
 
-#TODO: Atualizar a view de coleta
+def check_admin(user):
+    return user.is_superuser
+
+
+@login_required
+@user_passes_test(check_admin)
+def cadastro_usuarios(request):
+    if request.method == 'POST':
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            # Redirecione para a página de usuários cadastrados
+            return redirect('usuarios_cadastrados')
+    else:
+        form = CustomUserCreationForm()
+
+    return render(request, 'cadastro_usuarios.html', {'form': form})
+
+
+@login_required
+@user_passes_test(check_admin)
+def editar_usuario(request, user_id):
+    usuario = get_object_or_404(User, id=user_id)
+    if request.method == 'POST':
+        form = CustomUserCreationForm(request.POST, instance=usuario)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Usuário atualizado com sucesso.')
+            return redirect('usuarios_cadastrados')
+    else:
+        form = CustomUserCreationForm(instance=usuario)
+
+    return render(request, 'editar_usuario.html', {'form': form, 'usuario': usuario})
+
+
+@login_required
+@user_passes_test(check_admin)
+def usuarios_cadastrados(request):
+    usuarios = User.objects.all()
+    return render(request, 'usuarios_cadastrados.html', {'usuarios': usuarios})
+
+
+def home(request):
+    try:
+        proxima_coleta = ProgramaColeta.objects.filter(
+            status_coleta__in=['Iniciada', 'Programada'],
+            data_coleta_campo__gte=timezone.now()
+        ).order_by('data_coleta_campo').first()
+        table = TopCampanhas(ProgramaColeta.objects.all())
+        RequestConfig(request, paginate={"per_page": 3}).configure(table)
+
+        percentual_checklist = None
+        if proxima_coleta:
+            percentual_checklist = ChecklistCampo.objects.filter(
+                ordem_servico=proxima_coleta.id
+            ).values_list('progresso', flat=True).first()
+            data_coleta_proxima_formatada = proxima_coleta.data_coleta_campo.strftime(
+                '%d/%m/%Y')
+            weather_description = get_weather_description(
+                "Maricá", proxima_coleta.data_coleta_campo.strftime('%Y-%m-%d'))
+
+            checklist = ChecklistCampo.objects.filter(
+                ordem_servico=proxima_coleta).first()
+
+            if checklist:
+                dados_gantt = [
+                    dict(Tarefa="Coleta de Campo", Inicio=proxima_coleta.data_coleta_campo,
+                         Termino=proxima_coleta.data_coleta_campo, Cor='#2ca02c' if checklist.previsao_tempo else '#d62728'),  # Verde moderno se verdadeiro, vermelho moderno se falso
+                    dict(Tarefa="Verificar previsão do tempo", Inicio=proxima_coleta.data_programacao,
+                         Termino=proxima_coleta.data_check_forecast, Cor='#2ca02c' if checklist.previsao_tempo else '#d62728'),
+                    dict(Tarefa="Avisar Laboratórios", Inicio=proxima_coleta.data_check_lab,
+                         Termino=proxima_coleta.data_check_lab + timedelta(days=2), Cor='#2ca02c' if checklist.avisar_labs else '#d62728'),
+                    dict(Tarefa="Reservar Carro e barco", Inicio=proxima_coleta.data_check_car,
+                         Termino=proxima_coleta.data_check_car + timedelta(days=2), Cor='#2ca02c' if checklist.reservar_carro else '#d62728'),
+                    dict(Tarefa="Checar Equipamentos", Inicio=proxima_coleta.data_check_material,
+                         Termino=proxima_coleta.data_check_material + timedelta(days=3), Cor='#2ca02c' if checklist.separar_equipamentos else '#d62728'),
+                    dict(Tarefa="Etiquetar frascos", Inicio=proxima_coleta.data_check_material + timedelta(days=3),
+                         Termino=proxima_coleta.data_check_material + timedelta(days=3), Cor='#2ca02c' if checklist.conferir_equipamentos else '#d62728'),
+                    dict(Tarefa="Comprar gelo", Inicio=proxima_coleta.data_check_material + timedelta(days=3),
+                         Termino=proxima_coleta.data_check_material + timedelta(days=3), Cor='#2ca02c' if checklist.conferir_equipamentos else '#d62728'),
+                ]
+            else:
+                dados_gantt = [
+                    dict(Tarefa="Coleta de Campo", Inicio=proxima_coleta.data_coleta_campo,
+                         Termino=proxima_coleta.data_coleta_campo, Cor='#2ca02c'),  # Verde moderno para tarefas já feitas
+                    dict(Tarefa="Verificar previsão do tempo", Inicio=proxima_coleta.data_programacao,
+                         Termino=proxima_coleta.data_check_forecast, Cor='#2ca02c'),  # Verde moderno para tarefas já feitas
+                    dict(Tarefa="Contatar Laboratórios", Inicio=proxima_coleta.data_check_lab,
+                         Termino=proxima_coleta.data_check_lab + timedelta(days=2), Cor='#2ca02c'),  # Verde moderno para tarefas já feitas
+                    dict(Tarefa="Reservar Carro", Inicio=proxima_coleta.data_check_car,
+                         Termino=proxima_coleta.data_check_car + timedelta(days=2), Cor='#2ca02c'),  # Verde moderno para tarefas já feitas
+                    dict(Tarefa="Preparar Equipamentos", Inicio=proxima_coleta.data_check_material,
+                         Termino=proxima_coleta.data_check_material + timedelta(days=3), Cor='#2ca02c'),  # Verde moderno para tarefas já feitas
+                    dict(Tarefa="Etiquetar frascos", Inicio=proxima_coleta.data_check_material,
+                         Termino=proxima_coleta.data_check_material + timedelta(days=3), Cor='#2ca02c'),  # Verde moderno para tarefas já feitas
+                    dict(Tarefa="Comprar gelo", Inicio=proxima_coleta.data_coleta_campo,
+                         Termino=proxima_coleta.data_coleta_campo, Cor='#2ca02c'),  # Verde moderno para tarefas já feitas
+                ]
+
+            # Adiciona a tarefa "Programação" com a cor azul
+            dados_gantt.append(dict(Tarefa="Programação", Inicio=proxima_coleta.data_programacao,
+                                    Termino=proxima_coleta.data_coleta_campo, Cor='#2ca02c'))
+
+            df = pd.DataFrame(dados_gantt)
+
+            # Converte as colunas para datetime
+            df['Inicio'] = pd.to_datetime(df['Inicio'])
+            df['Termino'] = pd.to_datetime(df['Termino'])
+
+            # Calcula a duração
+            df['Duracao'] = (df['Termino'] - df['Inicio']).dt.total_seconds()
+
+            # Ordena o DataFrame pela duração em ordem decrescente
+            df = df.sort_values(by='Duracao', ascending=True)
+
+            fig = px.timeline(df, x_start="Inicio",
+                              x_end="Termino", y="Tarefa", color="Cor")
+
+            # Adiciona bolinhas para tarefas com duração zero
+            for i, row in df.iterrows():
+                if row['Duracao'] == 0:
+                    fig.add_scatter(
+                        x=[row['Inicio']],
+                        y=[row['Tarefa']],
+                        mode='markers',
+                        marker=dict(size=20, color='#1f77b4'),  # Azul moderno
+                        name=row['Tarefa']
+                    )
+
+            # fig.update_yaxes(autorange="reversed")
+
+            # Remove a legenda
+            fig.update_layout(showlegend=False, template="simple_white")
+
+            # Configura o locale para português e coloca as datas na parte inferior
+            fig.update_layout(
+                xaxis=dict(
+                    side="top",
+                    tickformat="%d/%m/%Y",
+                    tickformatstops=[
+                        dict(dtickrange=[None, 86400000],
+                             value="%d/%m/%Y"),  # daily ticks
+                        # larger than daily ticks
+                        dict(dtickrange=[86400000, None], value="%d/%m/%Y"),
+                    ]
+                ),
+                height=None,  # Remove a altura fixa
+                width=None,   # Remove a largura fixa
+                # Ajuste as margens conforme necessário
+                margin=dict(l=20, r=20, t=20, b=20),
+            )
+
+            # Torna o gráfico responsivo
+            fig.update_layout(
+                autosize=True
+            )
+
+            gantt_div = plot(fig, output_type="div")
+        else:
+            data_coleta_proxima_formatada = None
+            weather_description = None
+            gantt_div = None
+
+        campanhas = ProgramaColeta.objects.all()
+        eventos = []
+        for campanha in campanhas:
+            evento = {
+                'title': campanha.ordem_servico,
+                'start': campanha.data_coleta_campo.isoformat(),
+                'end': campanha.data_coleta_campo.isoformat(),
+                'url': f'/checklist_campanha/{campanha.ordem_servico}/'
+            }
+            if campanha.status_coleta == 'Programada':
+                evento['className'] = 'evento-programado'
+            elif campanha.status_coleta == 'Iniciada':
+                evento['className'] = 'evento-iniciado'
+            elif campanha.status_coleta == 'Coleta realizada':
+                evento['className'] = 'evento-realizado'
+            elif campanha.status_coleta == 'Cancelada':
+                evento['className'] = 'evento-cancelado'
+            eventos.append(evento)
+
+        context = {
+            'weather_description': weather_description,
+            'data_coleta_proxima_formatada': data_coleta_proxima_formatada,
+            'status_coleta': proxima_coleta.status_coleta if proxima_coleta else None,
+            'local_coleta': proxima_coleta.local_coleta if proxima_coleta else None,
+            'percentual_checklist': percentual_checklist if percentual_checklist else 0,
+            'ordem_servico': proxima_coleta.ordem_servico if proxima_coleta else None,
+            'table_top3': table,
+            'eventos': json.dumps(eventos),
+            'gantt_div': gantt_div
+        }
+        return render(request, 'home.html', context)
+    except ProgramaColeta.DoesNotExist:
+        return HttpResponse("Nenhum programa de coleta encontrado.", status=404)
+    except Exception as e:
+        return HttpResponse(f"Erro ao carregar a página: {str(e)}", status=500)
+
+
 @login_required
 def coleta(request):
     if request.method == 'POST':
-        form = ColetaCampo(request.POST)
+        form = ColetaCampo(request.POST, request.FILES)
         if form.is_valid():
             form.save()
             return redirect('lista_coleta')
+
     else:
         form = ColetaCampo()
     return render(request, 'coleta/coleta.html', {'form': form})
 
 
-
 @login_required
 def atualizar_coleta(request, id):
-    coleta = ColetaCampo.objects.get(id=id)
-    form = ColetaCampo(instance=coleta)
+    coleta = get_object_or_404(Campo, id=id)
+    pontos_coleta = Campo.objects.filter(
+        ordem_servico=coleta.ordem_servico).order_by('ponto')
+
+    form_data = {field: getattr(coleta, field)
+                 for field in ColetaCampo.base_fields}
+    form_data['hora_inicio'] = timezone.now().strftime('%H:%M')
+    form = ColetaCampo(initial=form_data)
+
     if request.method == 'POST':
-        form = ColetaCampo(request.POST, instance=coleta)
+        post_data = request.POST.copy()
+        post_data['hora_fim'] = timezone.now().strftime('%H:%M')
+        form = ColetaCampo(post_data, request.FILES)
+
         if form.is_valid():
-            form.save()
+            for field, value in form.cleaned_data.items():
+                setattr(coleta, field, value)
+            coleta.save()
             messages.success(request, 'Dados atualizados com sucesso!')
-    return render(request, 'coleta/coleta.html', {'form': form})
 
+            # Verifica se todos os pontos foram coletados
+            todos_pontos_preenchidos = not Campo.objects.filter(
+                ordem_servico=coleta.ordem_servico).exclude(status_form='Preenchido').exists()
 
+            if todos_pontos_preenchidos:
+                campanha = ProgramaColeta.objects.get(
+                    id=coleta.ordem_servico.id)
+                campanha.status_coleta = 'Coleta realizada'
+                campanha.save()
 
+            pontos_coleta_list = list(pontos_coleta)
+            index_atual = pontos_coleta_list.index(coleta)
+
+            while not todos_pontos_preenchidos:
+                index_atual = (index_atual + 1) % len(pontos_coleta_list)
+                proximo_ponto = pontos_coleta_list[index_atual]
+                if proximo_ponto.status_form != 'Preenchido':
+                    return redirect(reverse('atualizar_coleta', args=[proximo_ponto.id]))
+
+            return redirect('lista_coleta', ordem_servico=coleta.ordem_servico.id)
+        else:
+            pass  # Mantenha o formulário com erros para exibição
+
+    context = {'form': form, 'codigo_coleta': coleta.codigo_coleta,
+               'ponto': coleta.ponto, 'pontos_coleta': pontos_coleta,
+               'ordem_servico_id': coleta.ordem_servico.id, }
+    return render(request, 'coleta/coleta.html', context)
 
 
 @login_required
+@user_passes_test(check_admin)
 def deletar_coleta(request, id):
     coleta = ColetaCampo.objects.get(id=id)
     coleta.delete()
     return redirect('lista_coleta')
 
+
 @login_required
-def lista_coleta(request):
-    table = ColetaCampoTable(Campo.objects.all())
+def lista_coleta(request, ordem_servico=None):
+    # filtro = CampoFilter(request.GET, queryset=Campo.objects.all())
+    ordem_servico = ProgramaColeta.objects.get(id=ordem_servico)
+    responsavel = ProgramaColeta.objects.get(id=ordem_servico.id).usuario
+    filtro = CampoFilter(request.GET, queryset=Campo.objects.filter(
+        ordem_servico_id=ordem_servico))
+    table = ColetaCampoTable(filtro.qs)
     RequestConfig(request, paginate={"per_page": 25}).configure(table)
     return render(request, 'coleta/lista_coleta.html', {
-        'table_campo': table
-        })
-    
-    
+        'table_campo': table,
+        'filtro': filtro,
+        'ordem_servico': ordem_servico,
+        'responsavel': responsavel
+    })
+
+
+@login_required
+def resultados(request):
+    filtro = ResultadosColetaFilter(request.GET, queryset=Campo.objects.all())
+    table = ResultadosColetaTable(filtro.qs)
+    RequestConfig(request, paginate={"per_page": 25}).configure(table)
+    return render(request, 'coleta/resultados_coleta.html', {
+        'table_campo': table,
+        'filtro': filtro,
+    })
+
+
 @login_required
 def coletas_agendas(request):
-    table = ProgramaColetaTable(ProgramaColeta.objects.all())
+    filtro = ProgramaColetaFilter(
+        request.GET, queryset=ProgramaColeta.objects.all())
+    table = ProgramaColetaTable(filtro.qs)
     RequestConfig(request, paginate={"per_page": 25}).configure(table)
     return render(request, 'coleta/coletas_agendas.html', {
-        'table_agenda_coleta': table
-        })
+        'table_agenda_coleta': table,
+        'filtro': filtro,
+    })
+
 
 @login_required
 def agenda_coleta(request):
     if request.method == 'POST':
         form = ProgramaColetaForm(request.POST)
         if form.is_valid():
-            # Cria uma nova instância do modelo ProgramaColeta
             programa_coleta = ProgramaColeta()
 
             # Atribui os dados do formulário aos campos do modelo
             programa_coleta.data_coleta_campo = form.cleaned_data['data_coleta_campo']
-
-            # Busca a instância correta do modelo Coletores e a atribui ao campo equipe_coleta
-            # equipe_coleta = Coletores.objects.filter(equipe=form.cleaned_data['equipe_coleta'])
+            # programa_coleta.data_fim_coleta_campo = form.cleaned_data['data_fim_coleta_campo']
             programa_coleta.equipe_coleta = form.cleaned_data['equipe_coleta']
-            programa_coleta.laboratorio = form.cleaned_data['laboratorio']
-            programa_coleta.solicitante = form.cleaned_data['solicitante']
+            # programa_coleta.laboratorio = form.cleaned_data['laboratorio']
+            # programa_coleta.solicitante = form.cleaned_data['solicitante']
             programa_coleta.local_coleta = form.cleaned_data['local_coleta']
-            programa_coleta.status_coleta = form.cleaned_data['status_coleta']
             programa_coleta.observacoes = form.cleaned_data['observacoes']
-
+            programa_coleta.status_coleta = 'Programada'
             # Salva o modelo no banco de dados
-            programa_coleta.save()
+            programa_coleta.save(usuario=request.user)
 
+            messages.success(
+                request, 'Programação realizada com sucesso!')
             return redirect('coletas_agendas')
     else:
         form = ProgramaColetaForm()
 
     return render(request, 'coleta/agendar_coleta.html', {'form': form})
 
+
 @login_required
 def atualizar_programacao(request, id):
-    """
-    Atualiza a programação de coleta com base nos dados fornecidos pelo formulário.
+    cache_key = f'programacao_{id}'
+    programacao = cache.get(cache_key)
 
-    Args:
-        request (HttpRequest): O objeto HttpRequest que contém os dados da requisição.
-        id (int): O ID da programação de coleta a ser atualizada.
+    if not programacao:
+        programacao = get_object_or_404(ProgramaColeta, id=id)
+        cache.set(cache_key, programacao, timeout=3600)
 
-    Returns:
-        HttpResponse: O objeto HttpResponse que renderiza o template 'coleta/agendar_coleta.html'
-                      com o formulário atualizado ou redireciona para a página 'coletas_agendas'
-                      em caso de sucesso na atualização dos dados.
+    # Verifica se o status da programação é 'Cancelada' ou se a rota é True
+    if programacao.status_coleta == 'Cancelada' or programacao.rota:
+        messages.warning(
+            request, 'Não é possível alterar campanhas canceladas ou com rota definida.')
+        return redirect('coletas_agendas')
 
-    Raises:
-        Http404: Se a programação de coleta com o ID fornecido não existir.
-
-    """
-    programacao = get_object_or_404(ProgramaColeta, id=id)
     if request.method == 'POST':
         form = ProgramaColetaForm(request.POST)
         if form.is_valid():
             for field, value in form.cleaned_data.items():
                 setattr(programacao, field, value)
             programacao.save()
+            cache.set(cache_key, programacao, timeout=3600)
             messages.success(request, 'Dados atualizados com sucesso!')
             return redirect('coletas_agendas')
         else:
-            print(form.errors)  # Imprime os erros de validação
+            print(form.errors)
     else:
-        form_data = {field.name: getattr(programacao, field.name) for field in ProgramaColeta._meta.fields}
-        if 'data_coleta' in form_data:
-            form_data['data_coleta'] = form_data['data_coleta'].strftime('%Y-%m-%d %H:%M:%S')
+        form_data = {field.name: getattr(
+            programacao, field.name) for field in ProgramaColeta._meta.fields}
+        for date_field in ['data_coleta_campo']:
+            if date_field in form_data and form_data[date_field]:
+                form_data[date_field] = form_data[date_field].strftime(
+                    '%Y-%m-%d')
         form = ProgramaColetaForm(initial=form_data)
     return render(request, 'coleta/agendar_coleta.html', {'form': form})
 
+
 @login_required
-def checklist_campanha(request):
-    if request.method == 'POST':
-        form = ChecklistCampoForm(request.POST)
-        if form.is_valid():
-            # Cria uma nova instância do modelo ProgramaColeta
-            checklist_campanha = ChecklistCampoForm()
+def deletar_programacao(request, id):
+    """
+    Deleta a programação de coleta com base no ID fornecido.
 
-            # programa_coleta.data_coleta_campo = form.cleaned_data['data_coleta_campo']
-            checklist_campanha.ordem_servico = form.cleaned_data['ordem_servico']
-            checklist_campanha.status_checklist = form.cleaned_data['status_checklist']
-            checklist_campanha.observacoes = form.cleaned_data['observacoes']
-            
+    Args:
+        request (HttpRequest): O objeto HttpRequest que contém os dados da requisição.
+        id (int): O ID da programação de coleta a ser deletada.
 
-            # Salva o modelo no banco de dados
-            checklist_campanha.save()
+    Returns:
+        HttpResponse: O objeto HttpResponse que redireciona para a página 'coletas_agendas'
+                      em caso de sucesso na deleção dos dados.
 
-            return redirect('checklist_campanha')
+    Raises:
+        Http404: Se a programação de coleta com o ID fornecido não existir.
+
+    """
+    programacao = get_object_or_404(ProgramaColeta, id=id)
+    programacao.delete()
+    messages.success(request, 'Programação de coleta deletada com sucesso!')
+    return redirect('coletas_agendas')
+
+
+def cancelar_programacao(request, id):
+    """
+    Cancela a programação de coleta com base no ID fornecido, a menos que a coleta já tenha sido realizada ou iniciada.
+
+    Args:
+        request (HttpRequest): O objeto HttpRequest que contém os dados da requisição.
+        id (int): O ID da programação de coleta a ser cancelada.
+
+    Returns:
+        HttpResponse: O objeto HttpResponse que redireciona para a página 'coletas_agendas'
+                      em caso de sucesso no cancelamento dos dados, ou permanece na mesma página
+                      com uma mensagem de aviso se a coleta já foi realizada ou iniciada.
+
+    Raises:
+        Http404: Se a programação de coleta com o ID fornecido não existir.
+
+    """
+    programacao = get_object_or_404(ProgramaColeta, id=id)
+    if programacao.status_coleta in ['Coleta realizada', 'Iniciada']:
+        messages.warning(
+            request, 'Não é possível cancelar uma coleta que já foi iniciada ou realizada.')
+        return redirect('coletas_agendas')
     else:
-        form = ChecklistCampoForm()
-
-    return render(request, 'coleta/checklist_campanha.html', {'form': form})
-            
-
-
-# ----------------------------------------------------------------------------------
-
-# front_end
+        programacao.status_coleta = 'Cancelada'
+        programacao.save()
+        messages.success(
+            request, 'Programação de coleta cancelada com sucesso!')
+        return redirect('coletas_agendas')
 
 
+# pagina de ajuda
+@login_required
+def ajuda(request):
+    """
+    Função de visualização para a página de ajuda.
+
+    Esta função é decorada com @login_required para garantir que apenas usuários autenticados possam acessar a página de ajuda.
+
+    Args:
+        request (HttpRequest): O objeto HttpRequest que contém os detalhes da solicitação HTTP.
+
+    Returns:
+        HttpResponse: O objeto HttpResponse que representa a resposta HTTP para a solicitação.
+
+    Raises:
+        None
+    """
+    if request.method == 'POST':
+        form = AjudaForm(request.POST)
+        if form.is_valid():
+
+            nova_ajuda = Ajuda()  # Model
+            nova_ajuda.nome = form.cleaned_data['nome']
+            nova_ajuda.email = form.cleaned_data['email']
+            nova_ajuda.pergunta = form.cleaned_data['pergunta']
+
+            nova_ajuda.save()
+
+            return redirect('ajuda')
+    else:
+        form = AjudaForm()
+
+    return render(request, 'ajuda.html', {'form': form})
 
 
+# View para pagina de inicio de campanha
 
 
+@login_required
+def iniciar_campanha(request, ordem_servico=None):
+    # Obtém o valor de ordem_servico da URL, se houver
+    ordem_servico = request.GET.get('ordem_servico', None)
+    filtro = {}
+    if ordem_servico:
+        filtro['ordem_servico_inicial'] = ordem_servico
+
+    if request.method == 'POST':
+        form = IniciarCampanhaForm(request.POST, **filtro)
+        if form.is_valid():
+            ordem_servico = form.cleaned_data['ordem_servico']
+            redirect_url = reverse('checklist_campanha') + \
+                f'?ordem_servico={ordem_servico.ordem_servico}'
+            return redirect(redirect_url)
+    else:
+        form = IniciarCampanhaForm(**filtro)
+
+    return render(request, 'coleta/iniciar_campanha.html', {'form': form})
 
 
+@login_required
+def checklist_campanha(request, ordem_servico=None):
+    ordem_servico_selecionada = request.GET.get('ordem_servico', ordem_servico)
+    campanha = get_object_or_404(
+        ProgramaColeta, ordem_servico=ordem_servico_selecionada)
+    if campanha.status_coleta == 'Cancelada':
+        messages.warning(
+            request, 'Não é possível iniciar uma campanha cancelada')
+        return redirect('coletas_agendas')
+    try:
+        checklist_campanha = ChecklistCampo.objects.get(
+            ordem_servico=campanha)
+    except ChecklistCampo.DoesNotExist:
+        checklist_campanha = None
+
+    form = ChecklistCampoForm(
+        request.POST or None, instance=checklist_campanha, ordem_servico_selecionada=ordem_servico_selecionada)
+    if request.method == 'POST' and form.is_valid():
+        checklist_campanha, created = ChecklistCampo.objects.get_or_create(
+            ordem_servico=campanha,
+            defaults={campo: form.cleaned_data[campo] for campo in (
+                ('previsao_tempo', 'data_previsao_tempo', 'observacao_previsao_tempo', 'avisar_labs', 'data_avisar_labs', 'observacao_avisar_labs',
+                 'reservar_carro', 'observacao_reservar_carro', 'data_reservar_carro', 'reservar_barco', 'observacao_reservar_barco', 'data_reservar_barco', 'separar_equipamentos',
+                 'data_separar_equipamentos', 'observacao_separar_equipamentos', 'conferir_equipamentos', 'data_conferir_equipamentos',
+                 'observacao_conferir_equipamentos', 'comprar_gelo', 'data_comprar_gelo', 'observacao_comprar_gelo', 'etiquetar_frascos', 'data_etiquetar_frascos', 'observacao_etiquetar_frascos', )
+            )}
+        )
+        if not created:
+            for campo in ('previsao_tempo', 'data_previsao_tempo', 'observacao_previsao_tempo', 'avisar_labs', 'data_avisar_labs', 'observacao_avisar_labs',
+                          'reservar_carro', 'observacao_reservar_carro', 'data_reservar_carro', 'reservar_barco', 'observacao_reservar_barco', 'data_reservar_barco', 'separar_equipamentos',
+                          'data_separar_equipamentos', 'observacao_separar_equipamentos', 'conferir_equipamentos', 'data_conferir_equipamentos',
+                          'observacao_conferir_equipamentos', 'comprar_gelo', 'data_comprar_gelo', 'observacao_comprar_gelo', 'etiquetar_frascos', 'data_etiquetar_frascos', 'observacao_etiquetar_frascos',):
+                setattr(checklist_campanha, campo, form.cleaned_data[campo])
+            checklist_campanha.save(usuario=request.user)
+        if campanha.rota:
+            return redirect('lista_coleta', ordem_servico=campanha.id)
+        else:
+            return redirect('checklist_campanha', ordem_servico=campanha.ordem_servico)
+
+    if campanha.status_coleta == 'Programada':
+        campanha.status_coleta = 'Iniciada'
+
+    campanha.save()
+
+    data = campanha.data_coleta_campo
+    previsao_tempo = get_weather_description(
+        "Maricá", data.strftime('%Y-%m-%d'))
+
+    context = {
+        'form': form,
+        'checklist_campanha': checklist_campanha,
+        'ordem_servico': campanha.ordem_servico,
+        'previsao_tempo': previsao_tempo,
+        'campanha': campanha
+    }
+    return render(request, 'coleta/checklist_campanha.html', context)
 
 
+@login_required
+def gerar_rota_campanha(request, ordem_servico=None):
+    ordem_servico = request.GET.get('ordem_servico', ordem_servico)
+    campanha = None
+    if ordem_servico:
+        campanha = get_object_or_404(
+            ProgramaColeta, ordem_servico=ordem_servico)
+
+    previsao_tempo = None
+    pontos_coleta = []
+    if campanha:
+        data = campanha.data_coleta_campo
+        previsao_tempo = get_weather_description(
+            "Maricá", data.strftime('%Y-%m-%d'))
+        local_campanha = ProgramaColeta.objects.filter(
+            ordem_servico=ordem_servico).values_list('local_coleta', flat=True).first()
+        pontos_coleta = LocaisColeta.objects.filter(local=local_campanha)
+        programa_coleta_instance = get_object_or_404(
+            ProgramaColeta, ordem_servico=ordem_servico)
+        for ponto in pontos_coleta:
+            campo = Campo()
+            campo.ordem_servico = programa_coleta_instance
+            campo.ponto = str(ponto.ponto)
+            campo.codigo_coleta = ordem_servico + str(ponto.ponto)
+            campo.clima = previsao_tempo
+            campo.save()
+
+        campanha.rota = True
+        campanha.save()
+
+    return redirect('checklist_campanha', ordem_servico=ordem_servico)
+
+
+def etiquetagem(request, ordem_servico=None):
+    ordem_servico = request.GET.get('ordem_servico', ordem_servico)
+    campanha = None
+    if ordem_servico:
+        campanha = get_object_or_404(
+            ProgramaColeta, ordem_servico=ordem_servico)
+
+        data = campanha.data_coleta_campo.strftime('%d/%m/%Y')
+        responsavel = campanha.usuario
+        codigo_servico = campanha.ordem_servico
+        codigos = Campo.objects.filter(
+            ordem_servico=campanha).values_list('codigo_coleta', flat=True)
+
+        if not codigos:
+            messages.warning(
+                request, 'Nenhum código de coleta encontrado para a ordem de serviço fornecida.')
+            return redirect('checklist_campanha', ordem_servico=ordem_servico)
+
+        pdf_path = gerar_etiquetas(codigos, data, responsavel, codigo_servico)
+
+        # Retorna o PDF como uma resposta HTTP
+        response = FileResponse(
+            open(pdf_path, 'rb'), as_attachment=True, filename=os.path.basename(pdf_path))
+
+        # Apaga o arquivo PDF após o download
+        os.remove(pdf_path)
+
+        return response
+
+    return redirect('checklist_campanha', ordem_servico=ordem_servico)
+
+
+@login_required
+def cadastro_laboratorio(request):
+    AnaliseFormSet = inlineformset_factory(
+        Laboratorios, Analises, form=AnaliseForm, extra=1, fields='__all__'
+    )
+    if request.method == 'POST':
+        form = LaboratorioForm(request.POST)
+        formset = AnaliseFormSet(request.POST)
+        if form.is_valid() and formset.is_valid():
+            laboratorio = form.save()
+            formset.instance = laboratorio
+            formset.save()
+            return redirect('laboratorios_cadastrados')
+    else:
+        form = LaboratorioForm()
+        formset = AnaliseFormSet()
+
+    return render(request, 'cadastro_laboratorio.html', {'form': form, 'formset': formset})
+
+
+@login_required
+def laboratorios_cadastrados(request):
+    table = LaboratoriosTable(Laboratorios.objects.all())
+    RequestConfig(request, paginate={"per_page": 25}).configure(table)
+    return render(request, 'laboratorios_cadastrados.html', {
+        'table_laboratorios': table
+    })
+
+
+@login_required
+def atualizar_laboratorio(request, id):
+    laboratorio = get_object_or_404(Laboratorios, id=id)
+    AnaliseFormSet = inlineformset_factory(
+        Laboratorios, Analises, form=AnaliseForm, extra=0, fields='__all__'
+    )
+
+    if request.method == 'POST':
+        form = LaboratorioForm(request.POST, instance=laboratorio)
+        formset = AnaliseFormSet(request.POST, instance=laboratorio)
+
+        if form.is_valid() and formset.is_valid():
+            laboratorio = form.save()
+            formset.instance = laboratorio
+            formset.save()
+            messages.success(request, 'Dados atualizados com sucesso!')
+            return redirect('laboratorios_cadastrados')
+        else:
+            print(form.errors)  # Imprime os erros de validação
+            print(formset.errors)  # Imprime os erros de validação do formset
+    else:
+        form = LaboratorioForm(instance=laboratorio)
+        formset = AnaliseFormSet(instance=laboratorio)
+
+    return render(request, 'cadastro_laboratorio.html', {'form': form, 'formset': formset})
+
+
+def calendario_campanhas(request):
+    campanhas = ProgramaColeta.objects.all()
+    eventos = []
+
+    for campanha in campanhas:
+        eventos.append({
+            # Substitua 'id' por um campo existente apropriado
+            'title': campanha.ordem_servico,
+            'start': campanha.data_coleta_campo.isoformat(),
+            'end': campanha.data_coleta_campo.isoformat(),
+            # URL corrigida para detalhes da campanha
+            'url': f'/checklist_campanha/{campanha.ordem_servico}/'
+        })
+
+    context = {
+        'eventos': json.dumps(eventos)
+    }
+    return render(request, 'calendario.html', context)
+
+
+def exportar_resultados_csv(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="resultados_coleta.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(['Código Coleta', 'Hora Início', 'Hora Fim', 'Ponto', 'Temperatura',
+                    'pH', 'ORP', 'Condutividade', 'Turbidez', 'OD', 'OD %', 'TDS', 'Salinidade'])
+
+    resultados = Campo.objects.all().values_list('codigo_coleta', 'hora_inicio', 'hora_fim', 'ponto',
+                                                 'temperatura', 'ph', 'orp', 'condutividade', 'turbidez', 'od', 'tds', 'salinidade')
+    for resultado in resultados:
+        writer.writerow(resultado)
+
+    return response
