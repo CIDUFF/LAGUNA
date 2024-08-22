@@ -14,7 +14,7 @@ DateTime==5.5
 debugpy==1.8.2
 decorator==5.1.1
 dill==0.3.8
-Django==5.0.4
+Django==4.2.15
 django-allauth==0.62.0
 django-bootstrap-form==3.4
 django-bootstrap5==24.2
@@ -32,7 +32,7 @@ executing==2.0.1
 fonttools==4.53.1
 idna==3.7
 ipykernel==6.29.5
-ipython==8.26.0
+ipython==8.18.1
 isort==5.13.2
 jedi==0.19.1
 jupyter_client==8.6.2
