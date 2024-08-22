@@ -112,23 +112,25 @@ def gerar_etiquetas(codigos, data, responsavel, codigo_servico):
                                largura_etiqueta, altura_etiqueta, espacamento_x, espacamento_y)
 
     for codigo in codigos:
-        qr_path = gerar_qr_code(codigo, data, responsavel, codigo_servico)
-        qr_paths.append(qr_path)
-        adicionar_etiqueta(c, qr_path, codigo, data,responsavel, x, y)
-        y -= altura_etiqueta + espacamento_y
-        contador_etiquetas += 1
+        for i in range(1, 4):
+            codigo_modificado = f"{codigo}-{i}"
+            qr_path = gerar_qr_code(codigo_modificado, data, responsavel, codigo_servico)
+            qr_paths.append(qr_path)
+            adicionar_etiqueta(c, qr_path, codigo_modificado, data, responsavel, x, y)
+            y -= altura_etiqueta + espacamento_y
+            contador_etiquetas += 1
 
-        if contador_etiquetas == 9:
-            x += largura_etiqueta + espacamento_x
-            y = y_inicial
+            if contador_etiquetas == 9:
+                x += largura_etiqueta + espacamento_x
+                y = y_inicial
 
-        if contador_etiquetas >= etiquetas_por_pagina:
-            c.showPage()
-            desenhar_linhas_tracejadas(c, largura_pagina, altura_pagina,
-                                       largura_etiqueta, altura_etiqueta, espacamento_x, espacamento_y)
-            x = x_inicial
-            y = y_inicial
-            contador_etiquetas = 0
+            if contador_etiquetas >= etiquetas_por_pagina:
+                c.showPage()
+                desenhar_linhas_tracejadas(c, largura_pagina, altura_pagina,
+                                           largura_etiqueta, altura_etiqueta, espacamento_x, espacamento_y)
+                x = x_inicial
+                y = y_inicial
+                contador_etiquetas = 0
 
     c.save()
 
