@@ -3,11 +3,14 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
 import os
 from datetime import datetime
+from decouple import config
 import requests
 import qrcode
 # import os
-# from dotenv import load_dotenv
+from dotenv import load_dotenv
 
+# Carrega as variáveis de ambiente do arquivo .env
+load_dotenv()
 
 def get_weather_description(city, date):
 
@@ -18,7 +21,9 @@ def get_weather_description(city, date):
 
     # @TODO: remover a chave de api
 
-    url = f"http://api.openweathermap.org/data/2.5/forecast?q={city}&appid=c7f48ba7775040a6dee7d27670eb2553&units=metric&lang=pt_br"
+    api_key = config('OPENWEATHERMAP_API_KEY')
+
+    url = f"http://api.openweathermap.org/data/2.5/forecast?q={city}&appid={api_key}&units=metric&lang=pt_br"
 
     try:
         response = requests.get(url)
