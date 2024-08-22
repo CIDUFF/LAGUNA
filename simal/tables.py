@@ -45,7 +45,7 @@ class ResultadosColetaTable(tables.Table):
                   'hora_inicio',
                   'hora_fim', 'ponto', 'temperatura', 'ph',
                   'orp', 'condutividade', 'turbidez', 'od',
-                  'od_pct', 'tds', 'salinidade']
+                  'tds', 'salinidade']
         empty_text = 'Não há dados para exibir'
         orderable = True
         exclude = ('id', 'created_at', 'updated_at', 'campo')
@@ -53,7 +53,7 @@ class ResultadosColetaTable(tables.Table):
                     'hora_inicio',
                     'hora_fim', 'ponto', 'temperatura', 'ph',
                     'orp', 'condutividade', 'turbidez', 'od',
-                    'od_pct', 'tds', 'salinidade')
+                    'tds', 'salinidade')
         per_page = 25
         paginator_class = tables.LazyPaginator
         table_pagination = True
