@@ -45,10 +45,6 @@ media
 celerybeat-schedule
 celerybeat.pid
 
-# Docker
-.dockerenv
-docker-compose.yml
-Dockerfile
 
 # Cache
 *.cache
