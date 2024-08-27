@@ -492,6 +492,7 @@ def ajuda(request):
             message = f"Nome: {nova_ajuda.nome}\nEmail: {nova_ajuda.email}\nPergunta: {nova_ajuda.pergunta}"
             recipient_list = [settings.EMAIL_HOST_USER, nova_ajuda.email]
             send_mail(subject, message, settings.EMAIL_HOST_USER, recipient_list)
+            messages.success(request, 'Sua solicitação de ajuda foi enviada com sucesso!')
 
             return redirect('ajuda')
     else:
