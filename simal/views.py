@@ -13,6 +13,8 @@ from django.http import HttpResponse, FileResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
+from django.core.mail import send_mail
+from django.conf import settings
 import json
 import os
 
@@ -479,13 +481,17 @@ def ajuda(request):
     if request.method == 'POST':
         form = AjudaForm(request.POST)
         if form.is_valid():
-
             nova_ajuda = Ajuda()  # Model
             nova_ajuda.nome = form.cleaned_data['nome']
             nova_ajuda.email = form.cleaned_data['email']
             nova_ajuda.pergunta = form.cleaned_data['pergunta']
-
             nova_ajuda.save()
+
+            # Enviar e-mail
+            subject = 'Nova solicitação de ajuda'
+            message = f"Nome: {nova_ajuda.nome}\nEmail: {nova_ajuda.email}\nPergunta: {nova_ajuda.pergunta}"
+            recipient_list = [settings.EMAIL_HOST_USER, nova_ajuda.email]
+            send_mail(subject, message, settings.EMAIL_HOST_USER, recipient_list)
 
             return redirect('ajuda')
     else:
