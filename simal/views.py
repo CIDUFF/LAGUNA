@@ -263,6 +263,8 @@ def atualizar_coleta(request, id):
         post_data = request.POST.copy()
         post_data['hora_fim'] = timezone.now().strftime('%H:%M')
         form = ColetaCampo(post_data, request.FILES)
+        form_coleta = ColetaCampo(request.POST, request.FILES)
+        form_metadados = MetadadosCampoForm(request.POST)
 
         if form.is_valid():
             for field, value in form.cleaned_data.items():

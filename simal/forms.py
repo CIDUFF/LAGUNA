@@ -15,7 +15,7 @@ from .models import *
 class ColetaCampo(forms.Form):
     codigo_coleta = forms.CharField(widget=forms.HiddenInput())
     ponto = forms.CharField(widget=forms.HiddenInput())
-    hora_inicio = forms.TimeField(widget=forms.TimeInput(attrs={'type': 'time'}))
+    hora_inicio = forms.TimeField(required=False, widget=forms.TimeInput(attrs={'type': 'time'}))
     hora_fim = forms.TimeField(widget=forms.HiddenInput())
     temperatura = forms.FloatField(
         required=False, label='Temperatura (°C)', widget=forms.NumberInput(attrs={'step': '0.1'})
@@ -96,6 +96,30 @@ class ColetaCampo(forms.Form):
                 Submit('submit', 'Salvar e ir para o próximo')
             )
         )
+        
+class MetadadosCampoForm(forms.ModelForm):
+    class Meta:
+        model = MetadadosCampo
+        fields = '__all__'
+        labels = {
+            'acesso_ponto': 'Acesso ao Ponto',
+            'dragagem': 'Dragagem',
+            'gigoga': 'Quantidade de Gigoga',
+            'odor': 'Odor',
+            'fezes': 'Fezes',
+            'oleo': 'Óleo',
+            'residuos_solidos': 'Resíduos Sólidos',
+            'lodo': 'Lodo',
+            'animais_presentes': 'Animais Presentes',
+            'pescadores': 'Pescadores',
+            'contato_populacao': 'Contato com a População',
+            'observacoes': 'Observações'
+        }
+        widgets = {
+            'acesso_ponto': forms.Select(attrs={'class': 'form-select'}),
+            'observacoes': forms.Textarea(attrs={'rows': 3, 'cols': 40}),
+        }
+    
 
 
 class ProgramaColetaForm(forms.Form):
