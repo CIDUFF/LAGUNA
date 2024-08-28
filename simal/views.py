@@ -251,8 +251,12 @@ def atualizar_coleta(request, id):
         ordem_servico=coleta.ordem_servico).order_by('ponto')
 
     form_data = {field: getattr(coleta, field)
-                 for field in ColetaCampo.base_fields}
-    form_data['hora_inicio'] = timezone.now().strftime('%H:%M')
+                 for field in ColetaCampo().base_fields}
+    # form_data['hora_inicio'] = timezone.now().strftime('%H:%M')
+    for date_field in ['data_coleta']:
+        if date_field in form_data and form_data[date_field]:
+            form_data[date_field] = form_data[date_field].strftime(
+                '%Y-%m-%d')
     form = ColetaCampo(initial=form_data)
 
     if request.method == 'POST':

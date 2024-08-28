@@ -15,7 +15,7 @@ from .models import *
 class ColetaCampo(forms.Form):
     codigo_coleta = forms.CharField(widget=forms.HiddenInput())
     ponto = forms.CharField(widget=forms.HiddenInput())
-    hora_inicio = forms.TimeField(widget=forms.HiddenInput())
+    hora_inicio = forms.TimeField(widget=forms.TimeInput(attrs={'type': 'time'}))
     hora_fim = forms.TimeField(widget=forms.HiddenInput())
     temperatura = forms.FloatField(
         required=False, label='Temperatura (°C)', widget=forms.NumberInput(attrs={'step': '0.1'})
@@ -54,7 +54,8 @@ class ColetaCampo(forms.Form):
     )
     data_coleta = forms.DateField(
         label='Data de coleta de campo',
-        widget=forms.DateInput(attrs={'type': 'date'}, format='%Y/%m/%d'),
+        widget=forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d'),
+        # initial=timezone.now().date,
         required=False
     )
     foto = forms.ImageField(
@@ -74,9 +75,12 @@ class ColetaCampo(forms.Form):
         self.helper.layout = Layout(
             Fieldset(
                 ' ',
+                *[
+                    Row(Column(FloatingField('data_coleta', css_class='col-md-6')),
+                        Column(FloatingField('hora_inicio', css_class='col-md-6')))
+                    ],
                 'codigo_coleta',
                 'ponto',
-                'hora_inicio',
                 'hora_fim',
                 *[
                     Row(
@@ -86,7 +90,6 @@ class ColetaCampo(forms.Form):
                 ],
                 Switch('check_amostras'),
                 'observacoes',  # Adiciona o campo observacoes diretamente no Fieldset
-                'data_coleta',
                 'foto',  # Adiciona o campo foto diretamente no Fieldset
             ),
             ButtonHolder(
