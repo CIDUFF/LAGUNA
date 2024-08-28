@@ -25,6 +25,9 @@
                                     <button type="submit" class="btn btn-primary btn-block lead">{% trans "Sign In" %}</button>
                                 </div>
                             </form>
+                            <div class="mt-3">
+                                <a href="{% url 'account_reset_password' %}" class="btn btn-link lead">{% trans "Forgot Password?" %}</a>
+                            </div>
                         </div>
                     </div>
                 {% endif %}
