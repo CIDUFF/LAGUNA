@@ -2,12 +2,12 @@
 {% load account %}
 {% load i18n %}
 
-{% block content %}{% autoescape off %}{% blocktrans %}You are receiving this mail because the following change was made to your account:{% endblocktrans %}
+{% block content %}{% autoescape off %}{% blocktrans %}Você está recebendo este e-mail porque a seguinte alteração foi feita na sua conta:{% endblocktrans %}
 
 {% block notification_message %}
 {% endblock notification_message%}
 
-{% blocktrans %}If you do not recognize this change then please take proper security precautions immediately. The change to your account originates from:
+{% blocktrans %}Se você não reconhecer esta alteração, tome as devidas precauções de segurança imediatamente. A alteração na sua conta se originou de:
 
 - IP address: {{ip}}
 - Browser: {{user_agent}}

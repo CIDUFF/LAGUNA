@@ -1,6 +1,6 @@
 # LAGUNA
 
-Sistema de Monitoramento Integrado de Águas Lagunares (SIMAL)
+Laboratório Avançado para Gerenciamento, Uso e Análise de Amostras
 
 
 ## Descrição
