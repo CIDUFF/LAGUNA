@@ -13,6 +13,8 @@ from django.http import HttpResponse, FileResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
+from django.core.mail import send_mail
+from django.conf import settings
 import json
 import os
 
@@ -479,13 +481,25 @@ def ajuda(request):
     if request.method == 'POST':
         form = AjudaForm(request.POST)
         if form.is_valid():
-
             nova_ajuda = Ajuda()  # Model
             nova_ajuda.nome = form.cleaned_data['nome']
             nova_ajuda.email = form.cleaned_data['email']
             nova_ajuda.pergunta = form.cleaned_data['pergunta']
-
             nova_ajuda.save()
+
+            # Enviar e-mail para o administrador
+            subject_admin = 'Nova solicitação de ajuda'
+            message_admin = f"Nome: {nova_ajuda.nome}\nEmail: {nova_ajuda.email}\nPergunta: {nova_ajuda.pergunta}"
+            recipient_list_admin = [settings.EMAIL_HOST_USER]
+            send_mail(subject_admin, message_admin, settings.EMAIL_HOST_USER, recipient_list_admin)
+
+            # Enviar e-mail para o usuário
+            subject_user = 'Confirmação de solicitação de ajuda'
+            message_user = f"Olá {nova_ajuda.nome},\n\nVocê está recebendo este e-mail porque fez uma solicitação de ajuda no sistema LAGUNA.\n\nPergunta: {nova_ajuda.pergunta}\n\nAtenciosamente,\nEquipe LAGUNA"
+            recipient_list_user = [nova_ajuda.email]
+            send_mail(subject_user, message_user, settings.EMAIL_HOST_USER, recipient_list_user)
+
+            messages.success(request, 'Sua solicitação de ajuda foi enviada com sucesso!')
 
             return redirect('ajuda')
     else:

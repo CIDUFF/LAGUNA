@@ -43,4 +43,12 @@ para gerar o diagrama ER dos modelos, execute o comando:
 python manage.py graph_models simal -o EntidadeRelacionamento.png
 ```
 
+Ou com docker instalado:
+
+```
+docker-compose down --volumes --remove-orphans
+docker-compose build --no-cache
+docker-compose up
+```
+
 
