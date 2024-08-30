@@ -307,8 +307,6 @@ class MetadadosCampo(models.Model):
         "Pescadores", choices=AVALIACAO, null=True)
     contato_populacao = models.IntegerField(
         "Contato com a população", choices=AVALIACAO, null=True)
-    observacoes = models.TextField(
-        "Observações", max_length=500, blank=True)
     
     def __str__(self):
         return f"Metadados do campo {self.codigo_coleta}"

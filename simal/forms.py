@@ -100,7 +100,7 @@ class ColetaCampo(forms.Form):
 class MetadadosCampoForm(forms.ModelForm):
     class Meta:
         model = MetadadosCampo
-        fields = '__all__'
+        exclude = ['codigo_coleta']  # Exclui o campo codigo_coleta
         labels = {
             'acesso_ponto': 'Acesso ao Ponto',
             'dragagem': 'Dragagem',
@@ -113,12 +113,61 @@ class MetadadosCampoForm(forms.ModelForm):
             'animais_presentes': 'Animais Presentes',
             'pescadores': 'Pescadores',
             'contato_populacao': 'Contato com a População',
-            'observacoes': 'Observações'
         }
         widgets = {
             'acesso_ponto': forms.Select(attrs={'class': 'form-select'}),
-            'observacoes': forms.Textarea(attrs={'rows': 3, 'cols': 40}),
+            'dragagem': forms.NumberInput(attrs={'type': 'range', 'min': -1, 'max': 1, 'step': 1, 'class': 'form-range'}),
+            'gigoga': forms.NumberInput(attrs={'type': 'range', 'min': -1, 'max': 1, 'step': 1, 'class': 'form-range'}),
+            'odor': forms.NumberInput(attrs={'type': 'range', 'min': -1, 'max': 1, 'step': 1, 'class': 'form-range'}),
+            'fezes': forms.NumberInput(attrs={'type': 'range', 'min': -1, 'max': 1, 'step': 1, 'class': 'form-range'}),
+            'oleo': forms.NumberInput(attrs={'type': 'range', 'min': -1, 'max': 1, 'step': 1, 'class': 'form-range'}),
+            'residuos_solidos': forms.NumberInput(attrs={'type': 'range', 'min': -1, 'max': 1, 'step': 1, 'class': 'form-range'}),
+            'lodo': forms.NumberInput(attrs={'type': 'range', 'min': -1, 'max': 1, 'step': 1, 'class': 'form-range'}),
+            'animais_presentes': forms.NumberInput(attrs={'type': 'range', 'min': -1, 'max': 1, 'step': 1, 'class': 'form-range'}),
+            'pescadores': forms.NumberInput(attrs={'type': 'range', 'min': -1, 'max': 1, 'step': 1, 'class': 'form-range'}),
+            'contato_populacao': forms.NumberInput(attrs={'type': 'range', 'min': -1, 'max': 1, 'step': 1, 'class': 'form-range'})
         }
+
+    def __init__(self, *args, **kwargs):
+        super(MetadadosCampoForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Fieldset(
+                'Metadados do Campo',
+                Div(
+                    Div('acesso_ponto', css_class='col-md-6'),
+                    Div('dragagem', css_class='col-md-6'),
+                    css_class='row'
+                ),
+                Div(
+                    Div('gigoga', css_class='col-md-6'),
+                    Div('odor', css_class='col-md-6'),
+                    css_class='row'
+                ),
+                Div(
+                    Div('fezes', css_class='col-md-6'),
+                    Div('oleo', css_class='col-md-6'),
+                    css_class='row'
+                ),
+                Div(
+                    Div('residuos_solidos', css_class='col-md-6'),
+                    Div('lodo', css_class='col-md-6'),
+                    css_class='row'
+                ),
+                Div(
+                    Div('animais_presentes', css_class='col-md-6'),
+                    Div('pescadores', css_class='col-md-6'),
+                    css_class='row'
+                ),
+                Div(
+                    Div('contato_populacao', css_class='col-md-6'),
+                    css_class='row'
+                ),
+            ),
+            ButtonHolder(
+                Submit('submit', 'Salvar')
+            )
+        )
     
 
 
