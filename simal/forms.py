@@ -154,7 +154,10 @@ class MetadadosCampoForm(forms.ModelForm):
                 ),
             ),
             ButtonHolder(
-                Submit('submit', 'Salvar e voltar para o formulário de coleta')
+                Div(
+                    Submit('submit', 'Salvar e voltar para o formulário de coleta', css_class='btn btn-primary'),
+                    css_class='d-flex justify-content-center flex-column'
+                )
             )
         )
     
@@ -355,46 +358,7 @@ class IniciarCampanhaForm(forms.ModelForm):
         )
 
 
-# class LaboratorioForm(forms.Form):
-#     nome = forms.CharField(label='Nome do laboratório')
-#     endereco = forms.CharField(label='Endereço')
-#     telefone = forms.CharField(label='Telefone')
-#     email = forms.EmailField(label='Email')
-#     tipo = forms.CharField(label='Tipo')
 
-#     def __init__(self, *args, **kwargs):
-#         super(LaboratorioForm, self).__init__(*args, **kwargs)
-#         self.helper = FormHelper()
-#         self.helper.layout = Layout(
-#             Fieldset(
-#                 'Formulário de Cadastro de Laboratório',
-#                 'nome',
-#                 'endereco',
-#                 'telefone',
-#                 'email',
-#                 'tipo'
-#             ),
-#             ButtonHolder(
-#                 Layout(
-#                     Div(
-#                         Submit('submit', 'Salvar'),
-#                         css_class='col-6'
-#                     ),
-#                     Div(
-#                         HTML(format_html('<a href="{}" class="btn btn-primary btn-campanha">Laboratórios Cadastrados</a>',
-#                              reverse('laboratorios_cadastrados'))),
-#                         css_class='col-6 text-right'
-#                     )
-#                 ),
-#                 css_class='row'
-#             )
-#         )
-
-
-# class AnaliseForm(forms.ModelForm):
-#     class Meta:
-#         model = Analises
-#         fields = ['analise']
 
 class LaboratorioForm(forms.ModelForm):
     class Meta:
