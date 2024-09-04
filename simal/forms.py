@@ -154,7 +154,7 @@ class MetadadosCampoForm(forms.ModelForm):
                 ),
             ),
             ButtonHolder(
-                Submit('submit', 'Salvar')
+                Submit('submit', 'Salvar e voltar para o formulário de coleta')
             )
         )
     
