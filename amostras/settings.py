@@ -30,7 +30,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
-CSRF_TRUSTED_ORIGINS = ['https://flying-barely-magpie.ngrok-free.app']
+# CSRF_TRUSTED_ORIGINS = ['http://flying-barely-magpie.ngrok-free.app']
 
 
 # Application definition

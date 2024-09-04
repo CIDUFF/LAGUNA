@@ -22,7 +22,7 @@
   <div class="sidebar">
     <div class="wrapper">
       <aside id="sidebar">
-        <div class="menu-itens">
+        <div class="menu-itens ">
           <div class="d-flex">
             <button class="toggle-btn" type="button">
               <i class="bi bi-nut" style="color: #000 !important;"></i>
@@ -44,12 +44,8 @@
                 <a href="{% url 'resultados' %}" class="sidebar-link">
                   <i class="bi bi-bar-chart-line"></i>
                   <span>Resultados</span>
-                {% comment %} </a>
-                <li class="sidebar-item">
-                  <a href="#" class="sidebar-link">
-                  <i class="bi bi-speedometer"></i>
-                  <span>Dashboard</span>
-                </a> {% endcomment %}
+                </a>
+                </li>
                 <li class="sidebar-item">
                   <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse" data-bs-target="#campanhas" aria-expanded="false" aria-controls="campanhas">
                     <i class="bi bi-calendar3"></i>
@@ -437,6 +433,26 @@ document.addEventListener("DOMContentLoaded", function() {
   });
 </script>
 
+
+<script>
+  $(window).on('load', function() {
+    $('#sidebar a').hover(
+      function() {
+        // Ao passar o mouse
+        $(this).css('background-color', '#666666');
+        $(this).css('color', '#f2f4f7');
+        $(this).css('border-radius', '1rem');
+        $(this).find('i').css('color', '#f2f4f7'); // Alterar a cor dos elementos <i> dentro de #sidebar a
+      },
+      function() {
+        // Ao remover o mouse
+        $(this).css('background-color', '');
+        $(this).css('color', '');
+        $(this).find('i').css('color', ''); // Restaurar a cor dos elementos <i> dentro de #sidebar a
+      }
+    );
+  });
+</script>
 
 {% endblock js %}
 </body>
