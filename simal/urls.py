@@ -12,6 +12,8 @@ urlpatterns = [
          views.lista_coleta, name='lista_coleta'),
     path('atualizar_coleta/<int:id>/',
          views.atualizar_coleta, name='atualizar_coleta'),
+     path('meta_coleta/<int:id>/',
+         views.meta_coleta, name='meta_coleta'),
     path('deletar_programacao/<int:id>/',
          views.deletar_programacao, name='deletar_programacao'),
     path('cancelar_programacao/<int:id>/',

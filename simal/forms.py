@@ -133,33 +133,22 @@ class MetadadosCampoForm(forms.ModelForm):
         self.helper = FormHelper()
         self.helper.layout = Layout(
             Fieldset(
-                'Metadados do Campo',
+                '',
                 Div(
                     Div('acesso_ponto', css_class='col-md-6'),
-                    Div('dragagem', css_class='col-md-6'),
                     css_class='row'
                 ),
+                HTML('<p class="text-center"><strong>Pouco</strong> | <strong>Neutro</strong> | <strong>Muito</strong></p>'),
                 Div(
+                    Div('dragagem', css_class='col-md-6'),
                     Div('gigoga', css_class='col-md-6'),
                     Div('odor', css_class='col-md-6'),
-                    css_class='row'
-                ),
-                Div(
                     Div('fezes', css_class='col-md-6'),
                     Div('oleo', css_class='col-md-6'),
-                    css_class='row'
-                ),
-                Div(
                     Div('residuos_solidos', css_class='col-md-6'),
                     Div('lodo', css_class='col-md-6'),
-                    css_class='row'
-                ),
-                Div(
                     Div('animais_presentes', css_class='col-md-6'),
                     Div('pescadores', css_class='col-md-6'),
-                    css_class='row'
-                ),
-                Div(
                     Div('contato_populacao', css_class='col-md-6'),
                     css_class='row'
                 ),

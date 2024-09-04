@@ -251,31 +251,22 @@ def atualizar_coleta(request, id):
         ordem_servico=coleta.ordem_servico).order_by('ponto')
 
     form_data = {field: getattr(coleta, field)
-                 for field in ColetaCampo().base_fields}
-    for date_field in ['data_coleta']:
-        if date_field in form_data and form_data[date_field]:
-            form_data[date_field] = form_data[date_field].strftime(
-                '%Y-%m-%d')
+                 for field in ColetaCampo.base_fields}
+    form_data['hora_inicio'] = timezone.now().strftime('%H:%M')
     form = ColetaCampo(initial=form_data)
-    form_metadados = MetadadosCampoForm()
 
     if request.method == 'POST':
         post_data = request.POST.copy()
         post_data['hora_fim'] = timezone.now().strftime('%H:%M')
         form = ColetaCampo(post_data, request.FILES)
-        form_metadados = MetadadosCampoForm(request.POST)
 
-        if form.is_valid() and form_metadados.is_valid():
+        if form.is_valid():
             for field, value in form.cleaned_data.items():
                 setattr(coleta, field, value)
             coleta.save()
-
-            metadados = form_metadados.save(commit=False)
-            metadados.codigo_coleta = coleta.codigo_coleta  # Define o valor de codigo_coleta
-            metadados.save()
-
             messages.success(request, 'Dados atualizados com sucesso!')
 
+            # Verifica se todos os pontos foram coletados
             todos_pontos_preenchidos = not Campo.objects.filter(
                 ordem_servico=coleta.ordem_servico).exclude(status_form='Preenchido').exists()
 
@@ -298,11 +289,41 @@ def atualizar_coleta(request, id):
         else:
             pass  # Mantenha o formulário com erros para exibição
 
-    context = {'form': form, 'form_metadados': form_metadados, 'codigo_coleta': coleta.codigo_coleta,
+    context = {'form': form, 'codigo_coleta': coleta.codigo_coleta,
+               'coleta_id': coleta.id,
                'ponto': coleta.ponto, 'pontos_coleta': pontos_coleta,
                'ordem_servico_id': coleta.ordem_servico.id, }
     return render(request, 'coleta/coleta.html', context)
 
+@login_required
+def meta_coleta(request, id):
+    coleta = get_object_or_404(Campo, id=id)
+    
+    # Verifica se já existe um registro de metadados para o código de coleta
+    metadados, created = MetadadosCampo.objects.get_or_create(codigo_coleta=coleta)
+    
+    if created:
+        messages.info(request, 'Novo registro de metadados criado para o código de coleta fornecido.')
+
+    if request.method == 'POST':
+        form = MetadadosCampoForm(request.POST, instance=metadados)
+        if form.is_valid():
+            form.save()
+            # Redireciona para a página anterior
+            return redirect(reverse('atualizar_coleta', args=[coleta.id]))
+    else:
+        form = MetadadosCampoForm(instance=metadados)
+    
+    context = {
+        'form': form,
+        'codigo_coleta': coleta.codigo_coleta,
+        'coleta_id': coleta.id,
+        'ponto': coleta.ponto,
+        'ordem_servico_id': coleta.ordem_servico.id,
+        'ordem_servico': coleta.ordem_servico
+    }
+
+    return render(request, 'coleta/meta_coleta.html', context)
 
 @login_required
 @user_passes_test(check_admin)
@@ -630,6 +651,8 @@ def gerar_rota_campanha(request, ordem_servico=None):
         campanha.save()
 
     return redirect('checklist_campanha', ordem_servico=ordem_servico)
+
+
 
 
 def etiquetagem(request, ordem_servico=None):
