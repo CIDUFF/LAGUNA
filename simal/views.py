@@ -777,3 +777,81 @@ def exportar_resultados_csv(request):
         writer.writerow(resultado)
 
     return response
+
+
+@login_required
+def cadastro_local(request):
+    if request.method == 'POST':
+        form = LocaisForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Local cadastrado com sucesso.')
+            return redirect('cadastro_local')
+    else:
+        form = LocaisForm()
+    return render(request, 'cadastro_local.html', {'form': form})
+
+
+@login_required
+def atualizar_local(request, id):
+    local = get_object_or_404(Locais, id=id)
+    if request.method == 'POST':
+        form = LocaisForm(request.POST, instance=local)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Local atualizado com sucesso.')
+            return redirect('cadastro_local')
+    else:
+        form = LocaisForm(instance=local)
+    return render(request, 'cadastro_local.html', {'form': form})
+
+@login_required
+def cadastro_setor(request):
+    if request.method == 'POST':
+        form = SetorForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Setor cadastrado com sucesso.')
+            return redirect('cadastro_setor')
+    else:
+        form = SetorForm()
+    return render(request, 'cadastro_setor.html', {'form': form})
+
+@login_required
+def atualizar_setor(request, id):
+    setor = get_object_or_404(Setor, id=id)
+    if request.method == 'POST':
+        form = SetorForm(request.POST, instance=setor)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Setor atualizado com sucesso.')
+            return redirect('cadastro_setor')
+    else:
+        form = SetorForm(instance=setor)
+    return render(request, 'cadastro_setor.html', {'form': form})
+
+@login_required
+def cadastro_ponto(request):
+    if request.method == 'POST':
+        form = PontoForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Ponto cadastrado com sucesso.')
+            return redirect('cadastro_ponto')
+    else:
+        form = PontoForm()
+    return render(request, 'cadastro_ponto.html', {'form': form})
+
+@login_required
+def atualizar_ponto(request, id):
+    ponto = get_object_or_404(PontosColeta, id=id)
+    if request.method == 'POST':
+        form = PontoForm(request.POST, instance=ponto)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Ponto atualizado com sucesso.')
+            return redirect('cadastro_ponto')
+    else:
+        form = PontoForm(instance=ponto)
+    return render(request, 'cadastro_ponto.html', {'form': form})
+    

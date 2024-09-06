@@ -49,4 +49,14 @@ urlpatterns = [
          name='usuarios_cadastrados'),
     path('editar_usuario/<int:user_id>/',
          views.editar_usuario, name='editar_usuario'),
+    path('cadastro_local/', views.cadastro_local, name='cadastro_local'),
+    path('cadastro_local/<int:id>/',
+         views.atualizar_local, name='atualizar_local'),
+    path('cadastro_setor/', views.cadastro_setor, name='cadastro_setor'),
+    path('cadastro_setor/<int:id>/',
+         views.atualizar_setor, name='atualizar_setor'),
+    path('cadastro_ponto/', views.cadastro_ponto, name='cadastro_ponto'),
+    path('cadastro_ponto/<int:id>/',
+         views.atualizar_ponto, name='atualizar_ponto'),
+
 ]

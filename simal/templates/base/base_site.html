@@ -91,24 +91,35 @@
                       <span>Laboratórios Cadastrados</span>
                     </a>
                   </li>
-                  {% comment %} <li class="sidebar-item">
-                    <a href="{% url 'coleta' %}" class="sidebar-link">
-                      <i class="lni lni-capsule"></i>
-                      <span>Cadastro de amostras</span>
-                    </a>
-                  </li> {% endcomment %}
-                  {% comment %} <li class="sidebar-item">
-                    <a href="#" class="sidebar-link">
-                      <i class="lni lni-agenda"></i>
-                      <span>Cadastro de Coletores</span>
+                
+                </ul>
+              </li>
+              
+              <li class="sidebar-item">
+                <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse" data-bs-target="#cadastro" aria-expanded="false" aria-controls="cadastro">
+                  <i class="bi bi-geo-alt-fill"></i>
+                  <span>Pontos, Setores e Locais</span>
+                </a>
+                <ul id="cadastro" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                  <li class="sidebar-item">
+                    <a href="{% url 'cadastro_ponto' %}" class="sidebar-link">
+                      <i class="bi bi-building-add"></i>
+                      <span>Cadastro de Pontos</span>
                     </a>
                   </li>
                   <li class="sidebar-item">
-                    <a href="#" class="sidebar-link">
-                      <i class="lni lni-protection"></i>
-                      <span>Cadastro de Analistas</span>
+                    <a href="{% url 'cadastro_setor' %}" class="sidebar-link">
+                      <i class="bi bi-building-check"></i>
+                      <span>Cadastro de Setores</span>
                     </a>
-                  </li> {% endcomment %}
+                  </li>
+                  <li class="sidebar-item">
+                    <a href="{% url 'cadastro_local' %}" class="sidebar-link">
+                      <i class="bi bi-building-add"></i>
+                      <span>Cadastro de Locais</span>
+                    </a>
+                  </li>
+                
                 </ul>
               </li>
               {% comment %} <li class="sidebar-item">

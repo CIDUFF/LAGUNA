@@ -432,3 +432,95 @@ class CustomUserCreationForm(UserCreationForm):
             user.save()
             user.groups.set(self.cleaned_data['groups'])
         return user
+
+
+class LocaisForm(forms.ModelForm):
+    class Meta:
+        model = Locais
+        fields = ['codigo', 'desc']
+        labels = {
+            'codigo': 'Código - nome do local',
+            'desc': 'Descrição'
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(LocaisForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Fieldset(
+                'Cadastro de Locais',
+                Div(
+                    Div('codigo', css_class='col-md-6'),
+                    Div('desc', css_class='col-md-6'),
+                    css_class='row'
+                )
+            ),
+            ButtonHolder(
+                Submit('submit', 'Salvar', css_class='btn btn-primary')
+            )
+        )
+        
+class SetorForm(forms.ModelForm):
+    class Meta:
+        model = Setor
+        fields = ['desc', 'local', 'lat', 'lon']
+        labels = {
+            'desc': 'Descrição',
+            'local': 'Local',
+            'lat': 'Latitude',
+            'lon': 'Longitude',
+            
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(SetorForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Fieldset(
+                'Cadastro de Setores',
+                Div(
+                    Div('desc', css_class='col-md-6'),
+                    Div('local', css_class='col-md-6'),
+                    Div('lat', css_class='col-md-6'),
+                    Div('lon', css_class='col-md-6'),
+                    css_class='row'
+                )
+            ),
+            ButtonHolder(
+                Submit('submit', 'Salvar', css_class='btn btn-primary')
+            )
+        )
+        
+class PontoForm(forms.ModelForm):
+    class Meta:
+        model = PontosColeta
+        fields = ['codigo', 'setor', 'local', 'desc', 'lat', 'lon']
+        labels = {
+            'codigo': 'Código',
+            'setor': 'Setor',
+            'local': 'Local',
+            'desc': 'Descrição',
+            'lat': 'Latitude',
+            'lon': 'Longitude'
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(PontoForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Fieldset(
+                'Cadastro de Pontos de Coleta',
+                Div(
+                    Div('codigo', css_class='col-md-6'),
+                    Div('setor', css_class='col-md-6'),
+                    Div('local', css_class='col-md-6'),
+                    Div('desc', css_class='col-md-6'),
+                    Div('lat', css_class='col-md-6'),
+                    Div('lon', css_class='col-md-6'),
+                    css_class='row'
+                )
+            ),
+            ButtonHolder(
+                Submit('submit', 'Salvar', css_class='btn btn-primary')
+            )
+        )
