@@ -58,5 +58,7 @@ urlpatterns = [
     path('cadastro_ponto/', views.cadastro_ponto, name='cadastro_ponto'),
     path('cadastro_ponto/<int:id>/',
          views.atualizar_ponto, name='atualizar_ponto'),
+    path('locais_cadastrados/', views.locais_cadastrados,
+         name='locais_cadastrados'),
 
 ]

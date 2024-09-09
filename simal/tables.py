@@ -164,3 +164,50 @@ class TopCampanhas(tables.Table):
         if badge_class:
             return format_html('<span class="badge {}">{}</span>', badge_class, value)
         return value
+
+class SetorTable(tables.Table):
+    update = tables.LinkColumn('atualizar_setor', args=[A(
+        'pk')], orderable=False, empty_values=[], text='EDITAR')
+
+    class Meta:
+        model = Setor
+        template_name = 'django_tables2/bootstrap5-responsive.html'
+        fields = ['desc', 'local', 'lat', 'lon']
+        empty_text = 'Não há dados para exibir'
+        orderable = False
+        exclude = ('id', 'created_at', 'updated_at')
+        sequence = ('desc', 'local', 'lat', 'lon')
+        per_page = 2
+        paginator_class = tables.LazyPaginator
+        table_pagination = True
+        
+class PontoTable(tables.Table):
+    update = tables.LinkColumn('atualizar_ponto', args=[A('pk')], orderable=False, empty_values=[], text='EDITAR')
+
+    class Meta:
+        model = PontosColeta
+        template_name = 'django_tables2/bootstrap5-responsive.html'
+        fields = ['codigo', 'setor', 'local', 'desc', 'lat', 'lon']
+        empty_text = 'Não há dados para exibir'
+        orderable = False
+        exclude = ('id', 'created_at', 'updated_at')
+        sequence = ('codigo', 'setor', 'local', 'desc', 'lat', 'lon')
+        per_page = 10
+        paginator_class = tables.LazyPaginator
+        table_pagination = True
+        
+class LocalTable(tables.Table):
+    update = tables.LinkColumn('atualizar_local', args=[A('pk')], orderable=False, empty_values=[], text='EDITAR')
+
+    class Meta:
+        model = Locais
+        template_name = 'django_tables2/bootstrap5-responsive.html'
+        fields = ['codigo', 'desc']
+        empty_text = 'Não há dados para exibir'
+        orderable = False
+        exclude = ('id', 'created_at', 'updated_at')
+        sequence = ('codigo', 'desc')
+        per_page = 1
+        paginator_class = tables.LazyPaginator
+        table_pagination = True
+        

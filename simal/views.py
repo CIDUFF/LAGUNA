@@ -855,3 +855,16 @@ def atualizar_ponto(request, id):
         form = PontoForm(instance=ponto)
     return render(request, 'cadastro_ponto.html', {'form': form})
     
+@login_required
+def locais_cadastrados(request):
+    table_setores = SetorTable(Setor.objects.all())
+    table_pontos = PontoTable(PontosColeta.objects.all())
+    table_locais = LocalTable(Locais.objects.all())
+    RequestConfig(request, paginate={"per_page": 25}).configure(table_setores)
+    RequestConfig(request, paginate={"per_page": 25}).configure(table_pontos)
+    RequestConfig(request, paginate={"per_page": 25}).configure(table_locais)
+    return render(request, 'locais_cadastrados.html', {
+        'table_setores': table_setores,
+        'table_pontos': table_pontos,
+        'table_locais': table_locais
+    })

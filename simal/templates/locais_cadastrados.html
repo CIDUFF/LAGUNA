@@ -1,0 +1,25 @@
+{% extends 'base/base_site.html' %} 
+
+{% load django_tables2 %} 
+{% load django_bootstrap5 %}
+{% load static %}
+{% block content %}  
+{% block title %}  
+{% endblock %} 
+{% block header %}
+   <h2>Locais Cadastrados</h2> 
+{% endblock header %}
+
+<div class="card checklist mt-4">
+    <h3>Locais</h3>
+    {% render_table table_locais %}
+</div>
+<div class="card checklist mt-4">
+    <h3>Setores</h3>
+    {% render_table table_setores %}
+</div>
+<div class="card checklist mt-4">
+    <h3>Pontos</h3>
+    {% render_table table_pontos %}
+</div>
+{% endblock %}
