@@ -2,7 +2,6 @@
 *.pyc
 *~
 __pycache__/
-/__pycache__/
 
 # Env
 .env
@@ -48,7 +47,6 @@ celerybeat.pid
 
 # Cache
 *.cache
-*__pycache__/
 *.py[cod]
 *$py.class
 
@@ -60,8 +58,4 @@ staticfiles/
 
 **.cpython
 
-**/__pycache__/
-
-simal/__pycache__/
-amostras/__pycache__/
 .vscode/settings.json
