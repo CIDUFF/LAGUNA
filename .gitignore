@@ -65,3 +65,4 @@ staticfiles/
 /simal/__pycache__/
 **/amostras/__pycache__/
 .vscode/settings.json
+apistart.sh

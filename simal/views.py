@@ -290,10 +290,40 @@ def atualizar_coleta(request, id):
             pass  # Mantenha o formulário com erros para exibição
 
     context = {'form': form, 'codigo_coleta': coleta.codigo_coleta,
+               'coleta_id': coleta.id,
                'ponto': coleta.ponto, 'pontos_coleta': pontos_coleta,
                'ordem_servico_id': coleta.ordem_servico.id, }
     return render(request, 'coleta/coleta.html', context)
 
+@login_required
+def meta_coleta(request, id):
+    coleta = get_object_or_404(Campo, id=id)
+    
+    # Verifica se já existe um registro de metadados para o código de coleta
+    metadados, created = MetadadosCampo.objects.get_or_create(codigo_coleta=coleta)
+    
+    if created:
+        messages.info(request, 'Novo registro de metadados criado para o código de coleta fornecido.')
+
+    if request.method == 'POST':
+        form = MetadadosCampoForm(request.POST, instance=metadados)
+        if form.is_valid():
+            form.save()
+            # Redireciona para a página anterior
+            return redirect(reverse('atualizar_coleta', args=[coleta.id]))
+    else:
+        form = MetadadosCampoForm(instance=metadados)
+    
+    context = {
+        'form': form,
+        'codigo_coleta': coleta.codigo_coleta,
+        'coleta_id': coleta.id,
+        'ponto': coleta.ponto,
+        'ordem_servico_id': coleta.ordem_servico.id,
+        'ordem_servico': coleta.ordem_servico
+    }
+
+    return render(request, 'coleta/meta_coleta.html', context)
 
 @login_required
 @user_passes_test(check_admin)
@@ -623,6 +653,8 @@ def gerar_rota_campanha(request, ordem_servico=None):
     return redirect('checklist_campanha', ordem_servico=ordem_servico)
 
 
+
+
 def etiquetagem(request, ordem_servico=None):
     ordem_servico = request.GET.get('ordem_servico', ordem_servico)
     campanha = None
@@ -745,3 +777,94 @@ def exportar_resultados_csv(request):
         writer.writerow(resultado)
 
     return response
+
+
+@login_required
+def cadastro_local(request):
+    if request.method == 'POST':
+        form = LocaisForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Local cadastrado com sucesso.')
+            return redirect('cadastro_local')
+    else:
+        form = LocaisForm()
+    return render(request, 'cadastro_local.html', {'form': form})
+
+
+@login_required
+def atualizar_local(request, id):
+    local = get_object_or_404(Locais, id=id)
+    if request.method == 'POST':
+        form = LocaisForm(request.POST, instance=local)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Local atualizado com sucesso.')
+            return redirect('cadastro_local')
+    else:
+        form = LocaisForm(instance=local)
+    return render(request, 'cadastro_local.html', {'form': form})
+
+@login_required
+def cadastro_setor(request):
+    if request.method == 'POST':
+        form = SetorForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Setor cadastrado com sucesso.')
+            return redirect('cadastro_setor')
+    else:
+        form = SetorForm()
+    return render(request, 'cadastro_setor.html', {'form': form})
+
+@login_required
+def atualizar_setor(request, id):
+    setor = get_object_or_404(Setor, id=id)
+    if request.method == 'POST':
+        form = SetorForm(request.POST, instance=setor)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Setor atualizado com sucesso.')
+            return redirect('cadastro_setor')
+    else:
+        form = SetorForm(instance=setor)
+    return render(request, 'cadastro_setor.html', {'form': form})
+
+@login_required
+def cadastro_ponto(request):
+    if request.method == 'POST':
+        form = PontoForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Ponto cadastrado com sucesso.')
+            return redirect('cadastro_ponto')
+    else:
+        form = PontoForm()
+    return render(request, 'cadastro_ponto.html', {'form': form})
+
+@login_required
+def atualizar_ponto(request, id):
+    ponto = get_object_or_404(PontosColeta, id=id)
+    if request.method == 'POST':
+        form = PontoForm(request.POST, instance=ponto)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Ponto atualizado com sucesso.')
+            return redirect('cadastro_ponto')
+    else:
+        form = PontoForm(instance=ponto)
+    return render(request, 'cadastro_ponto.html', {'form': form})
+    
+@login_required
+def locais_cadastrados(request):
+    table_setores = SetorTable(Setor.objects.all())
+    table_pontos = PontoTable(PontosColeta.objects.all())
+    table_locais = LocalTable(Locais.objects.all())
+    RequestConfig(request, paginate={"per_page": 25}).configure(table_setores)
+    RequestConfig(request, paginate={"per_page": 25}).configure(table_pontos)
+    RequestConfig(request, paginate={"per_page": 25}).configure(table_locais)
+    return render(request, 'locais_cadastrados.html', {
+        'table_setores': table_setores,
+        'table_pontos': table_pontos,
+        'table_locais': table_locais
+    })

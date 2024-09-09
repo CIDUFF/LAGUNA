@@ -139,34 +139,39 @@ class LocaisColeta(models.Model):
 class Locais(models.Model):
     codigo = models.CharField(max_length=50)
     desc = models.CharField(max_length=50)
-    lat = models.FloatField(null=True, blank=True)
-    long = models.FloatField(null=True, blank=True)
+    
+    class Meta:
+        db_table = 'tab_local'
+
 
     def __str__(self):
-        return f'{self.descricao}'
+        return f'{self.codigo}'
 
 class PontosColeta(models.Model):
-
+    codigo = models.CharField(max_length=60, blank=False)
     setor = models.ForeignKey('Setor', on_delete=models.CASCADE, related_name='pontos')
     local = models.ForeignKey(Locais, on_delete=models.CASCADE, related_name='pontos')
-    ponto = models.CharField(max_length=5, null=True, blank=True)
     desc = models.CharField(max_length=50, blank=False)
-    codigo_pt = models.CharField(max_length=60, blank=False)
     lat = models.FloatField(null=True, blank=True)
-    long = models.FloatField(null=True, blank=True)
+    lon = models.FloatField(null=True, blank=True)
 
     def __str__(self):
-        return f'{self.ponto}'
+        return f'{self.codigo}'
+
+    class Meta:
+        db_table = 'tab_ponto'
     
 class Setor(models.Model):
-    codigo = models.CharField(max_length=50)
     desc = models.CharField(max_length=50)
     local = models.ForeignKey(Locais, on_delete=models.CASCADE, related_name='setor')
     lat = models.FloatField(null=True, blank=True)
-    long = models.FloatField(null=True, blank=True)
+    lon = models.FloatField(null=True, blank=True)
     
     def __str__(self):
-        return f'{self.descricao}'
+        return f'{self.desc}'
+    
+    class Meta:
+        db_table = 'tab_setor'
 
 
 class ProgramaColeta(models.Model):
@@ -307,8 +312,6 @@ class MetadadosCampo(models.Model):
         "Pescadores", choices=AVALIACAO, null=True)
     contato_populacao = models.IntegerField(
         "Contato com a população", choices=AVALIACAO, null=True)
-    observacoes = models.TextField(
-        "Observações", max_length=500, blank=True)
     
     def __str__(self):
         return f"Metadados do campo {self.codigo_coleta}"

@@ -15,7 +15,7 @@ from .models import *
 class ColetaCampo(forms.Form):
     codigo_coleta = forms.CharField(widget=forms.HiddenInput())
     ponto = forms.CharField(widget=forms.HiddenInput())
-    hora_inicio = forms.TimeField(widget=forms.HiddenInput())
+    hora_inicio = forms.TimeField(required=False, widget=forms.TimeInput(attrs={'type': 'time'}))
     hora_fim = forms.TimeField(widget=forms.HiddenInput())
     temperatura = forms.FloatField(
         required=False, label='Temperatura (°C)', widget=forms.NumberInput(attrs={'step': '0.1'})
@@ -54,7 +54,8 @@ class ColetaCampo(forms.Form):
     )
     data_coleta = forms.DateField(
         label='Data de coleta de campo',
-        widget=forms.DateInput(attrs={'type': 'date'}, format='%Y/%m/%d'),
+        widget=forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d'),
+        # initial=timezone.now().date,
         required=False
     )
     foto = forms.ImageField(
@@ -74,9 +75,12 @@ class ColetaCampo(forms.Form):
         self.helper.layout = Layout(
             Fieldset(
                 ' ',
+                *[
+                    Row(Column(FloatingField('data_coleta', css_class='col-md-6')),
+                        Column(FloatingField('hora_inicio', css_class='col-md-6')))
+                    ],
                 'codigo_coleta',
                 'ponto',
-                'hora_inicio',
                 'hora_fim',
                 *[
                     Row(
@@ -86,13 +90,77 @@ class ColetaCampo(forms.Form):
                 ],
                 Switch('check_amostras'),
                 'observacoes',  # Adiciona o campo observacoes diretamente no Fieldset
-                'data_coleta',
                 'foto',  # Adiciona o campo foto diretamente no Fieldset
             ),
             ButtonHolder(
                 Submit('submit', 'Salvar e ir para o próximo')
             )
         )
+        
+class MetadadosCampoForm(forms.ModelForm):
+    class Meta:
+        model = MetadadosCampo
+        exclude = ['codigo_coleta']  # Exclui o campo codigo_coleta
+        labels = {
+            'acesso_ponto': 'Acesso ao Ponto',
+            'dragagem': 'Dragagem',
+            'gigoga': 'Quantidade de Gigoga',
+            'odor': 'Odor',
+            'fezes': 'Fezes',
+            'oleo': 'Óleo',
+            'residuos_solidos': 'Resíduos Sólidos',
+            'lodo': 'Lodo',
+            'animais_presentes': 'Animais Presentes',
+            'pescadores': 'Pescadores',
+            'contato_populacao': 'Contato com a População',
+        }
+        widgets = {
+            'acesso_ponto': forms.Select(attrs={'class': 'form-select'}),
+            'dragagem': forms.NumberInput(attrs={'type': 'range', 'min': -1, 'max': 1, 'step': 1, 'class': 'form-range'}),
+            'gigoga': forms.NumberInput(attrs={'type': 'range', 'min': -1, 'max': 1, 'step': 1, 'class': 'form-range'}),
+            'odor': forms.NumberInput(attrs={'type': 'range', 'min': -1, 'max': 1, 'step': 1, 'class': 'form-range'}),
+            'fezes': forms.NumberInput(attrs={'type': 'range', 'min': -1, 'max': 1, 'step': 1, 'class': 'form-range'}),
+            'oleo': forms.NumberInput(attrs={'type': 'range', 'min': -1, 'max': 1, 'step': 1, 'class': 'form-range'}),
+            'residuos_solidos': forms.NumberInput(attrs={'type': 'range', 'min': -1, 'max': 1, 'step': 1, 'class': 'form-range'}),
+            'lodo': forms.NumberInput(attrs={'type': 'range', 'min': -1, 'max': 1, 'step': 1, 'class': 'form-range'}),
+            'animais_presentes': forms.NumberInput(attrs={'type': 'range', 'min': -1, 'max': 1, 'step': 1, 'class': 'form-range'}),
+            'pescadores': forms.NumberInput(attrs={'type': 'range', 'min': -1, 'max': 1, 'step': 1, 'class': 'form-range'}),
+            'contato_populacao': forms.NumberInput(attrs={'type': 'range', 'min': -1, 'max': 1, 'step': 1, 'class': 'form-range'})
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(MetadadosCampoForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Fieldset(
+                '',
+                Div(
+                    Div('acesso_ponto', css_class='col-md-6'),
+                    css_class='row'
+                ),
+                HTML('<p class="text-center"><strong>Pouco</strong> | <strong>Neutro</strong> | <strong>Muito</strong></p>'),
+                Div(
+                    Div('dragagem', css_class='col-md-6'),
+                    Div('gigoga', css_class='col-md-6'),
+                    Div('odor', css_class='col-md-6'),
+                    Div('fezes', css_class='col-md-6'),
+                    Div('oleo', css_class='col-md-6'),
+                    Div('residuos_solidos', css_class='col-md-6'),
+                    Div('lodo', css_class='col-md-6'),
+                    Div('animais_presentes', css_class='col-md-6'),
+                    Div('pescadores', css_class='col-md-6'),
+                    Div('contato_populacao', css_class='col-md-6'),
+                    css_class='row'
+                ),
+            ),
+            ButtonHolder(
+                Div(
+                    Submit('submit', 'Salvar e voltar para o formulário de coleta', css_class='btn btn-primary'),
+                    css_class='d-flex justify-content-center flex-column'
+                )
+            )
+        )
+    
 
 
 class ProgramaColetaForm(forms.Form):
@@ -290,46 +358,7 @@ class IniciarCampanhaForm(forms.ModelForm):
         )
 
 
-# class LaboratorioForm(forms.Form):
-#     nome = forms.CharField(label='Nome do laboratório')
-#     endereco = forms.CharField(label='Endereço')
-#     telefone = forms.CharField(label='Telefone')
-#     email = forms.EmailField(label='Email')
-#     tipo = forms.CharField(label='Tipo')
 
-#     def __init__(self, *args, **kwargs):
-#         super(LaboratorioForm, self).__init__(*args, **kwargs)
-#         self.helper = FormHelper()
-#         self.helper.layout = Layout(
-#             Fieldset(
-#                 'Formulário de Cadastro de Laboratório',
-#                 'nome',
-#                 'endereco',
-#                 'telefone',
-#                 'email',
-#                 'tipo'
-#             ),
-#             ButtonHolder(
-#                 Layout(
-#                     Div(
-#                         Submit('submit', 'Salvar'),
-#                         css_class='col-6'
-#                     ),
-#                     Div(
-#                         HTML(format_html('<a href="{}" class="btn btn-primary btn-campanha">Laboratórios Cadastrados</a>',
-#                              reverse('laboratorios_cadastrados'))),
-#                         css_class='col-6 text-right'
-#                     )
-#                 ),
-#                 css_class='row'
-#             )
-#         )
-
-
-# class AnaliseForm(forms.ModelForm):
-#     class Meta:
-#         model = Analises
-#         fields = ['analise']
 
 class LaboratorioForm(forms.ModelForm):
     class Meta:
@@ -403,3 +432,95 @@ class CustomUserCreationForm(UserCreationForm):
             user.save()
             user.groups.set(self.cleaned_data['groups'])
         return user
+
+
+class LocaisForm(forms.ModelForm):
+    class Meta:
+        model = Locais
+        fields = ['codigo', 'desc']
+        labels = {
+            'codigo': 'Código - nome do local',
+            'desc': 'Descrição'
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(LocaisForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Fieldset(
+                'Cadastro de Locais',
+                Div(
+                    Div('codigo', css_class='col-md-6'),
+                    Div('desc', css_class='col-md-6'),
+                    css_class='row'
+                )
+            ),
+            ButtonHolder(
+                Submit('submit', 'Salvar', css_class='btn btn-primary')
+            )
+        )
+        
+class SetorForm(forms.ModelForm):
+    class Meta:
+        model = Setor
+        fields = ['desc', 'local', 'lat', 'lon']
+        labels = {
+            'desc': 'Descrição',
+            'local': 'Local',
+            'lat': 'Latitude',
+            'lon': 'Longitude',
+            
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(SetorForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Fieldset(
+                'Cadastro de Setores',
+                Div(
+                    Div('desc', css_class='col-md-6'),
+                    Div('local', css_class='col-md-6'),
+                    Div('lat', css_class='col-md-6'),
+                    Div('lon', css_class='col-md-6'),
+                    css_class='row'
+                )
+            ),
+            ButtonHolder(
+                Submit('submit', 'Salvar', css_class='btn btn-primary')
+            )
+        )
+        
+class PontoForm(forms.ModelForm):
+    class Meta:
+        model = PontosColeta
+        fields = ['codigo', 'setor', 'local', 'desc', 'lat', 'lon']
+        labels = {
+            'codigo': 'Código',
+            'setor': 'Setor',
+            'local': 'Local',
+            'desc': 'Descrição',
+            'lat': 'Latitude',
+            'lon': 'Longitude'
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(PontoForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Fieldset(
+                'Cadastro de Pontos de Coleta',
+                Div(
+                    Div('codigo', css_class='col-md-6'),
+                    Div('setor', css_class='col-md-6'),
+                    Div('local', css_class='col-md-6'),
+                    Div('desc', css_class='col-md-6'),
+                    Div('lat', css_class='col-md-6'),
+                    Div('lon', css_class='col-md-6'),
+                    css_class='row'
+                )
+            ),
+            ButtonHolder(
+                Submit('submit', 'Salvar', css_class='btn btn-primary')
+            )
+        )

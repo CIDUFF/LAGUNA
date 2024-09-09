@@ -30,7 +30,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
-CSRF_TRUSTED_ORIGINS = ['https://flying-barely-magpie.ngrok-free.app']
+# CSRF_TRUSTED_ORIGINS = ['http://flying-barely-magpie.ngrok-free.app']
 
 
 # Application definition
@@ -154,7 +154,7 @@ TIME_ZONE = 'America/Sao_Paulo'
 
 USE_I18N = True
 
-USE_TZ = True
+USE_TZ = False
 
 
 # Static files (CSS, JavaScript, Images)
