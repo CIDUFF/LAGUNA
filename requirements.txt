@@ -2,7 +2,7 @@ asgiref==3.8.1
 astroid==3.2.3
 asttokens==2.4.1
 barcode==1.0.4
-certifi==2024.6.2
+certifi==2024.7.4
 chardet==5.2.0
 charset-normalizer==3.3.2
 comm==0.2.2
