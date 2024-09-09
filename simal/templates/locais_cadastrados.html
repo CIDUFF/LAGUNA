@@ -12,14 +12,28 @@
 
 <div class="card checklist mt-4">
     <h3>Locais</h3>
+    <form method="get">
+        {% bootstrap_form local_filter.form %}
+        <button type="submit" class="btn btn-primary">Filtrar</button>
+    </form>
     {% render_table table_locais %}
 </div>
+
 <div class="card checklist mt-4">
     <h3>Setores</h3>
+    <form method="get">
+        {% bootstrap_form setor_filter.form %}
+        <button type="submit" class="btn btn-primary">Filtrar</button>
+    </form>
     {% render_table table_setores %}
 </div>
+
 <div class="card checklist mt-4">
     <h3>Pontos</h3>
+    <form method="get">
+        {% bootstrap_form ponto_filter.form %}
+        <button type="submit" class="btn btn-primary">Filtrar</button>
+    </form>
     {% render_table table_pontos %}
 </div>
 {% endblock %}
