@@ -634,16 +634,17 @@ def gerar_rota_campanha(request, ordem_servico=None):
         data = campanha.data_coleta_campo
         previsao_tempo = get_weather_description(
             "Maricá", data.strftime('%Y-%m-%d'))
-        local_campanha = ProgramaColeta.objects.filter(
-            ordem_servico=ordem_servico).values_list('local_coleta', flat=True).first()
-        pontos_coleta = LocaisColeta.objects.filter(local=local_campanha)
+
+        local_campanha = campanha.local_coleta
+        setor_local = Setor.objects.get(desc=local_campanha)
+        pontos_coleta = PontosColeta.objects.filter(setor=setor_local)
         programa_coleta_instance = get_object_or_404(
             ProgramaColeta, ordem_servico=ordem_servico)
         for ponto in pontos_coleta:
             campo = Campo()
             campo.ordem_servico = programa_coleta_instance
-            campo.ponto = str(ponto.ponto)
-            campo.codigo_coleta = ordem_servico + str(ponto.ponto)
+            campo.ponto = str(ponto.codigo)
+            campo.codigo_coleta = ordem_servico + str(ponto.codigo)
             campo.clima = previsao_tempo
             campo.save()
 

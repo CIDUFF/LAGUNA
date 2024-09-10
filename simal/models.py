@@ -167,7 +167,7 @@ class Setor(models.Model):
     local = models.ForeignKey(Locais, on_delete=models.CASCADE, related_name='setor')
     lat = models.FloatField(null=True, blank=True)
     lon = models.FloatField(null=True, blank=True)
-    abreviatura = models.CharField(max_length=50, blank=True)
+    abreviatura = models.CharField(max_length=50, blank=True, unique=True)
 
     
     def __str__(self):
@@ -210,11 +210,11 @@ class ProgramaColeta(models.Model):
 
         if not self.ordem_servico:
             hora = datetime.now().strftime('%H%M%S')
-            localizacao = LocaisColeta.objects.filter(
-                local=self.local_coleta).first()
+            localizacao = Setor.objects.filter(
+                desc=self.local_coleta).first()
 
             if localizacao:
-                codigo = localizacao.codigo_str
+                codigo = localizacao.abreviatura
                 ordem_servico_raw = f"{codigo}{self.data_coleta_campo}{hora}"
                 ordem_servico_normalized = unicodedata.normalize(
                     'NFKD', ordem_servico_raw)

@@ -198,7 +198,7 @@ class ProgramaColetaForm(forms.Form):
 
         # Agora você pode usar essa função para gerar as opções únicas para cada campo
         self.fields['local_coleta'].choices = gerar_opcoes_unicas(
-            LocaisColeta, 'local')
+            Setor, 'desc')
         self.fields['equipe_coleta'].choices = [
             (group.id, group.name) for group in Group.objects.all()]
         # self.fields['solicitante'].choices = gerar_opcoes_unicas(
@@ -463,12 +463,13 @@ class LocaisForm(forms.ModelForm):
 class SetorForm(forms.ModelForm):
     class Meta:
         model = Setor
-        fields = ['desc', 'local', 'lat', 'lon']
+        fields = ['desc', 'local', 'lat', 'lon','abreviatura']
         labels = {
             'desc': 'Descrição',
             'local': 'Local',
             'lat': 'Latitude',
             'lon': 'Longitude',
+            'abreaviatura': 'abreviatura'
             
         }
 
@@ -483,6 +484,7 @@ class SetorForm(forms.ModelForm):
                     Div('local', css_class='col-md-6'),
                     Div('lat', css_class='col-md-6'),
                     Div('lon', css_class='col-md-6'),
+                    Div('abreviatura', css_class='col-md-6'),
                     css_class='row'
                 )
             ),

@@ -172,11 +172,11 @@ class SetorTable(tables.Table):
     class Meta:
         model = Setor
         template_name = 'django_tables2/bootstrap5-responsive.html'
-        fields = ['desc', 'local', 'lat', 'lon']
+        fields = ['desc', 'local', 'lat', 'lon','abreviatura']
         empty_text = 'Não há dados para exibir'
         orderable = False
         exclude = ('id', 'created_at', 'updated_at')
-        sequence = ('desc', 'local', 'lat', 'lon')
+        sequence = ('desc', 'local', 'lat', 'lon','abreviatura')
         per_page = 2
         paginator_class = tables.LazyPaginator
         table_pagination = True
