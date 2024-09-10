@@ -13,13 +13,24 @@ from dotenv import load_dotenv
 load_dotenv()
 
 def get_weather_description(city, date):
+    """
+    Obtém a descrição do clima e a temperatura para uma cidade e data específicas usando a API do OpenWeatherMap.
 
-    # load_dotenv()
+    Parâmetros:
+    city (str): Nome da cidade para a qual a previsão do tempo é solicitada.
+    date (str): Data para a qual a previsão do tempo é solicitada, no formato 'YYYY-MM-DD'.
 
-    # Obtém a chave API do OpenWeatherMap a partir das configurações do Django ou variável de ambiente
-    # api_key = os.getenv('OPENWEATHERMAP_API_KEY')
+    Retorna:
+    str: Descrição do clima e temperatura em graus Celsius para a data especificada, ou uma mensagem de erro se a previsão não for encontrada ou se ocorrer um erro ao acessar a API.
 
-    # @TODO: remover a chave de api
+    Exceções:
+    requests.RequestException: Lançada se ocorrer um erro ao acessar a API do OpenWeatherMap.
+
+    Exemplo:
+    >>> get_weather_description("São Paulo", "2023-10-01")
+    'céu limpo, 25°C'
+    """
+
 
     api_key = config('OPENWEATHERMAP_API_KEY')
 

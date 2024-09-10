@@ -622,6 +622,23 @@ def checklist_campanha(request, ordem_servico=None):
 
 @login_required
 def gerar_rota_campanha(request, ordem_servico=None):
+    """
+Gera rota para uma campanha com base na ordem de serviço fornecida.
+
+Esta função de view recupera a ordem de serviço da requisição, busca a campanha correspondente
+e gera pontos de coleta e previsões meteorológicas para a campanha. Em seguida, salva os dados
+gerados e redireciona para a checklist da campanha.
+
+Args:
+    request (HttpRequest): O objeto de requisição HTTP.
+    ordem_servico (str, opcional): O identificador da ordem de serviço. Padrão é None.
+
+Returns:
+    HttpResponseRedirect: Redireciona para a view da checklist da campanha.
+
+Raises:
+    Http404: Se a campanha ou os pontos de coleta não forem encontrados.
+"""
     ordem_servico = request.GET.get('ordem_servico', ordem_servico)
     campanha = None
     if ordem_servico:
@@ -634,16 +651,17 @@ def gerar_rota_campanha(request, ordem_servico=None):
         data = campanha.data_coleta_campo
         previsao_tempo = get_weather_description(
             "Maricá", data.strftime('%Y-%m-%d'))
-        local_campanha = ProgramaColeta.objects.filter(
-            ordem_servico=ordem_servico).values_list('local_coleta', flat=True).first()
-        pontos_coleta = LocaisColeta.objects.filter(local=local_campanha)
+
+        local_campanha = campanha.local_coleta
+        setor_local = Setor.objects.get(desc=local_campanha)
+        pontos_coleta = PontosColeta.objects.filter(setor=setor_local)
         programa_coleta_instance = get_object_or_404(
             ProgramaColeta, ordem_servico=ordem_servico)
         for ponto in pontos_coleta:
             campo = Campo()
             campo.ordem_servico = programa_coleta_instance
-            campo.ponto = str(ponto.ponto)
-            campo.codigo_coleta = ordem_servico + str(ponto.ponto)
+            campo.ponto = str(ponto.codigo)
+            campo.codigo_coleta = ordem_servico + str(ponto.codigo)
             campo.clima = previsao_tempo
             campo.save()
 
