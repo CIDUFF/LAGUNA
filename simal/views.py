@@ -857,14 +857,24 @@ def atualizar_ponto(request, id):
     
 @login_required
 def locais_cadastrados(request):
-    table_setores = SetorTable(Setor.objects.all())
-    table_pontos = PontoTable(PontosColeta.objects.all())
-    table_locais = LocalTable(Locais.objects.all())
+    setor_filter = SetorFilter(request.GET, queryset=Setor.objects.all())
+    table_setores = SetorTable(setor_filter.qs)
+    
+    ponto_filter = PontoFilter(request.GET, queryset=PontosColeta.objects.all())
+    table_pontos = PontoTable(ponto_filter.qs)
+    
+    local_filter = LocalFilter(request.GET, queryset=Locais.objects.all())
+    table_locais = LocalTable(local_filter.qs)
+    
     RequestConfig(request, paginate={"per_page": 25}).configure(table_setores)
     RequestConfig(request, paginate={"per_page": 25}).configure(table_pontos)
     RequestConfig(request, paginate={"per_page": 25}).configure(table_locais)
+    
     return render(request, 'locais_cadastrados.html', {
         'table_setores': table_setores,
         'table_pontos': table_pontos,
-        'table_locais': table_locais
+        'table_locais': table_locais,
+        'setor_filter': setor_filter,
+        'ponto_filter': ponto_filter,
+        'local_filter': local_filter
     })

@@ -152,6 +152,7 @@ class PontosColeta(models.Model):
     setor = models.ForeignKey('Setor', on_delete=models.CASCADE, related_name='pontos')
     local = models.ForeignKey(Locais, on_delete=models.CASCADE, related_name='pontos')
     desc = models.CharField(max_length=50, blank=False)
+    status = models.BooleanField(default=True, blank=True)
     lat = models.FloatField(null=True, blank=True)
     lon = models.FloatField(null=True, blank=True)
 
@@ -162,7 +163,7 @@ class PontosColeta(models.Model):
         db_table = 'tab_ponto'
     
 class Setor(models.Model):
-    desc = models.CharField(max_length=50)
+    desc = models.CharField(max_length=50, unique=True)
     local = models.ForeignKey(Locais, on_delete=models.CASCADE, related_name='setor')
     lat = models.FloatField(null=True, blank=True)
     lon = models.FloatField(null=True, blank=True)

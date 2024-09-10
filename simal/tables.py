@@ -187,11 +187,11 @@ class PontoTable(tables.Table):
     class Meta:
         model = PontosColeta
         template_name = 'django_tables2/bootstrap5-responsive.html'
-        fields = ['codigo', 'setor', 'local', 'desc', 'lat', 'lon']
+        fields = ['codigo', 'setor', 'local', 'desc', 'lat', 'lon','status']
         empty_text = 'Não há dados para exibir'
-        orderable = False
+        orderable = True
         exclude = ('id', 'created_at', 'updated_at')
-        sequence = ('codigo', 'setor', 'local', 'desc', 'lat', 'lon')
+        sequence = ('codigo', 'setor', 'local', 'desc', 'lat', 'lon','status')
         per_page = 10
         paginator_class = tables.LazyPaginator
         table_pagination = True
