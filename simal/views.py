@@ -622,6 +622,23 @@ def checklist_campanha(request, ordem_servico=None):
 
 @login_required
 def gerar_rota_campanha(request, ordem_servico=None):
+    """
+Gera rota para uma campanha com base na ordem de serviço fornecida.
+
+Esta função de view recupera a ordem de serviço da requisição, busca a campanha correspondente
+e gera pontos de coleta e previsões meteorológicas para a campanha. Em seguida, salva os dados
+gerados e redireciona para a checklist da campanha.
+
+Args:
+    request (HttpRequest): O objeto de requisição HTTP.
+    ordem_servico (str, opcional): O identificador da ordem de serviço. Padrão é None.
+
+Returns:
+    HttpResponseRedirect: Redireciona para a view da checklist da campanha.
+
+Raises:
+    Http404: Se a campanha ou os pontos de coleta não forem encontrados.
+"""
     ordem_servico = request.GET.get('ordem_servico', ordem_servico)
     campanha = None
     if ordem_servico:

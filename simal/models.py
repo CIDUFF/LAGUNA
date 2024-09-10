@@ -148,10 +148,16 @@ class Locais(models.Model):
         return f'{self.codigo}'
 
 class PontosColeta(models.Model):
-    codigo = models.CharField(max_length=60, blank=False)
+    
+    DESCRICAO = [
+        ('Ponto de Coleta', 'Ponto de Coleta'),
+        ('Ponto de aplicação', 'Ponto de Descarte'),
+    ]
+    
+    codigo = models.CharField(max_length=5, blank=False)
     setor = models.ForeignKey('Setor', on_delete=models.CASCADE, related_name='pontos')
     local = models.ForeignKey(Locais, on_delete=models.CASCADE, related_name='pontos')
-    desc = models.CharField(max_length=50, blank=False)
+    desc = models.CharField(max_length=50, choices=DESCRICAO, default='Ponto de Coleta')
     status = models.BooleanField(default=True, blank=True)
     lat = models.FloatField(null=True, blank=True)
     lon = models.FloatField(null=True, blank=True)
@@ -161,6 +167,9 @@ class PontosColeta(models.Model):
 
     class Meta:
         db_table = 'tab_ponto'
+        
+
+    
     
 class Setor(models.Model):
     desc = models.CharField(max_length=50, unique=True)
