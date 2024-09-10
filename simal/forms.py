@@ -494,14 +494,15 @@ class SetorForm(forms.ModelForm):
 class PontoForm(forms.ModelForm):
     class Meta:
         model = PontosColeta
-        fields = ['codigo', 'setor', 'local', 'desc', 'lat', 'lon']
+        fields = ['codigo', 'setor', 'local', 'desc', 'lat', 'lon','status']
         labels = {
             'codigo': 'Código',
             'setor': 'Setor',
             'local': 'Local',
             'desc': 'Descrição',
             'lat': 'Latitude',
-            'lon': 'Longitude'
+            'lon': 'Longitude',
+            'status': 'Ponto ativo?'
         }
 
     def __init__(self, *args, **kwargs):
@@ -517,6 +518,8 @@ class PontoForm(forms.ModelForm):
                     Div('desc', css_class='col-md-6'),
                     Div('lat', css_class='col-md-6'),
                     Div('lon', css_class='col-md-6'),
+                    Div('status', css_class='col-md-6'),
+                    
                     css_class='row'
                 )
             ),
