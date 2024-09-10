@@ -45,16 +45,16 @@ class PontoFilter(django_filters.FilterSet):
         label='Setor',
         choices=[(setor.id, setor.desc) for setor in Setor.objects.all().distinct()]  # Exibe a descrição do setor
     )
-    local = django_filters.ChoiceFilter(
-        field_name='local',
-        lookup_expr='exact',
-        label='Local',
-        choices=[(local.id, local.codigo) for local in Locais.objects.all().distinct()]
-    )
+    # local = django_filters.ChoiceFilter(
+    #     field_name='local',
+    #     lookup_expr='exact',
+    #     label='Local',
+    #     choices=[(local.id, local.codigo) for local in Locais.objects.all().distinct()]
+    # )
 
     class Meta:
         model = PontosColeta
-        fields = ['codigo', 'setor', 'local']
+        fields = ['codigo', 'setor']
         
 class SetorFilter(django_filters.FilterSet):
     desc = django_filters.ChoiceFilter(
