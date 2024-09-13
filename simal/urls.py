@@ -60,5 +60,6 @@ urlpatterns = [
          views.atualizar_ponto, name='atualizar_ponto'),
     path('locais_cadastrados/', views.locais_cadastrados,
          name='locais_cadastrados'),
+    path('export/pontos/', views.export_pontos_csv, name='export_pontos_csv'),
 
 ]

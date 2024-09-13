@@ -896,3 +896,24 @@ def locais_cadastrados(request):
         'ponto_filter': ponto_filter,
         'local_filter': local_filter
     })
+    
+def export_pontos_csv(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="pontos_coleta.csv"'
+
+    writer = csv.writer(response, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+    writer.writerow(['Código', 'Setor', 'Local', 'Descrição', 'Status', 'Latitude', 'Longitude'])
+
+    pontos = PontosColeta.objects.select_related('setor', 'local').all()
+    for ponto in pontos:
+        writer.writerow([
+            ponto.codigo,
+            ponto.setor,  # Acessa o nome do setor
+            ponto.local,  # Acessa o nome do local
+            ponto.desc,
+            'Ativo' if ponto.status else 'Inativo',
+            ponto.lat,
+            ponto.lon
+        ])
+
+    return response

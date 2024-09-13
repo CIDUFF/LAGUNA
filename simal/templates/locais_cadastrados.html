@@ -46,8 +46,9 @@
     <div class="card checklist mt-4">
         <h3>Pontos</h3>
         <form method="get" class="form-inline">
-            {% bootstrap_form ponto_filter.form layout='floating'%}
-            <button type="submit" class="btn btn-primary">Filtrar</button>
+          <a href="{% url 'export_pontos_csv' %}" class="btn btn-primary mb-3">Exportar Pontos para CSV</a>
+          {% bootstrap_form ponto_filter.form layout='floating'%}
+          <button type="submit" class="btn btn-primary">Filtrar</button>
         </form>
         {% render_table table_pontos %}
     </div>
