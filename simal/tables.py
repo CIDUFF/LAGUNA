@@ -93,11 +93,11 @@ class ProgramaColetaTable(tables.Table):
         model = ProgramaColeta
         template_name = 'django_tables2/bootstrap5-responsive.html'
         fields = ['ordem_servico', 'usuario', 'data_coleta_campo',
-                  'solicitante', 'local_coleta', 'status_coleta']
+                  'local_coleta', 'status_coleta']
         empty_text = 'Não há dados para exibir'
         orderable = True
         exclude = ('id', 'created_at', 'updated_at', 'campo')
-        sequence = ('ordem_servico', 'usuario', 'data_coleta_campo', 'solicitante',
+        sequence = ('ordem_servico', 'usuario', 'data_coleta_campo',
                     'local_coleta', 'status_coleta', 'iniciar', 'atualizar', 'cancelar', 'deletar')
         per_page = 10
         paginator_class = tables.LazyPaginator

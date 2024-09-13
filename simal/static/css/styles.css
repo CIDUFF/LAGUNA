@@ -631,3 +631,7 @@ a.sidebar-link:hover {
 .nav-link-form:not(.active) {
   background-color: #ccffcc; /* Cor para a aba Formulário inativa */
 }
+
+.true {
+  color: rgb(137, 218, 15) !important;
+}
