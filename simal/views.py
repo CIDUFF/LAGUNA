@@ -660,8 +660,8 @@ Raises:
         for ponto in pontos_coleta:
             campo = Campo()
             campo.ordem_servico = programa_coleta_instance
-            campo.ponto = str(ponto.codigo)
-            campo.codigo_coleta = ordem_servico + str(ponto.codigo)
+            campo.ponto = str(ponto.nome)
+            campo.codigo_coleta = ordem_servico + str(ponto.nome)
             campo.clima = previsao_tempo
             campo.save()
 
@@ -902,18 +902,19 @@ def export_pontos_csv(request):
     response['Content-Disposition'] = 'attachment; filename="pontos_coleta.csv"'
 
     writer = csv.writer(response, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-    writer.writerow(['Código', 'Setor', 'Local', 'Descrição', 'Status', 'Latitude', 'Longitude'])
+    writer.writerow(['Nome', 'Setor', 'Local', 'Descrição', 'Status', 'Latitude', 'Longitude'])
 
     pontos = PontosColeta.objects.select_related('setor', 'local').all()
     for ponto in pontos:
         writer.writerow([
-            ponto.codigo,
+            ponto.nome,
             ponto.setor,  # Acessa o nome do setor
             ponto.local,  # Acessa o nome do local
-            ponto.desc,
+            ponto.nome,
             'Ativo' if ponto.status else 'Inativo',
             ponto.lat,
-            ponto.lon
+            ponto.lon,
+            ponto.tipo
         ])
 
     return response

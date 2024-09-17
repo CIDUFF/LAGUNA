@@ -198,7 +198,7 @@ class ProgramaColetaForm(forms.Form):
 
         # Agora você pode usar essa função para gerar as opções únicas para cada campo
         self.fields['local_coleta'].choices = gerar_opcoes_unicas(
-            Setor, 'desc')
+            Setor, 'nome')
         self.fields['equipe_coleta'].choices = [
             (group.id, group.name) for group in Group.objects.all()]
         # self.fields['solicitante'].choices = gerar_opcoes_unicas(
@@ -437,9 +437,9 @@ class CustomUserCreationForm(UserCreationForm):
 class LocaisForm(forms.ModelForm):
     class Meta:
         model = Locais
-        fields = ['codigo', 'desc']
+        fields = ['nome', 'desc']
         labels = {
-            'codigo': 'Código - nome do local',
+            'nome': 'Código - nome do local',
             'desc': 'Descrição'
         }
 
@@ -450,7 +450,7 @@ class LocaisForm(forms.ModelForm):
             Fieldset(
                 'Cadastro de Locais',
                 Div(
-                    Div('codigo', css_class='col-md-6'),
+                    Div('nome', css_class='col-md-6'),
                     Div('desc', css_class='col-md-6'),
                     css_class='row'
                 )
@@ -463,13 +463,13 @@ class LocaisForm(forms.ModelForm):
 class SetorForm(forms.ModelForm):
     class Meta:
         model = Setor
-        fields = ['desc', 'local', 'lat', 'lon','abreviatura']
+        fields = ['nome', 'local', 'lat', 'lon','abreviatura']
         labels = {
-            'desc': 'Descrição',
+            'nome': 'Nome',
             'local': 'Local',
             'lat': 'Latitude',
             'lon': 'Longitude',
-            'abreaviatura': 'abreviatura'
+            'abreaviatura': 'Abreviatura'
             
         }
 
@@ -480,7 +480,7 @@ class SetorForm(forms.ModelForm):
             Fieldset(
                 'Cadastro de Setores',
                 Div(
-                    Div('desc', css_class='col-md-6'),
+                    Div('nome', css_class='col-md-6'),
                     Div('local', css_class='col-md-6'),
                     Div('lat', css_class='col-md-6'),
                     Div('lon', css_class='col-md-6'),
@@ -496,12 +496,12 @@ class SetorForm(forms.ModelForm):
 class PontoForm(forms.ModelForm):
     class Meta:
         model = PontosColeta
-        fields = ['codigo', 'setor', 'local', 'desc', 'lat', 'lon','status']
+        fields = ['nome', 'setor', 'local', 'tipo', 'lat', 'lon','status']
         labels = {
-            'codigo': 'Código',
+            'nome': 'Código',
             'setor': 'Setor',
             'local': 'Local',
-            'desc': 'Descrição',
+            'tipo': 'Descrição',
             'lat': 'Latitude',
             'lon': 'Longitude',
             'status': 'Ponto ativo?'
@@ -514,7 +514,7 @@ class PontoForm(forms.ModelForm):
             Fieldset(
                 'Cadastro de Pontos de Coleta',
                 Div(
-                    Div('codigo', css_class='col-md-6'),
+                    Div('nome', css_class='col-md-6'),
                     Div('setor', css_class='col-md-6'),
                     Div('local', css_class='col-md-6'),
                     Div('desc', css_class='col-md-6'),

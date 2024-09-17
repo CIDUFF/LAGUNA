@@ -145,7 +145,7 @@ class Locais(models.Model):
 
 
     def __str__(self):
-        return f'{self.codigo}'
+        return f'{self.nome}'
 
 class PontosColeta(models.Model):
     
@@ -163,7 +163,7 @@ class PontosColeta(models.Model):
     lon = models.FloatField(null=True, blank=True)
 
     def __str__(self):
-        return f'{self.codigo}'
+        return f'{self.nome}'
 
     class Meta:
         db_table = 'tab_ponto'
@@ -180,7 +180,7 @@ class Setor(models.Model):
 
     
     def __str__(self):
-        return f'{self.desc}'
+        return f'{self.nome}'
     
     class Meta:
         db_table = 'tab_setor'

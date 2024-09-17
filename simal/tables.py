@@ -172,11 +172,11 @@ class SetorTable(tables.Table):
     class Meta:
         model = Setor
         template_name = 'django_tables2/bootstrap5-responsive.html'
-        fields = ['desc', 'local', 'lat', 'lon','abreviatura']
+        fields = ['nome', 'local', 'lat', 'lon','abreviatura']
         empty_text = 'Não há dados para exibir'
         orderable = False
         exclude = ('id', 'created_at', 'updated_at')
-        sequence = ('desc', 'local', 'lat', 'lon','abreviatura')
+        sequence = ('nome', 'local', 'lat', 'lon','abreviatura')
         per_page = 2
         paginator_class = tables.LazyPaginator
         table_pagination = True
@@ -187,11 +187,11 @@ class PontoTable(tables.Table):
     class Meta:
         model = PontosColeta
         template_name = 'django_tables2/bootstrap5-responsive.html'
-        fields = ['codigo', 'setor', 'local', 'desc', 'lat', 'lon','status']
+        fields = ['nome', 'setor', 'local', 'tipo', 'lat', 'lon','status']
         empty_text = 'Não há dados para exibir'
         orderable = True
         exclude = ('id', 'created_at', 'updated_at')
-        sequence = ('codigo', 'setor', 'local', 'desc', 'lat', 'lon','status')
+        sequence = ('nome', 'setor', 'local', 'tipo', 'lat', 'lon','status')
         per_page = 10
         paginator_class = tables.LazyPaginator
         table_pagination = True
@@ -202,11 +202,11 @@ class LocalTable(tables.Table):
     class Meta:
         model = Locais
         template_name = 'django_tables2/bootstrap5-responsive.html'
-        fields = ['codigo', 'desc']
+        fields = ['nome', 'desc']
         empty_text = 'Não há dados para exibir'
         orderable = False
         exclude = ('id', 'created_at', 'updated_at')
-        sequence = ('codigo', 'desc')
+        sequence = ('nome', 'desc')
         per_page = 1
         paginator_class = tables.LazyPaginator
         table_pagination = True
