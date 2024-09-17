@@ -34,16 +34,16 @@ class ResultadosColetaFilter(django_filters.FilterSet):
 
 class PontoFilter(django_filters.FilterSet):
     codigo = django_filters.ChoiceFilter(
-        field_name='codigo',
+        field_name='nome',
         lookup_expr='exact',
         label='Ponto',
-        choices=[(ponto.codigo, ponto.codigo) for ponto in PontosColeta.objects.all().distinct()]
+        choices=[(ponto.nome, ponto.nome) for ponto in PontosColeta.objects.all().distinct()]
     )
     setor = django_filters.ChoiceFilter(
         field_name='setor',
         lookup_expr='exact',
         label='Setor',
-        choices=[(setor.id, setor.desc) for setor in Setor.objects.all().distinct()]  # Exibe a descrição do setor
+        choices=[(setor.id, setor.nome) for setor in Setor.objects.all().distinct()]  # Exibe a descrição do setor
     )
     # local = django_filters.ChoiceFilter(
     #     field_name='local',
@@ -54,20 +54,20 @@ class PontoFilter(django_filters.FilterSet):
 
     class Meta:
         model = PontosColeta
-        fields = ['codigo', 'setor']
+        fields = ['nome', 'setor']
         
 class SetorFilter(django_filters.FilterSet):
     desc = django_filters.ChoiceFilter(
         field_name='desc',
         lookup_expr='exact',
         label='Setor',
-        choices=[(setor.desc, setor.desc) for setor in Setor.objects.all().distinct()]
+        choices=[(setor.nome, setor.nome) for setor in Setor.objects.all().distinct()]
     )
     local = django_filters.ChoiceFilter(
         field_name='local',
         lookup_expr='exact',
         label='Local',
-        choices=[(local.id, local.codigo) for local in Locais.objects.all().distinct()]
+        choices=[(local.id, local.nome) for local in Locais.objects.all().distinct()]
     )
 
     class Meta:
@@ -76,10 +76,10 @@ class SetorFilter(django_filters.FilterSet):
         
 class LocalFilter(django_filters.FilterSet):
     codigo = django_filters.ChoiceFilter(
-        field_name='codigo',
+        field_name='nome',
         lookup_expr='exact',
         label='Local',
-        choices=[(local.codigo, local.codigo) for local in Locais.objects.all().distinct()]
+        choices=[(local.nome, local.nome) for local in Locais.objects.all().distinct()]
     )
 
     class Meta:

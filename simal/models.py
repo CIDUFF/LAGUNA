@@ -137,7 +137,7 @@ class LocaisColeta(models.Model):
     
 
 class Locais(models.Model):
-    codigo = models.CharField(max_length=50)
+    nome = models.CharField(max_length=50)
     desc = models.CharField(max_length=50)
     
     class Meta:
@@ -145,25 +145,25 @@ class Locais(models.Model):
 
 
     def __str__(self):
-        return f'{self.codigo}'
+        return f'{self.nome}'
 
 class PontosColeta(models.Model):
     
     DESCRICAO = [
         ('Ponto de Coleta', 'Ponto de Coleta'),
-        ('Ponto de aplicação', 'Ponto de Descarte'),
+        ('Ponto de aplicação', 'Ponto de Aplicação'),
     ]
     
-    codigo = models.CharField(max_length=5, blank=False)
+    nome = models.CharField(max_length=5, blank=False)
     setor = models.ForeignKey('Setor', on_delete=models.CASCADE, related_name='pontos')
     local = models.ForeignKey(Locais, on_delete=models.CASCADE, related_name='pontos')
-    desc = models.CharField(max_length=50, choices=DESCRICAO, default='Ponto de Coleta')
+    tipo = models.CharField(max_length=50, choices=DESCRICAO, default='Ponto de Coleta')
     status = models.BooleanField(default=True, blank=True)
     lat = models.FloatField(null=True, blank=True)
     lon = models.FloatField(null=True, blank=True)
 
     def __str__(self):
-        return f'{self.codigo}'
+        return f'{self.nome}'
 
     class Meta:
         db_table = 'tab_ponto'
@@ -172,7 +172,7 @@ class PontosColeta(models.Model):
     
     
 class Setor(models.Model):
-    desc = models.CharField(max_length=50, unique=True)
+    nome = models.CharField(max_length=50, unique=True)
     local = models.ForeignKey(Locais, on_delete=models.CASCADE, related_name='setor')
     lat = models.FloatField(null=True, blank=True)
     lon = models.FloatField(null=True, blank=True)
@@ -180,7 +180,7 @@ class Setor(models.Model):
 
     
     def __str__(self):
-        return f'{self.desc}'
+        return f'{self.nome}'
     
     class Meta:
         db_table = 'tab_setor'
