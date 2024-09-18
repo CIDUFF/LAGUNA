@@ -534,3 +534,8 @@ class ParametroForm(forms.ModelForm):
     class Meta:
         model = Parametros
         fields = '__all__'
+        
+class UnidadeMedidaForm(forms.ModelForm):
+    class Meta:
+        model = UnidadesMedida
+        fields = '__all__'

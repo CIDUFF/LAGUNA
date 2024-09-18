@@ -930,3 +930,15 @@ def cadastro_parametro(request):
     else:
         form = ParametroForm()
     return render(request, 'cadastro_parametro.html', {'form': form})
+
+@login_required
+def cadastro_unidade_medida(request):
+    if request.method == 'POST':
+        form = UnidadeMedidaForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Unidade de Medida cadastrada com sucesso.')
+            return redirect('unidades_medida_cadastradas')
+    else:
+        form = UnidadeMedidaForm()
+    return render(request, 'cadastro_unidade_medida.html', {'form': form})
