@@ -529,3 +529,8 @@ class PontoForm(forms.ModelForm):
                 Submit('submit', 'Salvar', css_class='btn btn-primary')
             )
         )
+        
+class ParametroForm(forms.ModelForm):
+    class Meta:
+        model = Parametros
+        fields = '__all__'

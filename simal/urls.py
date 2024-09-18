@@ -61,5 +61,6 @@ urlpatterns = [
     path('locais_cadastrados/', views.locais_cadastrados,
          name='locais_cadastrados'),
     path('export/pontos/', views.export_pontos_csv, name='export_pontos_csv'),
+    path('cadastro_parametro/', views.cadastro_parametro, name='cadastro_parametro'),
 
 ]

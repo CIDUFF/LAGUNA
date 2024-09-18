@@ -918,3 +918,15 @@ def export_pontos_csv(request):
         ])
 
     return response
+
+@login_required
+def cadastro_parametro(request):
+    if request.method == 'POST':
+        form = ParametroForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Parâmetro cadastrado com sucesso.')
+            return redirect('parametros_cadastrados')
+    else:
+        form = ParametroForm()
+    return render(request, 'cadastro_parametro.html', {'form': form})
