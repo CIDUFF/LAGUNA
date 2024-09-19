@@ -211,7 +211,7 @@ class ProgramaColeta(models.Model):
     prazo_material = models.FloatField(
         null=True, verbose_name='Prazo para check de material', default=3)
     equipe_coleta = models.CharField(
-        max_length=50, default='Equipe 1', verbose_name='Equipe de Coleta')
+        max_length=50, verbose_name='Equipe de Coleta')
     # solicitante = models.CharField(
     #     max_length=50, default='João Silva', verbose_name='Responsável')
     local_coleta = models.CharField(
