@@ -202,6 +202,14 @@ class ProgramaColeta(models.Model):
         null=True, verbose_name='Data do Check Car')
     data_check_material = models.DateField(
         null=True, verbose_name='Data do Check Material')
+    prazo_previsao = models.FloatField(
+        null=True, verbose_name='Prazo para previsão do tempo', default=10)
+    prazo_lab = models.FloatField(
+        null=True, verbose_name='Prazo para aviso ao laboratório', default=7)
+    prazo_car = models.FloatField(
+        null=True, verbose_name='Prazo para reserva de carro', default=5)
+    prazo_material = models.FloatField(
+        null=True, verbose_name='Prazo para check de material', default=3)
     equipe_coleta = models.CharField(
         max_length=50, default='Equipe 1', verbose_name='Equipe de Coleta')
     # solicitante = models.CharField(
@@ -214,13 +222,14 @@ class ProgramaColeta(models.Model):
     usuario = models.ForeignKey(User, on_delete=models.CASCADE,
                                 verbose_name="Usuário", null=True)  # Adiciona o campo usuario
     rota = models.CharField(max_length=25, null=True)
+    bentos = models.BooleanField(default=False, verbose_name='Bentos', blank=True)
 
     def save(self, usuario=None, *args, **kwargs):
 
         if not self.ordem_servico:
             hora = datetime.now().strftime('%H%M%S')
             localizacao = Setor.objects.filter(
-                desc=self.local_coleta).first()
+                nome=self.local_coleta).first()
 
             if localizacao:
                 codigo = localizacao.abreviatura
@@ -237,10 +246,10 @@ class ProgramaColeta(models.Model):
         if usuario:  # Atribui o usuário recebido ao campo usuario
             self.usuario = usuario
 
-        self.data_check_forecast = self.data_coleta_campo - timedelta(days=10)
-        self.data_check_material = self.data_coleta_campo - timedelta(days=3)
-        self.data_check_car = self.data_coleta_campo - timedelta(days=5)
-        self.data_check_lab = self.data_coleta_campo - timedelta(days=7)
+        self.data_check_forecast = self.data_coleta_campo - timedelta(self.prazo_previsao)
+        self.data_check_material = self.data_coleta_campo - timedelta(self.prazo_material)
+        self.data_check_car = self.data_coleta_campo - timedelta(self.prazo_car)
+        self.data_check_lab = self.data_coleta_campo - timedelta(self.prazo_lab)
 
         super().save(*args, **kwargs)
 

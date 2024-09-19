@@ -31,26 +31,22 @@ class ResultadosColetaFilter(django_filters.FilterSet):
     codigo_coleta = django_filters.CharFilter(
         lookup_expr='icontains', label='Código da Coleta')
 
-
 class PontoFilter(django_filters.FilterSet):
     codigo = django_filters.ChoiceFilter(
         field_name='nome',
         lookup_expr='exact',
-        label='Ponto',
-        choices=[(ponto.nome, ponto.nome) for ponto in PontosColeta.objects.all().distinct()]
+        label='Ponto'
     )
     setor = django_filters.ChoiceFilter(
         field_name='setor',
         lookup_expr='exact',
-        label='Setor',
-        choices=[(setor.id, setor.nome) for setor in Setor.objects.all().distinct()]  # Exibe a descrição do setor
+        label='Setor'
     )
-    # local = django_filters.ChoiceFilter(
-    #     field_name='local',
-    #     lookup_expr='exact',
-    #     label='Local',
-    #     choices=[(local.id, local.codigo) for local in Locais.objects.all().distinct()]
-    # )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.filters['codigo'].extra['choices'] = [(ponto.nome, ponto.nome) for ponto in PontosColeta.objects.all().distinct()]
+        self.filters['setor'].extra['choices'] = [(setor.id, setor.nome) for setor in Setor.objects.all().distinct()]
 
     class Meta:
         model = PontosColeta
@@ -60,15 +56,18 @@ class SetorFilter(django_filters.FilterSet):
     desc = django_filters.ChoiceFilter(
         field_name='desc',
         lookup_expr='exact',
-        label='Setor',
-        choices=[(setor.nome, setor.nome) for setor in Setor.objects.all().distinct()]
+        label='Setor'
     )
     local = django_filters.ChoiceFilter(
         field_name='local',
         lookup_expr='exact',
-        label='Local',
-        choices=[(local.id, local.nome) for local in Locais.objects.all().distinct()]
+        label='Local'
     )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.filters['desc'].extra['choices'] = [(setor.nome, setor.nome) for setor in Setor.objects.all().distinct()]
+        self.filters['local'].extra['choices'] = [(local.id, local.nome) for local in Locais.objects.all().distinct()]
 
     class Meta:
         model = Setor
@@ -78,9 +77,12 @@ class LocalFilter(django_filters.FilterSet):
     codigo = django_filters.ChoiceFilter(
         field_name='nome',
         lookup_expr='exact',
-        label='Local',
-        choices=[(local.nome, local.nome) for local in Locais.objects.all().distinct()]
+        label='Local'
     )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.filters['codigo'].extra['choices'] = [(local.nome, local.nome) for local in Locais.objects.all().distinct()]
 
     class Meta:
         model = Locais

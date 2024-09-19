@@ -171,20 +171,38 @@ class ProgramaColetaForm(forms.Form):
     equipe_coleta = forms.ChoiceField(label='Equipe de coleta')
     # solicitante = forms.ChoiceField(label='Solicitante')
     local_coleta = forms.ChoiceField(label='Local de coleta')
+    prazo_previsao = forms.FloatField(
+        required=False, label='Prazo para verificar a previsão do tempo em dias', 
+        widget=forms.NumberInput(attrs={'step': '1'}), initial=10)
+    prazo_lab = forms.FloatField(
+        required=False, label='Prazo para avisar ao laboratório em dias', 
+        widget=forms.NumberInput(attrs={'step': '1'}), initial=7)
+    prazo_car = forms.FloatField(
+        required=False, label='Prazo para reservar carro em dias', 
+        widget=forms.NumberInput(attrs={'step': '1'}), initial=5)
+    prazo_material = forms.FloatField(
+        required=False, label='Prazo para preparar o material em dias', 
+        widget=forms.NumberInput(attrs={'step': '1'}), initial=3)
+    equipe_coleta = forms.CharField(
+        max_length=50, required=False, label='Equipe de Coleta', 
+        initial='Equipe 1')
     observacoes = forms.CharField(label='Observações',
                                   widget=forms.Textarea(attrs={'rows': 3, 'cols': 40}))
+    bentos = forms.BooleanField(label='Esta campanha possui análise de macrofauna bentônica?', required=False)
 
     def __init__(self, *args, **kwargs):
         super(ProgramaColetaForm, self).__init__(*args, **kwargs)
         campo = [
             'data_coleta_campo',
-            'equipe_coleta', 'local_coleta', 'observacoes'
+            'equipe_coleta', 'local_coleta', 'prazo_previsao', 'prazo_lab', 'prazo_car', 'prazo_material',
+            'observacoes'	
         ]
         self.helper = FormHelper()
         self.helper.layout = Layout(
             Fieldset(
                 ' ',
-                *[FloatingField(campo) for campo in campo]
+                *[FloatingField(campo) for campo in campo],
+                Switch('bentos'),	
             ),
             ButtonHolder(
                 Submit('submit', 'Salvar')
@@ -196,15 +214,11 @@ class ProgramaColetaForm(forms.Form):
                 campo, flat=True).distinct()
             return [(valor, valor) for valor in valores_unicos]
 
-        # Agora você pode usar essa função para gerar as opções únicas para cada campo
+
         self.fields['local_coleta'].choices = gerar_opcoes_unicas(
             Setor, 'nome')
         self.fields['equipe_coleta'].choices = [
             (group.id, group.name) for group in Group.objects.all()]
-        # self.fields['solicitante'].choices = gerar_opcoes_unicas(
-        #     User, 'nome')
-        # self.fields['laboratorio'].choices = gerar_opcoes_unicas(
-        #     Laboratorios, 'nome')
 
 
 def custom_checkbox_widget(attrs=None):

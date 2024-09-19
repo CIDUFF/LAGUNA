@@ -18,17 +18,15 @@ from django.conf import settings
 import json
 import os
 
-# Third-party imports
+
 from django_tables2 import RequestConfig
-from django.contrib.auth.forms import UserCreationForm
-# Local imports
+
 from .filters import *
 from .forms import *
 from .services import get_weather_description, gerar_etiquetas
 from .tables import *
 
-# from django.views.generic import ListView
-# from .models import ColetaCampo
+
 
 
 def check_admin(user):
@@ -653,7 +651,7 @@ Raises:
             "Maricá", data.strftime('%Y-%m-%d'))
 
         local_campanha = campanha.local_coleta
-        setor_local = Setor.objects.get(desc=local_campanha)
+        setor_local = Setor.objects.get(nome=local_campanha)
         pontos_coleta = PontosColeta.objects.filter(setor=setor_local)
         programa_coleta_instance = get_object_or_404(
             ProgramaColeta, ordem_servico=ordem_servico)
