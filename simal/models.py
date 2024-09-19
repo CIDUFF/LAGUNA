@@ -515,7 +515,9 @@ class UnidadesMedida(models.Model):
         db_table = 'tab_unidade_medida'
 
 class Parametros(models.Model):
+    
     parametro = models.CharField(max_length=50)
+    tipo = models.CharField(max_length=50)
     descricao = models.CharField(max_length=50)
     unidade_medida = models.ForeignKey(UnidadesMedida, on_delete=models.CASCADE)
     produto = models.CharField(max_length=50)
@@ -529,7 +531,16 @@ class Parametros(models.Model):
         db_table = 'tab_parametro'
     
     
+class TipoParametro(models.Model):
+    nome = models.CharField(max_length=50)
+    descricao = models.CharField(max_length=50)
     
+    def __str__(self):
+        return f'{self.nome}'
+    
+    class Meta:
+        db_table = 'tab_tipo_parametro'
+
 # class Medida(models.Model):
 #     "É uma função que mostra o resultado das medições."
 #     status = models.BooleanField(default=True)
