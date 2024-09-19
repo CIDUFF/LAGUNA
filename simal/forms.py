@@ -550,3 +550,8 @@ class UnidadeMedidaForm(forms.ModelForm):
     class Meta:
         model = UnidadesMedida
         fields = '__all__'
+        
+class TipoParametroForm(forms.ModelForm):
+    class Meta:
+        model = TipoParametro
+        fields = '__all__'

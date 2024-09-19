@@ -211,3 +211,17 @@ class LocalTable(tables.Table):
         paginator_class = tables.LazyPaginator
         table_pagination = True
         
+class TipoParametroTable(tables.Table):
+#    update = tables.LinkColumn('atualizar_tipo_parametro', args=[A('pk')], orderable=False, empty_values=[], text='EDITAR')
+
+    class Meta:
+        model = TipoParametro
+        template_name = 'django_tables2/bootstrap5-responsive.html'
+        fields = ['nome', 'descricao']
+        empty_text = 'Não há dados para exibir'
+        orderable = False
+        exclude = ('id', 'created_at', 'updated_at')
+        sequence = ('nome', 'descricao')
+        per_page = 1
+        paginator_class = tables.LazyPaginator
+        table_pagination = True

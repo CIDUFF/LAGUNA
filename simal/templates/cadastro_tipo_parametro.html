@@ -1,0 +1,32 @@
+{% extends 'base/base_site.html' %}
+{% load django_bootstrap5 %}
+{% load django_tables2 %} 
+{% block title %} Cadastro de Parâmetros {% endblock %}
+{% block content %}
+{% if user.is_authenticated %}
+<div class="card checklist">
+    <div class="card-header">
+        <h3 class="text-center mb-3">Cadastro de Tipo de Parâmetros</h3>
+    </div>
+    <form method="post">
+        {% csrf_token %}
+        <div>
+            <h4>
+                Informações do Tipo de Parâmetros
+            </h4>
+        </div>
+        {% bootstrap_form form layout='floating' %}
+        <button type="submit" class="btn btn-primary">Salvar</button>
+    </form>
+    {% render_table table_tipo_parametro %}
+</div>
+{% else %}
+    <div class="container mt-5">
+        <h1 class="text-center">Olá, visitante</h1>
+        <p class="text-center">Faça login para visualizar o sistema</p>
+        <div class="d-flex justify-content-center">
+            <a href="{% url 'account_login' %}" class="btn btn-primary">Clique aqui para logar</a>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}

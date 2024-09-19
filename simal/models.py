@@ -539,7 +539,16 @@ class Parametros(models.Model):
     
 
     
+class TipoParametro(models.Model):
+    nome = models.CharField(max_length=50, blank=True, unique=True)
+    descricao = models.CharField(max_length=50, blank=True)
     
+    def __str__(self):
+        return f'{self.nome}'
+    
+    class Meta:
+        db_table = 'tab_tipo_parametro'
+
 # class Medida(models.Model):
 #     "É uma função que mostra o resultado das medições."
 #     status = models.BooleanField(default=True)

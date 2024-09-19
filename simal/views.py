@@ -924,7 +924,7 @@ def cadastro_parametro(request):
         if form.is_valid():
             form.save()
             messages.success(request, 'Parâmetro cadastrado com sucesso.')
-            return redirect('parametros_cadastrados')
+            return redirect('cadastro_parametro')
     else:
         form = ParametroForm()
     return render(request, 'cadastro_parametro.html', {'form': form})
@@ -936,7 +936,24 @@ def cadastro_unidade_medida(request):
         if form.is_valid():
             form.save()
             messages.success(request, 'Unidade de Medida cadastrada com sucesso.')
-            return redirect('unidades_medida_cadastradas')
+            return redirect('cadastro_unidade_medida')
     else:
         form = UnidadeMedidaForm()
     return render(request, 'cadastro_unidade_medida.html', {'form': form})
+
+@login_required
+def cadastro_tipo_parametro(request):
+    if request.method == 'POST':
+        form = TipoParametroForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Tipo de Parâmetro cadastrado com sucesso.')
+            return redirect('cadastro_tipo_parametro')
+    else:
+        form = TipoParametroForm()
+    
+    table_tipo_parametro = TipoParametroTable(TipoParametro.objects.all())
+    RequestConfig(request, paginate={"per_page": 25}).configure(table_tipo_parametro)
+    
+    return render(request, 'cadastro_tipo_parametro.html', {'form': form, 'table_tipo_parametro': table_tipo_parametro})
+
