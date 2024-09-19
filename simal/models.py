@@ -516,11 +516,11 @@ class UnidadesMedida(models.Model):
 
 class Parametros(models.Model):
     
-    parametro = models.CharField(max_length=50)
-    tipo = models.CharField(max_length=50)
-    descricao = models.CharField(max_length=50)
-    unidade_medida = models.ForeignKey(UnidadesMedida, on_delete=models.CASCADE)
-    produto = models.CharField(max_length=50)
+    parametro = models.CharField(max_length=50, blank=True, unique=True)
+    tipo = models.CharField(max_length=50, blank=True)
+    descricao = models.CharField(max_length=50, blank=True)
+    unidade_medida = models.ForeignKey(UnidadesMedida, on_delete=models.CASCADE, blank=True)
+    produto = models.CharField(max_length=50, blank=True)
     lim_max = models.FloatField(blank=True)
     lim_min = models.FloatField(blank=True)
     
@@ -532,8 +532,8 @@ class Parametros(models.Model):
     
     
 class TipoParametro(models.Model):
-    nome = models.CharField(max_length=50)
-    descricao = models.CharField(max_length=50)
+    nome = models.CharField(max_length=50, blank=True, unique=True)
+    descricao = models.CharField(max_length=50, blank=True)
     
     def __str__(self):
         return f'{self.nome}'

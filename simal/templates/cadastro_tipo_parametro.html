@@ -1,33 +1,24 @@
 {% extends 'base/base_site.html' %}
 {% load django_bootstrap5 %}
+{% load django_tables2 %} 
 {% block title %} Cadastro de Parâmetros {% endblock %}
 {% block content %}
 {% if user.is_authenticated %}
 <div class="card checklist">
     <div class="card-header">
-        <h3 class="text-center mb-3">Cadastro de Parâmetros</h3>
+        <h3 class="text-center mb-3">Cadastro de Tipo de Parâmetros</h3>
     </div>
     <form method="post">
         {% csrf_token %}
         <div>
             <h4>
-                Informações do Parâmetro
+                Informações do Tipo de Parâmetros
             </h4>
         </div>
         {% bootstrap_form form layout='floating' %}
-        {{ formset.management_form }}
-        <div>
-            <h4>
-                Detalhes do Parâmetro
-            </h4>
-        </div>
-        {% for fs in formset %}
-        <div class="inlineform">
-            {% bootstrap_form fs layout='floating' %}
-        </div>
-        {% endfor %}
         <button type="submit" class="btn btn-primary">Salvar</button>
     </form>
+    {% render_table table_tipo_parametro %}
 </div>
 {% else %}
     <div class="container mt-5">
