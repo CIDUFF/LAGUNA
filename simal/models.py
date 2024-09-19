@@ -211,7 +211,7 @@ class ProgramaColeta(models.Model):
     prazo_material = models.FloatField(
         null=True, verbose_name='Prazo para check de material', default=3)
     equipe_coleta = models.CharField(
-        max_length=50, default='Equipe 1', verbose_name='Equipe de Coleta')
+        max_length=50, verbose_name='Equipe de Coleta')
     # solicitante = models.CharField(
     #     max_length=50, default='João Silva', verbose_name='Responsável')
     local_coleta = models.CharField(
@@ -516,11 +516,18 @@ class UnidadesMedida(models.Model):
 
 class Parametros(models.Model):
     
-    parametro = models.CharField(max_length=50, blank=True, unique=True)
-    tipo = models.CharField(max_length=50, blank=True)
-    descricao = models.CharField(max_length=50, blank=True)
-    unidade_medida = models.ForeignKey(UnidadesMedida, on_delete=models.CASCADE, blank=True)
-    produto = models.CharField(max_length=50, blank=True)
+    PRODUTO = [
+        ('Água', 'Água'),
+        ('Sedimento', 'Sedimento'),
+        # ('Biota', 'Biota'),
+        # ('Solo', 'Solo'),
+        # ('Ar', 'Ar'),
+    ]
+    
+    parametro = models.CharField(max_length=50)
+    descricao = models.CharField(max_length=50)
+    unidade_medida = models.ForeignKey(UnidadesMedida, on_delete=models.CASCADE)
+    produto = models.CharField(max_length=50, choices=PRODUTO)
     lim_max = models.FloatField(blank=True)
     lim_min = models.FloatField(blank=True)
     
@@ -530,6 +537,7 @@ class Parametros(models.Model):
     class Meta:
         db_table = 'tab_parametro'
     
+
     
 class TipoParametro(models.Model):
     nome = models.CharField(max_length=50, blank=True, unique=True)

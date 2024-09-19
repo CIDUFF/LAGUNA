@@ -183,9 +183,6 @@ class ProgramaColetaForm(forms.Form):
     prazo_material = forms.FloatField(
         required=False, label='Prazo para preparar o material em dias', 
         widget=forms.NumberInput(attrs={'step': '1'}), initial=3)
-    equipe_coleta = forms.CharField(
-        max_length=50, required=False, label='Equipe de Coleta', 
-        initial='Equipe 1')
     observacoes = forms.CharField(label='Observações',
                                   widget=forms.Textarea(attrs={'rows': 3, 'cols': 40}))
     bentos = forms.BooleanField(label='Esta campanha possui análise de macrofauna bentônica?', required=False)
