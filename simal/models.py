@@ -515,10 +515,19 @@ class UnidadesMedida(models.Model):
         db_table = 'tab_unidade_medida'
 
 class Parametros(models.Model):
+    
+    PRODUTO = [
+        ('Água', 'Água'),
+        ('Sedimento', 'Sedimento'),
+        # ('Biota', 'Biota'),
+        # ('Solo', 'Solo'),
+        # ('Ar', 'Ar'),
+    ]
+    
     parametro = models.CharField(max_length=50)
     descricao = models.CharField(max_length=50)
     unidade_medida = models.ForeignKey(UnidadesMedida, on_delete=models.CASCADE)
-    produto = models.CharField(max_length=50)
+    produto = models.CharField(max_length=50, choices=PRODUTO)
     lim_max = models.FloatField(blank=True)
     lim_min = models.FloatField(blank=True)
     
@@ -528,6 +537,7 @@ class Parametros(models.Model):
     class Meta:
         db_table = 'tab_parametro'
     
+
     
     
 # class Medida(models.Model):
