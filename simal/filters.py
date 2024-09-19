@@ -15,7 +15,7 @@ class CampoFilter(django_filters.FilterSet):
 
 
 class ProgramaColetaFilter(django_filters.FilterSet):
-    
+
     class Meta:
         model = ProgramaColeta
         fields = {
@@ -24,7 +24,7 @@ class ProgramaColetaFilter(django_filters.FilterSet):
            'status_coleta': ['exact'],
          # Adicione mais campos conforme necessário
         }
-        
+
 class ResultadosColetaFilter(django_filters.FilterSet):
     ponto = django_filters.CharFilter(
         lookup_expr='icontains', label='Ponto')
@@ -55,7 +55,7 @@ class PontoFilter(django_filters.FilterSet):
     class Meta:
         model = PontosColeta
         fields = ['nome', 'setor']
-        
+
 class SetorFilter(django_filters.FilterSet):
     desc = django_filters.ChoiceFilter(
         field_name='desc',
@@ -73,7 +73,7 @@ class SetorFilter(django_filters.FilterSet):
     class Meta:
         model = Setor
         fields = ['desc', 'local']
-        
+
 class LocalFilter(django_filters.FilterSet):
     codigo = django_filters.ChoiceFilter(
         field_name='nome',
