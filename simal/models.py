@@ -22,6 +22,8 @@ class equipes(models.Model):
 
     def __str__(self):
         return f'{self.nome}'
+    class Meta:
+        db_table = 'tab_equipe'
 
 # class UsuarioSistema(models.Model):
 #     """
