@@ -514,20 +514,32 @@ class UnidadesMedida(models.Model):
     class Meta:
         db_table = 'tab_unidade_medida'
 
+class Produto(models.Model):
+    nome = models.CharField(max_length=50, blank=True)
+    descricao = models.CharField(max_length=50, blank=True)
+    
+    def __str__(self):
+        return f'{self.nome}'
+    
+    class Meta:
+        db_table = 'tab_produto'
+
 class Parametros(models.Model):
     
-    PRODUTO = [
-        ('Água', 'Água'),
-        ('Sedimento', 'Sedimento'),
-        # ('Biota', 'Biota'),
-        # ('Solo', 'Solo'),
-        # ('Ar', 'Ar'),
-    ]
+    # PRODUTO = [
+    #     ('Água', 'Água'),
+    #     ('Sedimento', 'Sedimento'),
+    #     # ('Biota', 'Biota'),
+    #     # ('Solo', 'Solo'),
+    #     # ('Ar', 'Ar'),
+    # ]
     
-    parametro = models.CharField(max_length=50)
-    descricao = models.CharField(max_length=50)
-    unidade_medida = models.ForeignKey(UnidadesMedida, on_delete=models.CASCADE)
-    produto = models.CharField(max_length=50, choices=PRODUTO)
+    parametro = models.CharField(max_length=50,blank=True)
+    tipo_parametro = models.ForeignKey('TipoParametro', on_delete=models.CASCADE,blank=True, null=True)
+    frasco = models.ForeignKey('Frasco', on_delete=models.CASCADE,blank=True, null=True)
+    descricao = models.CharField(max_length=50,blank=True)
+    unidade_medida = models.ForeignKey(UnidadesMedida, on_delete=models.CASCADE,blank=True)
+    produto = models.ForeignKey(Produto, on_delete=models.CASCADE,blank=True, null=True)
     lim_max = models.FloatField(blank=True)
     lim_min = models.FloatField(blank=True)
     
@@ -548,6 +560,25 @@ class TipoParametro(models.Model):
     
     class Meta:
         db_table = 'tab_tipo_parametro'
+        
+class Frasco(models.Model):
+    """
+    Classe que representa um frasco.
+
+    Atributos:
+        nome (str): O nome do frasco.
+        descricao (str): A descrição do frasco.
+        volume (float): O volume do frasco.
+    """
+
+    nome = models.CharField(max_length=50,blank=True)
+    descricao = models.CharField(max_length=50,blank=True)
+
+    def __str__(self):
+        return f'{self.nome}'
+    
+    class Meta:
+        db_table = 'tab_frasco'
 
 # class Medida(models.Model):
 #     "É uma função que mostra o resultado das medições."
@@ -555,3 +586,28 @@ class TipoParametro(models.Model):
 #     unidade = models.ForeignKey(Parametros, on_delete=models.CASCADE)
 #     valor = models.FloatField(blank=True)
 #     codigo_coleta = models.ForeignKey(Campo, on_delete=models.CASCADE)
+
+class Amostra(models.Model):
+    "É uma função que mostra o resultado das medições."
+    status = models.CharField(max_length=50, blank=True)
+    ponto = models.ForeignKey(PontosColeta, on_delete=models.CASCADE)
+    
+    codigo_coleta = models.ForeignKey(Campo, on_delete=models.CASCADE)
+    data_coleta = models.DateField(default=date.today)
+    hora_coleta = models.TimeField(auto_now=True)
+    frasco = models.ForeignKey(Frasco, on_delete=models.CASCADE)
+    observacao = models.TextField(max_length=500, blank=True)
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE)
+    # unidade = models.ForeignKey(Parametros, on_delete=models.CASCADE)
+    # valor = models.FloatField(blank=True)
+
+    def __str__(self):
+        return f'{self.codigo_coleta}'
+
+    
+class StatusAmostra(models.Model):
+    "É uma função que lista os status possíveis para a amostra."
+    status = models.CharField(max_length=50, blank=True)
+
+    def __str__(self):
+        return f'{self.status}'

@@ -623,6 +623,8 @@ def gerar_rota_campanha(request, ordem_servico=None):
     """
 Gera rota para uma campanha com base na ordem de serviço fornecida.
 
+Ordem de serviço é: Local + Data da coleta
+
 Esta função de view recupera a ordem de serviço da requisição, busca a campanha correspondente
 e gera pontos de coleta e previsões meteorológicas para a campanha. Em seguida, salva os dados
 gerados e redireciona para a checklist da campanha.
