@@ -30,8 +30,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
-# CSRF_TRUSTED_ORIGINS = ['http://flying-barely-magpie.ngrok-free.app']
-
 
 # Application definition
 
@@ -50,7 +48,6 @@ INSTALLED_APPS = [
     'crispy_forms',
     "crispy_bootstrap5",
     'django_tables2',
-    # 'debug_toolbar',
     "django_bootstrap5",
     'django_extensions',
     'localflavor',
@@ -59,9 +56,7 @@ INSTALLED_APPS = [
 ]
 
 AUTHENTICATION_BACKENDS = [
-    # Needed to login by username in Django admin, regardless of `allauth`
     'django.contrib.auth.backends.ModelBackend',
-    # `allauth` specific authentication methods, such as login by email
     'allauth.account.auth_backends.AuthenticationBackend',
 
 ]
@@ -78,7 +73,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "allauth.account.middleware.AccountMiddleware",
-    # "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
 
 ROOT_URLCONF = 'amostras.urls'
