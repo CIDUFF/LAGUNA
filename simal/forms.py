@@ -528,7 +528,7 @@ class PontoForm(forms.ModelForm):
                     Div('nome', css_class='col-md-6'),
                     Div('setor', css_class='col-md-6'),
                     Div('local', css_class='col-md-6'),
-                    Div('desc', css_class='col-md-6'),
+                    Div('tipo', css_class='col-md-6'),
                     Div('lat', css_class='col-md-6'),
                     Div('lon', css_class='col-md-6'),
                     Div('status', css_class='col-md-6'),
@@ -555,3 +555,5 @@ class TipoParametroForm(forms.ModelForm):
     class Meta:
         model = TipoParametro
         fields = '__all__'
+        
+        
