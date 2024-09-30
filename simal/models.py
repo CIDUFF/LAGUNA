@@ -142,8 +142,7 @@ class Locais(models.Model):
     nome = models.CharField(max_length=50)
     desc = models.CharField(max_length=50)
     
-    class Meta:
-        db_table = 'tab_local'
+
 
 
     def __str__(self):
@@ -167,10 +166,6 @@ class PontosColeta(models.Model):
     def __str__(self):
         return f'{self.nome}'
 
-    class Meta:
-        db_table = 'tab_ponto'
-        
-
     
     
 class Setor(models.Model):
@@ -184,8 +179,6 @@ class Setor(models.Model):
     def __str__(self):
         return f'{self.nome}'
     
-    class Meta:
-        db_table = 'tab_setor'
 
 
 class ProgramaColeta(models.Model):
@@ -523,8 +516,6 @@ class Produto(models.Model):
     def __str__(self):
         return f'{self.nome}'
     
-    class Meta:
-        db_table = 'tab_produto'
 
 class Parametros(models.Model):
     
@@ -548,8 +539,6 @@ class Parametros(models.Model):
     def __str__(self):
         return f'{self.parametro}'
     
-    class Meta:
-        db_table = 'tab_parametro'
     
 
     
@@ -578,9 +567,6 @@ class Frasco(models.Model):
 
     def __str__(self):
         return f'{self.nome}'
-    
-    class Meta:
-        db_table = 'tab_frasco'
 
 # class Medida(models.Model):
 #     "É uma função que mostra o resultado das medições."
