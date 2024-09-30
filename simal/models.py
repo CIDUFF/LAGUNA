@@ -142,8 +142,7 @@ class Locais(models.Model):
     nome = models.CharField(max_length=50)
     desc = models.CharField(max_length=50)
     
-    class Meta:
-        db_table = 'tab_local'
+
 
 
     def __str__(self):
@@ -167,10 +166,6 @@ class PontosColeta(models.Model):
     def __str__(self):
         return f'{self.nome}'
 
-    class Meta:
-        db_table = 'tab_ponto'
-        
-
     
     
 class Setor(models.Model):
@@ -184,8 +179,6 @@ class Setor(models.Model):
     def __str__(self):
         return f'{self.nome}'
     
-    class Meta:
-        db_table = 'tab_setor'
 
 
 class ProgramaColeta(models.Model):
@@ -523,8 +516,6 @@ class Produto(models.Model):
     def __str__(self):
         return f'{self.nome}'
     
-    class Meta:
-        db_table = 'tab_produto'
 
 class Parametros(models.Model):
     
@@ -548,8 +539,6 @@ class Parametros(models.Model):
     def __str__(self):
         return f'{self.parametro}'
     
-    class Meta:
-        db_table = 'tab_parametro'
     
 
     
@@ -578,9 +567,6 @@ class Frasco(models.Model):
 
     def __str__(self):
         return f'{self.nome}'
-    
-    class Meta:
-        db_table = 'tab_frasco'
 
 # class Medida(models.Model):
 #     "É uma função que mostra o resultado das medições."
@@ -613,3 +599,167 @@ class StatusAmostra(models.Model):
 
     def __str__(self):
         return f'{self.status}'
+    
+    
+# ------------------------------------MIGRAÇÃO-----------------------------------------------------
+
+class TabAmostra(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    id_ponto = models.ForeignKey('TabPonto', models.DO_NOTHING, db_column='id_ponto', blank=True, null=True)
+    id_coleta = models.ForeignKey('TabColeta', models.DO_NOTHING, db_column='id_coleta', blank=True, null=True)
+    id_frasco = models.ForeignKey('TabFrasco', models.DO_NOTHING, db_column='id_frasco', blank=True, null=True)
+    etiqueta = models.TextField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'tab_amostra'
+
+
+class TabCampanha(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    id_local = models.ForeignKey('TabLocal', models.DO_NOTHING, db_column='id_local', blank=True, null=True)
+    nome = models.TextField(blank=True, null=True)
+    descricao = models.TextField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'tab_campanha'
+
+
+class TabColeta(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    data = models.DateTimeField(blank=True, null=True)
+    nome = models.TextField(blank=True, null=True)
+    id_campanha = models.ForeignKey(TabCampanha, models.DO_NOTHING, db_column='id_campanha', blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'tab_coleta'
+
+
+class TabEnvio(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    id_amostra = models.ForeignKey(TabAmostra, models.DO_NOTHING, db_column='id_amostra', blank=True, null=True)
+    id_laboratorio = models.ForeignKey('TabLaboratorio', models.DO_NOTHING, db_column='id_laboratorio', blank=True, null=True)
+    data_envio = models.DateTimeField(blank=True, null=True)
+    data_resultado = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'tab_envio'
+
+
+class TabFrasco(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    nome = models.TextField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'tab_frasco'
+
+
+class TabLaboratorio(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    nome = models.TextField(blank=True, null=True)
+    laboratorio_descricao = models.TextField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'tab_laboratorio'
+
+
+class TabLocal(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    nome = models.TextField(blank=True, null=True)
+    local_latitude = models.FloatField(blank=True, null=True)
+    local_longitude = models.FloatField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'tab_local'
+
+
+class TabMedida(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    id_envio = models.ForeignKey(TabEnvio, models.DO_NOTHING, db_column='id_envio', blank=True, null=True)
+    id_pp = models.ForeignKey('TabProdxparam', models.DO_NOTHING, db_column='id_pp', blank=True, null=True)
+    valor = models.TextField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'tab_medida'
+
+
+class TabParam(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    nome = models.TextField(blank=True, null=True)
+    param_meta_dado = models.TextField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'tab_param'
+
+
+class TabPonto(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    id_setor = models.ForeignKey('TabSetor', models.DO_NOTHING, db_column='id_setor', blank=True, null=True)
+    id_local = models.ForeignKey(TabLocal, models.DO_NOTHING, db_column='id_local', blank=True, null=True)
+    nome = models.TextField(blank=True, null=True)
+    modalidade = models.TextField(blank=True, null=True)
+    ponto_lat = models.FloatField(blank=True, null=True)
+    ponto_long = models.FloatField(blank=True, null=True)
+    observacao = models.TextField(blank=True, null=True)
+    status = models.BooleanField()
+
+    class Meta:
+        managed = False
+        db_table = 'tab_ponto'
+
+
+class TabProduto(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    produto = models.TextField(blank=True, null=True)
+    nome = models.TextField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'tab_produto'
+
+
+class TabProdxparam(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    id_param = models.ForeignKey(TabParam, models.DO_NOTHING, db_column='id_param', blank=True, null=True)
+    id_produto = models.ForeignKey(TabProduto, models.DO_NOTHING, db_column='id_produto', blank=True, null=True)
+    id_serie = models.ForeignKey('TabSerieClassificacao', models.DO_NOTHING, db_column='id_serie', blank=True, null=True)
+    nome = models.TextField(blank=True, null=True)
+    unidade = models.TextField(blank=True, null=True)
+    limite_min = models.BigIntegerField(blank=True, null=True)
+    limite_max = models.BigIntegerField(blank=True, null=True)
+    id_frasco = models.ForeignKey(TabFrasco, models.DO_NOTHING, db_column='id_frasco', blank=True, null=True)
+    id_ppativacao = models.BigIntegerField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'tab_prodxparam'
+
+
+class TabSerieClassificacao(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    nome = models.TextField(blank=True, null=True)
+    descricao = models.TextField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'tab_serie_classificacao'
+
+
+class TabSetor(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    nome = models.TextField(blank=True, null=True)
+    id_local = models.ForeignKey(TabLocal, models.DO_NOTHING, db_column='id_local', blank=True, null=True)
+    local_long = models.FloatField(blank=True, null=True)
+    local_lat = models.FloatField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'tab_setor'
