@@ -66,8 +66,7 @@ class SetorFilter(django_filters.FilterSet):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.filters['desc'].extra['choices'] = [(setor.nome, setor.nome) for setor in Setor.objects.all().distinct()]
-        self.filters['local'].extra['choices'] = [(local.id, local.nome) for local in Locais.objects.all().distinct()]
+        self.filters['local'].extra['choices'] = [(local.id, local.nome) for local in TabLocal.objects.all().distinct()]
 
     class Meta:
         model = Setor
@@ -82,8 +81,8 @@ class LocalFilter(django_filters.FilterSet):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.filters['codigo'].extra['choices'] = [(local.nome, local.nome) for local in Locais.objects.all().distinct()]
+        self.filters['codigo'].extra['choices'] = [(local.nome, local.nome) for local in TabLocal.objects.all().distinct()]
 
     class Meta:
-        model = Locais
+        model = TabLocal
         fields = ['codigo']

@@ -812,7 +812,7 @@ def cadastro_local(request):
 
 @login_required
 def atualizar_local(request, id):
-    local = get_object_or_404(Locais, id=id)
+    local = get_object_or_404(TabLocal, id=id)
     if request.method == 'POST':
         form = LocaisForm(request.POST, instance=local)
         if form.is_valid():
@@ -881,7 +881,7 @@ def locais_cadastrados(request):
     ponto_filter = PontoFilter(request.GET, queryset=PontosColeta.objects.all())
     table_pontos = PontoTable(ponto_filter.qs)
     
-    local_filter = LocalFilter(request.GET, queryset=Locais.objects.all())
+    local_filter = LocalFilter(request.GET, queryset=TabLocal.objects.all())
     table_locais = LocalTable(local_filter.qs)
     
     RequestConfig(request, paginate={"per_page": 25}).configure(table_setores)

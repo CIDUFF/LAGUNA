@@ -447,11 +447,10 @@ class CustomUserCreationForm(UserCreationForm):
 
 class LocaisForm(forms.ModelForm):
     class Meta:
-        model = Locais
-        fields = ['nome', 'desc']
+        model = TabLocal
+        fields = ['nome']
         labels = {
             'nome': 'Código - nome do local',
-            'desc': 'Descrição'
         }
 
     def __init__(self, *args, **kwargs):
@@ -462,7 +461,6 @@ class LocaisForm(forms.ModelForm):
                 'Cadastro de Locais',
                 Div(
                     Div('nome', css_class='col-md-6'),
-                    Div('desc', css_class='col-md-6'),
                     css_class='row'
                 )
             ),

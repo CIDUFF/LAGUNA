@@ -200,7 +200,7 @@ class LocalTable(tables.Table):
     update = tables.LinkColumn('atualizar_local', args=[A('pk')], orderable=False, empty_values=[], text='EDITAR')
 
     class Meta:
-        model = Locais
+        model = TabLocal
         template_name = 'django_tables2/bootstrap5-responsive.html'
         fields = ['nome', 'desc']
         empty_text = 'Não há dados para exibir'
