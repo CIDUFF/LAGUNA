@@ -654,7 +654,7 @@ Raises:
 
         local_campanha = campanha.local_coleta
         setor_local = TabSetor.objects.get(nome=local_campanha)
-        pontos_coleta = PontosColeta.objects.filter(setor=setor_local)
+        pontos_coleta = TabPonto.objects.filter(setor=setor_local)
         programa_coleta_instance = get_object_or_404(
             ProgramaColeta, ordem_servico=ordem_servico)
         for ponto in pontos_coleta:
@@ -862,7 +862,7 @@ def cadastro_ponto(request):
 
 @login_required
 def atualizar_ponto(request, id):
-    ponto = get_object_or_404(PontosColeta, id=id)
+    ponto = get_object_or_404(TabPonto, id=id)
     if request.method == 'POST':
         form = PontoForm(request.POST, instance=ponto)
         if form.is_valid():
@@ -878,7 +878,7 @@ def locais_cadastrados(request):
     setor_filter = SetorFilter(request.GET, queryset=TabSetor.objects.all())
     table_setores = SetorTable(setor_filter.qs)
     
-    ponto_filter = PontoFilter(request.GET, queryset=PontosColeta.objects.all())
+    ponto_filter = PontoFilter(request.GET, queryset=TabPonto.objects.all())
     table_pontos = PontoTable(ponto_filter.qs)
     
     local_filter = LocalFilter(request.GET, queryset=TabLocal.objects.all())
@@ -904,7 +904,7 @@ def export_pontos_csv(request):
     writer = csv.writer(response, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
     writer.writerow(['Nome', 'Setor', 'Local', 'Descrição', 'Status', 'Latitude', 'Longitude'])
 
-    pontos = PontosColeta.objects.select_related('setor', 'local').all()
+    pontos = TabPonto.objects.select_related('setor', 'local').all()
     for ponto in pontos:
         writer.writerow([
             ponto.nome,

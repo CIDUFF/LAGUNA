@@ -45,11 +45,11 @@ class PontoFilter(django_filters.FilterSet):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.filters['codigo'].extra['choices'] = [(ponto.nome, ponto.nome) for ponto in PontosColeta.objects.all().distinct()]
+        self.filters['codigo'].extra['choices'] = [(ponto.nome, ponto.nome) for ponto in TabPonto.objects.all().distinct()]
         self.filters['setor'].extra['choices'] = [(setor.id, setor.nome) for setor in TabSetor.objects.all().distinct()]
 
     class Meta:
-        model = PontosColeta
+        model = TabPonto
         fields = ['nome', 'setor']
 
 class SetorFilter(django_filters.FilterSet):

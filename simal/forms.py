@@ -504,15 +504,16 @@ class SetorForm(forms.ModelForm):
         
 class PontoForm(forms.ModelForm):
     class Meta:
-        model = PontosColeta
-        fields = ['nome', 'setor', 'local', 'tipo', 'lat', 'lon','status']
+        model = TabPonto
+        fields = ['id_setor', 'id_local', 'nome', 'modalidade', 'lat', 'lon', 'observacao', 'status']
         labels = {
             'nome': 'Código',
-            'setor': 'Setor',
-            'local': 'Local',
-            'tipo': 'Descrição',
+            'id_setor': 'Setor',
+            'id_local': 'Local',
+            'modelidade': 'Modalidade',
             'lat': 'Latitude',
             'lon': 'Longitude',
+            'observacao': 'Observação',
             'status': 'Ponto ativo?'
         }
 

@@ -127,23 +127,23 @@ class Solicitantes(models.Model):
     def __str__(self):
         return f'{self.nome}'
 
-class PontosColeta(models.Model):
+# class PontosColeta(models.Model):
     
-    DESCRICAO = [
-        ('Ponto de Coleta', 'Ponto de Coleta'),
-        ('Ponto de aplicação', 'Ponto de Aplicação'),
-    ]
+#     DESCRICAO = [
+#         ('Ponto de Coleta', 'Ponto de Coleta'),
+#         ('Ponto de aplicação', 'Ponto de Aplicação'),
+#     ]
     
-    nome = models.CharField(max_length=5, blank=False)
-    setor = models.ForeignKey('TabSetor', on_delete=models.CASCADE, related_name='pontos')
-    local = models.ForeignKey('TabLocal', on_delete=models.CASCADE, related_name='pontos')
-    tipo = models.CharField(max_length=50, choices=DESCRICAO, default='Ponto de Coleta')
-    status = models.BooleanField(default=True, blank=True)
-    lat = models.FloatField(null=True, blank=True)
-    lon = models.FloatField(null=True, blank=True)
+#     nome = models.CharField(max_length=5, blank=False)
+#     setor = models.ForeignKey('TabSetor', on_delete=models.CASCADE, related_name='pontos')
+#     local = models.ForeignKey('TabLocal', on_delete=models.CASCADE, related_name='pontos')
+#     tipo = models.CharField(max_length=50, choices=DESCRICAO, default='Ponto de Coleta')
+#     status = models.BooleanField(default=True, blank=True)
+#     lat = models.FloatField(null=True, blank=True)
+#     lon = models.FloatField(null=True, blank=True)
 
-    def __str__(self):
-        return f'{self.nome}'
+#     def __str__(self):
+#         return f'{self.nome}'
 
     
 
@@ -546,7 +546,7 @@ class Frasco(models.Model):
 class Amostra(models.Model):
     "É uma função que mostra o resultado das medições."
     status = models.CharField(max_length=50, blank=True)
-    ponto = models.ForeignKey(PontosColeta, on_delete=models.CASCADE)
+    ponto = models.ForeignKey('TabPonto', on_delete=models.CASCADE)
     
     codigo_coleta = models.ForeignKey(Campo, on_delete=models.CASCADE)
     data_coleta = models.DateField(default=date.today)
@@ -702,17 +702,36 @@ class TabPonto(models.Model):
     id_local = models.ForeignKey(TabLocal, models.DO_NOTHING, db_column='id_local', blank=True, null=True)
     nome = models.TextField(blank=True, null=True)
     modalidade = models.TextField(blank=True, null=True)
-    ponto_lat = models.FloatField(blank=True, null=True)
-    ponto_long = models.FloatField(blank=True, null=True)
+    lat = models.FloatField(blank=True, null=True)
+    lon = models.FloatField(blank=True, null=True)
     observacao = models.TextField(blank=True, null=True)
-    status = models.BooleanField()
+    status = models.BooleanField(null=True, blank=True)
     
     def __str__(self):
         return f'{self.nome}'
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'tab_ponto'
+
+# class PontosColeta(models.Model):
+    
+#     DESCRICAO = [
+#         ('Ponto de Coleta', 'Ponto de Coleta'),
+#         ('Ponto de aplicação', 'Ponto de Aplicação'),
+#     ]
+    
+#     nome = models.CharField(max_length=5, blank=False)
+#     setor = models.ForeignKey('TabSetor', on_delete=models.CASCADE, related_name='pontos')
+#     local = models.ForeignKey('TabLocal', on_delete=models.CASCADE, related_name='pontos')
+#     tipo = models.CharField(max_length=50, choices=DESCRICAO, default='Ponto de Coleta')
+#     status = models.BooleanField(default=True, blank=True)
+#     lat = models.FloatField(null=True, blank=True)
+#     lon = models.FloatField(null=True, blank=True)
+
+#     def __str__(self):
+#         return f'{self.nome}'
+
 
 
 class TabProduto(models.Model):
@@ -774,5 +793,5 @@ class TabSetor(models.Model):
         return f'{self.nome}'
 
     class Meta:
-        managed = True
+        managed = False
         db_table = 'tab_setor'

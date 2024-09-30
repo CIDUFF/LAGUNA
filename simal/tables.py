@@ -185,7 +185,7 @@ class PontoTable(tables.Table):
     update = tables.LinkColumn('atualizar_ponto', args=[A('pk')], orderable=False, empty_values=[], text='EDITAR')
 
     class Meta:
-        model = PontosColeta
+        model = TabPonto
         template_name = 'django_tables2/bootstrap5-responsive.html'
         fields = ['nome', 'setor', 'local', 'tipo', 'lat', 'lon','status']
         empty_text = 'Não há dados para exibir'
