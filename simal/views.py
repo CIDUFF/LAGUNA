@@ -653,8 +653,8 @@ Raises:
             "Maricá", data.strftime('%Y-%m-%d'))
 
         local_campanha = campanha.local_coleta
-        setor_local = Setor.objects.get(nome=local_campanha)
-        pontos_coleta = PontosColeta.objects.filter(setor=setor_local)
+        setor_local = TabSetor.objects.get(nome=local_campanha)
+        pontos_coleta = TabPonto.objects.filter(setor=setor_local)
         programa_coleta_instance = get_object_or_404(
             ProgramaColeta, ordem_servico=ordem_servico)
         for ponto in pontos_coleta:
@@ -812,7 +812,7 @@ def cadastro_local(request):
 
 @login_required
 def atualizar_local(request, id):
-    local = get_object_or_404(Locais, id=id)
+    local = get_object_or_404(TabLocal, id=id)
     if request.method == 'POST':
         form = LocaisForm(request.POST, instance=local)
         if form.is_valid():
@@ -837,7 +837,7 @@ def cadastro_setor(request):
 
 @login_required
 def atualizar_setor(request, id):
-    setor = get_object_or_404(Setor, id=id)
+    setor = get_object_or_404(TabSetor, id=id)
     if request.method == 'POST':
         form = SetorForm(request.POST, instance=setor)
         if form.is_valid():
@@ -862,7 +862,7 @@ def cadastro_ponto(request):
 
 @login_required
 def atualizar_ponto(request, id):
-    ponto = get_object_or_404(PontosColeta, id=id)
+    ponto = get_object_or_404(TabPonto, id=id)
     if request.method == 'POST':
         form = PontoForm(request.POST, instance=ponto)
         if form.is_valid():
@@ -875,13 +875,13 @@ def atualizar_ponto(request, id):
     
 @login_required
 def locais_cadastrados(request):
-    setor_filter = SetorFilter(request.GET, queryset=Setor.objects.all())
+    setor_filter = SetorFilter(request.GET, queryset=TabSetor.objects.all())
     table_setores = SetorTable(setor_filter.qs)
     
-    ponto_filter = PontoFilter(request.GET, queryset=PontosColeta.objects.all())
+    ponto_filter = PontoFilter(request.GET, queryset=TabPonto.objects.all())
     table_pontos = PontoTable(ponto_filter.qs)
     
-    local_filter = LocalFilter(request.GET, queryset=Locais.objects.all())
+    local_filter = LocalFilter(request.GET, queryset=TabLocal.objects.all())
     table_locais = LocalTable(local_filter.qs)
     
     RequestConfig(request, paginate={"per_page": 25}).configure(table_setores)
@@ -904,7 +904,7 @@ def export_pontos_csv(request):
     writer = csv.writer(response, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
     writer.writerow(['Nome', 'Setor', 'Local', 'Descrição', 'Status', 'Latitude', 'Longitude'])
 
-    pontos = PontosColeta.objects.select_related('setor', 'local').all()
+    pontos = TabPonto.objects.select_related('setor', 'local').all()
     for ponto in pontos:
         writer.writerow([
             ponto.nome,

@@ -45,33 +45,33 @@ class PontoFilter(django_filters.FilterSet):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.filters['codigo'].extra['choices'] = [(ponto.nome, ponto.nome) for ponto in PontosColeta.objects.all().distinct()]
-        self.filters['setor'].extra['choices'] = [(setor.id, setor.nome) for setor in Setor.objects.all().distinct()]
+        self.filters['codigo'].extra['choices'] = [(ponto.nome, ponto.nome) for ponto in TabPonto.objects.all().distinct()]
+        self.filters['setor'].extra['choices'] = [(setor.id, setor.nome) for setor in TabSetor.objects.all().distinct()]
 
     class Meta:
-        model = PontosColeta
+        model = TabPonto
         fields = ['nome', 'setor']
 
 class SetorFilter(django_filters.FilterSet):
-    desc = django_filters.ChoiceFilter(
-        field_name='desc',
+    abreviatura = django_filters.ChoiceFilter(
+        field_name='abreviatura',
         lookup_expr='exact',
         label='Setor'
     )
     local = django_filters.ChoiceFilter(
-        field_name='local',
+        field_name='id_local',
         lookup_expr='exact',
         label='Local'
     )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.filters['desc'].extra['choices'] = [(setor.nome, setor.nome) for setor in Setor.objects.all().distinct()]
-        self.filters['local'].extra['choices'] = [(local.id, local.nome) for local in Locais.objects.all().distinct()]
+        self.filters['abreviatura'].extra['choices'] = [(setor.nome, setor.nome) for setor in TabSetor.objects.all().distinct()]
+        self.filters['local'].extra['choices'] = [(local.id, local.nome) for local in TabLocal.objects.all().distinct()]
 
     class Meta:
-        model = Setor
-        fields = ['desc', 'local']
+        model = TabSetor
+        fields = ['abreviatura', 'id_local']
 
 class LocalFilter(django_filters.FilterSet):
     codigo = django_filters.ChoiceFilter(
@@ -82,8 +82,8 @@ class LocalFilter(django_filters.FilterSet):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.filters['codigo'].extra['choices'] = [(local.nome, local.nome) for local in Locais.objects.all().distinct()]
+        self.filters['codigo'].extra['choices'] = [(local.nome, local.nome) for local in TabLocal.objects.all().distinct()]
 
     class Meta:
-        model = Locais
+        model = TabLocal
         fields = ['codigo']

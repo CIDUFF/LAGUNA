@@ -170,7 +170,7 @@ class SetorTable(tables.Table):
         'pk')], orderable=False, empty_values=[], text='EDITAR')
 
     class Meta:
-        model = Setor
+        model = TabSetor
         template_name = 'django_tables2/bootstrap5-responsive.html'
         fields = ['nome', 'local', 'lat', 'lon','abreviatura']
         empty_text = 'Não há dados para exibir'
@@ -185,7 +185,7 @@ class PontoTable(tables.Table):
     update = tables.LinkColumn('atualizar_ponto', args=[A('pk')], orderable=False, empty_values=[], text='EDITAR')
 
     class Meta:
-        model = PontosColeta
+        model = TabPonto
         template_name = 'django_tables2/bootstrap5-responsive.html'
         fields = ['nome', 'setor', 'local', 'tipo', 'lat', 'lon','status']
         empty_text = 'Não há dados para exibir'
@@ -200,7 +200,7 @@ class LocalTable(tables.Table):
     update = tables.LinkColumn('atualizar_local', args=[A('pk')], orderable=False, empty_values=[], text='EDITAR')
 
     class Meta:
-        model = Locais
+        model = TabLocal
         template_name = 'django_tables2/bootstrap5-responsive.html'
         fields = ['nome', 'desc']
         empty_text = 'Não há dados para exibir'

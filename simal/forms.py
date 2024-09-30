@@ -213,7 +213,7 @@ class ProgramaColetaForm(forms.Form):
 
 
         self.fields['local_coleta'].choices = gerar_opcoes_unicas(
-            Setor, 'nome')
+            TabSetor, 'nome')
         self.fields['equipe_coleta'].choices = [
             (group.id, group.name) for group in Group.objects.all()]
 
@@ -447,11 +447,10 @@ class CustomUserCreationForm(UserCreationForm):
 
 class LocaisForm(forms.ModelForm):
     class Meta:
-        model = Locais
-        fields = ['nome', 'desc']
+        model = TabLocal
+        fields = ['nome']
         labels = {
-            'nome': 'Código - nome do local',
-            'desc': 'Descrição'
+            'nome': 'Nome do local',
         }
 
     def __init__(self, *args, **kwargs):
@@ -462,7 +461,6 @@ class LocaisForm(forms.ModelForm):
                 'Cadastro de Locais',
                 Div(
                     Div('nome', css_class='col-md-6'),
-                    Div('desc', css_class='col-md-6'),
                     css_class='row'
                 )
             ),
@@ -473,11 +471,11 @@ class LocaisForm(forms.ModelForm):
         
 class SetorForm(forms.ModelForm):
     class Meta:
-        model = Setor
-        fields = ['nome', 'local', 'lat', 'lon','abreviatura']
+        model = TabSetor
+        fields = ['nome', 'id_local', 'lat', 'lon','abreviatura']
         labels = {
             'nome': 'Nome',
-            'local': 'Local',
+            'id_local': 'Local',
             'lat': 'Latitude',
             'lon': 'Longitude',
             'abreaviatura': 'Abreviatura'
@@ -492,7 +490,7 @@ class SetorForm(forms.ModelForm):
                 'Cadastro de Setores',
                 Div(
                     Div('nome', css_class='col-md-6'),
-                    Div('local', css_class='col-md-6'),
+                    Div('id_local', css_class='col-md-6'),
                     Div('lat', css_class='col-md-6'),
                     Div('lon', css_class='col-md-6'),
                     Div('abreviatura', css_class='col-md-6'),
@@ -506,15 +504,16 @@ class SetorForm(forms.ModelForm):
         
 class PontoForm(forms.ModelForm):
     class Meta:
-        model = PontosColeta
-        fields = ['nome', 'setor', 'local', 'tipo', 'lat', 'lon','status']
+        model = TabPonto
+        fields = ['id_setor', 'id_local', 'nome', 'modalidade', 'lat', 'lon', 'observacao', 'status']
         labels = {
             'nome': 'Código',
-            'setor': 'Setor',
-            'local': 'Local',
-            'tipo': 'Descrição',
+            'id_setor': 'Setor',
+            'id_local': 'Local',
+            'modelidade': 'Modalidade',
             'lat': 'Latitude',
             'lon': 'Longitude',
+            'observacao': 'Observação',
             'status': 'Ponto ativo?'
         }
 

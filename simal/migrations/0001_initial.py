@@ -280,24 +280,6 @@ class Migration(migrations.Migration):
             ],
         ),
         migrations.CreateModel(
-            name='Locais',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('nome', models.CharField(max_length=50)),
-                ('desc', models.CharField(max_length=50)),
-            ],
-        ),
-        migrations.CreateModel(
-            name='LocaisColeta',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('local', models.CharField(max_length=50)),
-                ('local_codigo', models.CharField(default='00', max_length=50)),
-                ('ponto', models.CharField(max_length=60)),
-                ('codigo_str', models.CharField(max_length=60)),
-            ],
-        ),
-        migrations.CreateModel(
             name='Produto',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
@@ -351,7 +333,7 @@ class Migration(migrations.Migration):
                 ('lat', models.FloatField(blank=True, null=True)),
                 ('lon', models.FloatField(blank=True, null=True)),
                 ('abreviatura', models.CharField(blank=True, max_length=50, unique=True)),
-                ('local', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='setor', to='simal.locais')),
+                ('local', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='setor', to='simal.TabLocal')),
             ],
         ),
         migrations.CreateModel(
@@ -387,7 +369,7 @@ class Migration(migrations.Migration):
                 ('status', models.BooleanField(blank=True, default=True)),
                 ('lat', models.FloatField(blank=True, null=True)),
                 ('lon', models.FloatField(blank=True, null=True)),
-                ('local', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='pontos', to='simal.locais')),
+                ('local', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='pontos', to='simal.TabLocal')),
                 ('setor', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='pontos', to='simal.setor')),
             ],
         ),
