@@ -117,30 +117,9 @@ class Solicitantes(models.Model):
         return f'{self.nome}'
 
 
-class LocaisColeta(models.Model):
-    """
-    Classe que representa os locais de coleta no banco de dados.
 
-    Atributos:
-        local (str): O nome do local de coleta.
-        local_codigo (str): O código numérico do local de coleta.
-        ponto (str): O ponto de coleta.
-        codigo_str (str): O código em formato de string.
-    """
-
-    local = models.CharField(max_length=50)
-    local_codigo = models.CharField(max_length=50, default='00')
-    ponto = models.CharField(max_length=60, blank=False)
-    codigo_str = models.CharField(max_length=60, blank=False)
-    # rota = models.CharField(max_length=100, blank=True)
-
-    def __str__(self):
-        return f'{self.local}'
     
 
-# class TabLocal(models.Model):
-#     nome = models.CharField(max_length=50)
-#     desc = models.CharField(max_length=50)
     
 
 
@@ -156,7 +135,7 @@ class PontosColeta(models.Model):
     ]
     
     nome = models.CharField(max_length=5, blank=False)
-    setor = models.ForeignKey('Setor', on_delete=models.CASCADE, related_name='pontos')
+    setor = models.ForeignKey('TabSetor', on_delete=models.CASCADE, related_name='pontos')
     local = models.ForeignKey('TabLocal', on_delete=models.CASCADE, related_name='pontos')
     tipo = models.CharField(max_length=50, choices=DESCRICAO, default='Ponto de Coleta')
     status = models.BooleanField(default=True, blank=True)
@@ -167,18 +146,7 @@ class PontosColeta(models.Model):
         return f'{self.nome}'
 
     
-    
-class Setor(models.Model):
-    nome = models.CharField(max_length=50, unique=True)
-    local = models.ForeignKey('TabLocal', on_delete=models.CASCADE, related_name='setor')
-    lat = models.FloatField(null=True, blank=True)
-    lon = models.FloatField(null=True, blank=True)
-    abreviatura = models.CharField(max_length=50, blank=True, unique=True)
 
-    
-    def __str__(self):
-        return f'{self.nome}'
-    
 
 
 class ProgramaColeta(models.Model):
@@ -223,7 +191,7 @@ class ProgramaColeta(models.Model):
 
         if not self.ordem_servico:
             hora = datetime.now().strftime('%H%M%S')
-            localizacao = Setor.objects.filter(
+            localizacao = TabSetor.objects.filter(
                 nome=self.local_coleta).first()
 
             if localizacao:
@@ -614,7 +582,7 @@ class TabAmostra(models.Model):
         return f'{self.etiqueta}'
 
     class Meta:
-        managed = True
+        managed = False
         db_table = 'tab_amostra'
         
 
@@ -629,7 +597,7 @@ class TabCampanha(models.Model):
         return f'{self.nome}'
 
     class Meta:
-        managed = True
+        managed = False
         db_table = 'tab_campanha'
 
 
@@ -643,7 +611,7 @@ class TabColeta(models.Model):
         return f'{self.nome}'
 
     class Meta:
-        managed = True
+        managed = False
         db_table = 'tab_coleta'
 
 
@@ -658,7 +626,7 @@ class TabEnvio(models.Model):
         return f'{self.id}'
 
     class Meta:
-        managed = True
+        managed = False
         db_table = 'tab_envio'
 
 
@@ -670,7 +638,7 @@ class TabFrasco(models.Model):
         return f'{self.nome}'
 
     class Meta:
-        managed = True
+        managed = False
         db_table = 'tab_frasco'
 
 
@@ -683,7 +651,7 @@ class TabLaboratorio(models.Model):
         return f'{self.nome}'
 
     class Meta:
-        managed = True
+        managed = False
         db_table = 'tab_laboratorio'
 
 
@@ -697,7 +665,7 @@ class TabLocal(models.Model):
         return f'{self.nome}'
 
     class Meta:
-        managed = True
+        managed = False
         db_table = 'tab_local'
 
 
@@ -711,7 +679,7 @@ class TabMedida(models.Model):
         return f'{self.valor}'
 
     class Meta:
-        managed = True
+        managed = False
         db_table = 'tab_medida'
 
 
@@ -724,7 +692,7 @@ class TabParam(models.Model):
         return f'{self.nome}'
 
     class Meta:
-        managed = True
+        managed = False
         db_table = 'tab_param'
 
 
@@ -743,7 +711,7 @@ class TabPonto(models.Model):
         return f'{self.nome}'
 
     class Meta:
-        managed = True
+        managed = False
         db_table = 'tab_ponto'
 
 
@@ -756,7 +724,7 @@ class TabProduto(models.Model):
         return f'{self.produto}'
 
     class Meta:
-        managed = True
+        managed = False
         db_table = 'tab_produto'
 
 
@@ -776,7 +744,7 @@ class TabProdxparam(models.Model):
         return f'{self.nome}'
 
     class Meta:
-        managed = True
+        managed = False
         db_table = 'tab_prodxparam'
 
 
@@ -789,16 +757,18 @@ class TabSerieClassificacao(models.Model):
         return f'{self.nome}'
 
     class Meta:
-        managed = True
+        managed = False
         db_table = 'tab_serie_classificacao'
 
+    
 
 class TabSetor(models.Model):
     id = models.BigAutoField(primary_key=True)
-    nome = models.TextField(blank=True, null=True)
-    id_local = models.ForeignKey(TabLocal, models.DO_NOTHING, db_column='id_local', blank=True, null=True)
-    local_long = models.FloatField(blank=True, null=True)
-    local_lat = models.FloatField(blank=True, null=True)
+    nome = models.CharField(blank=True, null=True)
+    id_local = models.ForeignKey('TabLocal', models.DO_NOTHING, db_column='id_local', blank=True, null=True)
+    lon = models.FloatField(blank=True, null=True)
+    lat = models.FloatField(blank=True, null=True)
+    abreviatura = models.CharField(max_length=50, blank=True, unique=False)
     
     def __str__(self):
         return f'{self.nome}'

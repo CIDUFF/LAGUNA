@@ -170,7 +170,7 @@ class SetorTable(tables.Table):
         'pk')], orderable=False, empty_values=[], text='EDITAR')
 
     class Meta:
-        model = Setor
+        model = TabSetor
         template_name = 'django_tables2/bootstrap5-responsive.html'
         fields = ['nome', 'local', 'lat', 'lon','abreviatura']
         empty_text = 'Não há dados para exibir'

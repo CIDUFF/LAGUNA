@@ -213,7 +213,7 @@ class ProgramaColetaForm(forms.Form):
 
 
         self.fields['local_coleta'].choices = gerar_opcoes_unicas(
-            Setor, 'nome')
+            TabSetor, 'nome')
         self.fields['equipe_coleta'].choices = [
             (group.id, group.name) for group in Group.objects.all()]
 
@@ -450,7 +450,7 @@ class LocaisForm(forms.ModelForm):
         model = TabLocal
         fields = ['nome']
         labels = {
-            'nome': 'Código - nome do local',
+            'nome': 'Nome do local',
         }
 
     def __init__(self, *args, **kwargs):
@@ -471,11 +471,11 @@ class LocaisForm(forms.ModelForm):
         
 class SetorForm(forms.ModelForm):
     class Meta:
-        model = Setor
-        fields = ['nome', 'local', 'lat', 'lon','abreviatura']
+        model = TabSetor
+        fields = ['nome', 'id_local', 'lat', 'lon','abreviatura']
         labels = {
             'nome': 'Nome',
-            'local': 'Local',
+            'id_local': 'Local',
             'lat': 'Latitude',
             'lon': 'Longitude',
             'abreaviatura': 'Abreviatura'
@@ -490,7 +490,7 @@ class SetorForm(forms.ModelForm):
                 'Cadastro de Setores',
                 Div(
                     Div('nome', css_class='col-md-6'),
-                    Div('local', css_class='col-md-6'),
+                    Div('id_local', css_class='col-md-6'),
                     Div('lat', css_class='col-md-6'),
                     Div('lon', css_class='col-md-6'),
                     Div('abreviatura', css_class='col-md-6'),

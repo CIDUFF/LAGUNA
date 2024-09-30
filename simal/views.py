@@ -653,7 +653,7 @@ Raises:
             "Maricá", data.strftime('%Y-%m-%d'))
 
         local_campanha = campanha.local_coleta
-        setor_local = Setor.objects.get(nome=local_campanha)
+        setor_local = TabSetor.objects.get(nome=local_campanha)
         pontos_coleta = PontosColeta.objects.filter(setor=setor_local)
         programa_coleta_instance = get_object_or_404(
             ProgramaColeta, ordem_servico=ordem_servico)
@@ -837,7 +837,7 @@ def cadastro_setor(request):
 
 @login_required
 def atualizar_setor(request, id):
-    setor = get_object_or_404(Setor, id=id)
+    setor = get_object_or_404(TabSetor, id=id)
     if request.method == 'POST':
         form = SetorForm(request.POST, instance=setor)
         if form.is_valid():
@@ -875,7 +875,7 @@ def atualizar_ponto(request, id):
     
 @login_required
 def locais_cadastrados(request):
-    setor_filter = SetorFilter(request.GET, queryset=Setor.objects.all())
+    setor_filter = SetorFilter(request.GET, queryset=TabSetor.objects.all())
     table_setores = SetorTable(setor_filter.qs)
     
     ponto_filter = PontoFilter(request.GET, queryset=PontosColeta.objects.all())

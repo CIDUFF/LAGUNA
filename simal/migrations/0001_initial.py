@@ -280,24 +280,6 @@ class Migration(migrations.Migration):
             ],
         ),
         migrations.CreateModel(
-            name='TabLocal',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('nome', models.CharField(max_length=50)),
-                ('desc', models.CharField(max_length=50)),
-            ],
-        ),
-        migrations.CreateModel(
-            name='TabLocalColeta',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('local', models.CharField(max_length=50)),
-                ('local_codigo', models.CharField(default='00', max_length=50)),
-                ('ponto', models.CharField(max_length=60)),
-                ('codigo_str', models.CharField(max_length=60)),
-            ],
-        ),
-        migrations.CreateModel(
             name='Produto',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
