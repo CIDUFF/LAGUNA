@@ -127,25 +127,6 @@ class Solicitantes(models.Model):
     def __str__(self):
         return f'{self.nome}'
 
-# class PontosColeta(models.Model):
-    
-#     DESCRICAO = [
-#         ('Ponto de Coleta', 'Ponto de Coleta'),
-#         ('Ponto de aplicação', 'Ponto de Aplicação'),
-#     ]
-    
-#     nome = models.CharField(max_length=5, blank=False)
-#     setor = models.ForeignKey('TabSetor', on_delete=models.CASCADE, related_name='pontos')
-#     local = models.ForeignKey('TabLocal', on_delete=models.CASCADE, related_name='pontos')
-#     tipo = models.CharField(max_length=50, choices=DESCRICAO, default='Ponto de Coleta')
-#     status = models.BooleanField(default=True, blank=True)
-#     lat = models.FloatField(null=True, blank=True)
-#     lon = models.FloatField(null=True, blank=True)
-
-#     def __str__(self):
-#         return f'{self.nome}'
-
-    
 
 
 
@@ -700,12 +681,12 @@ class TabPonto(models.Model):
     id = models.BigAutoField(primary_key=True)
     id_setor = models.ForeignKey('TabSetor', models.DO_NOTHING, db_column='id_setor', blank=True, null=True)
     id_local = models.ForeignKey(TabLocal, models.DO_NOTHING, db_column='id_local', blank=True, null=True)
-    nome = models.TextField(blank=True, null=True)
-    modalidade = models.TextField(blank=True, null=True)
+    nome = models.CharField(blank=True, null=True)
+    modalidade = models.CharField(blank=True, null=True)
     lat = models.FloatField(blank=True, null=True)
     lon = models.FloatField(blank=True, null=True)
-    observacao = models.TextField(blank=True, null=True)
-    status = models.BooleanField(null=True, blank=True)
+    observacao = models.CharField(blank=True, null=True)
+    status = models.BooleanField(null=True, blank=True, default=True)
     
     def __str__(self):
         return f'{self.nome}'
@@ -731,6 +712,7 @@ class TabPonto(models.Model):
 
 #     def __str__(self):
 #         return f'{self.nome}'
+
 
 
 
