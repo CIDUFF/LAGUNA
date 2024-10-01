@@ -654,7 +654,7 @@ Raises:
 
         local_campanha = campanha.local_coleta
         setor_local = TabSetor.objects.get(nome=local_campanha)
-        pontos_coleta = TabPonto.objects.filter(setor=setor_local)
+        pontos_coleta = TabPonto.objects.filter(id_setor=setor_local)
         programa_coleta_instance = get_object_or_404(
             ProgramaColeta, ordem_servico=ordem_servico)
         for ponto in pontos_coleta:
