@@ -1,7 +1,7 @@
 from datetime import datetime, date, timedelta
 import re
 import unicodedata
-from localflavor.br.models import BRCPFField
+# from localflavor.br.models import BRCPFField
 from django.db import models
 from django.contrib.auth.models import User  # Importa o modelo User
 
@@ -461,7 +461,7 @@ class DetalhesUsuario(models.Model):
     usuario = models.ForeignKey(User, on_delete=models.CASCADE)
     telefone = models.CharField(max_length=15, blank=True)
     endereco = models.CharField(max_length=100, blank=True)
-    cpf = BRCPFField(blank=True)
+    cpf = models.CharField(max_length=100, blank=True)
 
 
     def __str__(self):
