@@ -34,12 +34,12 @@ class ResultadosColetaFilter(django_filters.FilterSet):
 class PontoFilter(django_filters.FilterSet):
     codigo = django_filters.ChoiceFilter(
         field_name='nome',
-        lookup_expr='exact',
+        lookup_expr='icontains',
         label='Ponto'
     )
     setor = django_filters.ChoiceFilter(
         field_name='setor',
-        lookup_expr='exact',
+        lookup_expr='icontains',
         label='Setor'
     )
 
