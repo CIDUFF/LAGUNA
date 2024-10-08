@@ -444,7 +444,6 @@ class CustomUserCreationForm(UserCreationForm):
             user.groups.set(self.cleaned_data['groups'])
         return user
 
-
 class LocaisForm(forms.ModelForm):
     class Meta:
         model = TabLocal
@@ -555,4 +554,24 @@ class TipoParametroForm(forms.ModelForm):
         model = TipoParametro
         fields = '__all__'
         
-        
+class CadastroCampanhaForm(forms.Form):
+    data_criacao_campanha = forms.DateField(
+        label='Data de criação da campanha',
+        widget=forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d')
+    )
+    equipe_coleta = forms.ChoiceField(label='Equipe de coleta')
+    local_coleta = forms.ChoiceField(label='Setor')
+    observacoes = forms.CharField(
+        label='Observações',
+        widget=forms.Textarea(attrs={'rows': 3, 'cols': 40}),
+        required=False
+    )
+
+    def __init__(self, *args, **kwargs):
+        super(CadastroCampanhaForm, self).__init__(*args, **kwargs)
+        self.fields['local_coleta'].choices = [
+            (setor.id, setor.nome) for setor in TabSetor.objects.all().distinct()
+        ]
+        self.fields['equipe_coleta'].choices = [
+            (group.id, group.name) for group in Group.objects.all()
+        ]

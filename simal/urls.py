@@ -64,5 +64,7 @@ urlpatterns = [
     path('cadastro_parametro/', views.cadastro_parametro, name='cadastro_parametro'),
     path('cadastro_unidade_medida/', views.cadastro_unidade_medida, name='cadastro_unidade_medida'),
     path('cadastro_tipo_parametro/', views.cadastro_tipo_parametro, name='cadastro_tipo_parametro'),
+    path('direcionamento_campanha/', views.direcionamento_campanha, name='direcionamento_campanha'),
+    path('cadastro_campanha/', views.cadastro_campanha, name='cadastro_campanha'),
     
 ]
