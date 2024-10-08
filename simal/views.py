@@ -654,7 +654,7 @@ Raises:
 
         local_campanha = campanha.local_coleta
         setor_local = TabSetor.objects.get(nome=local_campanha)
-        pontos_coleta = TabPonto.objects.filter(setor=setor_local)
+        pontos_coleta = TabPonto.objects.filter(id_setor=setor_local)
         programa_coleta_instance = get_object_or_404(
             ProgramaColeta, ordem_servico=ordem_servico)
         for ponto in pontos_coleta:
@@ -669,8 +669,6 @@ Raises:
         campanha.save()
 
     return redirect('checklist_campanha', ordem_servico=ordem_servico)
-
-
 
 
 def etiquetagem(request, ordem_servico=None):
@@ -959,3 +957,24 @@ def cadastro_tipo_parametro(request):
     
     return render(request, 'cadastro_tipo_parametro.html', {'form': form, 'table_tipo_parametro': table_tipo_parametro})
 
+@login_required
+def direcionamento_campanha(request):
+    return render(request, 'direcionamento_campanha.html')
+
+def cadastro_campanha(request):
+    if request.method == 'POST':
+        form = CadastroCampanhaForm(request.POST)
+        if form.is_valid():
+            # Processa os dados do formulário aqui
+            data_criacao_campanha = form.cleaned_data['data_criacao_campanha']
+            equipe_coleta = form.cleaned_data['equipe_coleta']
+            local_coleta = form.cleaned_data['local_coleta']
+            observacoes = form.cleaned_data['observacoes']
+
+            # Exemplo de mensagem de sucesso
+            messages.success(request, 'Campanha cadastrada com sucesso!')
+            return redirect('direcionamento_campanha')
+    else:
+        form = CadastroCampanhaForm()
+
+    return render(request, 'cadastro_campanha.html', {'form': form})

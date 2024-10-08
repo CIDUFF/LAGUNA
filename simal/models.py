@@ -1,10 +1,9 @@
 from datetime import datetime, date, timedelta
 import re
 import unicodedata
-from localflavor.br.models import BRCPFField
+# from localflavor.br.models import BRCPFField
 from django.db import models
 from django.contrib.auth.models import User  # Importa o modelo User
-
 
 
 class equipes(models.Model):
@@ -22,6 +21,7 @@ class equipes(models.Model):
 
     def __str__(self):
         return f'{self.nome}'
+
     class Meta:
         db_table = 'tab_equipe'
 
@@ -42,7 +42,6 @@ class equipes(models.Model):
 
 #     def __str__(self):
 #         return f'{self.nome}'
-
 
 
 class Ajuda(models.Model):
@@ -116,18 +115,8 @@ class Solicitantes(models.Model):
     def __str__(self):
         return f'{self.nome}'
 
-
-
-    
-
-    
-
-
-
     def __str__(self):
         return f'{self.nome}'
-
-
 
 
 class ProgramaColeta(models.Model):
@@ -166,7 +155,8 @@ class ProgramaColeta(models.Model):
     usuario = models.ForeignKey(User, on_delete=models.CASCADE,
                                 verbose_name="Usuário", null=True)  # Adiciona o campo usuario
     rota = models.CharField(max_length=25, null=True)
-    bentos = models.BooleanField(default=False, verbose_name='Bentos', blank=True)
+    bentos = models.BooleanField(
+        default=False, verbose_name='Bentos', blank=True)
 
     def save(self, usuario=None, *args, **kwargs):
 
@@ -190,10 +180,14 @@ class ProgramaColeta(models.Model):
         if usuario:  # Atribui o usuário recebido ao campo usuario
             self.usuario = usuario
 
-        self.data_check_forecast = self.data_coleta_campo - timedelta(self.prazo_previsao)
-        self.data_check_material = self.data_coleta_campo - timedelta(self.prazo_material)
-        self.data_check_car = self.data_coleta_campo - timedelta(self.prazo_car)
-        self.data_check_lab = self.data_coleta_campo - timedelta(self.prazo_lab)
+        self.data_check_forecast = self.data_coleta_campo - \
+            timedelta(self.prazo_previsao)
+        self.data_check_material = self.data_coleta_campo - \
+            timedelta(self.prazo_material)
+        self.data_check_car = self.data_coleta_campo - \
+            timedelta(self.prazo_car)
+        self.data_check_lab = self.data_coleta_campo - \
+            timedelta(self.prazo_lab)
 
         super().save(*args, **kwargs)
 
@@ -205,7 +199,8 @@ class Campo(models.Model):
     # Supondo que ProgramaColeta e date já foram importados corretamente
     ordem_servico = models.ForeignKey(
         ProgramaColeta, on_delete=models.CASCADE, related_name='ordem_servico_campo')
-    codigo_coleta = models.CharField("Código da Coleta", max_length=50, null=True)
+    codigo_coleta = models.CharField(
+        "Código da Coleta", max_length=50, null=True)
     ordem = models.FloatField("Ordem", null=True)
     clima = models.CharField("Clima", max_length=150, null=True)
     data = models.DateField(default=date.today)
@@ -240,6 +235,7 @@ class Campo(models.Model):
             self.status_form = 'Não preenchido'
         super().save(*args, **kwargs)
 
+
 class MetadadosCampo(models.Model):
     ACESSOS = [
         'Ponte',
@@ -251,11 +247,10 @@ class MetadadosCampo(models.Model):
         (0, 'Neutro'),
         (1, 'Positivo'),
     ]
-    
-        
+
     codigo_coleta = models.ForeignKey(
         Campo, on_delete=models.CASCADE, related_name='metadados_campo')
-    acesso_ponto= models.CharField(
+    acesso_ponto = models.CharField(
         max_length=50, choices=[(acesso, acesso) for acesso in ACESSOS], null=True)
     dragagem = models.IntegerField(
         "Dragagem", choices=AVALIACAO, null=True)
@@ -277,13 +272,9 @@ class MetadadosCampo(models.Model):
         "Pescadores", choices=AVALIACAO, null=True)
     contato_populacao = models.IntegerField(
         "Contato com a população", choices=AVALIACAO, null=True)
-    
+
     def __str__(self):
         return f"Metadados do campo {self.codigo_coleta}"
-        
-        
-        
-    
 
 
 class AnalisesLista(models.Model):
@@ -318,7 +309,6 @@ class AnalisesLista(models.Model):
 
     def __str__(self):
         return f"Análises Lista {self.ordem_servico}"
-
 
 
 class ChecklistCampo(models.Model):
@@ -374,7 +364,7 @@ class ChecklistCampo(models.Model):
         "Data da etiquetagem", blank=True, null=True)
     observacao_etiquetar_frascos = models.TextField(
         "Observações da etiquetagem", blank=True, null=True)
-        
+
     status_checklist = models.BooleanField(default=False)
     progresso = models.DecimalField(max_digits=5, decimal_places=2, default=0)
 
@@ -397,7 +387,7 @@ class ChecklistCampo(models.Model):
         campos_marcados = sum(bool(campo) for campo in self.campos_booleanos)
         total_campos = len(self.campos_booleanos)
         return (campos_marcados / total_campos) * 100 if total_campos > 0 else 0
-        
+
     def save(self, *args, **kwargs):
         """Sobrescreve o método save para atualizar o status e o progresso antes de salvar e registrar logs de alterações."""
         user = kwargs.pop('usuario', None)
@@ -436,38 +426,39 @@ class ChecklistCampoLog(models.Model):
 
     def __str__(self):
         return f'Log de {self.checklist} em {self.data_alteracao} por {self.usuario}'
-    
+
 
 class DetalhesUsuario(models.Model):
     usuario = models.ForeignKey(User, on_delete=models.CASCADE)
     telefone = models.CharField(max_length=15, blank=True)
     endereco = models.CharField(max_length=100, blank=True)
-    cpf = BRCPFField(blank=True)
-
+    cpf = models.CharField(max_length=100, blank=True)
 
     def __str__(self):
         return f'{self.usuario}'
 
+
 class UnidadesMedida(models.Model):
     nome = models.CharField(max_length=50)
     descricao = models.CharField(max_length=50)
-    
+
     def __str__(self):
         return f'{self.nome}'
-    
+
     class Meta:
         db_table = 'tab_unidade_medida'
+
 
 class Produto(models.Model):
     nome = models.CharField(max_length=50, blank=True)
     descricao = models.CharField(max_length=50, blank=True)
-    
+
     def __str__(self):
         return f'{self.nome}'
-    
+
 
 class Parametros(models.Model):
-    
+
     # PRODUTO = [
     #     ('Água', 'Água'),
     #     ('Sedimento', 'Sedimento'),
@@ -475,32 +466,35 @@ class Parametros(models.Model):
     #     # ('Solo', 'Solo'),
     #     # ('Ar', 'Ar'),
     # ]
-    
-    parametro = models.CharField(max_length=50,blank=True)
-    tipo_parametro = models.ForeignKey('TipoParametro', on_delete=models.CASCADE,blank=True, null=True)
-    frasco = models.ForeignKey('Frasco', on_delete=models.CASCADE,blank=True, null=True)
-    descricao = models.CharField(max_length=50,blank=True)
-    unidade_medida = models.ForeignKey(UnidadesMedida, on_delete=models.CASCADE,blank=True)
-    produto = models.ForeignKey(Produto, on_delete=models.CASCADE,blank=True, null=True)
+
+    parametro = models.CharField(max_length=50, blank=True)
+    tipo_parametro = models.ForeignKey(
+        'TipoParametro', on_delete=models.CASCADE, blank=True, null=True)
+    frasco = models.ForeignKey(
+        'Frasco', on_delete=models.CASCADE, blank=True, null=True)
+    descricao = models.CharField(max_length=50, blank=True)
+    unidade_medida = models.ForeignKey(
+        UnidadesMedida, on_delete=models.CASCADE, blank=True)
+    produto = models.ForeignKey(
+        Produto, on_delete=models.CASCADE, blank=True, null=True)
     lim_max = models.FloatField(blank=True)
     lim_min = models.FloatField(blank=True)
-    
+
     def __str__(self):
         return f'{self.parametro}'
-    
-    
 
-    
+
 class TipoParametro(models.Model):
     nome = models.CharField(max_length=50, blank=True, unique=True)
     descricao = models.CharField(max_length=50, blank=True)
-    
+
     def __str__(self):
         return f'{self.nome}'
-    
+
     class Meta:
         db_table = 'tab_tipo_parametro'
-        
+
+
 class Frasco(models.Model):
     """
     Classe que representa um frasco.
@@ -511,24 +505,18 @@ class Frasco(models.Model):
         volume (float): O volume do frasco.
     """
 
-    nome = models.CharField(max_length=50,blank=True)
-    descricao = models.CharField(max_length=50,blank=True)
+    nome = models.CharField(max_length=50, blank=True)
+    descricao = models.CharField(max_length=50, blank=True)
 
     def __str__(self):
         return f'{self.nome}'
 
-# class Medida(models.Model):
-#     "É uma função que mostra o resultado das medições."
-#     status = models.BooleanField(default=True)
-#     unidade = models.ForeignKey(Parametros, on_delete=models.CASCADE)
-#     valor = models.FloatField(blank=True)
-#     codigo_coleta = models.ForeignKey(Campo, on_delete=models.CASCADE)
 
 class Amostra(models.Model):
     "É uma função que mostra o resultado das medições."
     status = models.CharField(max_length=50, blank=True)
     ponto = models.ForeignKey('TabPonto', on_delete=models.CASCADE)
-    
+
     codigo_coleta = models.ForeignKey(Campo, on_delete=models.CASCADE)
     data_coleta = models.DateField(default=date.today)
     hora_coleta = models.TimeField(auto_now=True)
@@ -541,39 +529,26 @@ class Amostra(models.Model):
     def __str__(self):
         return f'{self.codigo_coleta}'
 
-    
+
 class StatusAmostra(models.Model):
     "É uma função que lista os status possíveis para a amostra."
     status = models.CharField(max_length=50, blank=True)
 
     def __str__(self):
         return f'{self.status}'
-    
-    
+
+
 # ------------------------------------MIGRAÇÃO-----------------------------------------------------
-
-class TabAmostra(models.Model):
-    id = models.BigAutoField(primary_key=True)
-    id_ponto = models.ForeignKey('TabPonto', models.DO_NOTHING, db_column='id_ponto', blank=True, null=True)
-    id_coleta = models.ForeignKey('TabColeta', models.DO_NOTHING, db_column='id_coleta', blank=True, null=True)
-    id_frasco = models.ForeignKey('TabFrasco', models.DO_NOTHING, db_column='id_frasco', blank=True, null=True)
-    etiqueta = models.TextField(blank=True, null=True)
-    
-    def __str__(self):
-        return f'{self.etiqueta}'
-
-    class Meta:
-        managed = False
-        db_table = 'tab_amostra'
-        
 
 
 class TabCampanha(models.Model):
     id = models.BigAutoField(primary_key=True)
-    id_local = models.ForeignKey('TabLocal', models.DO_NOTHING, db_column='id_local', blank=True, null=True)
+    id_local = models.ForeignKey(
+        'TabLocal', models.DO_NOTHING, db_column='id_local', blank=True, null=True)
     nome = models.TextField(blank=True, null=True)
     descricao = models.TextField(blank=True, null=True)
-    
+    data_criacao = models.DateTimeField(blank=True, null=True)
+
     def __str__(self):
         return f'{self.nome}'
 
@@ -586,23 +561,46 @@ class TabColeta(models.Model):
     id = models.BigAutoField(primary_key=True)
     data = models.DateTimeField(blank=True, null=True)
     nome = models.TextField(blank=True, null=True)
-    id_campanha = models.ForeignKey(TabCampanha, models.DO_NOTHING, db_column='id_campanha', blank=True, null=True)
-    
+    id_campanha = models.ForeignKey(
+        TabCampanha, models.DO_NOTHING, db_column='id_campanha', blank=True, null=True)
+    id_setor = models.ForeignKey(
+        'TabSetor', models.DO_NOTHING, db_column='id_setor', blank=True, null=True)
+
     def __str__(self):
         return f'{self.nome}'
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'tab_coleta'
+
+
+class TabAmostra(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    id_ponto = models.ForeignKey(
+        'TabPonto', models.DO_NOTHING, db_column='id_ponto', blank=True, null=True)
+    id_coleta = models.ForeignKey(
+        'TabColeta', models.DO_NOTHING, db_column='id_coleta', blank=True, null=True)
+    id_frasco = models.ForeignKey(
+        'TabFrasco', models.DO_NOTHING, db_column='id_frasco', blank=True, null=True)
+    etiqueta = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f'{self.etiqueta}'
+
+    class Meta:
+        managed = False
+        db_table = 'tab_amostra'
 
 
 class TabEnvio(models.Model):
     id = models.BigAutoField(primary_key=True)
-    id_amostra = models.ForeignKey(TabAmostra, models.DO_NOTHING, db_column='id_amostra', blank=True, null=True)
-    id_laboratorio = models.ForeignKey('TabLaboratorio', models.DO_NOTHING, db_column='id_laboratorio', blank=True, null=True)
+    id_amostra = models.ForeignKey(
+        TabAmostra, models.DO_NOTHING, db_column='id_amostra', blank=True, null=True)
+    id_laboratorio = models.ForeignKey(
+        'TabLaboratorio', models.DO_NOTHING, db_column='id_laboratorio', blank=True, null=True)
     data_envio = models.DateTimeField(blank=True, null=True)
     data_resultado = models.DateTimeField(blank=True, null=True)
-    
+
     def __str__(self):
         return f'{self.id}'
 
@@ -614,7 +612,7 @@ class TabEnvio(models.Model):
 class TabFrasco(models.Model):
     id = models.BigAutoField(primary_key=True)
     nome = models.TextField(blank=True, null=True)
-    
+
     def __str__(self):
         return f'{self.nome}'
 
@@ -627,7 +625,7 @@ class TabLaboratorio(models.Model):
     id = models.BigAutoField(primary_key=True)
     nome = models.TextField(blank=True, null=True)
     laboratorio_descricao = models.TextField(blank=True, null=True)
-    
+
     def __str__(self):
         return f'{self.nome}'
 
@@ -641,7 +639,7 @@ class TabLocal(models.Model):
     nome = models.CharField(blank=True, null=True)
     local_latitude = models.FloatField(blank=True, null=True)
     local_longitude = models.FloatField(blank=True, null=True)
-    
+
     def __str__(self):
         return f'{self.nome}'
 
@@ -652,10 +650,12 @@ class TabLocal(models.Model):
 
 class TabMedida(models.Model):
     id = models.BigAutoField(primary_key=True)
-    id_envio = models.ForeignKey(TabEnvio, models.DO_NOTHING, db_column='id_envio', blank=True, null=True)
-    id_pp = models.ForeignKey('TabProdxparam', models.DO_NOTHING, db_column='id_pp', blank=True, null=True)
+    id_envio = models.ForeignKey(
+        TabEnvio, models.DO_NOTHING, db_column='id_envio', blank=True, null=True)
+    id_pp = models.ForeignKey(
+        'TabProdxparam', models.DO_NOTHING, db_column='id_pp', blank=True, null=True)
     valor = models.TextField(blank=True, null=True)
-    
+
     def __str__(self):
         return f'{self.valor}'
 
@@ -668,7 +668,7 @@ class TabParam(models.Model):
     id = models.BigAutoField(primary_key=True)
     nome = models.TextField(blank=True, null=True)
     param_meta_dado = models.TextField(blank=True, null=True)
-    
+
     def __str__(self):
         return f'{self.nome}'
 
@@ -679,29 +679,31 @@ class TabParam(models.Model):
 
 class TabPonto(models.Model):
     id = models.BigAutoField(primary_key=True)
-    id_setor = models.ForeignKey('TabSetor', models.DO_NOTHING, db_column='id_setor', blank=True, null=True)
-    id_local = models.ForeignKey(TabLocal, models.DO_NOTHING, db_column='id_local', blank=True, null=True)
-    nome = models.CharField(blank=True, null=True)
-    modalidade = models.CharField(blank=True, null=True)
+    id_setor = models.ForeignKey(
+        'TabSetor', models.DO_NOTHING, db_column='id_setor', blank=True, null=True)
+    id_local = models.ForeignKey(
+        TabLocal, models.DO_NOTHING, db_column='id_local', blank=True, null=True)
+    nome = models.TextField(blank=True, null=True)
+    modalidade = models.TextField(blank=True, null=True)
     lat = models.FloatField(blank=True, null=True)
     lon = models.FloatField(blank=True, null=True)
-    observacao = models.CharField(blank=True, null=True)
-    status = models.BooleanField(null=True, blank=True, default=True)
-    
+    observacao = models.TextField(blank=True, null=True)
+    status = models.BooleanField(null=True, blank=True)
+
     def __str__(self):
         return f'{self.nome}'
 
     class Meta:
-        managed = True
+        managed = False
         db_table = 'tab_ponto'
 
 # class PontosColeta(models.Model):
-    
+
 #     DESCRICAO = [
 #         ('Ponto de Coleta', 'Ponto de Coleta'),
 #         ('Ponto de aplicação', 'Ponto de Aplicação'),
 #     ]
-    
+
 #     nome = models.CharField(max_length=5, blank=False)
 #     setor = models.ForeignKey('TabSetor', on_delete=models.CASCADE, related_name='pontos')
 #     local = models.ForeignKey('TabLocal', on_delete=models.CASCADE, related_name='pontos')
@@ -713,14 +715,11 @@ class TabPonto(models.Model):
 #     def __str__(self):
 #         return f'{self.nome}'
 
-
-
-
 class TabProduto(models.Model):
     id = models.BigAutoField(primary_key=True)
     produto = models.TextField(blank=True, null=True)
     nome = models.TextField(blank=True, null=True)
-    
+
     def __str__(self):
         return f'{self.produto}'
 
@@ -731,16 +730,20 @@ class TabProduto(models.Model):
 
 class TabProdxparam(models.Model):
     id = models.BigAutoField(primary_key=True)
-    id_param = models.ForeignKey(TabParam, models.DO_NOTHING, db_column='id_param', blank=True, null=True)
-    id_produto = models.ForeignKey(TabProduto, models.DO_NOTHING, db_column='id_produto', blank=True, null=True)
-    id_serie = models.ForeignKey('TabSerieClassificacao', models.DO_NOTHING, db_column='id_serie', blank=True, null=True)
+    id_param = models.ForeignKey(
+        TabParam, models.DO_NOTHING, db_column='id_param', blank=True, null=True)
+    id_produto = models.ForeignKey(
+        TabProduto, models.DO_NOTHING, db_column='id_produto', blank=True, null=True)
+    id_serie = models.ForeignKey(
+        'TabSerieClassificacao', models.DO_NOTHING, db_column='id_serie', blank=True, null=True)
     nome = models.TextField(blank=True, null=True)
     unidade = models.TextField(blank=True, null=True)
     limite_min = models.BigIntegerField(blank=True, null=True)
     limite_max = models.BigIntegerField(blank=True, null=True)
-    id_frasco = models.ForeignKey(TabFrasco, models.DO_NOTHING, db_column='id_frasco', blank=True, null=True)
+    id_frasco = models.ForeignKey(
+        TabFrasco, models.DO_NOTHING, db_column='id_frasco', blank=True, null=True)
     id_ppativacao = models.BigIntegerField(blank=True, null=True)
-    
+
     def __str__(self):
         return f'{self.nome}'
 
@@ -753,7 +756,7 @@ class TabSerieClassificacao(models.Model):
     id = models.BigAutoField(primary_key=True)
     nome = models.TextField(blank=True, null=True)
     descricao = models.TextField(blank=True, null=True)
-    
+
     def __str__(self):
         return f'{self.nome}'
 
@@ -761,16 +764,16 @@ class TabSerieClassificacao(models.Model):
         managed = False
         db_table = 'tab_serie_classificacao'
 
-    
 
 class TabSetor(models.Model):
     id = models.BigAutoField(primary_key=True)
     nome = models.CharField(blank=True, null=True)
-    id_local = models.ForeignKey('TabLocal', models.DO_NOTHING, db_column='id_local', blank=True, null=True)
+    id_local = models.ForeignKey(
+        'TabLocal', models.DO_NOTHING, db_column='id_local', blank=True, null=True)
     lon = models.FloatField(blank=True, null=True)
     lat = models.FloatField(blank=True, null=True)
     abreviatura = models.CharField(max_length=50, blank=True, unique=False)
-    
+
     def __str__(self):
         return f'{self.nome}'
 
