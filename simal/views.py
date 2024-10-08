@@ -671,8 +671,6 @@ Raises:
     return redirect('checklist_campanha', ordem_servico=ordem_servico)
 
 
-
-
 def etiquetagem(request, ordem_servico=None):
     ordem_servico = request.GET.get('ordem_servico', ordem_servico)
     campanha = None
