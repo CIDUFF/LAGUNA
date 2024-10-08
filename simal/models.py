@@ -118,24 +118,6 @@ class Solicitantes(models.Model):
     def __str__(self):
         return f'{self.nome}'
 
-# class PontosColeta(models.Model):
-
-#     DESCRICAO = [
-#         ('Ponto de Coleta', 'Ponto de Coleta'),
-#         ('Ponto de aplicação', 'Ponto de Aplicação'),
-#     ]
-
-#     nome = models.CharField(max_length=5, blank=False)
-#     setor = models.ForeignKey('TabSetor', on_delete=models.CASCADE, related_name='pontos')
-#     local = models.ForeignKey('TabLocal', on_delete=models.CASCADE, related_name='pontos')
-#     tipo = models.CharField(max_length=50, choices=DESCRICAO, default='Ponto de Coleta')
-#     status = models.BooleanField(default=True, blank=True)
-#     lat = models.FloatField(null=True, blank=True)
-#     lon = models.FloatField(null=True, blank=True)
-
-#     def __str__(self):
-#         return f'{self.nome}'
-
 
 class ProgramaColeta(models.Model):
 
@@ -732,7 +714,6 @@ class TabPonto(models.Model):
 
 #     def __str__(self):
 #         return f'{self.nome}'
-
 
 class TabProduto(models.Model):
     id = models.BigAutoField(primary_key=True)

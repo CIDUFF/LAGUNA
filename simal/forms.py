@@ -477,7 +477,7 @@ class SetorForm(forms.ModelForm):
             'id_local': 'Local',
             'lat': 'Latitude',
             'lon': 'Longitude',
-            'abreaviatura': 'Abreviatura'
+            'abreviatura': 'Abreviatura'
             
         }
 
@@ -509,7 +509,7 @@ class PontoForm(forms.ModelForm):
             'nome': 'Código',
             'id_setor': 'Setor',
             'id_local': 'Local',
-            'modelidade': 'Modalidade',
+            'modalidade': 'Modalidade',
             'lat': 'Latitude',
             'lon': 'Longitude',
             'observacao': 'Observação',
@@ -524,11 +524,12 @@ class PontoForm(forms.ModelForm):
                 'Cadastro de Pontos de Coleta',
                 Div(
                     Div('nome', css_class='col-md-6'),
-                    Div('setor', css_class='col-md-6'),
-                    Div('local', css_class='col-md-6'),
-                    Div('tipo', css_class='col-md-6'),
+                    Div('id_setor', css_class='col-md-6'),
+                    Div('id_local', css_class='col-md-6'),
+                    Div('modalidade', css_class='col-md-6'),
                     Div('lat', css_class='col-md-6'),
                     Div('lon', css_class='col-md-6'),
+                    Div('observacao', css_class='col-md-6'),
                     Div('status', css_class='col-md-6'),
                     
                     css_class='row'
