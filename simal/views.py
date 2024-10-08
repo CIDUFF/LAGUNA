@@ -671,8 +671,6 @@ Raises:
     return redirect('checklist_campanha', ordem_servico=ordem_servico)
 
 
-
-
 def etiquetagem(request, ordem_servico=None):
     ordem_servico = request.GET.get('ordem_servico', ordem_servico)
     campanha = None
@@ -959,3 +957,24 @@ def cadastro_tipo_parametro(request):
     
     return render(request, 'cadastro_tipo_parametro.html', {'form': form, 'table_tipo_parametro': table_tipo_parametro})
 
+@login_required
+def direcionamento_campanha(request):
+    return render(request, 'direcionamento_campanha.html')
+
+def cadastro_campanha(request):
+    if request.method == 'POST':
+        form = CadastroCampanhaForm(request.POST)
+        if form.is_valid():
+            # Processa os dados do formulário aqui
+            data_criacao_campanha = form.cleaned_data['data_criacao_campanha']
+            equipe_coleta = form.cleaned_data['equipe_coleta']
+            local_coleta = form.cleaned_data['local_coleta']
+            observacoes = form.cleaned_data['observacoes']
+
+            # Exemplo de mensagem de sucesso
+            messages.success(request, 'Campanha cadastrada com sucesso!')
+            return redirect('direcionamento_campanha')
+    else:
+        form = CadastroCampanhaForm()
+
+    return render(request, 'cadastro_campanha.html', {'form': form})
