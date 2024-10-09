@@ -436,6 +436,9 @@ class DetalhesUsuario(models.Model):
 
     def __str__(self):
         return f'{self.usuario}'
+    
+    class Meta:
+        db_table = 'tab_detalhes_usuario'
 
 
 class UnidadesMedida(models.Model):
@@ -570,7 +573,7 @@ class TabColeta(models.Model):
         return f'{self.nome}'
 
     class Meta:
-        managed = True
+        managed = False
         db_table = 'tab_coleta'
 
 
