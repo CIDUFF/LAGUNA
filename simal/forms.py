@@ -501,10 +501,15 @@ class SetorForm(forms.ModelForm):
             )
         )
         
+
 class PontoForm(forms.ModelForm):
+    nome = forms.CharField(label='Código', max_length=100)
+    modalidade = forms.CharField(label='Modalidade', max_length=100)
+
     class Meta:
         model = TabPonto
-        fields = ['id_setor', 'id_local', 'nome', 'modalidade', 'lat', 'lon', 'observacao', 'status']
+        fields = ['id_setor', 'id_local', 'nome',
+                  'modalidade', 'lat', 'lon', 'observacao', 'status']
         labels = {
             'nome': 'Código',
             'id_setor': 'Setor',
@@ -531,7 +536,6 @@ class PontoForm(forms.ModelForm):
                     Div('lon', css_class='col-md-6'),
                     Div('observacao', css_class='col-md-6'),
                     Div('status', css_class='col-md-6'),
-                    
                     css_class='row'
                 )
             ),

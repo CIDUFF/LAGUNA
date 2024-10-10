@@ -686,8 +686,8 @@ class TabPonto(models.Model):
         'TabSetor', models.DO_NOTHING, db_column='id_setor', blank=True, null=True)
     id_local = models.ForeignKey(
         TabLocal, models.DO_NOTHING, db_column='id_local', blank=True, null=True)
-    nome = models.TextField(blank=True, null=True)
-    modalidade = models.TextField(blank=True, null=True)
+    nome = models.CharField(blank=True, null=True)
+    modalidade = models.CharField(blank=True, null=True)
     lat = models.FloatField(blank=True, null=True)
     lon = models.FloatField(blank=True, null=True)
     observacao = models.TextField(blank=True, null=True)
