@@ -51,4 +51,14 @@ docker-compose build --no-cache
 docker-compose up
 ```
 
+## Documentação
+
+Em tabelas que foram populadas com dump de dados de excel e outros sistemas, é possível que o id_seq não esteja correto, para corrigir isso, execute o comando sql:
+
+```sql
+SELECT setval('simal_amostra_id_seq', (SELECT MAX(id) FROM simal_amostra)+1);
+
+```
+
+
 
