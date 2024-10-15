@@ -59,3 +59,4 @@ staticfiles/
 **.cpython
 
 .vscode/settings.json
+reload_apache.txt
