@@ -38,7 +38,41 @@ $RECYCLE.BIN/
 *.log
 *.pot
 local_settings.py
-media
+
+# Ignorar arquivos específicos apenas dentro da pasta media
+/media/*.pdf
+/media/*.doc
+/media/*.docx
+/media/*.xls
+/media/*.xlsx
+/media/*.ppt
+/media/*.pptx
+/media/*.odt
+/media/*.ods
+/media/*.odp
+/media/*.jpg
+/media/*.jpeg
+/media/*.png
+/media/*.gif
+/media/*.svg
+
+# Ignorar arquivos específicos em subpastas da pasta media
+/media/**/*.pdf
+/media/**/*.doc
+/media/**/*.docx
+/media/**/*.xls
+/media/**/*.xlsx
+/media/**/*.ppt
+/media/**/*.pptx
+/media/**/*.odt
+/media/**/*.ods
+/media/**/*.odp
+/media/**/*.jpg
+/media/**/*.jpeg
+/media/**/*.png
+/media/**/*.gif
+/media/**/*.svg
+
 
 # Celery
 celerybeat-schedule
