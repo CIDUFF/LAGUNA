@@ -39,6 +39,9 @@ $RECYCLE.BIN/
 *.pot
 local_settings.py
 
+# Não ignorar a pasta media
+!/media/
+
 # Ignorar arquivos específicos apenas dentro da pasta media
 /media/*.pdf
 /media/*.doc
