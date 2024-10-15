@@ -559,24 +559,24 @@ class TipoParametroForm(forms.ModelForm):
         model = TipoParametro
         fields = '__all__'
         
-class CadastroCampanhaForm(forms.Form):
-    data_criacao_campanha = forms.DateField(
-        label='Data de criação da campanha',
-        widget=forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d')
-    )
-    equipe_coleta = forms.ChoiceField(label='Equipe de coleta')
-    local_coleta = forms.ChoiceField(label='Setor')
-    observacoes = forms.CharField(
-        label='Observações',
-        widget=forms.Textarea(attrs={'rows': 3, 'cols': 40}),
-        required=False
-    )
+
+class CadastroCampanhaForm(forms.ModelForm):
+    class Meta:
+        model = TabCampanha
+        exclude = ['id']
 
     def __init__(self, *args, **kwargs):
         super(CadastroCampanhaForm, self).__init__(*args, **kwargs)
-        self.fields['local_coleta'].choices = [
-            (setor.id, setor.nome) for setor in TabSetor.objects.all().distinct()
-        ]
-        self.fields['equipe_coleta'].choices = [
-            (group.id, group.name) for group in Group.objects.all()
-        ]
+        self.helper = FormHelper()
+        self.helper.add_input(Submit('submit', 'Salvar'))
+
+
+class CadastroColetaForm(forms.ModelForm):
+    class Meta:
+        model = TabColeta
+        exclude = ['id']
+
+    def __init__(self, *args, **kwargs):
+        super(CadastroColetaForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.add_input(Submit('submit', 'Salvar'))

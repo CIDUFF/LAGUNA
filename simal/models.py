@@ -545,10 +545,10 @@ class StatusAmostra(models.Model):
 
 
 class TabCampanha(models.Model):
-    id = models.BigAutoField(primary_key=True)
+    # id = models.BigAutoField(primary_key=True)
     id_local = models.ForeignKey(
         'TabLocal', models.DO_NOTHING, db_column='id_local', blank=True, null=True)
-    nome = models.TextField(blank=True, null=True)
+    nome = models.CharField(blank=True, null=True)
     descricao = models.TextField(blank=True, null=True)
     data_criacao = models.DateTimeField(blank=True, null=True)
 

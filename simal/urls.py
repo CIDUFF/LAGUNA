@@ -66,5 +66,6 @@ urlpatterns = [
     path('cadastro_tipo_parametro/', views.cadastro_tipo_parametro, name='cadastro_tipo_parametro'),
     path('direcionamento_campanha/', views.direcionamento_campanha, name='direcionamento_campanha'),
     path('cadastro_campanha/', views.cadastro_campanha, name='cadastro_campanha'),
+    path('cadastro_coleta/', views.cadastro_coleta_view, name='cadastro_coleta'),
     
 ]
