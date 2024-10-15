@@ -561,6 +561,9 @@ class TipoParametroForm(forms.ModelForm):
         
 
 class CadastroCampanhaForm(forms.ModelForm):
+    data_criacao = forms.DateField(
+        widget=forms.DateInput(attrs={'type': 'date'}))
+
     class Meta:
         model = TabCampanha
         exclude = ['id']
@@ -570,8 +573,11 @@ class CadastroCampanhaForm(forms.ModelForm):
         self.helper = FormHelper()
         self.helper.add_input(Submit('submit', 'Salvar'))
 
-
+# TODO: #176 Refatorar o código para que a campanha já venha preenchida automaticamente
 class CadastroColetaForm(forms.ModelForm):
+    data = forms.DateField(
+        widget=forms.DateInput(attrs={'type': 'date'}))
+
     class Meta:
         model = TabColeta
         exclude = ['id']

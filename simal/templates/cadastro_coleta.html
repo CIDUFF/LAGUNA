@@ -1,5 +1,5 @@
 {% extends 'base/base_site.html' %}
-{% load django_bootstrap5 %}
+{% load crispy_forms_tags %}
 {% block title %} Cadastro de Coleta {% endblock %}
 {% block content %}
 {% if user.is_authenticated %}
@@ -14,13 +14,14 @@
                 Informações da Coleta
             </h4>
         </div>
-        {% bootstrap_form form layout='floating' %}
+        {% crispy form %}
         {{ formset.management_form }}
         {% for fs in formset %}
         <div class="inlineform">
-            {% bootstrap_form fs layout='floating' %}
+            {% crispy fs %}
         </div>
         {% endfor %}
+
     </form>
 </div>
 {% else %}

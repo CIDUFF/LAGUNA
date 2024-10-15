@@ -549,8 +549,8 @@ class TabCampanha(models.Model):
     id_local = models.ForeignKey(
         'TabLocal', models.DO_NOTHING, db_column='id_local', blank=True, null=True)
     nome = models.CharField(blank=True, null=True)
-    descricao = models.TextField(blank=True, null=True)
     data_criacao = models.DateTimeField(blank=True, null=True)
+    descricao = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return f'{self.nome}'
@@ -563,7 +563,7 @@ class TabCampanha(models.Model):
 class TabColeta(models.Model):
     id = models.BigAutoField(primary_key=True)
     data = models.DateTimeField(blank=True, null=True)
-    nome = models.TextField(blank=True, null=True)
+    nome = models.CharField(blank=True, null=True)
     id_campanha = models.ForeignKey(
         TabCampanha, models.DO_NOTHING, db_column='id_campanha', blank=True, null=True)
     id_setor = models.ForeignKey(
@@ -573,7 +573,7 @@ class TabColeta(models.Model):
         return f'{self.nome}'
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'tab_coleta'
 
 
