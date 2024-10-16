@@ -1,38 +1,37 @@
 ---
-name: Bug report
-about: Create a report to help us improve
+name: Nova Feature
+about: Descreva a nova feature detalhadamente
 title: ''
 labels: ''
 assignees: ''
 
 ---
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+## Descrição da Funcionalidade
 
-**To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+<!-- Descreva a nova funcionalidade de forma clara e objetiva. Qual o problema que ela resolve ou a melhoria que ela traz? -->
 
-**Expected behavior**
-A clear and concise description of what you expected to happen.
+## Como Deve Funcionar
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+<!-- Explique como a funcionalidade deve se comportar. Detalhe o fluxo, caso seja necessário. -->
 
-**Desktop (please complete the following information):**
- - OS: [e.g. iOS]
- - Browser [e.g. chrome, safari]
- - Version [e.g. 22]
+## Motivação
 
-**Smartphone (please complete the following information):**
- - Device: [e.g. iPhone6]
- - OS: [e.g. iOS8.1]
- - Browser [e.g. stock browser, safari]
- - Version [e.g. 22]
+<!-- Descreva o motivo pelo qual essa funcionalidade é importante. Como ela vai melhorar o projeto? -->
 
-**Additional context**
-Add any other context about the problem here.
+## Alternativas Consideradas
+
+<!-- Se houveram outras soluções ou alternativas consideradas, descreva-as aqui. -->
+
+## Impacto
+
+<!-- Explique o impacto que a funcionalidade terá no projeto, nos usuários ou no fluxo de trabalho. -->
+
+## Requisitos Técnicos
+
+<!-- Se aplicável, descreva quaisquer detalhes técnicos, como bibliotecas necessárias, tecnologias ou mudanças estruturais. -->
+
+## Contexto Adicional
+
+<!-- Adicione qualquer outro contexto, ideia ou captura de tela que ajude a entender melhor o pedido. -->
+
