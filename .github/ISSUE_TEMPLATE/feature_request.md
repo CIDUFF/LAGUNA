@@ -1,20 +1,42 @@
 ---
-name: Feature request
-about: Suggest an idea for this project
+name: Reportar problema
+about: Explique detalhadamente o problema
 title: ''
 labels: ''
 assignees: ''
 
 ---
 
-**Is your feature request related to a problem? Please describe.**
-A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
+## Descrição
 
-**Describe the solution you'd like**
-A clear and concise description of what you want to happen.
+<!-- Descreva o problema ou sugestão de maneira clara e concisa. -->
 
-**Describe alternatives you've considered**
-A clear and concise description of any alternative solutions or features you've considered.
+## Comportamento Esperado
 
-**Additional context**
-Add any other context or screenshots about the feature request here.
+<!-- Descreva o que você esperava que acontecesse. -->
+
+## Comportamento Atual
+
+<!-- Descreva o que está acontecendo atualmente. Se aplicável, inclua erros ou logs relevantes. -->
+
+## Passos para Reproduzir
+
+<!-- Descreva os passos necessários para reproduzir o problema. -->
+1. 
+2. 
+3. 
+
+## Ambiente
+
+- Versão do Sistema Operacional: [Ex: Windows 10, Ubuntu 20.04]
+- Versão do R ou Quarto: [Ex: R 4.2.0, Quarto 1.3]
+- Outros detalhes relevantes: 
+
+## Possível Solução
+
+<!-- Se você tem alguma ideia de como resolver o problema, descreva aqui. -->
+
+## Contexto Adicional
+
+<!-- Adicione qualquer outro contexto, captura de tela ou logs relacionados à *issue* aqui. -->
+
