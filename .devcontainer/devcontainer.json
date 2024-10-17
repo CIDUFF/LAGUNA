@@ -18,7 +18,7 @@
   // "forwardPorts": [],
 
   // Use 'postCreateCommand' to run commands after the container is created.
-  "postCreateCommand": "pip3 install --user -r requirements.txt",
+  "postCreateCommand": "pip3 install --user -r requirements.txt && git clone https://github.com/zsh-users/zsh-autosuggestions ~/.zsh/zsh-autosuggestions && source ~/.zsh/zsh-autosuggestions/zsh-autosuggestions.zsh && source ~/.zshrc",
 
   "customizations": {
       "vscode": {
