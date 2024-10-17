@@ -244,7 +244,7 @@ class ParametroTable(tables.Table):
 #         fields = ('nome', 'param_meta_dado')
         
 class FrascoTable(tables.Table):
-    nome = tables.Column(verbose_name='Nome')
+    update = tables.LinkColumn('atualizar_equipe', args=[A('pk')], orderable=False, empty_values=[], text='EDITAR')
 
     class Meta:
         model = TabFrasco

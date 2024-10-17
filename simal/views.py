@@ -961,14 +961,54 @@ def cadastro_tipo_parametro(request):
 
 @login_required
 def configuracoes_view(request):
-    # Instanciar os formulários
-    param_form = ParametroForm()
-    frasco_form = TabFrascoForm()
-    equipe_form = TabEquipeForm()
-    laboratorio_form = TabLaboratorioForm()
-    produto_form = TabProdutoForm()
-    prodxparam_form = TabProdxParamForm()
-    serie_classificacao_form = TabSerieClassificacaoForm()
+    if request.method == 'POST':
+        if 'param_submit' in request.POST:
+            param_form = ParametroForm(request.POST, label_suffix='param')
+            if param_form.is_valid():
+                param_form.save()
+                messages.success(request, 'Parâmetro salvo com sucesso.')
+        elif 'frasco_submit' in request.POST:
+            frasco_form = TabFrascoForm(request.POST, label_suffix='frasco')
+            if frasco_form.is_valid():
+                frasco_form.save()
+                messages.success(request, 'Frasco salvo com sucesso.')
+        elif 'equipe_submit' in request.POST:
+            equipe_form = TabEquipeForm(request.POST, label_suffix='equipe')
+            if equipe_form.is_valid():
+                equipe = equipe_form.save(commit=False)
+                equipe.responsavel = request.user  # Define o campo responsavel
+                equipe.save()
+                messages.success(request, 'Equipe salva com sucesso.')
+        elif 'laboratorio_submit' in request.POST:
+            laboratorio_form = TabLaboratorioForm(request.POST, label_suffix='laboratorio')
+            if laboratorio_form.is_valid():
+                laboratorio_form.save()
+                messages.success(request, 'Laboratório salvo com sucesso.')
+        elif 'produto_submit' in request.POST:
+            produto_form = TabProdutoForm(request.POST, label_suffix='produto')
+            if produto_form.is_valid():
+                produto_form.save()
+                messages.success(request, 'Produto salvo com sucesso.')
+        elif 'prodxparam_submit' in request.POST:
+            prodxparam_form = TabProdxParamForm(request.POST, label_suffix='prodxparam')
+            if prodxparam_form.is_valid():
+                prodxparam_form.save()
+                messages.success(request, 'Produto x Parâmetro salvo com sucesso.')
+        elif 'serie_classificacao_submit' in request.POST:
+            serie_classificacao_form = TabSerieClassificacaoForm(request.POST, label_suffix='serie_classificacao')
+            if serie_classificacao_form.is_valid():
+                serie_classificacao_form.save()
+                messages.success(request, 'Série de Classificação salva com sucesso.')
+
+        return redirect('configuracoes')
+    else:
+        param_form = ParametroForm()
+        frasco_form = TabFrascoForm()
+        equipe_form = TabEquipeForm()
+        laboratorio_form = TabLaboratorioForm()
+        produto_form = TabProdutoForm()
+        prodxparam_form = TabProdxParamForm()
+        serie_classificacao_form = TabSerieClassificacaoForm()
 
     # Instanciar as tabelas
     table_parametro = ParametroTable(TabParam.objects.all())
