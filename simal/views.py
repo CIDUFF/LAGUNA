@@ -959,3 +959,133 @@ def cadastro_tipo_parametro(request):
     
     return render(request, 'cadastro_tipo_parametro.html', {'form': form, 'table_tipo_parametro': table_tipo_parametro})
 
+@login_required
+def configuracoes_view(request):
+    # Instanciar os formulários
+    param_form = ParametroForm()
+    frasco_form = TabFrascoForm()
+    equipe_form = TabEquipeForm()
+    laboratorio_form = TabLaboratorioForm()
+    produto_form = TabProdutoForm()
+    prodxparam_form = TabProdxParamForm()
+    serie_classificacao_form = TabSerieClassificacaoForm()
+
+    # Instanciar as tabelas
+    table_parametro = ParametroTable(TabParam.objects.all())
+    table_frasco = FrascoTable(TabFrasco.objects.all())
+    table_equipe = EquipeTable(TabEquipe.objects.all())
+    table_laboratorio = LaboratorioTable(TabLaboratorio.objects.all())
+    table_produto = ProdutoTable(TabProduto.objects.all())
+    table_prodxparam = ProdxparamTable(TabProdxparam.objects.all())
+    table_serie_classificacao = SerieClassificacaoTable(TabSerieClassificacao.objects.all())
+
+    # Configurar a paginação das tabelas
+    RequestConfig(request, paginate={"per_page": 25}).configure(table_parametro)
+    RequestConfig(request, paginate={"per_page": 25}).configure(table_frasco)
+    RequestConfig(request, paginate={"per_page": 25}).configure(table_equipe)
+    RequestConfig(request, paginate={"per_page": 25}).configure(table_laboratorio)
+    RequestConfig(request, paginate={"per_page": 25}).configure(table_produto)
+    RequestConfig(request, paginate={"per_page": 25}).configure(table_prodxparam)
+    RequestConfig(request, paginate={"per_page": 25}).configure(table_serie_classificacao)
+
+    # Renderizar o template com os formulários e tabelas
+    return render(request, 'configuracoes.html', {
+        'param_form': param_form,
+        'frasco_form': frasco_form,
+        'equipe_form': equipe_form,
+        'laboratorio_form': laboratorio_form,
+        'produto_form': produto_form,
+        'prodxparam_form': prodxparam_form,
+        'serie_classificacao_form': serie_classificacao_form,
+        'table_parametro': table_parametro,
+        'table_frasco': table_frasco,
+        'table_equipe': table_equipe,
+        'table_laboratorio': table_laboratorio,
+        'table_produto': table_produto,
+        'table_prodxparam': table_prodxparam,
+        'table_serie_classificacao': table_serie_classificacao
+    })
+
+# @login_required
+# def atualizar_parametro(request, pk):
+#     parametro = get_object_or_404(TabParam, pk=pk)
+#     if request.method == 'POST':
+#         form = ParametroForm(request.POST, instance=parametro)
+#         if form.is_valid():
+#             form.save()
+#             return redirect('configuracoes')
+#     else:
+#         form = ParametroForm(instance=parametro)
+#     return render(request, 'atualizar_parametro.html', {'form': form})
+
+@login_required
+def atualizar_frasco(request, pk):
+    frasco = get_object_or_404(TabFrasco, pk=pk)
+    if request.method == 'POST':
+        form = TabFrascoForm(request.POST, instance=frasco)
+        if form.is_valid():
+            form.save()
+            return redirect('configuracoes')
+    else:
+        form = TabFrascoForm(instance=frasco)
+    return render(request, 'atualizar_frasco.html', {'form': form})
+
+@login_required
+def atualizar_equipe(request, pk):
+    equipe = get_object_or_404(TabEquipe, pk=pk)
+    if request.method == 'POST':
+        form = TabEquipeForm(request.POST, instance=equipe)
+        if form.is_valid():
+            form.save()
+            return redirect('configuracoes')
+    else:
+        form = TabEquipeForm(instance=equipe)
+    return render(request, 'atualizar_equipe.html', {'form': form})
+
+@login_required
+def atualizar_laboratorio(request, pk):
+    laboratorio = get_object_or_404(TabLaboratorio, pk=pk)
+    if request.method == 'POST':
+        form = TabLaboratorioForm(request.POST, instance=laboratorio)
+        if form.is_valid():
+            form.save()
+            return redirect('configuracoes')
+    else:
+        form = TabLaboratorioForm(instance=laboratorio)
+    return render(request, 'atualizar_laboratorio.html', {'form': form})
+
+@login_required
+def atualizar_produto(request, pk):
+    produto = get_object_or_404(TabProduto, pk=pk)
+    if request.method == 'POST':
+        form = TabProdutoForm(request.POST, instance=produto)
+        if form.is_valid():
+            form.save()
+            return redirect('configuracoes')
+    else:
+        form = TabProdutoForm(instance=produto)
+    return render(request, 'atualizar_produto.html', {'form': form})
+
+@login_required
+def atualizar_prodxparam(request, pk):
+    prodxparam = get_object_or_404(TabProdxparam, pk=pk)
+    if request.method == 'POST':
+        form = TabProdxparamForm(request.POST, instance=prodxparam)
+        if form.is_valid():
+            form.save()
+            return redirect('configuracoes')
+    else:
+        form = TabProdxparamForm(instance=prodxparam)
+    return render(request, 'atualizar_prodxparam.html', {'form': form})
+
+@login_required
+def atualizar_serie_classificacao(request, pk):
+    serie_classificacao = get_object_or_404(TabSerieClassificacao, pk=pk)
+    if request.method == 'POST':
+        form = TabSerieClassificacaoForm(request.POST, instance=serie_classificacao)
+        if form.is_valid():
+            form.save()
+            return redirect('configuracoes')
+    else:
+        form = TabSerieClassificacaoForm(instance=serie_classificacao)
+    return render(request, 'atualizar_serie_classificacao.html', {'form': form})

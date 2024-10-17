@@ -225,3 +225,75 @@ class TipoParametroTable(tables.Table):
         per_page = 1
         paginator_class = tables.LazyPaginator
         table_pagination = True
+        
+class ParametroTable(tables.Table):
+    nome = tables.Column(verbose_name='Nome')
+    param_meta_dado = tables.Column(verbose_name='Meta_Dado')
+
+    class Meta:
+        model = TabParam
+        template_name = "django_tables2/bootstrap.html"
+        fields = ('nome', 'param_meta_dado')
+        
+# class ParametroTable(tables.Table):
+#     update = tables.LinkColumn('atualizar_parametro', args=[A('pk')], orderable=False, empty_values=[], text='EDITAR')
+
+#     class Meta:
+#         model = TabParam
+#         template_name = "django_tables2/bootstrap.html"
+#         fields = ('nome', 'param_meta_dado')
+        
+class FrascoTable(tables.Table):
+    nome = tables.Column(verbose_name='Nome')
+
+    class Meta:
+        model = TabFrasco
+        template_name = "django_tables2/bootstrap.html"
+        fields = ('nome',)
+        empty_text = 'Não há dados para exibir'
+        orderable = False
+        exclude = ('id',)
+        sequence = ('nome',)
+        per_page = 1
+        paginator_class = tables.LazyPaginator
+        table_pagination = True
+        
+class EquipeTable(tables.Table):
+    update = tables.LinkColumn('atualizar_equipe', args=[A('pk')], orderable=False, empty_values=[], text='EDITAR')
+
+    class Meta:
+        model = TabEquipe
+        template_name = "django_tables2/bootstrap.html"
+        fields = ('nome',)
+        
+class LaboratorioTable(tables.Table):
+    update = tables.LinkColumn('atualizar_laboratorio', args=[A('pk')], orderable=False, empty_values=[], text='EDITAR')
+
+    class Meta:
+        model = TabLaboratorio
+        template_name = "django_tables2/bootstrap.html"
+        fields = ('nome',)
+
+class ProdutoTable(tables.Table):
+    update = tables.LinkColumn('atualizar_produto', args=[A('pk')], orderable=False, empty_values=[], text='EDITAR')
+
+    class Meta:
+        model = TabProduto
+        template_name = "django_tables2/bootstrap.html"
+        fields = ('nome',)
+
+class ProdxparamTable(tables.Table):
+    update = tables.LinkColumn('atualizar_prodxparam', args=[A('pk')], orderable=False, empty_values=[], text='EDITAR')
+
+    class Meta:
+        model = TabProdxparam
+        template_name = "django_tables2/bootstrap.html"
+        fields = ('nome',)
+
+class SerieClassificacaoTable(tables.Table):
+    update = tables.LinkColumn('atualizar_serie_classificacao', args=[A('pk')], orderable=False, empty_values=[], text='EDITAR')
+
+    class Meta:
+        model = TabSerieClassificacao
+        template_name = "django_tables2/bootstrap.html"
+        fields = ('nome',)

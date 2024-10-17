@@ -542,7 +542,7 @@ class PontoForm(forms.ModelForm):
         
 class ParametroForm(forms.ModelForm):
     class Meta:
-        model = Parametros
+        model = TabParam
         fields = '__all__'
         
 class UnidadeMedidaForm(forms.ModelForm):
@@ -555,4 +555,32 @@ class TipoParametroForm(forms.ModelForm):
         model = TipoParametro
         fields = '__all__'
         
+class TabFrascoForm(forms.ModelForm):
+    class Meta:
+        model = TabFrasco
+        fields = '__all__'
         
+class TabEquipeForm(forms.ModelForm):
+    class Meta:
+        model = TabEquipe
+        fields = '__all__'
+
+class TabLaboratorioForm(forms.ModelForm):
+    class Meta:
+        model = TabLaboratorio
+        fields = '__all__'
+
+class TabProdutoForm(forms.ModelForm):
+    class Meta:
+        model = TabProduto
+        fields = '__all__'
+
+class TabProdxParamForm(forms.ModelForm):
+    class Meta:
+        model = TabProdxparam
+        fields = '__all__'
+
+class TabSerieClassificacaoForm(forms.ModelForm):
+    class Meta:
+        model = TabSerieClassificacao
+        fields = '__all__'
