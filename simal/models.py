@@ -768,11 +768,11 @@ class TabSetor(models.Model):
         db_table = 'tab_setor'
 
 class TabItemChecklistColeta(models.Model):
-    item = models.CharField(max_length=50, blank=True)
-    status = models.BooleanField(default=False)
-    observacao = models.TextField(max_length=500, blank=True)
-    prazo = models.FloatField(blank=True, null=True)
-    data_cadastro = models.DateTimeField(auto_now_add=True)
+    data_cadastro = models.DateTimeField('Data de Cadastro', auto_now_add=True)
+    item = models.CharField('Item', max_length=50, blank=True)
+    prazo = models.FloatField('Prazo para realização da ação em dias antes da coleta em dias',blank=True, null=True)
+    status = models.BooleanField('Este item está ativo?',default=False,)
+    observacao = models.TextField('Observação',max_length=500, blank=True)
     
     def __str__(self):
         return f'{self.item}'

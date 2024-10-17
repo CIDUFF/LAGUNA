@@ -296,15 +296,18 @@ def atualizar_coleta(request, id):
                'ordem_servico_id': coleta.ordem_servico.id, }
     return render(request, 'coleta/coleta.html', context)
 
+
 @login_required
 def meta_coleta(request, id):
     coleta = get_object_or_404(Campo, id=id)
-    
+
     # Verifica se já existe um registro de metadados para o código de coleta
-    metadados, created = MetadadosCampo.objects.get_or_create(codigo_coleta=coleta)
-    
+    metadados, created = MetadadosCampo.objects.get_or_create(
+        codigo_coleta=coleta)
+
     if created:
-        messages.info(request, 'Novo registro de metadados criado para o código de coleta fornecido.')
+        messages.info(
+            request, 'Novo registro de metadados criado para o código de coleta fornecido.')
 
     if request.method == 'POST':
         form = MetadadosCampoForm(request.POST, instance=metadados)
@@ -314,7 +317,7 @@ def meta_coleta(request, id):
             return redirect(reverse('atualizar_coleta', args=[coleta.id]))
     else:
         form = MetadadosCampoForm(instance=metadados)
-    
+
     context = {
         'form': form,
         'codigo_coleta': coleta.codigo_coleta,
@@ -325,6 +328,7 @@ def meta_coleta(request, id):
     }
 
     return render(request, 'coleta/meta_coleta.html', context)
+
 
 @login_required
 @user_passes_test(check_admin)
@@ -522,15 +526,18 @@ def ajuda(request):
             subject_admin = 'Nova solicitação de ajuda'
             message_admin = f"Nome: {nova_ajuda.nome}\nEmail: {nova_ajuda.email}\nPergunta: {nova_ajuda.pergunta}"
             recipient_list_admin = [settings.EMAIL_HOST_USER]
-            send_mail(subject_admin, message_admin, settings.EMAIL_HOST_USER, recipient_list_admin)
+            send_mail(subject_admin, message_admin,
+                      settings.EMAIL_HOST_USER, recipient_list_admin)
 
             # Enviar e-mail para o usuário
             subject_user = 'Confirmação de solicitação de ajuda'
             message_user = f"Olá {nova_ajuda.nome},\n\nVocê está recebendo este e-mail porque fez uma solicitação de ajuda no sistema LAGUNA.\n\nPergunta: {nova_ajuda.pergunta}\n\nAtenciosamente,\nEquipe LAGUNA"
             recipient_list_user = [nova_ajuda.email]
-            send_mail(subject_user, message_user, settings.EMAIL_HOST_USER, recipient_list_user)
+            send_mail(subject_user, message_user,
+                      settings.EMAIL_HOST_USER, recipient_list_user)
 
-            messages.success(request, 'Sua solicitação de ajuda foi enviada com sucesso!')
+            messages.success(
+                request, 'Sua solicitação de ajuda foi enviada com sucesso!')
 
             return redirect('ajuda')
     else:
@@ -846,6 +853,7 @@ def atualizar_local(request, id):
         form = LocaisForm(instance=local)
     return render(request, 'cadastro_local.html', {'form': form})
 
+
 @login_required
 def cadastro_setor(request):
     if request.method == 'POST':
@@ -857,6 +865,7 @@ def cadastro_setor(request):
     else:
         form = SetorForm()
     return render(request, 'cadastro_setor.html', {'form': form})
+
 
 @login_required
 def atualizar_setor(request, id):
@@ -871,6 +880,7 @@ def atualizar_setor(request, id):
         form = SetorForm(instance=setor)
     return render(request, 'cadastro_setor.html', {'form': form})
 
+
 @login_required
 def cadastro_ponto(request):
     if request.method == 'POST':
@@ -882,6 +892,7 @@ def cadastro_ponto(request):
     else:
         form = PontoForm()
     return render(request, 'cadastro_ponto.html', {'form': form})
+
 
 @login_required
 def atualizar_ponto(request, id):
@@ -895,22 +906,23 @@ def atualizar_ponto(request, id):
     else:
         form = PontoForm(instance=ponto)
     return render(request, 'cadastro_ponto.html', {'form': form})
-    
+
+
 @login_required
 def locais_cadastrados(request):
     setor_filter = SetorFilter(request.GET, queryset=TabSetor.objects.all())
     table_setores = SetorTable(setor_filter.qs)
-    
+
     ponto_filter = PontoFilter(request.GET, queryset=TabPonto.objects.all())
     table_pontos = PontoTable(ponto_filter.qs)
-    
+
     local_filter = LocalFilter(request.GET, queryset=TabLocal.objects.all())
     table_locais = LocalTable(local_filter.qs)
-    
+
     RequestConfig(request, paginate={"per_page": 25}).configure(table_setores)
     RequestConfig(request, paginate={"per_page": 25}).configure(table_pontos)
     RequestConfig(request, paginate={"per_page": 25}).configure(table_locais)
-    
+
     return render(request, 'locais_cadastrados.html', {
         'table_setores': table_setores,
         'table_pontos': table_pontos,
@@ -919,13 +931,16 @@ def locais_cadastrados(request):
         'ponto_filter': ponto_filter,
         'local_filter': local_filter
     })
-    
+
+
 def export_pontos_csv(request):
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="pontos_coleta.csv"'
 
-    writer = csv.writer(response, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-    writer.writerow(['Nome', 'Setor', 'Local', 'Descrição', 'Status', 'Latitude', 'Longitude'])
+    writer = csv.writer(response, delimiter=';',
+                        quotechar='"', quoting=csv.QUOTE_MINIMAL)
+    writer.writerow(['Nome', 'Setor', 'Local', 'Descrição',
+                    'Status', 'Latitude', 'Longitude'])
 
     pontos = TabPonto.objects.select_related('setor', 'local').all()
     for ponto in pontos:
@@ -942,6 +957,7 @@ def export_pontos_csv(request):
 
     return response
 
+
 @login_required
 def cadastro_parametro(request):
     if request.method == 'POST':
@@ -954,17 +970,20 @@ def cadastro_parametro(request):
         form = ParametroForm()
     return render(request, 'cadastro_parametro.html', {'form': form})
 
+
 @login_required
 def cadastro_unidade_medida(request):
     if request.method == 'POST':
         form = UnidadeMedidaForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Unidade de Medida cadastrada com sucesso.')
+            messages.success(
+                request, 'Unidade de Medida cadastrada com sucesso.')
             return redirect('cadastro_unidade_medida')
     else:
         form = UnidadeMedidaForm()
     return render(request, 'cadastro_unidade_medida.html', {'form': form})
+
 
 @login_required
 def cadastro_tipo_parametro(request):
@@ -972,19 +991,23 @@ def cadastro_tipo_parametro(request):
         form = TipoParametroForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Tipo de Parâmetro cadastrado com sucesso.')
+            messages.success(
+                request, 'Tipo de Parâmetro cadastrado com sucesso.')
             return redirect('cadastro_tipo_parametro')
     else:
         form = TipoParametroForm()
-    
+
     table_tipo_parametro = TipoParametroTable(TipoParametro.objects.all())
-    RequestConfig(request, paginate={"per_page": 25}).configure(table_tipo_parametro)
-    
+    RequestConfig(request, paginate={"per_page": 25}).configure(
+        table_tipo_parametro)
+
     return render(request, 'cadastro_tipo_parametro.html', {'form': form, 'table_tipo_parametro': table_tipo_parametro})
+
 
 @login_required
 def direcionamento_campanha(request):
     return render(request, 'direcionamento_campanha.html')
+
 
 def cadastro_campanha(request):
     if request.method == 'POST':
@@ -1010,3 +1033,17 @@ def cadastro_coleta_view(request):
         form = CadastroColetaForm()
 
     return render(request, 'cadastro_coleta.html', {'form': form})
+
+
+def cadastro_item_checklist_coleta(request):
+    if request.method == 'POST':
+        form = CadastroItemChecklistColetaForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(
+                request, 'Item de checklist cadastrado com sucesso.')
+            return redirect('cadastro_item_checklist_coleta')
+    else:
+        form = CadastroItemChecklistColetaForm()
+
+    return render(request, 'cadastro_item_checklist_coleta.html', {'form': form})
