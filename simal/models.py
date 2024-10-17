@@ -569,12 +569,23 @@ class TabColeta(models.Model):
         TabCampanha, models.DO_NOTHING, db_column='id_campanha', blank=True, null=True)
     id_setor = models.ForeignKey(
         'TabSetor', models.DO_NOTHING, db_column='id_setor', blank=True, null=True)
+    ordem_servico = models.CharField('Ordem de serviço',blank=True, null=True)
 
     def __str__(self):
         return f'{self.nome}'
+    
+    def save (self, *args, **kwargs):
+        data_hora = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        campanha = TabCampanha.objects.get(id=self.id_campanha.id)
+        setor = TabSetor.objects.get(id=self.id_setor.id)
+        setor_abreviatura = setor.abreviatura
+        raw_ordem_servico = f'{setor_abreviatura}{campanha}{data_hora}'
+        self.ordem_servico = re.sub(r'[^A-Za-z0-9]', '', raw_ordem_servico)
+        super().save(*args, **kwargs)
+        
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'tab_coleta'
 
 
@@ -790,3 +801,9 @@ class TabItemChecklistColeta(models.Model):
 
     class Meta:
         db_table = 'tab_item_checklist_coleta'
+        
+class TabChecklistColeta(models.Model):
+    item = models.ForeignKey(
+        TabItemChecklistColeta, on_delete=models.CASCADE, related_name='itens')
+    id_coleta = models.ForeignKey(
+        TabColeta, on_delete=models.CASCADE, related_name='coleta')

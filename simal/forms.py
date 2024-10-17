@@ -580,7 +580,7 @@ class CadastroColetaForm(forms.ModelForm):
 
     class Meta:
         model = TabColeta
-        exclude = ['id']
+        exclude = ['id','ordem_servico']
 
     def __init__(self, *args, **kwargs):
         super(CadastroColetaForm, self).__init__(*args, **kwargs)
@@ -597,3 +597,13 @@ class CadastroItemChecklistColetaForm(forms.ModelForm):
         super(CadastroItemChecklistColetaForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.add_input(Submit('submit', 'Salvar'))
+
+    def save(self, user=None, *args, **kwargs):
+        instance = super(CadastroItemChecklistColetaForm,
+                         self).save(commit=False)
+        if user:
+            instance.user = user
+        instance.save()
+        return instance
+
+

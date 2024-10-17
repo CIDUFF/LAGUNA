@@ -232,7 +232,7 @@ class TipoItemChecklistColetaTable(tables.Table):
     class Meta:
         model = TabItemChecklistColeta
         template_name = 'django_tables2/bootstrap5-responsive.html'
-        exclude = ['id', 'data_cadastro', 'user']
+        exclude = ['id', 'data_cadastro']
         empty_text = 'Não há dados para exibir'
         orderable = True
         per_page = 10

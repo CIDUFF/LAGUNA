@@ -68,5 +68,6 @@ urlpatterns = [
     path('cadastro_campanha/', views.cadastro_campanha, name='cadastro_campanha'),
     path('cadastro_coleta/', views.cadastro_coleta_view, name='cadastro_coleta'),
     path('cadastro_item_checklist_coleta/', views.cadastro_item_checklist_coleta, name='cadastro_item_checklist_coleta'),
+    path('checklist_coleta/', views.checklist_coleta, name='checklist_coleta'),
     
 ]

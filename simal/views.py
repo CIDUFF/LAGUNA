@@ -1028,7 +1028,7 @@ def cadastro_coleta_view(request):
         if form.is_valid():
             form.save()
             # Substitua 'success_url' pela URL de sucesso desejada
-            return redirect('home')
+            return redirect('checklist_coleta')
     else:
         form = CadastroColetaForm()
 
@@ -1039,7 +1039,7 @@ def cadastro_item_checklist_coleta(request):
     if request.method == 'POST':
         form = CadastroItemChecklistColetaForm(request.POST)
         if form.is_valid():
-            form.save()
+            form.save(user=request.user)
             messages.success(
                 request, 'Item de checklist cadastrado com sucesso.')
             return redirect('cadastro_item_checklist_coleta')
@@ -1051,3 +1051,7 @@ def cadastro_item_checklist_coleta(request):
     RequestConfig(request).configure(table)
 
     return render(request, 'cadastro_item_checklist_coleta.html', {'form': form, 'table': table})
+
+def checklist_coleta(request):
+
+    return render(request, 'checklist_coleta.html', {'form': form})
