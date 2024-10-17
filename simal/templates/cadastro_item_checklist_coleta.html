@@ -1,5 +1,6 @@
 {% extends 'base/base_site.html' %}
 {% load crispy_forms_tags %}
+{% load django_tables2 %}
 {% block title %} Cadastro de item para o checklist de coleta {% endblock %}
 {% block content %}
 {% if user.is_authenticated %}
@@ -9,11 +10,6 @@
     </div>
     <form method="post">
         {% csrf_token %}
-        {% comment %} <div>
-            <h4>
-                Informações da Coleta
-            </h4>
-        </div> {% endcomment %}
         {% crispy form %}
         {{ formset.management_form }}
         {% for fs in formset %}
@@ -21,8 +17,11 @@
             {% crispy fs %}
         </div>
         {% endfor %}
-
     </form>
+    <div class="mt-4">
+        <h4>Itens Existentes</h4>
+        {% render_table table %}
+    </div>
 </div>
 {% else %}
     <div class="container mt-5">

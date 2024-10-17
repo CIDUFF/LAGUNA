@@ -1046,4 +1046,8 @@ def cadastro_item_checklist_coleta(request):
     else:
         form = CadastroItemChecklistColetaForm()
 
-    return render(request, 'cadastro_item_checklist_coleta.html', {'form': form})
+    # Crie a tabela com os itens existentes
+    table = TipoItemChecklistColetaTable(TabItemChecklistColeta.objects.all())
+    RequestConfig(request).configure(table)
+
+    return render(request, 'cadastro_item_checklist_coleta.html', {'form': form, 'table': table})

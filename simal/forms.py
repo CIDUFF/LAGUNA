@@ -591,7 +591,7 @@ class CadastroColetaForm(forms.ModelForm):
 class CadastroItemChecklistColetaForm(forms.ModelForm):
     class Meta:
         model = TabItemChecklistColeta
-        exclude = ['id', 'data_cadastro']
+        exclude = ['id', 'data_cadastro', 'user']
 
     def __init__(self, *args, **kwargs):
         super(CadastroItemChecklistColetaForm, self).__init__(*args, **kwargs)
