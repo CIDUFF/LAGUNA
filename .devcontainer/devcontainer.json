@@ -24,7 +24,7 @@
 
   "customizations": {
     "vscode": {
-      "extensions": ["mtxr.sqltools", "mtxr.sqltools-driver-pg"]
+      "extensions": ["mtxr.sqltools", "mtxr.sqltools-driver-pg","mtxr.django","mtxr.prettier-vscode"]
     }
   },
 
