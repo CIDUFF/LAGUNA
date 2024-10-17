@@ -13,10 +13,12 @@ from django.http import HttpResponse, FileResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 from django.conf import settings
 import json
 import os
+import logging
 
 
 from django_tables2 import RequestConfig
@@ -26,7 +28,8 @@ from .forms import *
 from .services import get_weather_description, gerar_etiquetas
 from .tables import *
 
-
+# Configuração do logger
+logger = logging.getLogger(__name__)
 
 
 def check_admin(user):
@@ -785,19 +788,36 @@ def calendario_campanhas(request):
 
 
 def exportar_resultados_csv(request):
-    response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename="resultados_coleta.csv"'
+    try:
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="resultados_coleta.csv"'
 
-    writer = csv.writer(response)
-    writer.writerow(['Código Coleta', 'Hora Início', 'Hora Fim', 'Ponto', 'Temperatura',
-                    'pH', 'ORP', 'Condutividade', 'Turbidez', 'OD', 'OD %', 'TDS', 'Salinidade'])
+        writer = csv.writer(response)
+        writer.writerow(['Código Coleta', 'Hora Início', 'Hora Fim', 'Ponto', 'Temperatura',
+                        'pH', 'ORP', 'Condutividade', 'Turbidez', 'OD', 'OD %', 'TDS', 'Salinidade'])
 
-    resultados = Campo.objects.all().values_list('codigo_coleta', 'hora_inicio', 'hora_fim', 'ponto',
-                                                 'temperatura', 'ph', 'orp', 'condutividade', 'turbidez', 'od', 'tds', 'salinidade')
-    for resultado in resultados:
-        writer.writerow(resultado)
+        try:
+            resultados = Campo.objects.all().values_list('codigo_coleta', 'hora_inicio', 'hora_fim', 'ponto',
+                                                         'temperatura', 'ph', 'orp', 'condutividade', 'turbidez', 'od', 'tds', 'salinidade')
+        except ObjectDoesNotExist:
+            logger.error("Nenhum resultado encontrado.")
+            return HttpResponse("Nenhum resultado encontrado.", content_type='text/plain')
+        except Exception as e:
+            logger.error(f"Erro ao consultar o banco de dados: {e}")
+            return HttpResponse(f"Erro ao consultar o banco de dados: {e}", content_type='text/plain')
 
-    return response
+        for resultado in resultados:
+            try:
+                writer.writerow(resultado)
+            except Exception as e:
+                logger.error(f"Erro ao escrever linha CSV: {e}")
+                return HttpResponse(f"Erro ao escrever linha CSV: {e}", content_type='text/plain')
+
+        return response
+
+    except Exception as e:
+        logger.error(f"Erro ao gerar CSV: {e}")
+        return HttpResponse(f"Erro ao gerar CSV: {e}", content_type='text/plain')
 
 
 @login_required
