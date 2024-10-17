@@ -11,17 +11,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AddField(
-            model_name="tabcoleta",
-            name="id_campanha",
-            field=models.ForeignKey(
-                blank=True,
-                db_column="id_campanha",
-                null=True,
-                on_delete=django.db.models.deletion.DO_NOTHING,
-                to="simal.tabcampanha",
-            ),
-        ),
         migrations.AlterField(
             model_name="tabcoleta",
             name="nome",

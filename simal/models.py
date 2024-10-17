@@ -783,3 +783,15 @@ class TabSetor(models.Model):
     class Meta:
         managed = False
         db_table = 'tab_setor'
+
+class TabItemChecklistColeta(models.Model):
+    item = models.CharField(max_length=50, blank=True)
+    status = models.BooleanField(default=False)
+    observacao = models.TextField(max_length=500, blank=True)
+    prazo = models.FloatField(blank=True, null=True)
+    
+    def __str__(self):
+        return f'{self.item}'
+    
+    class Meta:
+        db_table = 'tab_checklist_coleta'
