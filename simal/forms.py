@@ -586,3 +586,14 @@ class CadastroColetaForm(forms.ModelForm):
         super(CadastroColetaForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.add_input(Submit('submit', 'Salvar'))
+
+
+class CadastroItemChecklistColetaForm(forms.ModelForm):
+    class Meta:
+        model = TabItemChecklistColeta
+        exclude = ['id', 'data_cadastro']
+
+    def __init__(self, *args, **kwargs):
+        super(CadastroItemChecklistColetaForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.add_input(Submit('submit', 'Salvar'))
