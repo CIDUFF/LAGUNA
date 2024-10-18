@@ -66,4 +66,7 @@ urlpatterns = [
     path('cadastro_tipo_parametro/', views.cadastro_tipo_parametro, name='cadastro_tipo_parametro'),
     path('configuracoes/', views.configuracoes_view, name='configuracoes'),
     path('configuracoes/editar/<str:tabela>/<int:pk>/', views.editar_registro, name='editar_registro'),
+    path('direcionamento_campanha/', views.direcionamento_campanha, name='direcionamento_campanha'),
+    path('cadastro_campanha/', views.cadastro_campanha, name='cadastro_campanha'),
+
 ]

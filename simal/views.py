@@ -654,7 +654,7 @@ Raises:
 
         local_campanha = campanha.local_coleta
         setor_local = TabSetor.objects.get(nome=local_campanha)
-        pontos_coleta = TabPonto.objects.filter(setor=setor_local)
+        pontos_coleta = TabPonto.objects.filter(id_setor=setor_local)
         programa_coleta_instance = get_object_or_404(
             ProgramaColeta, ordem_servico=ordem_servico)
         for ponto in pontos_coleta:
@@ -671,38 +671,41 @@ Raises:
     return redirect('checklist_campanha', ordem_servico=ordem_servico)
 
 
-
-
 def etiquetagem(request, ordem_servico=None):
-    ordem_servico = request.GET.get('ordem_servico', ordem_servico)
-    campanha = None
-    if ordem_servico:
-        campanha = get_object_or_404(
-            ProgramaColeta, ordem_servico=ordem_servico)
+    try:
+        ordem_servico = request.GET.get('ordem_servico', ordem_servico)
+        campanha = None
+        if ordem_servico:
+            campanha = get_object_or_404(
+                ProgramaColeta, ordem_servico=ordem_servico)
 
-        data = campanha.data_coleta_campo.strftime('%d/%m/%Y')
-        responsavel = campanha.usuario
-        codigo_servico = campanha.ordem_servico
-        codigos = Campo.objects.filter(
-            ordem_servico=campanha).values_list('codigo_coleta', flat=True)
+            data = campanha.data_coleta_campo.strftime('%d/%m/%Y')
+            responsavel = campanha.usuario
+            codigo_servico = campanha.ordem_servico
+            codigos = Campo.objects.filter(
+                ordem_servico=campanha).values_list('codigo_coleta', flat=True)
 
-        if not codigos:
-            messages.warning(
-                request, 'Nenhum código de coleta encontrado para a ordem de serviço fornecida.')
-            return redirect('checklist_campanha', ordem_servico=ordem_servico)
+            if not codigos:
+                messages.warning(
+                    request, 'Nenhum código de coleta encontrado para a ordem de serviço fornecida.')
+                return redirect('checklist_campanha', ordem_servico=ordem_servico)
 
-        pdf_path = gerar_etiquetas(codigos, data, responsavel, codigo_servico)
+            pdf_path = gerar_etiquetas(
+                codigos, data, responsavel, codigo_servico)
 
-        # Retorna o PDF como uma resposta HTTP
-        response = FileResponse(
-            open(pdf_path, 'rb'), as_attachment=True, filename=os.path.basename(pdf_path))
+            # Retorna o PDF como uma resposta HTTP
+            response = FileResponse(
+                open(pdf_path, 'rb'), as_attachment=True, filename=os.path.basename(pdf_path))
 
-        # Apaga o arquivo PDF após o download
-        os.remove(pdf_path)
+            # Apaga o arquivo PDF após o download
+            os.remove(pdf_path)
 
-        return response
+            return response
 
-    return redirect('checklist_campanha', ordem_servico=ordem_servico)
+        return redirect('checklist_campanha', ordem_servico=ordem_servico)
+    except Exception as e:
+        messages.error(request, f'Ocorreu um erro: {str(e)}')
+        return redirect('checklist_campanha', ordem_servico=ordem_servico)
 
 
 @login_required
@@ -1076,87 +1079,24 @@ def editar_registro(request, tabela, pk):
 
     return render(request, 'configuracoes_editar.html', {'form': form, 'tabela': tabela})
 
+def direcionamento_campanha(request):
+    return render(request, 'direcionamento_campanha.html')
 
-# @login_required
-# def atualizar_parametro(request, pk):
-#     parametro = get_object_or_404(TabParam, pk=pk)
-#     if request.method == 'POST':
-#         form = ParametroForm(request.POST, instance=parametro)
-#         if form.is_valid():
-#             form.save()
-#             return redirect('configuracoes')
-#     else:
-#         form = ParametroForm(instance=parametro)
-#     return render(request, 'atualizar_parametro.html', {'form': form})
+def cadastro_campanha(request):
+    if request.method == 'POST':
+        form = CadastroCampanhaForm(request.POST)
+        if form.is_valid():
+            # Processa os dados do formulário aqui
+            data_criacao_campanha = form.cleaned_data['data_criacao_campanha']
+            equipe_coleta = form.cleaned_data['equipe_coleta']
+            local_coleta = form.cleaned_data['local_coleta']
+            observacoes = form.cleaned_data['observacoes']
 
-# @login_required
-# def atualizar_frasco(request, pk):
-#     frasco = get_object_or_404(TabFrasco, pk=pk)
-#     if request.method == 'POST':
-#         form = TabFrascoForm(request.POST, instance=frasco)
-#         if form.is_valid():
-#             form.save()
-#             return redirect('configuracoes')
-#     else:
-#         form = TabFrascoForm(instance=frasco)
-#     return render(request, 'atualizar_frasco.html', {'form': form})
+            # Exemplo de mensagem de sucesso
+            messages.success(request, 'Campanha cadastrada com sucesso!')
+            return redirect('direcionamento_campanha')
+    else:
+        form = CadastroCampanhaForm()
 
-# @login_required
-# def atualizar_equipe(request, pk):
-#     equipe = get_object_or_404(TabEquipe, pk=pk)
-#     if request.method == 'POST':
-#         form = TabEquipeForm(request.POST, instance=equipe)
-#         if form.is_valid():
-#             form.save()
-#             return redirect('configuracoes')
-#     else:
-#         form = TabEquipeForm(instance=equipe)
-#     return render(request, 'atualizar_equipe.html', {'form': form})
+    return render(request, 'cadastro_campanha.html', {'form': form})
 
-# @login_required
-# def atualizar_laboratorio(request, pk):
-#     laboratorio = get_object_or_404(TabLaboratorio, pk=pk)
-#     if request.method == 'POST':
-#         form = TabLaboratorioForm(request.POST, instance=laboratorio)
-#         if form.is_valid():
-#             form.save()
-#             return redirect('configuracoes')
-#     else:
-#         form = TabLaboratorioForm(instance=laboratorio)
-#     return render(request, 'atualizar_laboratorio.html', {'form': form})
-
-# @login_required
-# def atualizar_produto(request, pk):
-#     produto = get_object_or_404(TabProduto, pk=pk)
-#     if request.method == 'POST':
-#         form = TabProdutoForm(request.POST, instance=produto)
-#         if form.is_valid():
-#             form.save()
-#             return redirect('configuracoes')
-#     else:
-#         form = TabProdutoForm(instance=produto)
-#     return render(request, 'atualizar_produto.html', {'form': form})
-
-# @login_required
-# def atualizar_prodxparam(request, pk):
-#     prodxparam = get_object_or_404(TabProdxparam, pk=pk)
-#     if request.method == 'POST':
-#         form = TabProdxparamForm(request.POST, instance=prodxparam)
-#         if form.is_valid():
-#             form.save()
-#             return redirect('configuracoes')
-#     else:
-#         form = TabProdxparamForm(instance=prodxparam)
-#     return render(request, 'atualizar_prodxparam.html', {'form': form})
-
-# @login_required
-# def atualizar_serie_classificacao(request, pk):
-#     serie_classificacao = get_object_or_404(TabSerieClassificacao, pk=pk)
-#     if request.method == 'POST':
-#         form = TabSerieClassificacaoForm(request.POST, instance=serie_classificacao)
-#         if form.is_valid():
-#             form.save()
-#             return redirect('configuracoes')
-#     else:
-#         form = TabSerieClassificacaoForm(instance=serie_classificacao)
-#     return render(request, 'atualizar_serie_classificacao.html', {'form': form})

@@ -26,7 +26,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG', default=False, cast=bool)
 
 ALLOWED_HOSTS = ["*"]
 
@@ -162,9 +162,9 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
-# STATICFILES_DIRS = [
-#     os.path.join(BASE_DIR, 'static'),
-# ]
+STATICFILES_DIRS = [
+     os.path.join(BASE_DIR, 'static'),
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
@@ -198,3 +198,15 @@ EMAIL_HOST_USER = 'lagunasyst@gmail.com'
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 
 ACCOUNT_SESSION_REMEMBER = True
+
+SECURE_HSTS_SECONDS = config('SECURE_HSTS_SECONDS', cast=int)
+SECURE_HSTS_INCLUDE_SUBDOMAINS = config(
+    'SECURE_HSTS_INCLUDE_SUBDOMAINS', cast=bool)
+SECURE_HSTS_PRELOAD = config('SECURE_HSTS_PRELOAD', cast=bool)
+
+SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', cast=bool)
+
+SESSION_COOKIE_SECURE = config(
+    'SESSION_COOKIE_SECURE', cast=bool)
+
+CSRF_COOKIE_SECURE = config('CSRF_COOKIE_SECURE', cast=bool)

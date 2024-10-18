@@ -1,0 +1,25 @@
+{% extends 'base/base_site.html' %}
+{% load crispy_forms_tags %}
+{% block title %} Cadastro de Campanha {% endblock %}
+{% block content %}
+{% if user.is_authenticated %}
+<div class="container mt-5">
+    <h3 class="text-center mb-3">Cadastro de Campanha</h3>
+    <form method="post">
+        {% csrf_token %}
+        {% crispy form %}
+        <div class="d-flex justify-content-center mt-3">
+            <button type="submit" class="btn btn-primary">Salvar</button>
+        </div>
+    </form>
+</div>
+{% else %}
+    <div class="container mt-5">
+        <h1 class="text-center">Olá, visitante</h1>
+        <p class="text-center">Faça login para visualizar o sistema</p>
+        <div class="d-flex justify-content-center">
+            <a href="{% url 'account_login' %}" class="btn btn-primary">Clique aqui para logar</a>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}

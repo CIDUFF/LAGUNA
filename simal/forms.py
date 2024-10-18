@@ -444,7 +444,6 @@ class CustomUserCreationForm(UserCreationForm):
             user.groups.set(self.cleaned_data['groups'])
         return user
 
-
 class LocaisForm(forms.ModelForm):
     class Meta:
         model = TabLocal
@@ -478,7 +477,7 @@ class SetorForm(forms.ModelForm):
             'id_local': 'Local',
             'lat': 'Latitude',
             'lon': 'Longitude',
-            'abreaviatura': 'Abreviatura'
+            'abreviatura': 'Abreviatura'
             
         }
 
@@ -502,15 +501,20 @@ class SetorForm(forms.ModelForm):
             )
         )
         
+
 class PontoForm(forms.ModelForm):
+    nome = forms.CharField(label='Código', max_length=100)
+    modalidade = forms.CharField(label='Modalidade', max_length=100)
+
     class Meta:
         model = TabPonto
-        fields = ['id_setor', 'id_local', 'nome', 'modalidade', 'lat', 'lon', 'observacao', 'status']
+        fields = ['id_setor', 'id_local', 'nome',
+                  'modalidade', 'lat', 'lon', 'observacao', 'status']
         labels = {
             'nome': 'Código',
             'id_setor': 'Setor',
             'id_local': 'Local',
-            'modelidade': 'Modalidade',
+            'modalidade': 'Modalidade',
             'lat': 'Latitude',
             'lon': 'Longitude',
             'observacao': 'Observação',
@@ -525,13 +529,13 @@ class PontoForm(forms.ModelForm):
                 'Cadastro de Pontos de Coleta',
                 Div(
                     Div('nome', css_class='col-md-6'),
-                    Div('setor', css_class='col-md-6'),
-                    Div('local', css_class='col-md-6'),
-                    Div('tipo', css_class='col-md-6'),
+                    Div('id_setor', css_class='col-md-6'),
+                    Div('id_local', css_class='col-md-6'),
+                    Div('modalidade', css_class='col-md-6'),
                     Div('lat', css_class='col-md-6'),
                     Div('lon', css_class='col-md-6'),
+                    Div('observacao', css_class='col-md-6'),
                     Div('status', css_class='col-md-6'),
-                    
                     css_class='row'
                 )
             ),
@@ -555,6 +559,7 @@ class TipoParametroForm(forms.ModelForm):
         model = TipoParametro
         fields = '__all__'
         
+
 class TabFrascoForm(forms.ModelForm):
     class Meta:
         model = TabFrasco
@@ -584,3 +589,26 @@ class TabSerieClassificacaoForm(forms.ModelForm):
     class Meta:
         model = TabSerieClassificacao
         fields = '__all__'
+
+class CadastroCampanhaForm(forms.Form):
+    data_criacao_campanha = forms.DateField(
+        label='Data de criação da campanha',
+        widget=forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d')
+    )
+    equipe_coleta = forms.ChoiceField(label='Equipe de coleta')
+    local_coleta = forms.ChoiceField(label='Setor')
+    observacoes = forms.CharField(
+        label='Observações',
+        widget=forms.Textarea(attrs={'rows': 3, 'cols': 40}),
+        required=False
+    )
+
+    def __init__(self, *args, **kwargs):
+        super(CadastroCampanhaForm, self).__init__(*args, **kwargs)
+        self.fields['local_coleta'].choices = [
+            (setor.id, setor.nome) for setor in TabSetor.objects.all().distinct()
+        ]
+        self.fields['equipe_coleta'].choices = [
+            (group.id, group.name) for group in Group.objects.all()
+        ]
+
