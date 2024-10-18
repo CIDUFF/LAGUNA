@@ -720,11 +720,11 @@ class TabPonto(models.Model):
 
 class TabProduto(models.Model):
     id = models.BigAutoField(primary_key=True)
-    produto = models.TextField(blank=True, null=True)
     nome = models.TextField(blank=True, null=True)
-
+    descricao = models.TextField(blank=True, null=True)
+    
     def __str__(self):
-        return f'{self.produto}'
+        return f'{self.nome}'
 
     class Meta:
         managed = False
@@ -783,3 +783,14 @@ class TabSetor(models.Model):
     class Meta:
         managed = False
         db_table = 'tab_setor'
+        
+class TabEquipe(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    nome = models.TextField(blank=True, null=True)
+    descricao = models.TextField(blank=True, null=True)
+    responsavel = models.ForeignKey(User, models.DO_NOTHING, db_column='responsavel_id', blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'tab_equipe'
+
