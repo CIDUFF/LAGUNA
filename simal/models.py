@@ -807,3 +807,4 @@ class TabChecklistColeta(models.Model):
         TabItemChecklistColeta, on_delete=models.CASCADE, related_name='itens')
     id_coleta = models.ForeignKey(
         TabColeta, on_delete=models.CASCADE, related_name='coleta')
+    observacao = models.TextField('Observação', max_length=500, blank=True)
