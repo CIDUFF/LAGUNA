@@ -65,11 +65,5 @@ urlpatterns = [
     path('cadastro_unidade_medida/', views.cadastro_unidade_medida, name='cadastro_unidade_medida'),
     path('cadastro_tipo_parametro/', views.cadastro_tipo_parametro, name='cadastro_tipo_parametro'),
     path('configuracoes/', views.configuracoes_view, name='configuracoes'),
-#    path('atualizar_parametro/<int:pk>/', views.atualizar_parametro, name='atualizar_parametro'),
-    path('atualizar_frasco/<int:pk>/', views.atualizar_frasco, name='atualizar_frasco'),
-    path('atualizar_equipe/<int:pk>/', views.atualizar_equipe, name='atualizar_equipe'),
-    path('atualizar_laboratorio/<int:pk>/', views.atualizar_laboratorio, name='atualizar_laboratorio'),
-    path('atualizar_produto/<int:pk>/', views.atualizar_produto, name='atualizar_produto'),
-    path('atualizar_prodxparam/<int:pk>/', views.atualizar_prodxparam, name='atualizar_prodxparam'),
-    path('atualizar_serie_classificacao/<int:pk>/', views.atualizar_serie_classificacao, name='atualizar_serie_classificacao'),
+    path('configuracoes/editar/<str:tabela>/<int:pk>/', views.editar_registro, name='editar_registro'),
 ]

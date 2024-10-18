@@ -227,8 +227,7 @@ class TipoParametroTable(tables.Table):
         table_pagination = True
         
 class ParametroTable(tables.Table):
-    nome = tables.Column(verbose_name='Nome')
-    param_meta_dado = tables.Column(verbose_name='Meta_Dado')
+    update = tables.LinkColumn('editar_registro', args=['param', A('pk')], orderable=False, empty_values=[], text='EDITAR')
 
     class Meta:
         model = TabParam
@@ -244,7 +243,7 @@ class ParametroTable(tables.Table):
 #         fields = ('nome', 'param_meta_dado')
         
 class FrascoTable(tables.Table):
-    update = tables.LinkColumn('atualizar_equipe', args=[A('pk')], orderable=False, empty_values=[], text='EDITAR')
+    update = tables.LinkColumn('editar_registro', args=['frasco', A('pk')], orderable=False, empty_values=[], text='EDITAR')
 
     class Meta:
         model = TabFrasco
@@ -259,7 +258,7 @@ class FrascoTable(tables.Table):
         table_pagination = True
         
 class EquipeTable(tables.Table):
-    update = tables.LinkColumn('atualizar_equipe', args=[A('pk')], orderable=False, empty_values=[], text='EDITAR')
+    update = tables.LinkColumn('editar_registro', args=['equipe', A('pk')], orderable=False, empty_values=[], text='EDITAR')
 
     class Meta:
         model = TabEquipe
@@ -267,7 +266,7 @@ class EquipeTable(tables.Table):
         fields = ('nome',)
         
 class LaboratorioTable(tables.Table):
-    update = tables.LinkColumn('atualizar_laboratorio', args=[A('pk')], orderable=False, empty_values=[], text='EDITAR')
+    update = tables.LinkColumn('editar_registro', args=['laboratorio', A('pk')], orderable=False, empty_values=[], text='EDITAR')
 
     class Meta:
         model = TabLaboratorio
@@ -275,7 +274,7 @@ class LaboratorioTable(tables.Table):
         fields = ('nome',)
 
 class ProdutoTable(tables.Table):
-    update = tables.LinkColumn('atualizar_produto', args=[A('pk')], orderable=False, empty_values=[], text='EDITAR')
+    update = tables.LinkColumn('editar_registro', args=['produto', A('pk')], orderable=False, empty_values=[], text='EDITAR')
 
     class Meta:
         model = TabProduto
@@ -283,7 +282,7 @@ class ProdutoTable(tables.Table):
         fields = ('nome',)
 
 class ProdxparamTable(tables.Table):
-    update = tables.LinkColumn('atualizar_prodxparam', args=[A('pk')], orderable=False, empty_values=[], text='EDITAR')
+    update = tables.LinkColumn('editar_registro', args=['prodxparam', A('pk')], orderable=False, empty_values=[], text='EDITAR')
 
     class Meta:
         model = TabProdxparam
@@ -291,7 +290,7 @@ class ProdxparamTable(tables.Table):
         fields = ('nome',)
 
 class SerieClassificacaoTable(tables.Table):
-    update = tables.LinkColumn('atualizar_serie_classificacao', args=[A('pk')], orderable=False, empty_values=[], text='EDITAR')
+    update = tables.LinkColumn('editar_registro', args=['serie_classificacao', A('pk')], orderable=False, empty_values=[], text='EDITAR')
 
     class Meta:
         model = TabSerieClassificacao

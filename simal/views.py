@@ -1046,6 +1046,37 @@ def configuracoes_view(request):
         'table_serie_classificacao': table_serie_classificacao
     })
 
+@login_required
+def editar_registro(request, tabela, pk):
+    model_map = {
+        'param': (TabParam, ParametroForm),
+        'frasco': (TabFrasco, TabFrascoForm),
+        'equipe': (TabEquipe, TabEquipeForm),
+        'laboratorio': (TabLaboratorio, TabLaboratorioForm),
+        'produto': (TabProduto, TabProdutoForm),
+        'prodxparam': (TabProdxparam, TabProdxParamForm),
+        'serie_classificacao': (TabSerieClassificacao, TabSerieClassificacaoForm),
+    }
+
+    if tabela not in model_map:
+        messages.error(request, 'Tabela inválida.')
+        return redirect('configuracoes')
+
+    model, form_class = model_map[tabela]
+    instance = get_object_or_404(model, pk=pk)
+
+    if request.method == 'POST':
+        form = form_class(request.POST, instance=instance)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Registro atualizado com sucesso!')
+            return redirect('configuracoes')
+    else:
+        form = form_class(instance=instance)
+
+    return render(request, 'configuracoes_editar.html', {'form': form, 'tabela': tabela})
+
+
 # @login_required
 # def atualizar_parametro(request, pk):
 #     parametro = get_object_or_404(TabParam, pk=pk)
@@ -1058,74 +1089,74 @@ def configuracoes_view(request):
 #         form = ParametroForm(instance=parametro)
 #     return render(request, 'atualizar_parametro.html', {'form': form})
 
-@login_required
-def atualizar_frasco(request, pk):
-    frasco = get_object_or_404(TabFrasco, pk=pk)
-    if request.method == 'POST':
-        form = TabFrascoForm(request.POST, instance=frasco)
-        if form.is_valid():
-            form.save()
-            return redirect('configuracoes')
-    else:
-        form = TabFrascoForm(instance=frasco)
-    return render(request, 'atualizar_frasco.html', {'form': form})
+# @login_required
+# def atualizar_frasco(request, pk):
+#     frasco = get_object_or_404(TabFrasco, pk=pk)
+#     if request.method == 'POST':
+#         form = TabFrascoForm(request.POST, instance=frasco)
+#         if form.is_valid():
+#             form.save()
+#             return redirect('configuracoes')
+#     else:
+#         form = TabFrascoForm(instance=frasco)
+#     return render(request, 'atualizar_frasco.html', {'form': form})
 
-@login_required
-def atualizar_equipe(request, pk):
-    equipe = get_object_or_404(TabEquipe, pk=pk)
-    if request.method == 'POST':
-        form = TabEquipeForm(request.POST, instance=equipe)
-        if form.is_valid():
-            form.save()
-            return redirect('configuracoes')
-    else:
-        form = TabEquipeForm(instance=equipe)
-    return render(request, 'atualizar_equipe.html', {'form': form})
+# @login_required
+# def atualizar_equipe(request, pk):
+#     equipe = get_object_or_404(TabEquipe, pk=pk)
+#     if request.method == 'POST':
+#         form = TabEquipeForm(request.POST, instance=equipe)
+#         if form.is_valid():
+#             form.save()
+#             return redirect('configuracoes')
+#     else:
+#         form = TabEquipeForm(instance=equipe)
+#     return render(request, 'atualizar_equipe.html', {'form': form})
 
-@login_required
-def atualizar_laboratorio(request, pk):
-    laboratorio = get_object_or_404(TabLaboratorio, pk=pk)
-    if request.method == 'POST':
-        form = TabLaboratorioForm(request.POST, instance=laboratorio)
-        if form.is_valid():
-            form.save()
-            return redirect('configuracoes')
-    else:
-        form = TabLaboratorioForm(instance=laboratorio)
-    return render(request, 'atualizar_laboratorio.html', {'form': form})
+# @login_required
+# def atualizar_laboratorio(request, pk):
+#     laboratorio = get_object_or_404(TabLaboratorio, pk=pk)
+#     if request.method == 'POST':
+#         form = TabLaboratorioForm(request.POST, instance=laboratorio)
+#         if form.is_valid():
+#             form.save()
+#             return redirect('configuracoes')
+#     else:
+#         form = TabLaboratorioForm(instance=laboratorio)
+#     return render(request, 'atualizar_laboratorio.html', {'form': form})
 
-@login_required
-def atualizar_produto(request, pk):
-    produto = get_object_or_404(TabProduto, pk=pk)
-    if request.method == 'POST':
-        form = TabProdutoForm(request.POST, instance=produto)
-        if form.is_valid():
-            form.save()
-            return redirect('configuracoes')
-    else:
-        form = TabProdutoForm(instance=produto)
-    return render(request, 'atualizar_produto.html', {'form': form})
+# @login_required
+# def atualizar_produto(request, pk):
+#     produto = get_object_or_404(TabProduto, pk=pk)
+#     if request.method == 'POST':
+#         form = TabProdutoForm(request.POST, instance=produto)
+#         if form.is_valid():
+#             form.save()
+#             return redirect('configuracoes')
+#     else:
+#         form = TabProdutoForm(instance=produto)
+#     return render(request, 'atualizar_produto.html', {'form': form})
 
-@login_required
-def atualizar_prodxparam(request, pk):
-    prodxparam = get_object_or_404(TabProdxparam, pk=pk)
-    if request.method == 'POST':
-        form = TabProdxparamForm(request.POST, instance=prodxparam)
-        if form.is_valid():
-            form.save()
-            return redirect('configuracoes')
-    else:
-        form = TabProdxparamForm(instance=prodxparam)
-    return render(request, 'atualizar_prodxparam.html', {'form': form})
+# @login_required
+# def atualizar_prodxparam(request, pk):
+#     prodxparam = get_object_or_404(TabProdxparam, pk=pk)
+#     if request.method == 'POST':
+#         form = TabProdxparamForm(request.POST, instance=prodxparam)
+#         if form.is_valid():
+#             form.save()
+#             return redirect('configuracoes')
+#     else:
+#         form = TabProdxparamForm(instance=prodxparam)
+#     return render(request, 'atualizar_prodxparam.html', {'form': form})
 
-@login_required
-def atualizar_serie_classificacao(request, pk):
-    serie_classificacao = get_object_or_404(TabSerieClassificacao, pk=pk)
-    if request.method == 'POST':
-        form = TabSerieClassificacaoForm(request.POST, instance=serie_classificacao)
-        if form.is_valid():
-            form.save()
-            return redirect('configuracoes')
-    else:
-        form = TabSerieClassificacaoForm(instance=serie_classificacao)
-    return render(request, 'atualizar_serie_classificacao.html', {'form': form})
+# @login_required
+# def atualizar_serie_classificacao(request, pk):
+#     serie_classificacao = get_object_or_404(TabSerieClassificacao, pk=pk)
+#     if request.method == 'POST':
+#         form = TabSerieClassificacaoForm(request.POST, instance=serie_classificacao)
+#         if form.is_valid():
+#             form.save()
+#             return redirect('configuracoes')
+#     else:
+#         form = TabSerieClassificacaoForm(instance=serie_classificacao)
+#     return render(request, 'atualizar_serie_classificacao.html', {'form': form})
