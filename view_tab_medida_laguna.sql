@@ -85,3 +85,12 @@ BEGIN
     -- Executar a consulta
     EXECUTE sql;
 END $$;
+
+
+-- nao usar: 
+
+-- DROP VIEW tab_medida_pivotada; 
+
+-- DROP VIEW view_com_nova_coluna;
+
+-- DROP VIEW view_intermediaria;

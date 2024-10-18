@@ -19,6 +19,7 @@ from django.conf import settings
 import json
 import os
 import logging
+from django.db import connection
 
 
 from django_tables2 import RequestConfig
@@ -1054,4 +1055,34 @@ def cadastro_item_checklist_coleta(request):
 
 def checklist_coleta(request):
 
-    return render(request, 'checklist_coleta.html', {'form': form})
+    return render(request, 'checklist_coleta.html')
+
+
+def export_csv(request):
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT * FROM tab_medida_pivotada")
+        rows = cursor.fetchall()
+        columns = [col[0] for col in cursor.description]
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="tab_medida_pivotada.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(columns)
+    for row in rows:
+        writer.writerow(row)
+
+    return response
+
+
+def view_tab_medida_pivotada(request):
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT * FROM tab_medida_pivotada")
+        rows = cursor.fetchall()
+        columns = [col[0] for col in cursor.description]
+
+    context = {
+        'columns': columns,
+        'rows': rows
+    }
+    return render(request, 'view_tab_medida_pivotada.html', context)
