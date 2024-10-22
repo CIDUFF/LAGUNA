@@ -1,0 +1,138 @@
+{% extends 'base/base_site.html' %}
+{% load django_tables2 %}
+{% load django_bootstrap5 %}
+{% load static %}
+{% block content %}
+{% block title %}
+Configurações
+{% endblock %}
+{% block header %}
+<h2>Configurações</h2>
+{% endblock header %}
+<ul class="nav nav-tabs" id="configTab" role="tablist">
+  <li class="nav-item" role="presentation">
+    <button class="nav-link active text-dark" id="tab_param-tab" data-bs-toggle="tab" data-bs-target="#tab_param" type="button" role="tab" aria-controls="tab_param" aria-selected="true">Tab Param</button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link text-dark" id="tab_frasco-tab" data-bs-toggle="tab" data-bs-target="#tab_frasco" type="button" role="tab" aria-controls="tab_frasco" aria-selected="false">Tab Frasco</button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link text-dark" id="tab_equipe-tab" data-bs-toggle="tab" data-bs-target="#tab_equipe" type="button" role="tab" aria-controls="tab_equipe" aria-selected="false">Tab Equipe</button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link text-dark" id="tab_laboratorio-tab" data-bs-toggle="tab" data-bs-target="#tab_laboratorio" type="button" role="tab" aria-controls="tab_laboratorio" aria-selected="false">Tab Laboratorio</button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link text-dark" id="tab_produto-tab" data-bs-toggle="tab" data-bs-target="#tab_produto" type="button" role="tab" aria-controls="tab_produto" aria-selected="false">Tab Produto</button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link text-dark" id="tab_prodxparam-tab" data-bs-toggle="tab" data-bs-target="#tab_prodxparam" type="button" role="tab" aria-controls="tab_prodxparam" aria-selected="false">Tab Prodxparam</button>
+  </li>
+  <li class="nav-item" role="presentation">
+    <button class="nav-link text-dark" id="tab_serie_classificacao-tab" data-bs-toggle="tab" data-bs-target="#tab_serie_classificacao" type="button" role="tab" aria-controls="tab_serie_classificacao" aria-selected="false">Tab Serie Classificacao</button>
+  </li>
+</ul>
+<div class="tab-content" id="configTabContent">
+  <div class="tab-pane fade show active" id="tab_param" role="tabpanel" aria-labelledby="tab_param-tab">
+      <div class="card checklist mt-4">
+          <h3>Tab Param</h3>
+          <form method="post" class="form-inline">
+              {% csrf_token %}
+              <input type="hidden" name="param_submit" value="1">
+              {% bootstrap_form param_form layout='floating' %}
+              <button type="submit" class="btn btn-primary">Salvar</button>
+          </form>
+          {% render_table table_parametro %}
+      </div>
+  </div>
+  <div class="tab-pane fade" id="tab_frasco" role="tabpanel" aria-labelledby="tab_frasco-tab">
+      <div class="card checklist mt-4">
+          <h3>Tab Frasco</h3>
+          <form method="post" class="form-inline">
+              {% csrf_token %}
+              <input type="hidden" name="frasco_submit" value="1">
+              {% bootstrap_form frasco_form layout='floating' %}
+              <button type="submit" class="btn btn-primary">Salvar</button>
+          </form>
+          {% render_table table_frasco %}
+      </div>
+  </div>
+  <div class="tab-pane fade" id="tab_equipe" role="tabpanel" aria-labelledby="tab_equipe-tab">
+      <div class="card checklist mt-4">
+          <h3>Tab Equipe</h3>
+          <form method="post" class="form-inline">
+              {% csrf_token %}
+              <input type="hidden" name="equipe_submit" value="1">
+              {% bootstrap_form equipe_form layout='floating' %}
+              <button type="submit" class="btn btn-primary">Salvar</button>
+          </form>
+          {% render_table table_equipe %}
+      </div>
+  </div>
+  <div class="tab-pane fade" id="tab_laboratorio" role="tabpanel" aria-labelledby="tab_laboratorio-tab">
+      <div class="card checklist mt-4">
+          <h3>Tab Laboratório</h3>
+          <form method="post" class="form-inline">
+              {% csrf_token %}
+              <input type="hidden" name="laboratorio_submit" value="1">
+              {% bootstrap_form laboratorio_form layout='floating' %}
+              <button type="submit" class="btn btn-primary">Salvar</button>
+          </form>
+          {% render_table table_laboratorio %}
+      </div>
+  </div>
+  <div class="tab-pane fade" id="tab_produto" role="tabpanel" aria-labelledby="tab_produto-tab">
+      <div class="card checklist mt-4">
+          <h3>Tab Produto</h3>
+          <form method="post" class="form-inline">
+              {% csrf_token %}
+              <input type="hidden" name="produto_submit" value="1">
+              {% bootstrap_form produto_form layout='floating' %}
+              <button type="submit" class="btn btn-primary">Salvar</button>
+          </form>
+          {% render_table table_produto %}
+      </div>
+  </div>
+  <div class="tab-pane fade" id="tab_prodxparam" role="tabpanel" aria-labelledby="tab_prodxparam-tab">
+      <div class="card checklist mt-4">
+          <h3>Tab Produto x Parâmetro</h3>
+          <form method="post" class="form-inline">
+              {% csrf_token %}
+              <input type="hidden" name="prodxparam_submit" value="1">
+              {% bootstrap_form prodxparam_form layout='floating' %}
+              <button type="submit" class="btn btn-primary">Salvar</button>
+          </form>
+          {% render_table table_prodxparam %}
+      </div>
+  </div>
+  <div class="tab-pane fade" id="tab_serie_classificacao" role="tabpanel" aria-labelledby="tab_serie_classificacao-tab">
+      <div class="card checklist mt-4">
+          <h3>Tab Série de Classificação</h3>
+          <form method="post" class="form-inline">
+              {% csrf_token %}
+              <input type="hidden" name="serie_classificacao_submit" value="1">
+              {% bootstrap_form serie_classificacao_form layout='floating' %}
+              <button type="submit" class="btn btn-primary">Salvar</button>
+          </form>
+          {% render_table table_serie_classificacao %}
+      </div>
+  </div>
+</div>
+<script>
+  // Salva a aba ativa no localStorage
+  document.querySelectorAll('#configTab button').forEach(button => {
+    button.addEventListener('click', function () {
+      localStorage.setItem('activeConfigTab', this.id);
+    });
+  });
+  // Restaura a aba ativa do localStorage
+  document.addEventListener('DOMContentLoaded', function () {
+    const activeTab = localStorage.getItem('activeConfigTab');
+    if (activeTab) {
+      const tab = document.getElementById(activeTab);
+      const tabInstance = new bootstrap.Tab(tab);
+      tabInstance.show();
+    }
+  });
+</script>
+{% endblock %}

@@ -64,6 +64,8 @@ urlpatterns = [
     path('cadastro_parametro/', views.cadastro_parametro, name='cadastro_parametro'),
     path('cadastro_unidade_medida/', views.cadastro_unidade_medida, name='cadastro_unidade_medida'),
     path('cadastro_tipo_parametro/', views.cadastro_tipo_parametro, name='cadastro_tipo_parametro'),
+    path('configuracoes/', views.configuracoes_view, name='configuracoes'),
+    path('configuracoes/editar/<str:tabela>/<int:pk>/', views.editar_registro, name='editar_registro'),
     path('direcionamento_campanha/', views.direcionamento_campanha, name='direcionamento_campanha'),
     path('cadastro_campanha/', views.cadastro_campanha, name='cadastro_campanha'),
     path('cadastro_coleta/', views.cadastro_coleta_view, name='cadastro_coleta'),
@@ -72,5 +74,5 @@ urlpatterns = [
     path('tab_medida_pivotada/', views.view_tab_medida_pivotada,
          name='view_tab_medida_pivotada'),
     path('export_csv/', views.export_csv, name='export_csv'),
-    
+
 ]

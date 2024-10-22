@@ -226,6 +226,77 @@ class TipoParametroTable(tables.Table):
         paginator_class = tables.LazyPaginator
         table_pagination = True
         
+class ParametroTable(tables.Table):
+    update = tables.LinkColumn('editar_registro', args=['param', A('pk')], orderable=False, empty_values=[], text='EDITAR')
+
+    class Meta:
+        model = TabParam
+        template_name = "django_tables2/bootstrap.html"
+        fields = ('nome', 'param_meta_dado')
+        
+# class ParametroTable(tables.Table):
+#     update = tables.LinkColumn('atualizar_parametro', args=[A('pk')], orderable=False, empty_values=[], text='EDITAR')
+
+#     class Meta:
+#         model = TabParam
+#         template_name = "django_tables2/bootstrap.html"
+#         fields = ('nome', 'param_meta_dado')
+        
+class FrascoTable(tables.Table):
+    update = tables.LinkColumn('editar_registro', args=['frasco', A('pk')], orderable=False, empty_values=[], text='EDITAR')
+
+    class Meta:
+        model = TabFrasco
+        template_name = "django_tables2/bootstrap.html"
+        fields = ('nome',)
+        empty_text = 'Não há dados para exibir'
+        orderable = False
+        exclude = ('id',)
+        sequence = ('nome',)
+        per_page = 1
+        paginator_class = tables.LazyPaginator
+        table_pagination = True
+        
+class EquipeTable(tables.Table):
+    update = tables.LinkColumn('editar_registro', args=['equipe', A('pk')], orderable=False, empty_values=[], text='EDITAR')
+
+    class Meta:
+        model = TabEquipe
+        template_name = "django_tables2/bootstrap.html"
+        fields = ('nome',)
+        
+class LaboratorioTable(tables.Table):
+    update = tables.LinkColumn('editar_registro', args=['laboratorio', A('pk')], orderable=False, empty_values=[], text='EDITAR')
+
+    class Meta:
+        model = TabLaboratorio
+        template_name = "django_tables2/bootstrap.html"
+        fields = ('nome',)
+
+class ProdutoTable(tables.Table):
+    update = tables.LinkColumn('editar_registro', args=['produto', A('pk')], orderable=False, empty_values=[], text='EDITAR')
+
+    class Meta:
+        model = TabProduto
+        template_name = "django_tables2/bootstrap.html"
+        fields = ('nome',)
+
+class ProdxparamTable(tables.Table):
+    update = tables.LinkColumn('editar_registro', args=['prodxparam', A('pk')], orderable=False, empty_values=[], text='EDITAR')
+
+    class Meta:
+        model = TabProdxparam
+        template_name = "django_tables2/bootstrap.html"
+        fields = ('nome',)
+
+class SerieClassificacaoTable(tables.Table):
+    update = tables.LinkColumn('editar_registro', args=['serie_classificacao', A('pk')], orderable=False, empty_values=[], text='EDITAR')
+
+    class Meta:
+        model = TabSerieClassificacao
+        template_name = "django_tables2/bootstrap.html"
+        fields = ('nome',)
+        
 class TipoItemChecklistColetaTable(tables.Table):
     # update = tables.LinkColumn('atualizar_tipo_item_checklist_coleta', args=[A('pk')], orderable=False, empty_values=[], text='EDITAR')
 

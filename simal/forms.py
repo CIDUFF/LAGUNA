@@ -546,7 +546,7 @@ class PontoForm(forms.ModelForm):
         
 class ParametroForm(forms.ModelForm):
     class Meta:
-        model = Parametros
+        model = TabParam
         fields = '__all__'
         
 class UnidadeMedidaForm(forms.ModelForm):
@@ -558,6 +558,50 @@ class TipoParametroForm(forms.ModelForm):
     class Meta:
         model = TipoParametro
         fields = '__all__'
+        
+
+class TabFrascoForm(forms.ModelForm):
+    class Meta:
+        model = TabFrasco
+        fields = '__all__'
+        
+class TabEquipeForm(forms.ModelForm):
+    class Meta:
+        model = TabEquipe
+        fields = '__all__'
+
+class TabLaboratorioForm(forms.ModelForm):
+    class Meta:
+        model = TabLaboratorio
+        fields = '__all__'
+
+class TabProdutoForm(forms.ModelForm):
+    class Meta:
+        model = TabProduto
+        fields = '__all__'
+
+class TabProdxParamForm(forms.ModelForm):
+    class Meta:
+        model = TabProdxparam
+        fields = '__all__'
+
+class TabSerieClassificacaoForm(forms.ModelForm):
+    class Meta:
+        model = TabSerieClassificacao
+        fields = '__all__'
+
+class CadastroCampanhaForm(forms.Form):
+    data_criacao_campanha = forms.DateField(
+        label='Data de criação da campanha',
+        widget=forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d')
+    )
+    equipe_coleta = forms.ChoiceField(label='Equipe de coleta')
+    local_coleta = forms.ChoiceField(label='Setor')
+    observacoes = forms.CharField(
+        label='Observações',
+        widget=forms.Textarea(attrs={'rows': 3, 'cols': 40}),
+        required=False
+    )
         
 
 class CadastroCampanhaForm(forms.ModelForm):
