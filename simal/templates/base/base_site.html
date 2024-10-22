@@ -140,12 +140,7 @@
                   <span>Lista de Amostras</span>
                 </a>
               </li> {% endcomment %}
-              <li class="sidebar-item">
-                <a href="{% url 'ajuda' %}" class="sidebar-link">
-                  <i class="bi bi-question-circle"></i>
-                  <span>Ajuda</span>
-                </a>
-              </li>
+
               <li class="sidebar-item">
                 <a href="{% url 'configuracoes' %}" class="sidebar-link">
                     <i class="bi bi-gear"></i>
@@ -156,6 +151,12 @@
                 <a href="{%url 'usuarios_cadastrados'%}" class="sidebar-link">
                   <i class="bi bi-person-lines-fill"></i>
                   <span>Controle de Usuário</span>
+                </a>
+              </li>
+              <li class="sidebar-item">
+                <a href="{% url 'ajuda' %}" class="sidebar-link">
+                  <i class="bi bi-question-circle"></i>
+                  <span>Ajuda</span>
                 </a>
               </li>
               {% comment %} <li class="sidebar-item">
