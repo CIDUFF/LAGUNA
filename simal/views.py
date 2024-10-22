@@ -1,6 +1,8 @@
 # pylint: disable=protected-access,no-member
 # Django imports
 from django.contrib import messages
+from django.core.paginator import Paginator
+from django.db.models import F
 from datetime import timedelta
 import csv
 import pandas as pd
@@ -13,10 +15,13 @@ from django.http import HttpResponse, FileResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 from django.conf import settings
 import json
 import os
+import logging
+from django.db import connection
 
 
 from django_tables2 import RequestConfig
@@ -26,7 +31,8 @@ from .forms import *
 from .services import get_weather_description, gerar_etiquetas
 from .tables import *
 
-
+# Configuração do logger
+logger = logging.getLogger(__name__)
 
 
 def check_admin(user):
@@ -293,15 +299,18 @@ def atualizar_coleta(request, id):
                'ordem_servico_id': coleta.ordem_servico.id, }
     return render(request, 'coleta/coleta.html', context)
 
+
 @login_required
 def meta_coleta(request, id):
     coleta = get_object_or_404(Campo, id=id)
-    
+
     # Verifica se já existe um registro de metadados para o código de coleta
-    metadados, created = MetadadosCampo.objects.get_or_create(codigo_coleta=coleta)
-    
+    metadados, created = MetadadosCampo.objects.get_or_create(
+        codigo_coleta=coleta)
+
     if created:
-        messages.info(request, 'Novo registro de metadados criado para o código de coleta fornecido.')
+        messages.info(
+            request, 'Novo registro de metadados criado para o código de coleta fornecido.')
 
     if request.method == 'POST':
         form = MetadadosCampoForm(request.POST, instance=metadados)
@@ -311,7 +320,7 @@ def meta_coleta(request, id):
             return redirect(reverse('atualizar_coleta', args=[coleta.id]))
     else:
         form = MetadadosCampoForm(instance=metadados)
-    
+
     context = {
         'form': form,
         'codigo_coleta': coleta.codigo_coleta,
@@ -322,6 +331,7 @@ def meta_coleta(request, id):
     }
 
     return render(request, 'coleta/meta_coleta.html', context)
+
 
 @login_required
 @user_passes_test(check_admin)
@@ -519,15 +529,18 @@ def ajuda(request):
             subject_admin = 'Nova solicitação de ajuda'
             message_admin = f"Nome: {nova_ajuda.nome}\nEmail: {nova_ajuda.email}\nPergunta: {nova_ajuda.pergunta}"
             recipient_list_admin = [settings.EMAIL_HOST_USER]
-            send_mail(subject_admin, message_admin, settings.EMAIL_HOST_USER, recipient_list_admin)
+            send_mail(subject_admin, message_admin,
+                      settings.EMAIL_HOST_USER, recipient_list_admin)
 
             # Enviar e-mail para o usuário
             subject_user = 'Confirmação de solicitação de ajuda'
             message_user = f"Olá {nova_ajuda.nome},\n\nVocê está recebendo este e-mail porque fez uma solicitação de ajuda no sistema LAGUNA.\n\nPergunta: {nova_ajuda.pergunta}\n\nAtenciosamente,\nEquipe LAGUNA"
             recipient_list_user = [nova_ajuda.email]
-            send_mail(subject_user, message_user, settings.EMAIL_HOST_USER, recipient_list_user)
+            send_mail(subject_user, message_user,
+                      settings.EMAIL_HOST_USER, recipient_list_user)
 
-            messages.success(request, 'Sua solicitação de ajuda foi enviada com sucesso!')
+            messages.success(
+                request, 'Sua solicitação de ajuda foi enviada com sucesso!')
 
             return redirect('ajuda')
     else:
@@ -684,7 +697,16 @@ def etiquetagem(request, ordem_servico=None):
             codigo_servico = campanha.ordem_servico
             codigos = Campo.objects.filter(
                 ordem_servico=campanha).values_list('codigo_coleta', flat=True)
+            data = campanha.data_coleta_campo.strftime('%d/%m/%Y')
+            responsavel = campanha.usuario
+            codigo_servico = campanha.ordem_servico
+            codigos = Campo.objects.filter(
+                ordem_servico=campanha).values_list('codigo_coleta', flat=True)
 
+            if not codigos:
+                messages.warning(
+                    request, 'Nenhum código de coleta encontrado para a ordem de serviço fornecida.')
+                return redirect('checklist_campanha', ordem_servico=ordem_servico)
             if not codigos:
                 messages.warning(
                     request, 'Nenhum código de coleta encontrado para a ordem de serviço fornecida.')
@@ -692,16 +714,28 @@ def etiquetagem(request, ordem_servico=None):
 
             pdf_path = gerar_etiquetas(
                 codigos, data, responsavel, codigo_servico)
+            pdf_path = gerar_etiquetas(
+                codigos, data, responsavel, codigo_servico)
 
+            # Retorna o PDF como uma resposta HTTP
+            response = FileResponse(
+                open(pdf_path, 'rb'), as_attachment=True, filename=os.path.basename(pdf_path))
             # Retorna o PDF como uma resposta HTTP
             response = FileResponse(
                 open(pdf_path, 'rb'), as_attachment=True, filename=os.path.basename(pdf_path))
 
             # Apaga o arquivo PDF após o download
             os.remove(pdf_path)
+            # Apaga o arquivo PDF após o download
+            os.remove(pdf_path)
 
             return response
+            return response
 
+        return redirect('checklist_campanha', ordem_servico=ordem_servico)
+    except Exception as e:
+        messages.error(request, f'Ocorreu um erro: {str(e)}')
+        return redirect('checklist_campanha', ordem_servico=ordem_servico)
         return redirect('checklist_campanha', ordem_servico=ordem_servico)
     except Exception as e:
         messages.error(request, f'Ocorreu um erro: {str(e)}')
@@ -785,19 +819,36 @@ def calendario_campanhas(request):
 
 
 def exportar_resultados_csv(request):
-    response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename="resultados_coleta.csv"'
+    try:
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="resultados_coleta.csv"'
 
-    writer = csv.writer(response)
-    writer.writerow(['Código Coleta', 'Hora Início', 'Hora Fim', 'Ponto', 'Temperatura',
-                    'pH', 'ORP', 'Condutividade', 'Turbidez', 'OD', 'OD %', 'TDS', 'Salinidade'])
+        writer = csv.writer(response)
+        writer.writerow(['Código Coleta', 'Hora Início', 'Hora Fim', 'Ponto', 'Temperatura',
+                        'pH', 'ORP', 'Condutividade', 'Turbidez', 'OD', 'OD %', 'TDS', 'Salinidade'])
 
-    resultados = Campo.objects.all().values_list('codigo_coleta', 'hora_inicio', 'hora_fim', 'ponto',
-                                                 'temperatura', 'ph', 'orp', 'condutividade', 'turbidez', 'od', 'tds', 'salinidade')
-    for resultado in resultados:
-        writer.writerow(resultado)
+        try:
+            resultados = Campo.objects.all().values_list('codigo_coleta', 'hora_inicio', 'hora_fim', 'ponto',
+                                                         'temperatura', 'ph', 'orp', 'condutividade', 'turbidez', 'od', 'tds', 'salinidade')
+        except ObjectDoesNotExist:
+            logger.error("Nenhum resultado encontrado.")
+            return HttpResponse("Nenhum resultado encontrado.", content_type='text/plain')
+        except Exception as e:
+            logger.error(f"Erro ao consultar o banco de dados: {e}")
+            return HttpResponse(f"Erro ao consultar o banco de dados: {e}", content_type='text/plain')
 
-    return response
+        for resultado in resultados:
+            try:
+                writer.writerow(resultado)
+            except Exception as e:
+                logger.error(f"Erro ao escrever linha CSV: {e}")
+                return HttpResponse(f"Erro ao escrever linha CSV: {e}", content_type='text/plain')
+
+        return response
+
+    except Exception as e:
+        logger.error(f"Erro ao gerar CSV: {e}")
+        return HttpResponse(f"Erro ao gerar CSV: {e}", content_type='text/plain')
 
 
 @login_required
@@ -826,6 +877,7 @@ def atualizar_local(request, id):
         form = LocaisForm(instance=local)
     return render(request, 'cadastro_local.html', {'form': form})
 
+
 @login_required
 def cadastro_setor(request):
     if request.method == 'POST':
@@ -837,6 +889,7 @@ def cadastro_setor(request):
     else:
         form = SetorForm()
     return render(request, 'cadastro_setor.html', {'form': form})
+
 
 @login_required
 def atualizar_setor(request, id):
@@ -851,6 +904,7 @@ def atualizar_setor(request, id):
         form = SetorForm(instance=setor)
     return render(request, 'cadastro_setor.html', {'form': form})
 
+
 @login_required
 def cadastro_ponto(request):
     if request.method == 'POST':
@@ -862,6 +916,7 @@ def cadastro_ponto(request):
     else:
         form = PontoForm()
     return render(request, 'cadastro_ponto.html', {'form': form})
+
 
 @login_required
 def atualizar_ponto(request, id):
@@ -875,22 +930,23 @@ def atualizar_ponto(request, id):
     else:
         form = PontoForm(instance=ponto)
     return render(request, 'cadastro_ponto.html', {'form': form})
-    
+
+
 @login_required
 def locais_cadastrados(request):
     setor_filter = SetorFilter(request.GET, queryset=TabSetor.objects.all())
     table_setores = SetorTable(setor_filter.qs)
-    
+
     ponto_filter = PontoFilter(request.GET, queryset=TabPonto.objects.all())
     table_pontos = PontoTable(ponto_filter.qs)
-    
+
     local_filter = LocalFilter(request.GET, queryset=TabLocal.objects.all())
     table_locais = LocalTable(local_filter.qs)
-    
+
     RequestConfig(request, paginate={"per_page": 25}).configure(table_setores)
     RequestConfig(request, paginate={"per_page": 25}).configure(table_pontos)
     RequestConfig(request, paginate={"per_page": 25}).configure(table_locais)
-    
+
     return render(request, 'locais_cadastrados.html', {
         'table_setores': table_setores,
         'table_pontos': table_pontos,
@@ -899,13 +955,16 @@ def locais_cadastrados(request):
         'ponto_filter': ponto_filter,
         'local_filter': local_filter
     })
-    
+
+
 def export_pontos_csv(request):
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="pontos_coleta.csv"'
 
-    writer = csv.writer(response, delimiter=';', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-    writer.writerow(['Nome', 'Setor', 'Local', 'Descrição', 'Status', 'Latitude', 'Longitude'])
+    writer = csv.writer(response, delimiter=';',
+                        quotechar='"', quoting=csv.QUOTE_MINIMAL)
+    writer.writerow(['Nome', 'Setor', 'Local', 'Descrição',
+                    'Status', 'Latitude', 'Longitude'])
 
     pontos = TabPonto.objects.select_related('setor', 'local').all()
     for ponto in pontos:
@@ -922,6 +981,7 @@ def export_pontos_csv(request):
 
     return response
 
+
 @login_required
 def cadastro_parametro(request):
     if request.method == 'POST':
@@ -934,17 +994,20 @@ def cadastro_parametro(request):
         form = ParametroForm()
     return render(request, 'cadastro_parametro.html', {'form': form})
 
+
 @login_required
 def cadastro_unidade_medida(request):
     if request.method == 'POST':
         form = UnidadeMedidaForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Unidade de Medida cadastrada com sucesso.')
+            messages.success(
+                request, 'Unidade de Medida cadastrada com sucesso.')
             return redirect('cadastro_unidade_medida')
     else:
         form = UnidadeMedidaForm()
     return render(request, 'cadastro_unidade_medida.html', {'form': form})
+
 
 @login_required
 def cadastro_tipo_parametro(request):
@@ -952,15 +1015,18 @@ def cadastro_tipo_parametro(request):
         form = TipoParametroForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Tipo de Parâmetro cadastrado com sucesso.')
+            messages.success(
+                request, 'Tipo de Parâmetro cadastrado com sucesso.')
             return redirect('cadastro_tipo_parametro')
     else:
         form = TipoParametroForm()
-    
+
     table_tipo_parametro = TipoParametroTable(TipoParametro.objects.all())
-    RequestConfig(request, paginate={"per_page": 25}).configure(table_tipo_parametro)
-    
+    RequestConfig(request, paginate={"per_page": 25}).configure(
+        table_tipo_parametro)
+
     return render(request, 'cadastro_tipo_parametro.html', {'form': form, 'table_tipo_parametro': table_tipo_parametro})
+
 
 @login_required
 def configuracoes_view(request):
@@ -1082,21 +1148,111 @@ def editar_registro(request, tabela, pk):
 def direcionamento_campanha(request):
     return render(request, 'direcionamento_campanha.html')
 
+
 def cadastro_campanha(request):
     if request.method == 'POST':
         form = CadastroCampanhaForm(request.POST)
         if form.is_valid():
-            # Processa os dados do formulário aqui
-            data_criacao_campanha = form.cleaned_data['data_criacao_campanha']
-            equipe_coleta = form.cleaned_data['equipe_coleta']
-            local_coleta = form.cleaned_data['local_coleta']
-            observacoes = form.cleaned_data['observacoes']
-
-            # Exemplo de mensagem de sucesso
-            messages.success(request, 'Campanha cadastrada com sucesso!')
-            return redirect('direcionamento_campanha')
+            form.save()
+            # Substitua 'success_url' pela URL de sucesso desejada
+            return redirect('cadastro_coleta')
     else:
         form = CadastroCampanhaForm()
 
     return render(request, 'cadastro_campanha.html', {'form': form})
 
+
+
+
+def cadastro_coleta_view(request):
+    if request.method == 'POST':
+        form = CadastroColetaForm(request.POST)
+        if form.is_valid():
+            form.save()
+            # Substitua 'success_url' pela URL de sucesso desejada
+            return redirect('checklist_coleta')
+    else:
+        form = CadastroColetaForm()
+
+    return render(request, 'cadastro_coleta.html', {'form': form})
+
+
+def cadastro_item_checklist_coleta(request):
+    if request.method == 'POST':
+        form = CadastroItemChecklistColetaForm(request.POST)
+        if form.is_valid():
+            form.save(user=request.user)
+            messages.success(
+                request, 'Item de checklist cadastrado com sucesso.')
+            return redirect('cadastro_item_checklist_coleta')
+    else:
+        form = CadastroItemChecklistColetaForm()
+
+    # Crie a tabela com os itens existentes
+    table = TipoItemChecklistColetaTable(TabItemChecklistColeta.objects.all())
+    RequestConfig(request).configure(table)
+
+    return render(request, 'cadastro_item_checklist_coleta.html', {'form': form, 'table': table})
+
+def checklist_coleta(request):
+
+    return render(request, 'checklist_coleta.html')
+
+
+def export_csv(request):
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT * FROM tab_medida_pivotada")
+        rows = cursor.fetchall()
+        columns = [col[0] for col in cursor.description]
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="tab_medida_pivotada.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(columns)
+    for row in rows:
+        writer.writerow(row)
+
+    return response
+
+
+def view_tab_medida_pivotada(request):
+    # Campo padrão para ordenar
+    order_by = request.GET.get('order_by', 'campanha')
+    # Direção padrão para ordenar
+    direction = request.GET.get('direction', 'asc')
+
+    # Filtros de campanha e ponto
+    campanha_filter = request.GET.get('campanha', '')
+    ponto_filter = request.GET.get('ponto', '')
+
+    # Construir a cláusula WHERE corretamente
+    where_clauses = []
+    if campanha_filter:
+        where_clauses.append(f"campanha = '{campanha_filter}'")
+    if ponto_filter:
+        where_clauses.append(f"ponto = '{ponto_filter}'")
+    where_clause = ' AND '.join(where_clauses) if where_clauses else '1=1'
+
+    # Construir a cláusula ORDER BY corretamente
+    order_clause = f'"{order_by}" {direction.upper()}'
+
+    with connection.cursor() as cursor:
+        cursor.execute(
+            f'SELECT * FROM tab_medida_pivotada WHERE {where_clause} ORDER BY {order_clause}')
+        rows = cursor.fetchall()
+        columns = [col[0] for col in cursor.description]
+
+    paginator = Paginator(rows, 20)  # Limitar a 20 resultados por página
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'columns': columns,
+        'page_obj': page_obj,
+        'order_by': order_by,
+        'direction': direction,
+        'campanha_filter': campanha_filter,
+        'ponto_filter': ponto_filter
+    }
+    return render(request, 'view_tab_medida_pivotada.html', context)

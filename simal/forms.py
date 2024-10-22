@@ -602,13 +602,52 @@ class CadastroCampanhaForm(forms.Form):
         widget=forms.Textarea(attrs={'rows': 3, 'cols': 40}),
         required=False
     )
+        
+
+class CadastroCampanhaForm(forms.ModelForm):
+    data_criacao = forms.DateField(
+        widget=forms.DateInput(attrs={'type': 'date'}))
+
+    class Meta:
+        model = TabCampanha
+        exclude = ['id']
 
     def __init__(self, *args, **kwargs):
         super(CadastroCampanhaForm, self).__init__(*args, **kwargs)
-        self.fields['local_coleta'].choices = [
-            (setor.id, setor.nome) for setor in TabSetor.objects.all().distinct()
-        ]
-        self.fields['equipe_coleta'].choices = [
-            (group.id, group.name) for group in Group.objects.all()
-        ]
+        self.helper = FormHelper()
+        self.helper.add_input(Submit('submit', 'Salvar'))
+
+# TODO: #176 Refatorar o código para que a campanha já venha preenchida automaticamente
+class CadastroColetaForm(forms.ModelForm):
+    data = forms.DateField(
+        widget=forms.DateInput(attrs={'type': 'date'}))
+
+    class Meta:
+        model = TabColeta
+        exclude = ['id','ordem_servico']
+
+    def __init__(self, *args, **kwargs):
+        super(CadastroColetaForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.add_input(Submit('submit', 'Salvar'))
+
+
+class CadastroItemChecklistColetaForm(forms.ModelForm):
+    class Meta:
+        model = TabItemChecklistColeta
+        exclude = ['id', 'data_cadastro', 'user']
+
+    def __init__(self, *args, **kwargs):
+        super(CadastroItemChecklistColetaForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.add_input(Submit('submit', 'Salvar'))
+
+    def save(self, user=None, *args, **kwargs):
+        instance = super(CadastroItemChecklistColetaForm,
+                         self).save(commit=False)
+        if user:
+            instance.user = user
+        instance.save()
+        return instance
+
 

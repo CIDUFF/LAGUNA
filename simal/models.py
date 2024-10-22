@@ -1,4 +1,5 @@
 from datetime import datetime, date, timedelta
+from django.utils import timezone
 import re
 import unicodedata
 # from localflavor.br.models import BRCPFField
@@ -545,12 +546,12 @@ class StatusAmostra(models.Model):
 
 
 class TabCampanha(models.Model):
-    id = models.BigAutoField(primary_key=True)
+    # id = models.BigAutoField(primary_key=True)
     id_local = models.ForeignKey(
         'TabLocal', models.DO_NOTHING, db_column='id_local', blank=True, null=True)
-    nome = models.TextField(blank=True, null=True)
-    descricao = models.TextField(blank=True, null=True)
+    nome = models.CharField(blank=True, null=True)
     data_criacao = models.DateTimeField(blank=True, null=True)
+    descricao = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return f'{self.nome}'
@@ -563,17 +564,28 @@ class TabCampanha(models.Model):
 class TabColeta(models.Model):
     id = models.BigAutoField(primary_key=True)
     data = models.DateTimeField(blank=True, null=True)
-    nome = models.TextField(blank=True, null=True)
+    nome = models.CharField(blank=True, null=True)
     id_campanha = models.ForeignKey(
         TabCampanha, models.DO_NOTHING, db_column='id_campanha', blank=True, null=True)
     id_setor = models.ForeignKey(
         'TabSetor', models.DO_NOTHING, db_column='id_setor', blank=True, null=True)
+    ordem_servico = models.CharField('Ordem de serviço',blank=True, null=True)
 
     def __str__(self):
         return f'{self.nome}'
+    
+    def save (self, *args, **kwargs):
+        data_hora = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        campanha = TabCampanha.objects.get(id=self.id_campanha.id)
+        setor = TabSetor.objects.get(id=self.id_setor.id)
+        setor_abreviatura = setor.abreviatura
+        raw_ordem_servico = f'{setor_abreviatura}{campanha}{data_hora}'
+        self.ordem_servico = re.sub(r'[^A-Za-z0-9]', '', raw_ordem_servico)
+        super().save(*args, **kwargs)
+        
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'tab_coleta'
 
 
@@ -700,23 +712,6 @@ class TabPonto(models.Model):
         managed = False
         db_table = 'tab_ponto'
 
-# class PontosColeta(models.Model):
-
-#     DESCRICAO = [
-#         ('Ponto de Coleta', 'Ponto de Coleta'),
-#         ('Ponto de aplicação', 'Ponto de Aplicação'),
-#     ]
-
-#     nome = models.CharField(max_length=5, blank=False)
-#     setor = models.ForeignKey('TabSetor', on_delete=models.CASCADE, related_name='pontos')
-#     local = models.ForeignKey('TabLocal', on_delete=models.CASCADE, related_name='pontos')
-#     tipo = models.CharField(max_length=50, choices=DESCRICAO, default='Ponto de Coleta')
-#     status = models.BooleanField(default=True, blank=True)
-#     lat = models.FloatField(null=True, blank=True)
-#     lon = models.FloatField(null=True, blank=True)
-
-#     def __str__(self):
-#         return f'{self.nome}'
 
 class TabProduto(models.Model):
     id = models.BigAutoField(primary_key=True)
@@ -794,3 +789,33 @@ class TabEquipe(models.Model):
         managed = False
         db_table = 'tab_equipe'
 
+
+
+class TabItemChecklistColeta(models.Model):
+    data_cadastro = models.DateTimeField('Data de Cadastro', auto_now_add=True)
+    item = models.CharField('Item', max_length=50, blank=True)
+    prazo = models.FloatField(
+        'Prazo para realização da ação em dias antes da coleta em dias', blank=True, null=True)
+    status = models.BooleanField('Este item está ativo?', default=False)
+    observacao = models.TextField('Observação', max_length=500, blank=True)
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, verbose_name='Usuário', null=True)
+
+    def __str__(self):
+        return f'{self.item}'
+
+    def save(self, *args, **kwargs):
+        if 'user' in kwargs:
+            self.user = kwargs.pop('user')
+        self.data_cadastro = timezone.now()
+        super().save(*args, **kwargs)
+
+    class Meta:
+        db_table = 'tab_item_checklist_coleta'
+        
+class TabChecklistColeta(models.Model):
+    item = models.ForeignKey(
+        TabItemChecklistColeta, on_delete=models.CASCADE, related_name='itens')
+    id_coleta = models.ForeignKey(
+        TabColeta, on_delete=models.CASCADE, related_name='coleta')
+    observacao = models.TextField('Observação', max_length=500, blank=True)
