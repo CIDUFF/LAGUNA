@@ -691,12 +691,6 @@ def etiquetagem(request, ordem_servico=None):
         if ordem_servico:
             campanha = get_object_or_404(
                 ProgramaColeta, ordem_servico=ordem_servico)
-    try:
-        ordem_servico = request.GET.get('ordem_servico', ordem_servico)
-        campanha = None
-        if ordem_servico:
-            campanha = get_object_or_404(
-                ProgramaColeta, ordem_servico=ordem_servico)
 
             data = campanha.data_coleta_campo.strftime('%d/%m/%Y')
             responsavel = campanha.usuario
