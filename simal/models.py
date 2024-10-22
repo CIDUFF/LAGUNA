@@ -168,7 +168,8 @@ class ProgramaColeta(models.Model):
 
             if localizacao:
                 codigo = localizacao.abreviatura
-                ordem_servico_raw = f"{codigo}{self.data_coleta_campo}{hora}"
+                setor_id=localizacao.id
+                ordem_servico_raw = f"{codigo}{setor_id}{self.data_coleta_campo}{hora}"
                 ordem_servico_normalized = unicodedata.normalize(
                     'NFKD', ordem_servico_raw)
                 ordem_servico_ascii = ordem_servico_normalized.encode(

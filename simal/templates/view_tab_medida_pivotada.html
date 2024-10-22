@@ -8,9 +8,7 @@
 <div class="container-fluid mt-5">
     <h1 class="text-center">Resultados de coletas</h1>
     
-    <div class="d-flex justify-content-end mb-3">
-        <a href="{% url 'export_csv' %}" class="btn btn-primary">Exportar tabela para CSV</a>
-    </div>
+
 
     <form method="get" class="mb-3">
         <div class="form-row">
@@ -21,7 +19,13 @@
                 <input type="text" name="ponto" class="form-control" placeholder="Ponto" value="{{ ponto_filter }}">
             </div>
             <div class="col">
+                <input type="text" name="setor" class="form-control" placeholder="Setor" value="{{ setor_filter }}">
+            </div>
+            <div class="col">
                 <button type="submit" class="btn btn-primary">Filtrar</button>
+
+        <a href="{% url 'export_csv' %}" class="btn btn-primary">Exportar tabela para CSV</a>
+
             </div>
         </div>
     </form>
