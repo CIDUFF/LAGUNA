@@ -13,7 +13,7 @@ from django.forms import modelformset_factory
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.cache import cache
 from django.http import HttpResponse, FileResponse
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import get_object_or_404, get_list_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
@@ -96,6 +96,10 @@ def home(request):
                 '%d/%m/%Y')
             weather_description = get_weather_description(
                 "Maricá", proxima_coleta.data_coleta_campo.strftime('%Y-%m-%d'))
+            weather_description_day_before = get_weather_description(
+                "Maricá", (proxima_coleta.data_coleta_campo - timedelta(days=1)).strftime('%Y-%m-%d'))
+            weather_description_two_days_before = get_weather_description(
+                "Maricá", (proxima_coleta.data_coleta_campo - timedelta(days=2)).strftime('%Y-%m-%d'))
 
             checklist = ChecklistCampo.objects.filter(
                 ordem_servico=proxima_coleta).first()
@@ -219,7 +223,12 @@ def home(request):
             eventos.append(evento)
 
         context = {
+            'data_coleta_proxima_formatada': data_coleta_proxima_formatada,
+            'data_coleta_formatada_menos_um': (timezone.now() - timedelta(days=1)).strftime('%d/%m/%Y'),
+            'data_coleta_formatada_menos_dois': (timezone.now() - timedelta(days=2)).strftime('%d/%m/%Y'),
             'weather_description': weather_description,
+            'weather_description_day_before': weather_description_day_before,
+            'weather_description_two_days_before': weather_description_two_days_before,
             'data_coleta_proxima_formatada': data_coleta_proxima_formatada,
             'status_coleta': proxima_coleta.status_coleta if proxima_coleta else None,
             'local_coleta': proxima_coleta.local_coleta if proxima_coleta else None,
@@ -686,61 +695,35 @@ Raises:
 
 
 def etiquetagem(request, ordem_servico=None):
-    try:
-        ordem_servico = request.GET.get('ordem_servico', ordem_servico)
-        campanha = None
-        if ordem_servico:
-            campanha = get_object_or_404(
-                ProgramaColeta, ordem_servico=ordem_servico)
+    ordem_servico = request.GET.get('ordem_servico', ordem_servico)
+    campanha = None
+    if ordem_servico:
+        campanha = get_object_or_404(
+            ProgramaColeta, ordem_servico=ordem_servico)
 
-            data = campanha.data_coleta_campo.strftime('%d/%m/%Y')
-            responsavel = campanha.usuario
-            codigo_servico = campanha.ordem_servico
-            codigos = Campo.objects.filter(
-                ordem_servico=campanha).values_list('codigo_coleta', flat=True)
-            data = campanha.data_coleta_campo.strftime('%d/%m/%Y')
-            responsavel = campanha.usuario
-            codigo_servico = campanha.ordem_servico
-            codigos = Campo.objects.filter(
-                ordem_servico=campanha).values_list('codigo_coleta', flat=True)
+        data = campanha.data_coleta_campo.strftime('%d/%m/%Y')
+        responsavel = campanha.usuario
+        codigo_servico = campanha.ordem_servico
+        codigos = Campo.objects.filter(
+            ordem_servico=campanha).values_list('codigo_coleta', flat=True)
 
-            if not codigos:
-                messages.warning(
-                    request, 'Nenhum código de coleta encontrado para a ordem de serviço fornecida.')
-                return redirect('checklist_campanha', ordem_servico=ordem_servico)
-            if not codigos:
-                messages.warning(
-                    request, 'Nenhum código de coleta encontrado para a ordem de serviço fornecida.')
-                return redirect('checklist_campanha', ordem_servico=ordem_servico)
+        if not codigos:
+            messages.warning(
+                request, 'Nenhum código de coleta encontrado para a ordem de serviço fornecida.')
+            return redirect('checklist_campanha', ordem_servico=ordem_servico)
 
-            pdf_path = gerar_etiquetas(
-                codigos, data, responsavel, codigo_servico)
-            pdf_path = gerar_etiquetas(
-                codigos, data, responsavel, codigo_servico)
+        pdf_path = gerar_etiquetas(codigos, data, responsavel, codigo_servico)
 
-            # Retorna o PDF como uma resposta HTTP
-            response = FileResponse(
-                open(pdf_path, 'rb'), as_attachment=True, filename=os.path.basename(pdf_path))
-            # Retorna o PDF como uma resposta HTTP
-            response = FileResponse(
-                open(pdf_path, 'rb'), as_attachment=True, filename=os.path.basename(pdf_path))
+        # Retorna o PDF como uma resposta HTTP
+        response = FileResponse(
+            open(pdf_path, 'rb'), as_attachment=True, filename=os.path.basename(pdf_path))
 
-            # Apaga o arquivo PDF após o download
-            os.remove(pdf_path)
-            # Apaga o arquivo PDF após o download
-            os.remove(pdf_path)
+        # Apaga o arquivo PDF após o download
+        os.remove(pdf_path)
 
-            return response
-            return response
+        return response
 
-        return redirect('checklist_campanha', ordem_servico=ordem_servico)
-    except Exception as e:
-        messages.error(request, f'Ocorreu um erro: {str(e)}')
-        return redirect('checklist_campanha', ordem_servico=ordem_servico)
-        return redirect('checklist_campanha', ordem_servico=ordem_servico)
-    except Exception as e:
-        messages.error(request, f'Ocorreu um erro: {str(e)}')
-        return redirect('checklist_campanha', ordem_servico=ordem_servico)
+    return redirect('checklist_campanha', ordem_servico=ordem_servico)
 
 
 @login_required
@@ -1275,6 +1258,7 @@ def checklist_coleta(request, coleta_id):
     ChecklistColetaFormSet = modelformset_factory(
         TabChecklistColeta, form=ChecklistColetaForm, extra=0)
     coleta = get_object_or_404(TabColeta, id=coleta_id)
+    campanha = coleta.id_campanha
     if request.method == 'POST':
         formset = ChecklistColetaFormSet(
             request.POST, queryset=TabChecklistColeta.objects.filter(id_coleta=coleta))
@@ -1286,4 +1270,38 @@ def checklist_coleta(request, coleta_id):
         formset = ChecklistColetaFormSet(
             queryset=TabChecklistColeta.objects.filter(id_coleta=coleta))
 
-    return render(request, 'checklist_coleta.html', {'formset': formset, 'coleta': coleta})
+    return render(request, 'checklist_coleta.html', {'formset': formset, 'coleta': coleta, 'campanha': campanha})
+
+
+@login_required
+def fill_amostra(request, coleta_id):
+    coleta = get_object_or_404(TabColeta, id=coleta_id)
+    frascos = TabFrasco.objects.all()
+    pontos_coleta = TabPonto.objects.filter(id_setor=coleta.id_setor)
+    for frasco in frascos:
+        for ponto in pontos_coleta:
+            amostra = TabAmostraCopy.objects.create(
+                id_coleta=coleta,
+                id_frasco=frasco,
+                id_ponto=ponto,
+            )
+            amostra.save()
+            envio = TabEnvioCopy.objects.create(
+                id_amostra=amostra,
+            )
+            envio.save()
+    return redirect('home')
+
+@login_required
+def fill_campo_medida(request, coleta_id):
+
+    id_frasco = 1
+    coleta = get_object_or_404(TabColeta, id=coleta_id)
+    pontos_coleta = get_list_or_404(TabPonto, id_setor=coleta.id_setor)
+    amostras = get_object_or_404(TabAmostraCopy, id_coleta=coleta_id, id_frasco=1)
+    envio = get_list_or_404(TabEnvioCopy, id_amostra__id_coleta=coleta_id)
+    return redirect('home')
+
+            
+
+

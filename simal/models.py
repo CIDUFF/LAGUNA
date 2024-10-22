@@ -576,10 +576,10 @@ class TabColeta(models.Model):
     
     def save (self, *args, **kwargs):
         data_hora = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        campanha = TabCampanha.objects.get(id=self.id_campanha.id)
+        campanha_id = self.id_campanha.id
         setor = TabSetor.objects.get(id=self.id_setor.id)
         setor_abreviatura = setor.abreviatura
-        raw_ordem_servico = f'{setor_abreviatura}{campanha}{data_hora}'
+        raw_ordem_servico = f'{setor_abreviatura}{campanha_id}{data_hora}'
         self.ordem_servico = re.sub(r'[^A-Za-z0-9]', '', raw_ordem_servico)
         super().save(*args, **kwargs)
         
@@ -605,6 +605,67 @@ class TabAmostra(models.Model):
     class Meta:
         managed = False
         db_table = 'tab_amostra'
+    def save (self, *args, **kwargs):
+        etiqueta = f'{self.id_coleta.ordem_servico}{self.id_ponto.nome}{self.id_frasco.nome}'
+        self.etiqueta = etiqueta
+        super().save(*args, **kwargs)
+    
+
+class TabAmostraCopy(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    id_ponto = models.ForeignKey(
+        'TabPonto', models.DO_NOTHING, db_column='id_ponto', blank=True, null=True)
+    id_coleta = models.ForeignKey(
+        'TabColeta', models.DO_NOTHING, db_column='id_coleta', blank=True, null=True)
+    id_frasco = models.ForeignKey(
+        'TabFrasco', models.DO_NOTHING, db_column='id_frasco', blank=True, null=True)
+    etiqueta = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f'{self.etiqueta}'
+
+    class Meta:
+        managed = True
+        db_table = 'tab_amostra_copy'
+
+    def save(self, *args, **kwargs):
+        etiqueta = f'{self.id_coleta.ordem_servico}{self.id_ponto.nome}{self.id_frasco.id}'
+        self.etiqueta = etiqueta
+        super().save(*args, **kwargs)
+        
+
+class TabEnvioCopy(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    id_amostra = models.ForeignKey(
+        TabAmostraCopy, models.DO_NOTHING, db_column='id_amostra', blank=True, null=True)
+    id_laboratorio = models.ForeignKey(
+        'TabLaboratorio', models.DO_NOTHING, db_column='id_laboratorio', blank=True, null=True)
+    data_envio = models.DateTimeField(blank=True, null=True)
+    data_resultado = models.DateTimeField(blank=True, null=True)
+
+    def __str__(self):
+        return f'{self.id}'
+
+    class Meta:
+        managed = True
+        db_table = 'tab_envio_copy'
+        
+
+class TabMedidaCopy(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    id_envio = models.ForeignKey(
+        TabEnvioCopy, models.DO_NOTHING, db_column='id_envio', blank=True, null=True)
+    id_pp = models.ForeignKey(
+        'TabProdxparam', models.DO_NOTHING, db_column='id_pp', blank=True, null=True)
+    valor = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f'{self.valor}'
+
+    class Meta:
+        managed = False
+        db_table = 'tab_medida'
+        
 
 
 class TabEnvio(models.Model):
@@ -622,6 +683,7 @@ class TabEnvio(models.Model):
     class Meta:
         managed = False
         db_table = 'tab_envio'
+        
 
 
 class TabFrasco(models.Model):
@@ -677,6 +739,9 @@ class TabMedida(models.Model):
     class Meta:
         managed = False
         db_table = 'tab_medida'
+        
+
+
 
 
 class TabParam(models.Model):
