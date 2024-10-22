@@ -71,6 +71,8 @@ urlpatterns = [
     path('cadastro_coleta/', views.cadastro_coleta_view, name='cadastro_coleta'),
     path('cadastro_item_checklist_coleta/', views.cadastro_item_checklist_coleta, name='cadastro_item_checklist_coleta'),
     path('checklist_coleta/', views.checklist_coleta, name='checklist_coleta'),
+    path('checklist_coleta/<int:coleta_id>/',
+         views.checklist_coleta, name='checklist_coleta'),
     path('tab_medida_pivotada/', views.view_tab_medida_pivotada,
          name='view_tab_medida_pivotada'),
     path('export_csv/', views.export_csv, name='export_csv'),

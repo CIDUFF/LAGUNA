@@ -9,6 +9,7 @@ import pandas as pd
 import plotly.express as px
 from plotly.offline import plot
 from django.forms import inlineformset_factory
+from django.forms import modelformset_factory
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.cache import cache
 from django.http import HttpResponse, FileResponse
@@ -1148,7 +1149,7 @@ def editar_registro(request, tabela, pk):
 def direcionamento_campanha(request):
     return render(request, 'direcionamento_campanha.html')
 
-
+@login_required
 def cadastro_campanha(request):
     if request.method == 'POST':
         form = CadastroCampanhaForm(request.POST)
@@ -1161,22 +1162,26 @@ def cadastro_campanha(request):
 
     return render(request, 'cadastro_campanha.html', {'form': form})
 
-
-
-
+@login_required
 def cadastro_coleta_view(request):
     if request.method == 'POST':
         form = CadastroColetaForm(request.POST)
         if form.is_valid():
-            form.save()
-            # Substitua 'success_url' pela URL de sucesso desejada
-            return redirect('checklist_coleta')
+            coleta = form.save()
+            # Criar entradas na tabela TabChecklistColeta para cada item de checklist
+            itens_checklist = TabItemChecklistColeta.objects.all()
+            for item in itens_checklist:
+                TabChecklistColeta.objects.create(
+                    id_coleta=coleta,
+                    item=item,
+                )
+            return redirect('checklist_coleta', coleta_id=coleta.id)
     else:
         form = CadastroColetaForm()
 
     return render(request, 'cadastro_coleta.html', {'form': form})
 
-
+@login_required
 def cadastro_item_checklist_coleta(request):
     if request.method == 'POST':
         form = CadastroItemChecklistColetaForm(request.POST)
@@ -1194,11 +1199,7 @@ def cadastro_item_checklist_coleta(request):
 
     return render(request, 'cadastro_item_checklist_coleta.html', {'form': form, 'table': table})
 
-def checklist_coleta(request):
-
-    return render(request, 'checklist_coleta.html')
-
-
+@login_required
 def export_csv(request):
     with connection.cursor() as cursor:
         cursor.execute("SELECT * FROM tab_medida_pivotada")
@@ -1215,7 +1216,7 @@ def export_csv(request):
 
     return response
 
-
+@login_required
 def view_tab_medida_pivotada(request):
     # Campo padrão para ordenar
     order_by = request.GET.get('order_by', 'campanha')
@@ -1256,3 +1257,21 @@ def view_tab_medida_pivotada(request):
         'ponto_filter': ponto_filter
     }
     return render(request, 'view_tab_medida_pivotada.html', context)
+
+@login_required
+def checklist_coleta(request, coleta_id):
+    ChecklistColetaFormSet = modelformset_factory(
+        TabChecklistColeta, form=ChecklistColetaForm, extra=0)
+    coleta = get_object_or_404(TabColeta, id=coleta_id)
+    if request.method == 'POST':
+        formset = ChecklistColetaFormSet(
+            request.POST, queryset=TabChecklistColeta.objects.filter(id_coleta=coleta))
+        if formset.is_valid():
+            formset.save()
+            # Substitua pela URL de sucesso desejada
+            return redirect('home')
+    else:
+        formset = ChecklistColetaFormSet(
+            queryset=TabChecklistColeta.objects.filter(id_coleta=coleta))
+
+    return render(request, 'checklist_coleta.html', {'formset': formset, 'coleta': coleta})

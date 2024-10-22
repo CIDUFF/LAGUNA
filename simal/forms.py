@@ -15,7 +15,8 @@ from .models import *
 class ColetaCampo(forms.Form):
     codigo_coleta = forms.CharField(widget=forms.HiddenInput())
     ponto = forms.CharField(widget=forms.HiddenInput())
-    hora_inicio = forms.TimeField(required=False, widget=forms.TimeInput(attrs={'type': 'time'}))
+    hora_inicio = forms.TimeField(
+        required=False, widget=forms.TimeInput(attrs={'type': 'time'}))
     hora_fim = forms.TimeField(widget=forms.HiddenInput())
     temperatura = forms.FloatField(
         required=False, label='Temperatura (°C)', widget=forms.NumberInput(attrs={'step': '0.1'})
@@ -67,7 +68,6 @@ class ColetaCampo(forms.Form):
     def __init__(self, *args, **kwargs):
         super(ColetaCampo, self).__init__(*args, **kwargs)
 
-
         campos = [
             'temperatura', 'ph', 'orp', 'condutividade', 'turbidez', 'od', 'tds', 'salinidade'
         ]
@@ -85,7 +85,8 @@ class ColetaCampo(forms.Form):
                 *[
                     Row(
                         Column(FloatingField(campos[i]), css_class='col-md-6'),
-                        Column(FloatingField(campos[i + 1]), css_class='col-md-6')
+                        Column(FloatingField(
+                            campos[i + 1]), css_class='col-md-6')
                     ) for i in range(0, len(campos), 2)
                 ],
                 Switch('check_amostras'),
@@ -96,7 +97,8 @@ class ColetaCampo(forms.Form):
                 Submit('submit', 'Salvar e ir para o próximo')
             )
         )
-        
+
+
 class MetadadosCampoForm(forms.ModelForm):
     class Meta:
         model = MetadadosCampo
@@ -138,7 +140,8 @@ class MetadadosCampoForm(forms.ModelForm):
                     Div('acesso_ponto', css_class='col-md-6'),
                     css_class='row'
                 ),
-                HTML('<p class="text-center"><strong>Pouco</strong> | <strong>Neutro</strong> | <strong>Muito</strong></p>'),
+                HTML(
+                    '<p class="text-center"><strong>Pouco</strong> | <strong>Neutro</strong> | <strong>Muito</strong></p>'),
                 Div(
                     Div('dragagem', css_class='col-md-6'),
                     Div('gigoga', css_class='col-md-6'),
@@ -155,12 +158,12 @@ class MetadadosCampoForm(forms.ModelForm):
             ),
             ButtonHolder(
                 Div(
-                    Submit('submit', 'Salvar e voltar para o formulário de coleta', css_class='btn btn-primary'),
+                    Submit('submit', 'Salvar e voltar para o formulário de coleta',
+                           css_class='btn btn-primary'),
                     css_class='d-flex justify-content-center flex-column'
                 )
             )
         )
-    
 
 
 class ProgramaColetaForm(forms.Form):
@@ -172,34 +175,35 @@ class ProgramaColetaForm(forms.Form):
     # solicitante = forms.ChoiceField(label='Solicitante')
     local_coleta = forms.ChoiceField(label='Local de coleta')
     prazo_previsao = forms.FloatField(
-        required=False, label='Prazo para verificar a previsão do tempo em dias', 
+        required=False, label='Prazo para verificar a previsão do tempo em dias',
         widget=forms.NumberInput(attrs={'step': '1'}), initial=10)
     prazo_lab = forms.FloatField(
-        required=False, label='Prazo para avisar ao laboratório em dias', 
+        required=False, label='Prazo para avisar ao laboratório em dias',
         widget=forms.NumberInput(attrs={'step': '1'}), initial=7)
     prazo_car = forms.FloatField(
-        required=False, label='Prazo para reservar carro em dias', 
+        required=False, label='Prazo para reservar carro em dias',
         widget=forms.NumberInput(attrs={'step': '1'}), initial=5)
     prazo_material = forms.FloatField(
-        required=False, label='Prazo para preparar o material em dias', 
+        required=False, label='Prazo para preparar o material em dias',
         widget=forms.NumberInput(attrs={'step': '1'}), initial=3)
     observacoes = forms.CharField(label='Observações',
                                   widget=forms.Textarea(attrs={'rows': 3, 'cols': 40}))
-    bentos = forms.BooleanField(label='Esta campanha possui análise de macrofauna bentônica?', required=False)
+    bentos = forms.BooleanField(
+        label='Esta campanha possui análise de macrofauna bentônica?', required=False)
 
     def __init__(self, *args, **kwargs):
         super(ProgramaColetaForm, self).__init__(*args, **kwargs)
         campo = [
             'data_coleta_campo',
             'equipe_coleta', 'local_coleta', 'prazo_previsao', 'prazo_lab', 'prazo_car', 'prazo_material',
-            'observacoes'	
+            'observacoes'
         ]
         self.helper = FormHelper()
         self.helper.layout = Layout(
             Fieldset(
                 ' ',
                 *[FloatingField(campo) for campo in campo],
-                Switch('bentos'),	
+                Switch('bentos'),
             ),
             ButtonHolder(
                 Submit('submit', 'Salvar')
@@ -210,7 +214,6 @@ class ProgramaColetaForm(forms.Form):
             valores_unicos = modelo.objects.values_list(
                 campo, flat=True).distinct()
             return [(valor, valor) for valor in valores_unicos]
-
 
         self.fields['local_coleta'].choices = gerar_opcoes_unicas(
             TabSetor, 'nome')
@@ -369,8 +372,6 @@ class IniciarCampanhaForm(forms.ModelForm):
         )
 
 
-
-
 class LaboratorioForm(forms.ModelForm):
     class Meta:
         model = Laboratorios
@@ -444,6 +445,7 @@ class CustomUserCreationForm(UserCreationForm):
             user.groups.set(self.cleaned_data['groups'])
         return user
 
+
 class LocaisForm(forms.ModelForm):
     class Meta:
         model = TabLocal
@@ -467,18 +469,19 @@ class LocaisForm(forms.ModelForm):
                 Submit('submit', 'Salvar', css_class='btn btn-primary')
             )
         )
-        
+
+
 class SetorForm(forms.ModelForm):
     class Meta:
         model = TabSetor
-        fields = ['nome', 'id_local', 'lat', 'lon','abreviatura']
+        fields = ['nome', 'id_local', 'lat', 'lon', 'abreviatura']
         labels = {
             'nome': 'Nome',
             'id_local': 'Local',
             'lat': 'Latitude',
             'lon': 'Longitude',
             'abreviatura': 'Abreviatura'
-            
+
         }
 
     def __init__(self, *args, **kwargs):
@@ -500,7 +503,7 @@ class SetorForm(forms.ModelForm):
                 Submit('submit', 'Salvar', css_class='btn btn-primary')
             )
         )
-        
+
 
 class PontoForm(forms.ModelForm):
     nome = forms.CharField(label='Código', max_length=100)
@@ -543,52 +546,61 @@ class PontoForm(forms.ModelForm):
                 Submit('submit', 'Salvar', css_class='btn btn-primary')
             )
         )
-        
+
+
 class ParametroForm(forms.ModelForm):
     class Meta:
         model = TabParam
         fields = '__all__'
-        
+
+
 class UnidadeMedidaForm(forms.ModelForm):
     class Meta:
         model = UnidadesMedida
         fields = '__all__'
-        
+
+
 class TipoParametroForm(forms.ModelForm):
     class Meta:
         model = TipoParametro
         fields = '__all__'
-        
+
 
 class TabFrascoForm(forms.ModelForm):
     class Meta:
         model = TabFrasco
         fields = '__all__'
-        
+
+
 class TabEquipeForm(forms.ModelForm):
     class Meta:
         model = TabEquipe
         fields = '__all__'
+
 
 class TabLaboratorioForm(forms.ModelForm):
     class Meta:
         model = TabLaboratorio
         fields = '__all__'
 
+
 class TabProdutoForm(forms.ModelForm):
     class Meta:
         model = TabProduto
         fields = '__all__'
+
 
 class TabProdxParamForm(forms.ModelForm):
     class Meta:
         model = TabProdxparam
         fields = '__all__'
 
+
 class TabSerieClassificacaoForm(forms.ModelForm):
     class Meta:
         model = TabSerieClassificacao
         fields = '__all__'
+
 
 class CadastroCampanhaForm(forms.Form):
     data_criacao_campanha = forms.DateField(
@@ -602,7 +614,7 @@ class CadastroCampanhaForm(forms.Form):
         widget=forms.Textarea(attrs={'rows': 3, 'cols': 40}),
         required=False
     )
-        
+
 
 class CadastroCampanhaForm(forms.ModelForm):
     data_criacao = forms.DateField(
@@ -618,13 +630,15 @@ class CadastroCampanhaForm(forms.ModelForm):
         self.helper.add_input(Submit('submit', 'Salvar'))
 
 # TODO: #176 Refatorar o código para que a campanha já venha preenchida automaticamente
+
+
 class CadastroColetaForm(forms.ModelForm):
     data = forms.DateField(
         widget=forms.DateInput(attrs={'type': 'date'}))
 
     class Meta:
         model = TabColeta
-        exclude = ['id','ordem_servico']
+        exclude = ['id', 'ordem_servico']
 
     def __init__(self, *args, **kwargs):
         super(CadastroColetaForm, self).__init__(*args, **kwargs)
@@ -651,3 +665,28 @@ class CadastroItemChecklistColetaForm(forms.ModelForm):
         return instance
 
 
+
+class ChecklistColetaForm(forms.ModelForm):
+    item_nome = forms.CharField(label='', required=False, widget=forms.TextInput(
+        attrs={'readonly': 'readonly'}))
+
+    class Meta:
+        model = TabChecklistColeta
+        fields = ['item_nome', 'status', 'observacao']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.pk:
+            self.fields['item_nome'].initial = self.instance.item.item
+        self.helper = FormHelper()
+        self.helper.form_method = 'post'
+        self.helper.layout = Layout(
+            Fieldset(
+                ' ',
+                Row(
+                    Column('item_nome', css_class='form-group col-md-4 mb-0'),
+                    Column('status', css_class='form-group col-md-2 mb-0'),
+                    Column('observacao', css_class='form-group col-md-6 mb-0'),
+                )
+            )
+        )

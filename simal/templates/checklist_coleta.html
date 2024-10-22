@@ -1,0 +1,15 @@
+{% extends 'base/base_site.html' %}
+{% load crispy_forms_tags %}
+{% block title %} Checklist de Coleta {% endblock %}
+{% block content %}
+<div class="card checklist">
+    <div class="card-header">
+        <h3 class="text-center mb-3">Checklist de Coleta</h3>
+    </div>
+    <form method="post">
+        {% csrf_token %}
+        {{ formset|crispy }}
+        <button type="submit" class="btn btn-primary">Salvar</button>
+    </form>
+</div>
+{% endblock %}
