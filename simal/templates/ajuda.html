@@ -5,8 +5,9 @@
 {% if user.is_authenticated %}
     <div class="container">
         <h1>Ajuda</h1>
-        <div class="card faq">
-            <h2 class="title-campanha">Perguntas Frequentes</h2>
+        <p>Preencha o formulário abaixo para obter ajuda</p>
+        {% comment %} <div class="card faq"> {% endcomment %}
+            {% comment %} <h2 class="title-campanha">Perguntas Frequentes</h2>
             <div class="faq-item">
                 <div class="card faq-question">Como faço para redefinir minha senha?</div>
                 <div class="faq-answer">
@@ -21,15 +22,14 @@
             <div class="faq-item">
                 <div class="card faq-question">Como entro em contato com o suporte?</div>
                 <div class="faq-answer">[Instruções para contato com o suporte]</div>
-            </div>
-        </div>
+            </div> {% endcomment %}
+        {% comment %} </div> {% endcomment %}
         <div class="card help-section">
             {% csrf_token %} {% crispy form %} 
         </div>
         <div class="footer">
             Suporte Técnico <br>
-            Telefone: (21) xxxxx-xxxx <br>
-            Email: suporte@exemplo.com
+            Email: cidlagoaviva@gmail.com
         </div>
     </div>
 
