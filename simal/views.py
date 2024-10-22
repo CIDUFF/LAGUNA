@@ -1194,10 +1194,6 @@ def cadastro_item_checklist_coleta(request):
 
     return render(request, 'cadastro_item_checklist_coleta.html', {'form': form, 'table': table})
 
-def checklist_coleta(request):
-
-    return render(request, 'checklist_coleta.html')
-
 
 def export_csv(request):
     with connection.cursor() as cursor:
@@ -1256,3 +1252,8 @@ def view_tab_medida_pivotada(request):
         'ponto_filter': ponto_filter
     }
     return render(request, 'view_tab_medida_pivotada.html', context)
+
+
+def checklist_coleta(request):
+
+    return render(request, 'checklist_coleta.html')

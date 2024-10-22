@@ -585,7 +585,7 @@ class TabColeta(models.Model):
         
 
     class Meta:
-        managed = True
+        managed = False
         db_table = 'tab_coleta'
 
 
@@ -819,3 +819,9 @@ class TabChecklistColeta(models.Model):
     id_coleta = models.ForeignKey(
         TabColeta, on_delete=models.CASCADE, related_name='coleta')
     observacao = models.TextField('Observação', max_length=500, blank=True)
+    
+    def __str__(self):
+        return f'{self.item}'
+    
+    class Meta:
+        db_table = 'tab_checklist_coleta'
