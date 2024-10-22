@@ -1069,6 +1069,11 @@ def configuracoes_view(request):
             if serie_classificacao_form.is_valid():
                 serie_classificacao_form.save()
                 messages.success(request, 'Série de Classificação salva com sucesso.')
+        elif 'item_checklist_submit' in request.POST:
+            item_checklist_form = CadastroItemChecklistColetaForm(request.POST, label_suffix='item_checklist')
+            if item_checklist_form.is_valid():
+                item_checklist_form.save(user=request.user)
+                messages.success(request, 'Item de checklist cadastrado com sucesso.')
 
         return redirect('configuracoes')
     else:
@@ -1079,6 +1084,7 @@ def configuracoes_view(request):
         produto_form = TabProdutoForm()
         prodxparam_form = TabProdxParamForm()
         serie_classificacao_form = TabSerieClassificacaoForm()
+        item_checklist_form = CadastroItemChecklistColetaForm()
 
     # Instanciar as tabelas
     table_parametro = ParametroTable(TabParam.objects.all())
@@ -1088,6 +1094,8 @@ def configuracoes_view(request):
     table_produto = ProdutoTable(TabProduto.objects.all())
     table_prodxparam = ProdxparamTable(TabProdxparam.objects.all())
     table_serie_classificacao = SerieClassificacaoTable(TabSerieClassificacao.objects.all())
+    table_item_checklist = TipoItemChecklistColetaTable(TabItemChecklistColeta.objects.all())
+
 
     # Configurar a paginação das tabelas
     RequestConfig(request, paginate={"per_page": 25}).configure(table_parametro)
@@ -1097,6 +1105,7 @@ def configuracoes_view(request):
     RequestConfig(request, paginate={"per_page": 25}).configure(table_produto)
     RequestConfig(request, paginate={"per_page": 25}).configure(table_prodxparam)
     RequestConfig(request, paginate={"per_page": 25}).configure(table_serie_classificacao)
+    RequestConfig(request).configure(table_item_checklist)
 
     # Renderizar o template com os formulários e tabelas
     return render(request, 'configuracoes.html', {
@@ -1107,13 +1116,15 @@ def configuracoes_view(request):
         'produto_form': produto_form,
         'prodxparam_form': prodxparam_form,
         'serie_classificacao_form': serie_classificacao_form,
+        'item_checklist_form': item_checklist_form,
         'table_parametro': table_parametro,
         'table_frasco': table_frasco,
         'table_equipe': table_equipe,
         'table_laboratorio': table_laboratorio,
         'table_produto': table_produto,
         'table_prodxparam': table_prodxparam,
-        'table_serie_classificacao': table_serie_classificacao
+        'table_serie_classificacao': table_serie_classificacao,
+        'table_item_checklist': table_item_checklist
     })
 
 @login_required
@@ -1126,6 +1137,7 @@ def editar_registro(request, tabela, pk):
         'produto': (TabProduto, TabProdutoForm),
         'prodxparam': (TabProdxparam, TabProdxParamForm),
         'serie_classificacao': (TabSerieClassificacao, TabSerieClassificacaoForm),
+        'item_checklist': (TabItemChecklistColeta, CadastroItemChecklistColetaForm),
     }
 
     if tabela not in model_map:
