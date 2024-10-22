@@ -298,14 +298,15 @@ class SerieClassificacaoTable(tables.Table):
         fields = ('nome',)
         
 class TipoItemChecklistColetaTable(tables.Table):
-    # update = tables.LinkColumn('atualizar_tipo_item_checklist_coleta', args=[A('pk')], orderable=False, empty_values=[], text='EDITAR')
+    update = tables.LinkColumn('editar_registro', args=['item_checklist', A('pk')], orderable=False, empty_values=[], text='EDITAR')
 
     class Meta:
         model = TabItemChecklistColeta
         template_name = 'django_tables2/bootstrap5-responsive.html'
-        exclude = ['id', 'data_cadastro']
-        empty_text = 'Não há dados para exibir'
-        orderable = True
-        per_page = 10
-        paginator_class = tables.LazyPaginator
-        table_pagination = True
+        fields = ('item',)
+        # exclude = ['id', 'data_cadastro']
+        # empty_text = 'Não há dados para exibir'
+        # orderable = True
+        # per_page = 10
+        # paginator_class = tables.LazyPaginator
+        # table_pagination = True
