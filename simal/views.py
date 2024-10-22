@@ -1,6 +1,8 @@
 # pylint: disable=protected-access,no-member
 # Django imports
 from django.contrib import messages
+from django.core.paginator import Paginator
+from django.db.models import F
 from datetime import timedelta
 import csv
 import pandas as pd
@@ -1076,13 +1078,42 @@ def export_csv(request):
 
 
 def view_tab_medida_pivotada(request):
+    # Campo padrão para ordenar
+    order_by = request.GET.get('order_by', 'campanha')
+    # Direção padrão para ordenar
+    direction = request.GET.get('direction', 'asc')
+
+    # Filtros de campanha e ponto
+    campanha_filter = request.GET.get('campanha', '')
+    ponto_filter = request.GET.get('ponto', '')
+
+    # Construir a cláusula WHERE corretamente
+    where_clauses = []
+    if campanha_filter:
+        where_clauses.append(f"campanha = '{campanha_filter}'")
+    if ponto_filter:
+        where_clauses.append(f"ponto = '{ponto_filter}'")
+    where_clause = ' AND '.join(where_clauses) if where_clauses else '1=1'
+
+    # Construir a cláusula ORDER BY corretamente
+    order_clause = f'"{order_by}" {direction.upper()}'
+
     with connection.cursor() as cursor:
-        cursor.execute("SELECT * FROM tab_medida_pivotada")
+        cursor.execute(
+            f'SELECT * FROM tab_medida_pivotada WHERE {where_clause} ORDER BY {order_clause}')
         rows = cursor.fetchall()
         columns = [col[0] for col in cursor.description]
 
+    paginator = Paginator(rows, 20)  # Limitar a 20 resultados por página
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     context = {
         'columns': columns,
-        'rows': rows
+        'page_obj': page_obj,
+        'order_by': order_by,
+        'direction': direction,
+        'campanha_filter': campanha_filter,
+        'ponto_filter': ponto_filter
     }
     return render(request, 'view_tab_medida_pivotada.html', context)
