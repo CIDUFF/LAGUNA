@@ -1206,17 +1206,22 @@ def view_tab_medida_pivotada(request):
     # Direção padrão para ordenar
     direction = request.GET.get('direction', 'asc')
 
-    # Filtros de campanha e ponto
+    # Filtros de campanha, ponto e setor
     campanha_filter = request.GET.get('campanha', '')
     ponto_filter = request.GET.get('ponto', '')
-
+    setor_filter = request.GET.get('setor', '')
+    
     # Construir a cláusula WHERE corretamente
     where_clauses = []
     if campanha_filter:
         where_clauses.append(f"campanha = '{campanha_filter}'")
+    if setor_filter:
+        where_clauses.append(f"setor = '{setor_filter}'")
     if ponto_filter:
         where_clauses.append(f"ponto = '{ponto_filter}'")
+
     where_clause = ' AND '.join(where_clauses) if where_clauses else '1=1'
+
 
     # Construir a cláusula ORDER BY corretamente
     order_clause = f'"{order_by}" {direction.upper()}'
@@ -1237,7 +1242,8 @@ def view_tab_medida_pivotada(request):
         'order_by': order_by,
         'direction': direction,
         'campanha_filter': campanha_filter,
-        'ponto_filter': ponto_filter
+        'ponto_filter': ponto_filter,
+        'setor_filter': setor_filter,
     }
     return render(request, 'view_tab_medida_pivotada.html', context)
 

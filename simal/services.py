@@ -153,7 +153,7 @@ def gerar_etiquetas(codigos, data, responsavel, codigo_servico):
 
         for codigo in codigos:
             for i in range(1, 4):
-                codigo_modificado = f"{codigo}-{i}"
+                codigo_modificado = f"{codigo}{i}"
                 try:
                     qr_path = gerar_qr_code(
                         codigo_modificado, data, responsavel, codigo_servico)
