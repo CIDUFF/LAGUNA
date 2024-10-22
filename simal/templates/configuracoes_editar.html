@@ -9,7 +9,7 @@
     <div class="card-body">
         <form method="post">
             {% csrf_token %}
-            {% bootstrap_form form layout='floating' %}
+            {% bootstrap_form form layout='floating' %} 
             <button type="submit" class="btn btn-primary">Salvar</button>
             <a href="{% url 'configuracoes' %}" class="btn btn-secondary">Cancelar</a>
         </form>

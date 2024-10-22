@@ -886,7 +886,7 @@ class TabChecklistColeta(models.Model):
     item = models.ForeignKey(
         TabItemChecklistColeta, on_delete=models.CASCADE, related_name='itens')
     id_coleta = models.ForeignKey(
-        TabColeta, on_delete=models.CASCADE, related_name='coleta')
+        'TabColeta', on_delete=models.CASCADE, related_name='coleta')
     status = models.BooleanField('Feito?', default=False)
     observacao = models.CharField('Observação', max_length=500, blank=True)
     
