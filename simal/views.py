@@ -96,6 +96,10 @@ def home(request):
                 '%d/%m/%Y')
             weather_description = get_weather_description(
                 "Maricá", proxima_coleta.data_coleta_campo.strftime('%Y-%m-%d'))
+            weather_description_day_before = get_weather_description(
+                "Maricá", (proxima_coleta.data_coleta_campo - timedelta(days=1)).strftime('%Y-%m-%d'))
+            weather_description_two_days_before = get_weather_description(
+                "Maricá", (proxima_coleta.data_coleta_campo - timedelta(days=2)).strftime('%Y-%m-%d'))
 
             checklist = ChecklistCampo.objects.filter(
                 ordem_servico=proxima_coleta).first()
@@ -219,7 +223,12 @@ def home(request):
             eventos.append(evento)
 
         context = {
+            'data_coleta_proxima_formatada': data_coleta_proxima_formatada,
+            'data_coleta_formatada_menos_um': (timezone.now() - timedelta(days=1)).strftime('%d/%m/%Y'),
+            'data_coleta_formatada_menos_dois': (timezone.now() - timedelta(days=2)).strftime('%d/%m/%Y'),
             'weather_description': weather_description,
+            'weather_description_day_before': weather_description_day_before,
+            'weather_description_two_days_before': weather_description_two_days_before,
             'data_coleta_proxima_formatada': data_coleta_proxima_formatada,
             'status_coleta': proxima_coleta.status_coleta if proxima_coleta else None,
             'local_coleta': proxima_coleta.local_coleta if proxima_coleta else None,
