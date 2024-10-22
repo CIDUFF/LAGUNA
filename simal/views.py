@@ -695,40 +695,35 @@ Raises:
 
 
 def etiquetagem(request, ordem_servico=None):
-    try:
-        ordem_servico = request.GET.get('ordem_servico', ordem_servico)
-        campanha = None
-        if ordem_servico:
-            campanha = get_object_or_404(
-                ProgramaColeta, ordem_servico=ordem_servico)
+    ordem_servico = request.GET.get('ordem_servico', ordem_servico)
+    campanha = None
+    if ordem_servico:
+        campanha = get_object_or_404(
+            ProgramaColeta, ordem_servico=ordem_servico)
 
-            data = campanha.data_coleta_campo.strftime('%d/%m/%Y')
-            responsavel = campanha.usuario
-            codigo_servico = campanha.ordem_servico
-            codigos = Campo.objects.filter(
-                ordem_servico=campanha).values_list('codigo_coleta', flat=True)
+        data = campanha.data_coleta_campo.strftime('%d/%m/%Y')
+        responsavel = campanha.usuario
+        codigo_servico = campanha.ordem_servico
+        codigos = Campo.objects.filter(
+            ordem_servico=campanha).values_list('codigo_coleta', flat=True)
 
-            if not codigos:
-                messages.warning(
-                    request, 'Nenhum código de coleta encontrado para a ordem de serviço fornecida.')
-                return redirect('checklist_campanha', ordem_servico=ordem_servico)
+        if not codigos:
+            messages.warning(
+                request, 'Nenhum código de coleta encontrado para a ordem de serviço fornecida.')
+            return redirect('checklist_campanha', ordem_servico=ordem_servico)
 
-            pdf_path = gerar_etiquetas(
-                codigos, data, responsavel, codigo_servico)
+        pdf_path = gerar_etiquetas(codigos, data, responsavel, codigo_servico)
 
-            # Retorna o PDF como uma resposta HTTP
-            response = FileResponse(
-                open(pdf_path, 'rb'), as_attachment=True, filename=os.path.basename(pdf_path))
+        # Retorna o PDF como uma resposta HTTP
+        response = FileResponse(
+            open(pdf_path, 'rb'), as_attachment=True, filename=os.path.basename(pdf_path))
 
-            # Apaga o arquivo PDF após o download
-            os.remove(pdf_path)
+        # Apaga o arquivo PDF após o download
+        os.remove(pdf_path)
 
-            return response
+        return response
 
-        return redirect('checklist_campanha', ordem_servico=ordem_servico)
-    except Exception as e:
-        messages.error(request, f'Ocorreu um erro: {str(e)}')
-        return redirect('checklist_campanha', ordem_servico=ordem_servico)
+    return redirect('checklist_campanha', ordem_servico=ordem_servico)
 
 
 @login_required
