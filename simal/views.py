@@ -13,7 +13,7 @@ from django.forms import modelformset_factory
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.cache import cache
 from django.http import HttpResponse, FileResponse
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import get_object_or_404, get_list_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
 from django.core.exceptions import ObjectDoesNotExist
@@ -1263,6 +1263,7 @@ def checklist_coleta(request, coleta_id):
     ChecklistColetaFormSet = modelformset_factory(
         TabChecklistColeta, form=ChecklistColetaForm, extra=0)
     coleta = get_object_or_404(TabColeta, id=coleta_id)
+    campanha = coleta.id_campanha
     if request.method == 'POST':
         formset = ChecklistColetaFormSet(
             request.POST, queryset=TabChecklistColeta.objects.filter(id_coleta=coleta))
@@ -1274,4 +1275,38 @@ def checklist_coleta(request, coleta_id):
         formset = ChecklistColetaFormSet(
             queryset=TabChecklistColeta.objects.filter(id_coleta=coleta))
 
-    return render(request, 'checklist_coleta.html', {'formset': formset, 'coleta': coleta})
+    return render(request, 'checklist_coleta.html', {'formset': formset, 'coleta': coleta, 'campanha': campanha})
+
+
+@login_required
+def fill_amostra(request, coleta_id):
+    coleta = get_object_or_404(TabColeta, id=coleta_id)
+    frascos = TabFrasco.objects.all()
+    pontos_coleta = TabPonto.objects.filter(id_setor=coleta.id_setor)
+    for frasco in frascos:
+        for ponto in pontos_coleta:
+            amostra = TabAmostraCopy.objects.create(
+                id_coleta=coleta,
+                id_frasco=frasco,
+                id_ponto=ponto,
+            )
+            amostra.save()
+            envio = TabEnvioCopy.objects.create(
+                id_amostra=amostra,
+            )
+            envio.save()
+    return redirect('home')
+
+@login_required
+def fill_campo_medida(request, coleta_id):
+
+    id_frasco = 1
+    coleta = get_object_or_404(TabColeta, id=coleta_id)
+    pontos_coleta = get_list_or_404(TabPonto, id_setor=coleta.id_setor)
+    amostras = get_object_or_404(TabAmostraCopy, id_coleta=coleta_id, id_frasco=1)
+    envio = get_list_or_404(TabEnvioCopy, id_amostra__id_coleta=coleta_id)
+    return redirect('home')
+
+            
+
+

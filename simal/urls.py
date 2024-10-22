@@ -76,5 +76,7 @@ urlpatterns = [
     path('tab_medida_pivotada/', views.view_tab_medida_pivotada,
          name='view_tab_medida_pivotada'),
     path('export_csv/', views.export_csv, name='export_csv'),
+    path('fill_amostra/<int:coleta_id>/',
+         views.fill_amostra, name='fill_amostra'),
 
 ]
