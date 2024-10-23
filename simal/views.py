@@ -1,6 +1,8 @@
 # pylint: disable=protected-access,no-member
 # Django imports
 from django.contrib import messages
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth import update_session_auth_hash
 from django.core.paginator import Paginator
 from django.db.models import F
 from datetime import timedelta
@@ -1132,6 +1134,40 @@ def editar_registro(request, tabela, pk):
 def direcionamento_campanha(request):
     return render(request, 'direcionamento_campanha.html')
 
+
+@login_required
+def perfil_usuario(request):
+    usuario = request.user
+    try:
+        detalhes_usuario = DetalhesUsuario.objects.get(usuario=usuario)
+    except DetalhesUsuario.DoesNotExist:
+        detalhes_usuario = DetalhesUsuario(usuario=usuario)
+
+    if request.method == 'POST':
+        detalhes_form = DetalhesUsuarioForm(
+            request.POST, instance=detalhes_usuario)
+        senha_form = PasswordChangeForm(user=usuario, data=request.POST)
+
+        if detalhes_form.is_valid():
+            detalhes_form.save()
+            messages.success(
+                request, 'Detalhes do perfil atualizados com sucesso.')
+
+        if senha_form.is_valid():
+            user = senha_form.save()
+            update_session_auth_hash(request, user)
+            messages.success(request, 'Senha alterada com sucesso.')
+            return redirect('perfil_usuario')
+    else:
+        detalhes_form = DetalhesUsuarioForm(instance=detalhes_usuario)
+        senha_form = PasswordChangeForm(user=usuario)
+
+    return render(request, 'perfil_usuario.html', {
+        'detalhes_form': detalhes_form,
+        'senha_form': senha_form
+    })
+
+
 @login_required
 def cadastro_campanha(request):
     if request.method == 'POST':
@@ -1366,3 +1402,6 @@ def input_fisico_quimico(request, coleta_id, ponto_id):
             id_envio__id_amostra__id_coleta=coleta_id, id_envio__id_amostra__id_ponto=ponto_id))
 
     return render(request, 'input_fisico_quimico.html', {'formset': formset, 'coleta': coleta, 'ponto': ponto})
+
+
+

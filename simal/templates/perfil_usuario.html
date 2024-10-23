@@ -1,0 +1,24 @@
+{% extends 'base/base_site.html' %}
+{% load django_bootstrap5 %}
+{% block title %} Perfil do Usuário {% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center">Perfil do Usuário</h1>
+    <div class="card">
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                <h4>Detalhes do Usuário</h4>
+                <div class="mb-3">
+                    <label for="id_username" class="form-label">Nome de Usuário</label>
+                    <input type="text" class="form-control" id="id_username" value="{{ user.username }}" readonly>
+                </div>
+                {% bootstrap_form detalhes_form layout='floating' %}
+                <h4>Alterar Senha</h4>
+                {% bootstrap_form senha_form layout='floating' %}
+                <button type="submit" class="btn btn-primary">Salvar</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

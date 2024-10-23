@@ -701,3 +701,13 @@ class InputFisicoQuimicoForm(forms.ModelForm):
         super(InputFisicoQuimicoForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.add_input(Submit('submit', 'Salvar'))
+
+
+class DetalhesUsuarioForm(forms.ModelForm):
+    class Meta:
+        model = DetalhesUsuario
+        fields = ['telefone', 'endereco', 'cpf']  # Remova 'usuario' daqui
+
+    def __init__(self, *args, **kwargs):
+        super(DetalhesUsuarioForm, self).__init__(*args, **kwargs)
+        # Remova a linha que desabilita o campo 'usuario'

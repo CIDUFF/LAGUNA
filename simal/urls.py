@@ -82,5 +82,6 @@ urlpatterns = [
          views.fill_campo_medida, name='fill_campo_medida'),
     path('input_fisico_quimico/<int:coleta_id>/<int:ponto_id>/',
          views.input_fisico_quimico, name='input_fisico_quimico'),
+    path('perfil/', views.perfil_usuario, name='perfil_usuario'),
 
 ]
