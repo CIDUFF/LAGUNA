@@ -1,6 +1,8 @@
 # pylint: disable=protected-access,no-member
 # Django imports
 from django.contrib import messages
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth import update_session_auth_hash
 from django.core.paginator import Paginator
 from django.db.models import F
 from datetime import timedelta
@@ -1144,6 +1146,40 @@ def editar_registro(request, tabela, pk):
 def direcionamento_campanha(request):
     return render(request, 'direcionamento_campanha.html')
 
+
+@login_required
+def perfil_usuario(request):
+    usuario = request.user
+    try:
+        detalhes_usuario = DetalhesUsuario.objects.get(usuario=usuario)
+    except DetalhesUsuario.DoesNotExist:
+        detalhes_usuario = DetalhesUsuario(usuario=usuario)
+
+    if request.method == 'POST':
+        detalhes_form = DetalhesUsuarioForm(
+            request.POST, instance=detalhes_usuario)
+        senha_form = PasswordChangeForm(user=usuario, data=request.POST)
+
+        if detalhes_form.is_valid():
+            detalhes_form.save()
+            messages.success(
+                request, 'Detalhes do perfil atualizados com sucesso.')
+
+        if senha_form.is_valid():
+            user = senha_form.save()
+            update_session_auth_hash(request, user)
+            messages.success(request, 'Senha alterada com sucesso.')
+            return redirect('perfil_usuario')
+    else:
+        detalhes_form = DetalhesUsuarioForm(instance=detalhes_usuario)
+        senha_form = PasswordChangeForm(user=usuario)
+
+    return render(request, 'perfil_usuario.html', {
+        'detalhes_form': detalhes_form,
+        'senha_form': senha_form
+    })
+
+
 @login_required
 def cadastro_campanha(request):
     if request.method == 'POST':
@@ -1259,8 +1295,24 @@ def view_tab_medida_pivotada(request):
     }
     return render(request, 'view_tab_medida_pivotada.html', context)
 
+
 @login_required
 def checklist_coleta(request, coleta_id):
+    """
+    Gera e processa um formulário de checklist para uma coleta específica.
+
+    Esta função cria um conjunto de formulários (formset) para o modelo TabChecklistColeta,
+    filtrando os itens pelo ID da coleta fornecido. Se a solicitação for um POST, o formset
+    é preenchido com os dados enviados e, se válido, salva os dados no banco de dados.
+    Caso contrário, um formset vazio é gerado para exibição.
+
+    Parâmetros:
+    request (HttpRequest): O objeto de solicitação HTTP.
+    coleta_id (int): O ID da coleta para a qual o checklist será gerado.
+
+    Retorna:
+    HttpResponse: Renderiza a página 'checklist_coleta.html' com o formset, coleta e campanha.
+    """
     ChecklistColetaFormSet = modelformset_factory(
         TabChecklistColeta, form=ChecklistColetaForm, extra=0)
     coleta = get_object_or_404(TabColeta, id=coleta_id)
@@ -1278,9 +1330,24 @@ def checklist_coleta(request, coleta_id):
 
     return render(request, 'checklist_coleta.html', {'formset': formset, 'coleta': coleta, 'campanha': campanha})
 
+#TODO #208 Criar página de acompanhamento da coleta com detalhes da coleta, amostras, envios e medidas
 
 @login_required
 def fill_amostra(request, coleta_id):
+    """
+    Preenche as amostras e envios para uma coleta específica.
+
+    Esta função obtém a coleta com base no ID fornecido, recupera todos os frascos e pontos de coleta
+    associados ao setor da coleta, e cria instâncias de TabAmostraCopy e TabEnvioCopy para cada combinação
+    de frasco e ponto de coleta. As instâncias são salvas no banco de dados.
+
+    Parâmetros:
+    request (HttpRequest): O objeto de solicitação HTTP.
+    coleta_id (int): O ID da coleta para a qual as amostras e envios serão preenchidos.
+
+    Retorna:
+    HttpResponseRedirect: Redireciona para a página inicial após a conclusão do preenchimento das amostras e envios.
+    """
     coleta = get_object_or_404(TabColeta, id=coleta_id)
     frascos = TabFrasco.objects.all()
     pontos_coleta = TabPonto.objects.filter(id_setor=coleta.id_setor)
@@ -1298,16 +1365,55 @@ def fill_amostra(request, coleta_id):
             envio.save()
     return redirect('home')
 
+
 @login_required
 def fill_campo_medida(request, coleta_id):
+    """
+    Preenche o campo de medida para uma coleta específica.
 
-    id_frasco = 1
-    coleta = get_object_or_404(TabColeta, id=coleta_id)
-    pontos_coleta = get_list_or_404(TabPonto, id_setor=coleta.id_setor)
-    amostras = get_object_or_404(TabAmostraCopy, id_coleta=coleta_id, id_frasco=1)
-    envio = get_list_or_404(TabEnvioCopy, id_amostra__id_coleta=coleta_id)
+    Esta função filtra os envios e parâmetros com base no ID da coleta e no ID do frasco,
+    cria instâncias de TabMedida para cada combinação de envio e parâmetro, e as salva no banco de dados.
+
+    Parâmetros:
+    request (HttpRequest): O objeto de solicitação HTTP.
+    coleta_id (int): O ID da coleta para a qual os campos de medida serão preenchidos.
+
+    Retorna:
+    HttpResponseRedirect: Redireciona para a página inicial após a conclusão do preenchimento dos campos de medida.
+    """
+    envios = TabEnvioCopy.objects.filter(id_amostra__id_coleta=coleta_id, id_amostra__id_frasco=1)
+    parametros = TabProdxparam.objects.filter(id_frasco=1)
+
+    for envio in envios:
+        for parametro in parametros:
+            campo = TabMedidaCopy.objects.create(
+                id_envio=envio,
+                id_pp=parametro,
+            )
+            campo.save()
+
     return redirect('home')
 
-            
+
+@login_required
+def input_fisico_quimico(request, coleta_id, ponto_id):
+    MedidaFormSet = modelformset_factory(
+        TabMedidaCopy, form=InputFisicoQuimicoForm, extra=0, fields='__all__'
+    )
+    coleta = get_object_or_404(TabColeta, id=coleta_id)
+    ponto = get_object_or_404(TabPonto, id=ponto_id)
+
+    if request.method == 'POST':
+        formset = MedidaFormSet(request.POST, queryset=TabMedidaCopy.objects.filter(
+            id_envio__id_amostra__id_coleta=coleta_id, id_envio__id_amostra__id_ponto=ponto_id))
+        if formset.is_valid():
+            formset.save()
+            return redirect('home')
+    else:
+        formset = MedidaFormSet(queryset=TabMedidaCopy.objects.filter(
+            id_envio__id_amostra__id_coleta=coleta_id, id_envio__id_amostra__id_ponto=ponto_id))
+
+    return render(request, 'input_fisico_quimico.html', {'formset': formset, 'coleta': coleta, 'ponto': ponto})
+
 
 

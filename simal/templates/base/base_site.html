@@ -148,10 +148,12 @@
                 </a>
               </li>
               <li class="sidebar-item">
-                <a href="{%url 'usuarios_cadastrados'%}" class="sidebar-link">
-                  <i class="bi bi-person-lines-fill"></i>
-                  <span>Controle de Usuário</span>
-                </a>
+                  {% if request.user.is_superuser %}
+                      <a href="{% url 'usuarios_cadastrados' %}" class="sidebar-link">
+                          <i class="bi bi-person-lines-fill"></i>
+                          <span>Controle de Usuário</span>
+                      </a>
+                  {% endif %}
               </li>
               <li class="sidebar-item">
                 <a href="{% url 'ajuda' %}" class="sidebar-link">
@@ -168,18 +170,24 @@
             </div>
             <div class="authentication">
               <li class="sidebar-item">
-                <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse" data-bs-target="#authentication" aria-expanded="false" aria-controls="authentication">
-                  <i class="lni lni-user"></i>
-                  <span>Olá, {{ user.username }}</span>
-                </a>
-                <ul id="authentication" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
-                  <li class="sidebar-item">
-                    <a href="{% url 'account_logout' %}" class="sidebar-link">
-                      <i class="lni lni-exit"></i>
-                      <span>Logout</span>
-                    </a>
-                  </li>
-                </ul>
+                  <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse" data-bs-target="#authentication" aria-expanded="false" aria-controls="authentication">
+                      <i class="lni lni-user"></i>
+                      <span>Olá, {{ user.username }}</span>
+                  </a>
+                  <ul id="authentication" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
+                      <li class="sidebar-item">
+                          <a href="{% url 'perfil_usuario' %}" class="sidebar-link">
+                              <i class="bi bi-person"></i>
+                              <span>Perfil</span>
+                          </a>
+                      </li>
+                      <li class="sidebar-item">
+                          <a href="{% url 'account_logout' %}" class="sidebar-link">
+                              <i class="lni lni-exit"></i>
+                              <span>Logout</span>
+                          </a>
+                      </li>
+                  </ul>
               </li>
             </div>
               {% else %}
