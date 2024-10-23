@@ -653,20 +653,20 @@ class TabEnvioCopy(models.Model):
         
 
 class TabMedidaCopy(models.Model):
-    id = models.BigAutoField(primary_key=True)
     id_envio = models.ForeignKey(
         TabEnvioCopy, models.DO_NOTHING, db_column='id_envio', blank=True, null=True)
     id_pp = models.ForeignKey(
         'TabProdxparam', models.DO_NOTHING, db_column='id_pp', blank=True, null=True)
+    input_valor = models.CharField(blank=True, null=True)
     valor = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return f'{self.valor}'
 
     class Meta:
-        managed = False
-        db_table = 'tab_medida'
-        
+        managed = True
+        db_table = 'tab_medida_copy'
+
 
 
 class TabEnvio(models.Model):

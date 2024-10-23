@@ -78,5 +78,9 @@ urlpatterns = [
     path('export_csv/', views.export_csv, name='export_csv'),
     path('fill_amostra/<int:coleta_id>/',
          views.fill_amostra, name='fill_amostra'),
+    path('fill_campo_medida/<int:coleta_id>/',
+         views.fill_campo_medida, name='fill_campo_medida'),
+    path('input_fisico_quimico/<int:coleta_id>/<int:ponto_id>/',
+         views.input_fisico_quimico, name='input_fisico_quimico'),
 
 ]
