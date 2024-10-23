@@ -95,12 +95,16 @@
                 </ul>
               </li> {% endcomment %}
               
-              <li class="sidebar-item">
-                <a href="{% url 'direcionamento_campanha' %}" class="sidebar-link">
-                    <i class="bi bi-pencil-square"></i>
-                    <span>Cadastro de campanha</span>
-                </a>
-              </li>
+              {% if request.user.is_superuser %}
+                <li class="sidebar-item">
+                    <a href="{% url 'direcionamento_campanha' %}" class="sidebar-link">
+                      <i class="bi bi-pencil-square"></i>
+                      <span>Cadastro de campanha</span>
+                    </a>
+                </li>
+              {% endif %}
+                
+
               <li class="sidebar-item">
                 <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse" data-bs-target="#cadastro" aria-expanded="false" aria-controls="cadastro">
                   <i class="bi bi-geo-alt-fill"></i>
