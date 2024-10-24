@@ -463,6 +463,7 @@ def atualizar_programacao(request, id):
 
 
 @login_required
+@user_passes_test(is_superuser, login_url='coletas_agendas')
 def deletar_programacao(request, id):
     """
     Deleta a programação de coleta com base no ID fornecido.
@@ -479,6 +480,11 @@ def deletar_programacao(request, id):
         Http404: Se a programação de coleta com o ID fornecido não existir.
 
     """
+    if not request.user.is_superuser:
+        messages.warning(
+            request, 'Você não tem permissão para executar esta ação.')
+        return redirect('coletas_agendas')
+
     programacao = get_object_or_404(ProgramaColeta, id=id)
     programacao.delete()
     messages.success(request, 'Programação de coleta deletada com sucesso!')
