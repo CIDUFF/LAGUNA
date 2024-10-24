@@ -42,6 +42,10 @@ def check_admin(user):
     return user.is_superuser
 
 
+def is_superuser(user):
+    return user.is_superuser
+
+
 @login_required
 @user_passes_test(check_admin)
 def cadastro_usuarios(request):
@@ -1166,6 +1170,34 @@ def perfil_usuario(request):
         'detalhes_form': detalhes_form,
         'senha_form': senha_form
     })
+    
+    
+
+@login_required
+@user_passes_test(is_superuser)
+def cadastro_usuarios_adm(request):
+    if request.method == 'POST':
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            # Define uma senha não utilizável até que o usuário a redefina
+            user.set_unusable_password()
+            user.save()
+
+            # Enviar e-mail de boas-vindas
+            subject = 'Bem-vindo ao sistema LAGUNA'
+            message = f"Olá {user.username},\n\nVocê foi cadastrado no sistema LAGUNA. Por favor, clique no link abaixo para definir sua senha e completar seu cadastro:\n\n{settings.SITE_URL}/account/password/reset/"
+            recipient_list = [user.email]
+            send_mail(subject, message,
+                      settings.EMAIL_HOST_USER, recipient_list)
+
+            messages.success(
+                request, 'Usuário cadastrado com sucesso e e-mail de boas-vindas enviado.')
+            return redirect('usuarios_cadastrados')
+    else:
+        form = CustomUserCreationForm()
+
+    return render(request, 'cadastro_usuarios_adm.html', {'form': form})
 
 
 @login_required

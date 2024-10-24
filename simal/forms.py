@@ -711,3 +711,26 @@ class DetalhesUsuarioForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(DetalhesUsuarioForm, self).__init__(*args, **kwargs)
         # Remova a linha que desabilita o campo 'usuario'
+
+
+class CustomUserCreationForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['username', 'email']
+
+    def __init__(self, *args, **kwargs):
+        super(CustomUserCreationForm, self).__init__(*args, **kwargs)
+        self.fields['username'].label = "Nome de Usuário"
+        self.fields['email'].label = "E-mail"
+
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        if User.objects.filter(username=username).exists():
+            raise forms.ValidationError("Este nome de usuário já está em uso.")
+        return username
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if User.objects.filter(email=email).exists():
+            raise forms.ValidationError("Este e-mail já está em uso.")
+        return email
