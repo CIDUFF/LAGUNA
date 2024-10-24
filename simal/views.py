@@ -1186,7 +1186,7 @@ def cadastro_usuarios_adm(request):
 
             # Enviar e-mail de boas-vindas
             subject = 'Bem-vindo ao sistema LAGUNA'
-            message = f"Olá {user.username},\n\nVocê foi cadastrado no sistema LAGUNA. Por favor, clique no link abaixo para definir sua senha e completar seu cadastro:\n\n{settings.SITE_URL}/account/password/reset/"
+            message = f"Olá {user.username},\n\nVocê foi cadastrado no sistema LAGUNA. Por favor, clique no link abaixo para definir sua senha e completar seu cadastro:\n\n{settings.SITE_URL}/accounts/password/reset/"
             recipient_list = [user.email]
             send_mail(subject, message,
                       settings.EMAIL_HOST_USER, recipient_list)
