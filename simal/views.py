@@ -25,6 +25,7 @@ import json
 import os
 import logging
 from django.db import connection
+from django.core.exceptions import PermissionDenied
 
 
 from django_tables2 import RequestConfig
@@ -478,12 +479,13 @@ def deletar_programacao(request, id):
 
     Raises:
         Http404: Se a programação de coleta com o ID fornecido não existir.
+        PermissionDenied: Se o usuário não for um superusuário.
 
     """
     if not request.user.is_superuser:
         messages.warning(
             request, 'Você não tem permissão para executar esta ação.')
-        return redirect('coletas_agendas')
+        raise PermissionDenied
 
     programacao = get_object_or_404(ProgramaColeta, id=id)
     programacao.delete()
