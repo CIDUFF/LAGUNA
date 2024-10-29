@@ -95,6 +95,12 @@ def home(request):
         RequestConfig(request, paginate={"per_page": 3}).configure(table)
 
         percentual_checklist = None
+        data_coleta_proxima_formatada = None
+        weather_description = None
+        weather_description_day_before = None
+        weather_description_two_days_before = None
+        gantt_div = None
+
         if proxima_coleta:
             percentual_checklist = ChecklistCampo.objects.filter(
                 ordem_servico=proxima_coleta.id
@@ -205,10 +211,6 @@ def home(request):
             )
 
             gantt_div = plot(fig, output_type="div")
-        else:
-            data_coleta_proxima_formatada = None
-            weather_description = None
-            gantt_div = None
 
         campanhas = ProgramaColeta.objects.all()
         eventos = []
@@ -827,7 +829,7 @@ def exportar_resultados_csv(request):
 
         try:
             resultados = Campo.objects.all().values_list('codigo_coleta', 'hora_inicio', 'hora_fim', 'ponto',
-                                                         'temperatura', 'ph', 'orp', 'condutividade', 'turbidez', 'od', 'tds', 'salinidade')
+                                                         'temperatura', 'ph', 'orp', 'condutividade', 'turbidez', 'od', 'od_pct', 'tds', 'salinidade')
         except ObjectDoesNotExist:
             logger.error("Nenhum resultado encontrado.")
             return HttpResponse("Nenhum resultado encontrado.", content_type='text/plain')

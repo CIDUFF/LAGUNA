@@ -216,6 +216,7 @@ class Campo(models.Model):
     condutividade = models.FloatField("Condutividade uS/cm", null=True)
     turbidez = models.FloatField("Turbidez NTU", null=True)
     od = models.FloatField("OD mg/L", null=True)
+    od_pct = models.FloatField("OD %", null=True)
     tds = models.FloatField("TDS", null=True)
     salinidade = models.FloatField("Salinidade", null=True)
     status_form = models.CharField(
@@ -660,7 +661,7 @@ class TabMedidaCopy(models.Model):
     id_pp = models.ForeignKey(
         'TabProdxparam', models.DO_NOTHING, db_column='id_pp', blank=True, null=True)
     input_valor = models.CharField(blank=True, null=True)
-    valor = models.TextField(blank=True, null=True)
+    valor = models.CharField(blank=True, null=True)
 
     def __str__(self):
         return f'{self.valor}'
@@ -740,7 +741,7 @@ class TabMedida(models.Model):
         return f'{self.valor}'
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'tab_medida'
         
 

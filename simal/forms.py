@@ -36,6 +36,9 @@ class ColetaCampo(forms.Form):
     od = forms.FloatField(
         required=False, label='OD (mg/L)', widget=forms.NumberInput(attrs={'step': '0.1'})
     )
+    od_pct = forms.FloatField(
+        required=False, label='OD (%)', widget=forms.NumberInput(attrs={'step': '0.1'})
+    )
     tds = forms.FloatField(
         required=False, label='TDS (mg/L)', widget=forms.NumberInput(attrs={'step': '0.1'})
     )
@@ -67,9 +70,9 @@ class ColetaCampo(forms.Form):
 
     def __init__(self, *args, **kwargs):
         super(ColetaCampo, self).__init__(*args, **kwargs)
-
+    
         campos = [
-            'temperatura', 'ph', 'orp', 'condutividade', 'turbidez', 'od', 'tds', 'salinidade'
+            'temperatura', 'ph', 'orp', 'condutividade', 'turbidez', 'od', 'od_pct', 'tds', 'salinidade'
         ]
         self.helper = FormHelper()
         self.helper.layout = Layout(
@@ -85,8 +88,7 @@ class ColetaCampo(forms.Form):
                 *[
                     Row(
                         Column(FloatingField(campos[i]), css_class='col-md-6'),
-                        Column(FloatingField(
-                            campos[i + 1]), css_class='col-md-6')
+                        Column(FloatingField(campos[i + 1]), css_class='col-md-6') if i + 1 < len(campos) else None
                     ) for i in range(0, len(campos), 2)
                 ],
                 Switch('check_amostras'),
@@ -695,10 +697,17 @@ class ChecklistColetaForm(forms.ModelForm):
 class InputFisicoQuimicoForm(forms.ModelForm):
     class Meta:
         model = TabMedidaCopy
-        fields = ['input_valor']  # Corrigido para 'input_valor'
+        exclude = ['valor']
 
     def __init__(self, *args, **kwargs):
         super(InputFisicoQuimicoForm, self).__init__(*args, **kwargs)
+        self.fields['id_pp'].widget.attrs['readonly'] = True
+        self.fields['id_pp'].widget.attrs['disabled'] = True
+        self.fields['id_envio'].widget.attrs['readonly'] = True
+        self.fields['id_envio'].widget.attrs['disabled'] = True
+        self.fields['id_envio'].widget = forms.HiddenInput()
+        self.fields['id_pp'].label = "Parâmetro"
+        self.fields['input_valor'].label = "Valor"
         self.helper = FormHelper()
         self.helper.add_input(Submit('submit', 'Salvar'))
 
