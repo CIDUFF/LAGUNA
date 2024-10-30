@@ -42,25 +42,34 @@ class PontoFilter(django_filters.FilterSet):
         lookup_expr='exact',
         label='Setor'
     )
+    status = django_filters.ChoiceFilter(
+        field_name='status',
+        lookup_expr='exact',
+        label='Status'
+    )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.filters['codigo'].extra['choices'] = [(ponto.nome, ponto.nome) for ponto in TabPonto.objects.all().distinct()]
         self.filters['setor'].extra['choices'] = [(setor.id, setor.nome) for setor in TabSetor.objects.all().distinct()]
+        self.filters['status'].extra['choices'] = [
+            (True, 'Ativo'),
+            (False, 'Inativo')
+        ]
 
     class Meta:
         model = TabPonto
-        fields = ['nome', 'id_setor']
+        fields = ['nome', 'status']  # Removido 'id_setor' pois já temos o campo 'setor'
 
 class SetorFilter(django_filters.FilterSet):
     abreviatura = django_filters.ChoiceFilter(
-        field_name='abreviatura',
+        field_name='abreviatura', 
         lookup_expr='exact',
         label='Setor'
     )
     local = django_filters.ChoiceFilter(
         field_name='id_local',
-        lookup_expr='exact',
+        lookup_expr='exact', 
         label='Local'
     )
 
@@ -71,7 +80,7 @@ class SetorFilter(django_filters.FilterSet):
 
     class Meta:
         model = TabSetor
-        fields = ['abreviatura', 'id_local']
+        fields = ['abreviatura', 'local']  # Removido id_local, mantido apenas local
 
 class LocalFilter(django_filters.FilterSet):
     codigo = django_filters.ChoiceFilter(

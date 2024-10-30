@@ -657,27 +657,9 @@ def checklist_campanha(request, ordem_servico=None):
     return render(request, 'coleta/checklist_campanha.html', context)
 
 
-@login_required
+@login_required 
 def gerar_rota_campanha(request, ordem_servico=None):
-    """
-Gera rota para uma campanha com base na ordem de serviço fornecida.
 
-Ordem de serviço é: Local + Data da coleta
-
-Esta função de view recupera a ordem de serviço da requisição, busca a campanha correspondente
-e gera pontos de coleta e previsões meteorológicas para a campanha. Em seguida, salva os dados
-gerados e redireciona para a checklist da campanha.
-
-Args:
-    request (HttpRequest): O objeto de requisição HTTP.
-    ordem_servico (str, opcional): O identificador da ordem de serviço. Padrão é None.
-
-Returns:
-    HttpResponseRedirect: Redireciona para a view da checklist da campanha.
-
-Raises:
-    Http404: Se a campanha ou os pontos de coleta não forem encontrados.
-"""
     ordem_servico = request.GET.get('ordem_servico', ordem_servico)
     campanha = None
     if ordem_servico:
@@ -693,9 +675,15 @@ Raises:
 
         local_campanha = campanha.local_coleta
         setor_local = TabSetor.objects.get(nome=local_campanha)
-        pontos_coleta = TabPonto.objects.filter(id_setor=setor_local)
+        # Modificação aqui - adiciona filtro status=True
+        pontos_coleta = TabPonto.objects.filter(
+            id_setor=setor_local,
+            status=True  # Apenas pontos ativos
+        )
+        
         programa_coleta_instance = get_object_or_404(
             ProgramaColeta, ordem_servico=ordem_servico)
+            
         for ponto in pontos_coleta:
             campo = Campo()
             campo.ordem_servico = programa_coleta_instance
@@ -708,7 +696,6 @@ Raises:
         campanha.save()
 
     return redirect('checklist_campanha', ordem_servico=ordem_servico)
-
 
 def etiquetagem(request, ordem_servico=None):
     ordem_servico = request.GET.get('ordem_servico', ordem_servico)
