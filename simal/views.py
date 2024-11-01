@@ -1361,6 +1361,7 @@ def checklist_coleta(request, coleta_id):
 
 #TODO #208 Criar página de acompanhamento da coleta com detalhes da coleta, amostras, envios e medidas
 
+
 @login_required
 def fill_amostra(request, coleta_id):
     """
@@ -1380,18 +1381,28 @@ def fill_amostra(request, coleta_id):
     coleta = get_object_or_404(TabColeta, id=coleta_id)
     frascos = TabFrasco.objects.all()
     pontos_coleta = TabPonto.objects.filter(id_setor=coleta.id_setor)
+
+    amostras = []
     for frasco in frascos:
         for ponto in pontos_coleta:
-            amostra = TabAmostraCopy.objects.create(
+            amostra = TabAmostraCopy(
                 id_coleta=coleta,
                 id_frasco=frasco,
                 id_ponto=ponto,
             )
-            amostra.save()
-            envio = TabEnvioCopy.objects.create(
-                id_amostra=amostra,
-            )
-            envio.save()
+            amostras.append(amostra)
+
+    TabAmostraCopy.objects.bulk_create(amostras)
+
+    envios = []
+    for amostra in amostras:
+        envio = TabEnvioCopy(
+            id_amostra=amostra,
+        )
+        envios.append(envio)
+
+    TabEnvioCopy.objects.bulk_create(envios)
+
     return redirect('home')
 
 
@@ -1413,15 +1424,47 @@ def fill_campo_medida(request, coleta_id):
     envios = TabEnvioCopy.objects.filter(id_amostra__id_coleta=coleta_id, id_amostra__id_frasco=1)
     parametros = TabProdxparam.objects.filter(id_frasco=1)
 
+    campos = []
     for envio in envios:
         for parametro in parametros:
-            campo = TabMedidaCopy.objects.create(
+            campo = TabMedidaCopy(
                 id_envio=envio,
                 id_pp=parametro,
             )
-            campo.save()
+            campos.append(campo)
+
+    TabMedidaCopy.objects.bulk_create(campos)
 
     return redirect('home')
+
+# @login_required
+# def fill_campo_medida(request, coleta_id):
+#     """
+#     Preenche o campo de medida para uma coleta específica.
+
+#     Esta função filtra os envios e parâmetros com base no ID da coleta e no ID do frasco,
+#     cria instâncias de TabMedida para cada combinação de envio e parâmetro, e as salva no banco de dados.
+
+#     Parâmetros:
+#     request (HttpRequest): O objeto de solicitação HTTP.
+#     coleta_id (int): O ID da coleta para a qual os campos de medida serão preenchidos.
+
+#     Retorna:
+#     HttpResponseRedirect: Redireciona para a página inicial após a conclusão do preenchimento dos campos de medida.
+#     """
+#     envios = TabEnvioCopy.objects.filter(
+#         id_amostra__id_coleta=coleta_id, id_amostra__id_frasco=1)
+#     parametros = TabProdxparam.objects.filter(id_frasco=1)
+
+#     for envio in envios:
+#         for parametro in parametros:
+#             campo = TabMedidaCopy.objects.create(
+#                 id_envio=envio,
+#                 id_pp=parametro,
+#             )
+#             campo.save()
+
+#     return redirect('home')
 
 
 @login_required

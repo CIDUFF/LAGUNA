@@ -709,6 +709,13 @@ class InputFisicoQuimicoForm(forms.ModelForm):
         self.fields['id_pp'].label = "Parâmetro"
         self.fields['input_valor'].label = "Valor"
         self.helper = FormHelper()
+        self.helper.layout = Layout(
+            Row(
+                Column('id_pp', css_class='form-group col-md-6 mb-0'),
+                Column('input_valor', css_class='form-group col-md-6 mb-0'),
+                css_class='form-row'
+            )
+        )
         self.helper.add_input(Submit('submit', 'Salvar'))
 
 
