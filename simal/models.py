@@ -656,6 +656,7 @@ class TabEnvioCopy(models.Model):
         
 
 class TabMedidaCopy(models.Model):
+    id = models.BigAutoField(primary_key=True)
     id_envio = models.ForeignKey(
         TabEnvioCopy, models.DO_NOTHING, db_column='id_envio', blank=True, null=True)
     id_pp = models.ForeignKey(
