@@ -708,17 +708,20 @@ class InputFisicoQuimicoForm(forms.ModelForm):
         self.fields['id_envio'].widget = forms.HiddenInput()
         self.fields['id_pp'].label = "Parâmetro"
         self.fields['input_valor'].label = "Valor"
-        self.helper = FormHelper()
-        self.helper.layout = Layout(
-            Row(
-                Column('id_pp', css_class='form-group col-md-6 mb-0'),
-                Column('input_valor', css_class='form-group col-md-6 mb-0'),
-                css_class='form-row'
-            )
-        )
-        self.helper.add_input(Submit('submit', 'Salvar'))
 
+        self.helper = FormHelper(self)
+        self.helper.form_tag = False
+        self.helper.form_show_labels = False
+        # self.helper.layout = Layout(
+        #     Div(
+        #         Div('id_pp', css_class='col-md-6'),
+        #         Div('input_valor', css_class='col-md-6'),
+        #         Div('id_envio', css_class='d-none'),
+        #         css_class='row g-2'
+        #     )
+        # )
 
+        
 class DetalhesUsuarioForm(forms.ModelForm):
     class Meta:
         model = DetalhesUsuario

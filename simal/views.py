@@ -1468,6 +1468,7 @@ def fill_campo_medida(request, coleta_id):
 
 
 @login_required
+@login_required
 def input_fisico_quimico(request, coleta_id, ponto_id):
     MedidaFormSet = modelformset_factory(
         TabMedidaCopy, form=InputFisicoQuimicoForm, extra=0, fields='__all__'
@@ -1485,7 +1486,10 @@ def input_fisico_quimico(request, coleta_id, ponto_id):
         formset = MedidaFormSet(queryset=TabMedidaCopy.objects.filter(
             id_envio__id_amostra__id_coleta=coleta_id, id_envio__id_amostra__id_ponto=ponto_id))
 
-    return render(request, 'input_fisico_quimico.html', {'formset': formset, 'coleta': coleta, 'ponto': ponto})
-
+    return render(request, 'input_fisico_quimico.html', {
+        'formset': formset,
+        'coleta': coleta,
+        'ponto': ponto
+    })
 
 
