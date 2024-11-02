@@ -1,6 +1,5 @@
 {% extends 'base/base_site.html' %}
 {% load crispy_forms_tags %}
-{% load django_bootstrap5 %}
 {% block title %}Input Físico-Químico{% endblock %}
 {% block content %}
 {% if user.is_authenticated %}
@@ -12,9 +11,11 @@
         {% csrf_token %}
         {{ formset.management_form|crispy }}
         {% for form in formset %}
-            <div class="inlineform">
-                {% crispy form %}
-            </div>
+            {% if forloop.first %}
+                <div class="inlineform">
+                    {% crispy form %}
+                </div>
+            {% endif %}
         {% endfor %}
         <button type="submit" class="btn btn-primary">Salvar</button>
     </form>

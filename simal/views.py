@@ -1468,7 +1468,6 @@ def fill_campo_medida(request, coleta_id):
 
 
 @login_required
-@login_required
 def input_fisico_quimico(request, coleta_id, ponto_id):
     MedidaFormSet = modelformset_factory(
         TabMedidaCopy, form=InputFisicoQuimicoForm, extra=0, fields='__all__'
