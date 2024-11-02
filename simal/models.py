@@ -812,8 +812,9 @@ class TabProdxparam(models.Model):
         TabFrasco, models.DO_NOTHING, db_column='id_frasco', blank=True, null=True)
     id_ppativacao = models.BigIntegerField(blank=True, null=True)
 
+
     def __str__(self):
-        return f'{self.nome}'
+        return f'{self.nome} - {self.unidade or ""}'
 
     class Meta:
         managed = False

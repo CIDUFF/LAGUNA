@@ -1,6 +1,6 @@
 from crispy_forms.helper import FormHelper
 from crispy_bootstrap5.bootstrap5 import FloatingField, Switch
-from crispy_forms.layout import Layout, Fieldset, Row, Column, ButtonHolder, Div, Submit, HTML
+from crispy_forms.layout import Layout, Fieldset, Row, Column, ButtonHolder, Div, Submit, HTML, Field
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.forms import UserCreationForm
 from django.utils import timezone
@@ -695,31 +695,62 @@ class ChecklistColetaForm(forms.ModelForm):
         
 
 class InputFisicoQuimicoForm(forms.ModelForm):
+    # Campo oculto para armazenar o ID real
+    id_pp_hidden = forms.ModelChoiceField(
+        queryset=TabProdxparam.objects.all(),
+        widget=forms.HiddenInput(),
+        required=False
+    )
+
+    # Campo de texto somente leitura para exibir o nome
+    id_pp_display = forms.CharField(
+        label="Parâmetro - unidade",
+        required=False,
+        widget=forms.TextInput(attrs={
+            'readonly': True,
+            'disabled': True
+        })
+    )
+
     class Meta:
         model = TabMedidaCopy
-        exclude = ['valor']
+        exclude = ['valor', 'id_pp']  # Excluir 'id_pp' para mantê-lo oculto
 
     def __init__(self, *args, **kwargs):
         super(InputFisicoQuimicoForm, self).__init__(*args, **kwargs)
-        self.fields['id_pp'].widget.attrs['readonly'] = True
-        self.fields['id_pp'].widget.attrs['disabled'] = True
-        self.fields['id_envio'].widget.attrs['readonly'] = True
-        self.fields['id_envio'].widget.attrs['disabled'] = True
+        # Definir o valor inicial do campo oculto e do display
+        if self.instance and self.instance.id_pp:
+            self.fields['id_pp_hidden'].initial = self.instance.id_pp
+            # Ajuste 'nome' conforme o campo correto no modelo TabProdxparam
+            self.fields['id_pp_display'].initial = self.instance.id_pp
+        else:
+            self.fields['id_pp_display'].initial = 'N/A'
+
+        # Configurações adicionais dos campos
+        self.fields['id_envio'].widget.attrs.update({
+            'readonly': True,
+            'disabled': True
+        })
         self.fields['id_envio'].widget = forms.HiddenInput()
-        self.fields['id_pp'].label = "Parâmetro"
         self.fields['input_valor'].label = "Valor"
 
+        # Configuração do Crispy Forms
         self.helper = FormHelper(self)
         self.helper.form_tag = False
-        self.helper.form_show_labels = False
+        self.helper.form_show_labels = True
+        self.helper.template = 'bootstrap5/table_inline_formset.html'
         # self.helper.layout = Layout(
         #     Div(
-        #         Div('id_pp', css_class='col-md-6'),
-        #         Div('input_valor', css_class='col-md-6'),
-        #         Div('id_envio', css_class='d-none'),
-        #         css_class='row g-2'
+        #         Field('id_pp_display'),  # Exibe a coluna "Parâmetro" primeiro
+        #         Field('input_valor'),    # Exibe a coluna "Valor" em seguida
+        #         Field('id_pp_hidden'),   # Campo oculto para o ID real
+        #         css_class='form-row'
         #     )
         # )
+        
+        
+        
+
 
         
 class DetalhesUsuarioForm(forms.ModelForm):
