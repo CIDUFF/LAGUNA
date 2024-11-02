@@ -635,3 +635,38 @@ a.sidebar-link:hover {
 .true {
   color: rgb(137, 218, 15) !important;
 }
+
+
+.form-check-input {
+    width: 2em;
+    height: 1em;
+    background-color: #ddd;
+    border-radius: 1em;
+    position: relative;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    outline: none;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.form-check-input:checked {
+    background-color: #0d6efd;
+}
+
+.form-check-input::before {
+    content: '';
+    position: absolute;
+    top: 0.1em;
+    left: 0.1em;
+    width: 0.8em;
+    height: 0.8em;
+    background-color: #fff;
+    border-radius: 50%;
+    transition: transform 0.3s;
+}
+
+.form-check-input:checked::before {
+    transform: translateX(1em);
+}

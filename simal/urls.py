@@ -85,5 +85,6 @@ urlpatterns = [
     path('perfil/', views.perfil_usuario, name='perfil_usuario'),
     path('cadastro_usuarios_adm/', views.cadastro_usuarios_adm,
          name='cadastro_usuarios_adm'),
+    path('info_coleta/<int:coleta_id>/', views.info_coleta, name='info_coleta'),
 
 ]
