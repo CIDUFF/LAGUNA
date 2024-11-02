@@ -635,12 +635,11 @@ class CadastroCampanhaForm(forms.ModelForm):
 
 
 class CadastroColetaForm(forms.ModelForm):
-    data = forms.DateField(
-        widget=forms.DateInput(attrs={'type': 'date'}))
+    data = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
 
     class Meta:
         model = TabColeta
-        exclude = ['id', 'ordem_servico']
+        exclude = ['id', 'ordem_servico', 'criado_por']
 
     def __init__(self, *args, **kwargs):
         super(CadastroColetaForm, self).__init__(*args, **kwargs)
@@ -669,7 +668,7 @@ class CadastroItemChecklistColetaForm(forms.ModelForm):
 
 
 class ChecklistColetaForm(forms.ModelForm):
-    item_nome = forms.CharField(label='', required=False, widget=forms.TextInput(
+    item_nome = forms.CharField(label='item', required=False, widget=forms.TextInput(
         attrs={'readonly': 'readonly'}))
 
     class Meta:
@@ -681,17 +680,10 @@ class ChecklistColetaForm(forms.ModelForm):
         if self.instance and self.instance.pk:
             self.fields['item_nome'].initial = self.instance.item.item
         self.helper = FormHelper()
-        self.helper.form_method = 'post'
-        self.helper.layout = Layout(
-            Fieldset(
-                ' ',
-                Row(
-                    Column('item_nome', css_class='form-group col-md-4 mb-0'),
-                    Column('status', css_class='form-group col-md-2 mb-0'),
-                    Column('observacao', css_class='form-group col-md-6 mb-0'),
-                )
-            )
-        )
+        self.helper.form_tag = False
+        self.helper.template = 'table_inline_formset.html'
+        self.helper.form_show_labels = False
+
         
 
 class InputFisicoQuimicoForm(forms.ModelForm):
@@ -751,7 +743,7 @@ class InputFisicoQuimicoForm(forms.ModelForm):
         self.helper = FormHelper(self)
         self.helper.form_tag = False
         self.helper.form_show_labels = True
-        self.helper.template = 'bootstrap5/table_inline_formset.html'
+        self.helper.template = 'table_inline_formset.html'
         self.helper.layout = Layout(
             Div(
                 Field('id_pp_display'),  # Exibe a coluna "Parâmetro" primeiro

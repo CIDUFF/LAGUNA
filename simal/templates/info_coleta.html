@@ -1,0 +1,32 @@
+<!-- simal/templates/info_coleta.html -->
+
+{% extends 'base/base_site.html' %}
+{% load django_bootstrap5 %}
+{% block title %}Informações da Coleta{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4">Informações da Coleta</h1>
+    <div class="card">
+        <div class="card-body">
+            <p><strong>Ordem de serviço:</strong> {{ coleta_os }}</p>
+            <p><strong>Usuário Responsável:</strong> {{ usuario_responsavel }}</p>
+            <p><strong>Data da Coleta:</strong> {{ data_coleta|date:"d/m/Y" }}</p>
+            <p><strong>Data de Criação:</strong> {{ data_criacao|date:"d/m/Y H:i" }}</p>
+            <p><strong>Formulários gerados?:</strong> 
+                {% if fill_amostra_gerado %}
+                    <span class="badge bg-success">Sim</span>
+                {% else %}
+                    <span class="badge bg-danger">Não</span>
+                {% endif %}
+            </p>
+            <p><strong>Previsão do Tempo:</strong> {{ previsao_tempo }}</p>
+            <p><strong>Percentual do Checklist:</strong> {{ percentual_checklist }}%</p>
+            {% if not fill_amostra_gerado %}
+                <a href="{% url 'fill_amostra' coleta %}" class="btn btn-primary mt-3">Gerar Formulários da sonda multiparâmetro</a>
+            {% endif %}
+            <br>
+            <a href="{% url 'checklist_coleta' coleta %}" class="btn btn-secondary mt-3">Voltar ao Checklist</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

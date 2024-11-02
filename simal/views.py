@@ -1226,7 +1226,9 @@ def cadastro_coleta_view(request):
     if request.method == 'POST':
         form = CadastroColetaForm(request.POST)
         if form.is_valid():
-            coleta = form.save()
+            coleta = form.save(commit=False)  # Não salva ainda no banco
+            coleta.criado_por = request.user   # Atribui o usuário logado
+            coleta.save()                      # Agora salva no banco
             # Criar entradas na tabela TabChecklistColeta para cada item de checklist
             itens_checklist = TabItemChecklistColeta.objects.all()
             for item in itens_checklist:
@@ -1351,7 +1353,7 @@ def checklist_coleta(request, coleta_id):
         if formset.is_valid():
             formset.save()
             # Substitua pela URL de sucesso desejada
-            return redirect('home')
+            return redirect('info_coleta', coleta_id=coleta_id)
     else:
         formset = ChecklistColetaFormSet(
             queryset=TabChecklistColeta.objects.filter(id_coleta=coleta))
@@ -1402,7 +1404,7 @@ def fill_amostra(request, coleta_id):
 
     TabEnvioCopy.objects.bulk_create(envios)
 
-    return redirect('home')
+    return redirect('fill_campo_medida', coleta_id=coleta_id)
 
 
 @login_required
@@ -1434,10 +1436,64 @@ def fill_campo_medida(request, coleta_id):
 
     TabMedidaCopy.objects.bulk_create(campos)
 
-    return redirect('home')
+    return redirect('info_coleta', coleta_id=coleta_id)
 
 
+@login_required
+def info_coleta(request, coleta_id):
+    try:
 
+        coleta = get_object_or_404(TabColeta, id=coleta_id)
+ 
+
+        # Usuário responsável
+        usuario_responsavel = coleta.criado_por
+
+        # Data da coleta
+        data_coleta = coleta.data
+
+        # Data de criação da coleta
+        data_criacao = coleta.criado_em
+
+        # Verificar se o fill amostra foi gerado para o frasco 1
+        fill_amostra_gerado = TabMedidaCopy.objects.filter(
+            id_envio__id_amostra__id_coleta=coleta.id,
+            id_envio__id_amostra__id_frasco=1
+        ).exists()
+
+        # Previsão do tempo para o dia da coleta
+        previsao_tempo = get_weather_description(
+            "Maricá", data_coleta.strftime('%Y-%m-%d'))
+
+ # Cálculo do percentual do checklist
+        total_items = TabChecklistColeta.objects.filter(
+            id_coleta=coleta).count()
+        items_preenchidos = TabChecklistColeta.objects.filter(
+            id_coleta=coleta,
+            status=True
+        ).count()
+        percentual_checklist = (
+            items_preenchidos / total_items) * 100 if total_items > 0 else 0
+        
+        context = {
+            'coleta': coleta.id,
+            'coleta_os': coleta.ordem_servico,  # Usando ordem_servico ao invés do id
+            'usuario_responsavel': usuario_responsavel,
+            'data_coleta': data_coleta,
+            'data_criacao': data_criacao,
+            'fill_amostra_gerado': fill_amostra_gerado,
+            'previsao_tempo': previsao_tempo,
+            'percentual_checklist': percentual_checklist,
+        }
+
+        return render(request, 'info_coleta.html', context)
+
+    except TabColeta.DoesNotExist:
+        return HttpResponse("Coleta não encontrada.", status=404)
+    except Exception as e:
+        return HttpResponse(f"Erro ao buscar informações da coleta: {str(e)}", status=400)
+    
+    
 
 @login_required
 def input_fisico_quimico(request, coleta_id, ponto_id):
@@ -1458,7 +1514,7 @@ def input_fisico_quimico(request, coleta_id, ponto_id):
             if ponto.id < TabPonto.objects.filter(id_setor=coleta.id_setor).count()+1:
                 return redirect('input_fisico_quimico', coleta_id=coleta_id, ponto_id=ponto.id+1)
             else:
-                return redirect('home')
+                return redirect('info_coleta', coleta_id=coleta_id)
         
     else:
         formset = MedidaFormSet(queryset=TabMedidaCopy.objects.filter(
@@ -1472,5 +1528,7 @@ def input_fisico_quimico(request, coleta_id, ponto_id):
         'coleta': coleta,
         'ponto': ponto
     })
+    
+
 
 
