@@ -1,38 +1,37 @@
 # pylint: disable=protected-access,no-member
 # Django imports
-from django.contrib import messages
-from django.contrib.auth.forms import PasswordChangeForm
-from django.contrib.auth import update_session_auth_hash
-from django.core.paginator import Paginator
-from django.db.models import F
-from datetime import timedelta
 import csv
+import json
+import logging
+import os
+from datetime import timedelta
+
 import pandas as pd
 import plotly.express as px
 from plotly.offline import plot
-from django.forms import inlineformset_factory
-from django.forms import modelformset_factory
+
+from django.conf import settings
+from django.contrib import messages
+from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.forms import PasswordChangeForm
 from django.core.cache import cache
-from django.http import HttpResponse, FileResponse
-from django.shortcuts import get_object_or_404, get_list_or_404, redirect, render
+from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
+from django.core.mail import send_mail
+from django.core.paginator import Paginator
+from django.db import connection
+from django.db.models import F
+from django.forms import inlineformset_factory, modelformset_factory
+from django.http import FileResponse, HttpResponse
+from django.shortcuts import get_list_or_404, get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
-from django.core.exceptions import ObjectDoesNotExist
-from django.core.mail import send_mail
-from django.conf import settings
-import json
-import os
-import logging
-from django.db import connection
-from django.core.exceptions import PermissionDenied
-
 
 from django_tables2 import RequestConfig
 
 from .filters import *
 from .forms import *
-from .services import get_weather_description, gerar_etiquetas
+from .services import gerar_etiquetas, get_weather_description
 from .tables import *
 
 # Configuração do logger
