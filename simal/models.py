@@ -663,6 +663,8 @@ class TabMedidaCopy(models.Model):
         'TabProdxparam', models.DO_NOTHING, db_column='id_pp', blank=True, null=True)
     input_valor = models.CharField(blank=True, null=True)
     valor = models.CharField(blank=True, null=True)
+    foto = models.ImageField(upload_to='fotos_medidas/', blank=True, null=True)
+    anexo_pdf = models.FileField(upload_to='anexos_medidas/', blank=True, null=True)
 
     def __str__(self):
         return f'{self.valor}'
