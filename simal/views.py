@@ -1437,35 +1437,9 @@ def fill_campo_medida(request, coleta_id):
 
     return redirect('home')
 
-# @login_required
-# def fill_campo_medida(request, coleta_id):
-#     """
-#     Preenche o campo de medida para uma coleta específica.
 
-#     Esta função filtra os envios e parâmetros com base no ID da coleta e no ID do frasco,
-#     cria instâncias de TabMedida para cada combinação de envio e parâmetro, e as salva no banco de dados.
 
-#     Parâmetros:
-#     request (HttpRequest): O objeto de solicitação HTTP.
-#     coleta_id (int): O ID da coleta para a qual os campos de medida serão preenchidos.
-
-#     Retorna:
-#     HttpResponseRedirect: Redireciona para a página inicial após a conclusão do preenchimento dos campos de medida.
-#     """
-#     envios = TabEnvioCopy.objects.filter(
-#         id_amostra__id_coleta=coleta_id, id_amostra__id_frasco=1)
-#     parametros = TabProdxparam.objects.filter(id_frasco=1)
-
-#     for envio in envios:
-#         for parametro in parametros:
-#             campo = TabMedidaCopy.objects.create(
-#                 id_envio=envio,
-#                 id_pp=parametro,
-#             )
-#             campo.save()
-
-#     return redirect('home')
-
+# simal/views.py
 
 @login_required
 def input_fisico_quimico(request, coleta_id, ponto_id):
@@ -1477,13 +1451,23 @@ def input_fisico_quimico(request, coleta_id, ponto_id):
 
     if request.method == 'POST':
         formset = MedidaFormSet(request.POST, queryset=TabMedidaCopy.objects.filter(
-            id_envio__id_amostra__id_coleta=coleta_id, id_envio__id_amostra__id_ponto=ponto_id))
+            id_envio__id_amostra__id_coleta=coleta_id,
+            id_envio__id_amostra__id_ponto=ponto_id,
+            id_envio__id_amostra__id_frasco=1  # Adicionado filtro para frasco_id=1
+        ))
         if formset.is_valid():
             formset.save()
-            return redirect('home')
+            if ponto.id < TabPonto.objects.filter(id_setor=coleta.id_setor).count()+1:
+                return redirect('input_fisico_quimico', coleta_id=coleta_id, ponto_id=ponto.id+1)
+            else:
+                return redirect('home')
+        
     else:
         formset = MedidaFormSet(queryset=TabMedidaCopy.objects.filter(
-            id_envio__id_amostra__id_coleta=coleta_id, id_envio__id_amostra__id_ponto=ponto_id))
+            id_envio__id_amostra__id_coleta=coleta_id,
+            id_envio__id_amostra__id_ponto=ponto_id,
+            id_envio__id_amostra__id_frasco=1  # Adicionado filtro para frasco_id=1
+        ))
 
     return render(request, 'input_fisico_quimico.html', {
         'formset': formset,

@@ -712,6 +712,20 @@ class InputFisicoQuimicoForm(forms.ModelForm):
         })
     )
 
+    # Campo de valor numérico
+    input_valor = forms.DecimalField(
+        label="Valor",
+        required=True,
+        min_value=0,  # Define o valor mínimo permitido
+        max_digits=10,  # Número máximo de dígitos (incluindo decimais)
+        decimal_places=2,  # Número de casas decimais
+        widget=forms.NumberInput(attrs={
+            'step': '0.01',  # Incremento permitido
+            'min': '0',
+            'class': 'form-control'
+        })
+    )
+
     class Meta:
         model = TabMedidaCopy
         exclude = ['valor', 'id_pp']  # Excluir 'id_pp' para mantê-lo oculto
@@ -732,21 +746,24 @@ class InputFisicoQuimicoForm(forms.ModelForm):
             'disabled': True
         })
         self.fields['id_envio'].widget = forms.HiddenInput()
-        self.fields['input_valor'].label = "Valor"
+
+        # Atualiza o rótulo de 'input_valor' se necessário
+        # self.fields['input_valor'].label = "Valor"
 
         # Configuração do Crispy Forms
         self.helper = FormHelper(self)
         self.helper.form_tag = False
         self.helper.form_show_labels = True
         self.helper.template = 'bootstrap5/table_inline_formset.html'
-        # self.helper.layout = Layout(
-        #     Div(
-        #         Field('id_pp_display'),  # Exibe a coluna "Parâmetro" primeiro
-        #         Field('input_valor'),    # Exibe a coluna "Valor" em seguida
-        #         Field('id_pp_hidden'),   # Campo oculto para o ID real
-        #         css_class='form-row'
-        #     )
-        # )
+        self.helper.layout = Layout(
+            Div(
+                Field('id_pp_display'),  # Exibe a coluna "Parâmetro" primeiro
+                Field('input_valor'),    # Exibe a coluna "Valor" em seguida
+                Field('id_pp_hidden'),   # Campo oculto para o ID real
+                css_class='form-row'
+            )
+        )
+
         
         
         
