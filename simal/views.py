@@ -1439,7 +1439,6 @@ def fill_campo_medida(request, coleta_id):
 
 
 
-# simal/views.py
 
 @login_required
 def input_fisico_quimico(request, coleta_id, ponto_id):

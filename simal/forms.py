@@ -747,9 +747,6 @@ class InputFisicoQuimicoForm(forms.ModelForm):
         })
         self.fields['id_envio'].widget = forms.HiddenInput()
 
-        # Atualiza o rótulo de 'input_valor' se necessário
-        # self.fields['input_valor'].label = "Valor"
-
         # Configuração do Crispy Forms
         self.helper = FormHelper(self)
         self.helper.form_tag = False
