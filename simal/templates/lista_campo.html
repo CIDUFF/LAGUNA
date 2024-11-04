@@ -1,0 +1,36 @@
+{% extends 'base/base_site.html' %}
+{% load django_tables2 %}
+{% load django_bootstrap5 %}
+
+{% block title %}Lista de Campo{% endblock %}
+
+{% block content %}
+<div class="card checklist">
+    <div class="container">
+        <div class="row align-items-center mb-4">
+            <div class="col-md-8">
+                <h1 class="d-flex justify-content-left">Lista de Amostras</h1>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Detalhes da Coleta</h5>
+                        <p class="mb-1"><strong>OS:</strong> {{ coleta.ordem_servico }}</p>
+                        <p class="mb-1"><strong>Data:</strong> {{ coleta.data|date:"d/m/Y" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            {% render_table table %}
+        </div>
+
+        <div class="mt-3">
+            <a href="{% url 'info_coleta' coleta.id %}" class="btn btn-secondary">
+                Voltar
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
