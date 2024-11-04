@@ -635,10 +635,7 @@ class TabAmostraCopy(models.Model):
         managed = True
         db_table = 'tab_amostra_copy'
 
-    def save(self, *args, **kwargs):
-        etiqueta = f'{self.id_coleta.ordem_servico}{self.id_ponto.nome}{self.id_frasco.id}'
-        self.etiqueta = etiqueta
-        super().save(*args, **kwargs)
+
         
 
 class TabEnvioCopy(models.Model):

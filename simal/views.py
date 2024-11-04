@@ -1381,7 +1381,11 @@ def fill_amostra(request, coleta_id):
     """
     coleta = get_object_or_404(TabColeta, id=coleta_id)
     frascos = TabFrasco.objects.all()
-    pontos_coleta = TabPonto.objects.filter(id_setor=coleta.id_setor)
+    # Adiciona o filtro status=True na query dos pontos
+    pontos_coleta = TabPonto.objects.filter(
+        id_setor=coleta.id_setor,
+        status=True  # Apenas pontos ativos
+    )
 
     amostras = []
     for frasco in frascos:
@@ -1390,6 +1394,7 @@ def fill_amostra(request, coleta_id):
                 id_coleta=coleta,
                 id_frasco=frasco,
                 id_ponto=ponto,
+                etiqueta = f'{coleta.ordem_servico}{str(frasco.id).zfill(2)}{str(ponto.id).zfill(3)}'
             )
             amostras.append(amostra)
 
@@ -1501,26 +1506,32 @@ def input_fisico_quimico(request, coleta_id, ponto_id):
         TabMedidaCopy, form=InputFisicoQuimicoForm, extra=0, fields='__all__'
     )
     coleta = get_object_or_404(TabColeta, id=coleta_id)
-    ponto = get_object_or_404(TabPonto, id=ponto_id)
+    ponto = get_object_or_404(TabPonto, id=ponto_id, status=True)  # Adicionado filtro status=True
 
     if request.method == 'POST':
         formset = MedidaFormSet(request.POST, queryset=TabMedidaCopy.objects.filter(
             id_envio__id_amostra__id_coleta=coleta_id,
             id_envio__id_amostra__id_ponto=ponto_id,
-            id_envio__id_amostra__id_frasco=1  # Adicionado filtro para frasco_id=1
+            id_envio__id_amostra__id_frasco=1
         ))
         if formset.is_valid():
             formset.save()
-            if ponto.id < TabPonto.objects.filter(id_setor=coleta.id_setor).count()+1:
-                return redirect('input_fisico_quimico', coleta_id=coleta_id, ponto_id=ponto.id+1)
+            # Busca próximo ponto ativo
+            proximo_ponto = TabPonto.objects.filter(
+                id_setor=coleta.id_setor,
+                status=True,
+                id__gt=ponto.id
+            ).first()
+            
+            if proximo_ponto:
+                return redirect('input_fisico_quimico', coleta_id=coleta_id, ponto_id=proximo_ponto.id)
             else:
                 return redirect('info_coleta', coleta_id=coleta_id)
-        
     else:
         formset = MedidaFormSet(queryset=TabMedidaCopy.objects.filter(
             id_envio__id_amostra__id_coleta=coleta_id,
             id_envio__id_amostra__id_ponto=ponto_id,
-            id_envio__id_amostra__id_frasco=1  # Adicionado filtro para frasco_id=1
+            id_envio__id_amostra__id_frasco=1
         ))
 
     return render(request, 'input_fisico_quimico.html', {
@@ -1530,5 +1541,27 @@ def input_fisico_quimico(request, coleta_id, ponto_id):
     })
     
 
+@login_required
+def lista_campo(request, coleta_id):
+    coleta = get_object_or_404(TabColeta, id=coleta_id)
 
+    # Filtra as amostras da coleta atual
+    amostras = TabAmostraCopy.objects.filter(
+        id_coleta=coleta,
+        id_frasco=1  # Assumindo que queremos apenas amostras do frasco 1
+    ).order_by('id_ponto')
+
+    # Cria a tabela com as amostras
+    table = ListaCampoTable(amostras)
+
+    # Configura a paginação
+    from django_tables2 import RequestConfig
+    RequestConfig(request, paginate={"per_page": 40}).configure(table)
+
+    return render(request, 'lista_campo.html', {
+        'coleta': coleta,
+        'table': table,
+        'amostras': amostras
+    })
+    
 

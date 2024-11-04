@@ -310,3 +310,59 @@ class TipoItemChecklistColetaTable(tables.Table):
         # per_page = 10
         # paginator_class = tables.LazyPaginator
         # table_pagination = True
+        
+
+class ListaCampoTable(tables.Table):
+    status = tables.Column(
+        empty_values=[],
+        verbose_name="Status",
+        orderable=False
+    )
+    
+    update = tables.LinkColumn(
+        'input_fisico_quimico', 
+        args=[
+            A('id_coleta.id'),  
+            A('id_ponto.id')    
+        ],
+        orderable=False,
+        empty_values=[], 
+        text='Preencher dados',
+        attrs={"a": {"class": "btn btn-success btn-sm"}}
+    )
+    
+    def render_status(self, record):
+        medida = TabMedidaCopy.objects.filter(
+            id_envio__id_amostra=record,
+            id_envio__id_amostra__id_frasco=1  # Filtro para frasco_id=1
+        ).first()
+        
+        if medida and medida.input_valor is not None:
+            return format_html(
+                '<span class="badge bg-success">Preenchido</span>'
+            )
+        return format_html(
+            '<span class="badge bg-warning text-dark">Não preenchido</span>'
+        )
+    
+    class Meta:
+        model = TabAmostra
+        template_name = 'django_tables2/bootstrap5-responsive.html'
+        fields = [
+            'id_ponto',
+            'etiqueta',
+            'status',
+            'update'
+        ]
+        empty_text = 'Não há dados para exibir'
+        orderable = True
+        exclude = ('id', 'created_at', 'updated_at', 'campo')
+        sequence = ('id_ponto', 'etiqueta', 'status', 'update')
+        per_page = 40
+        paginator_class = tables.LazyPaginator
+        table_pagination = True
+        
+        
+        
+        
+        
