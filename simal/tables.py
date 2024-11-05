@@ -44,7 +44,7 @@ class ResultadosColetaTable(tables.Table):
         fields = ['codigo_coleta',
                   'hora_inicio',
                   'hora_fim', 'ponto', 'temperatura', 'ph',
-                  'orp', 'condutividade', 'turbidez', 'od',
+                  'orp', 'condutividade', 'turbidez', 'od', 'od_pct',
                   'tds', 'salinidade']
         empty_text = 'Não há dados para exibir'
         orderable = True
@@ -52,7 +52,7 @@ class ResultadosColetaTable(tables.Table):
         sequence = ('codigo_coleta',
                     'hora_inicio',
                     'hora_fim', 'ponto', 'temperatura', 'ph',
-                    'orp', 'condutividade', 'turbidez', 'od',
+                    'orp', 'condutividade', 'turbidez', 'od', 'od_pct',
                     'tds', 'salinidade')
         per_page = 25
         paginator_class = tables.LazyPaginator
