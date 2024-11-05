@@ -19,31 +19,31 @@ class ColetaCampo(forms.Form):
         required=False, widget=forms.TimeInput(attrs={'type': 'time'}))
     hora_fim = forms.TimeField(widget=forms.HiddenInput())
     temperatura = forms.FloatField(
-        required=False, label='Temperatura (°C)', widget=forms.NumberInput(attrs={'step': '0.1'})
+        required=False, label='Temperatura (°C)', widget=forms.NumberInput(attrs={'step': '0.001'})
     )
     ph = forms.FloatField(
-        required=False, label='pH', widget=forms.NumberInput(attrs={'step': '0.1'})
+        required=False, label='pH', widget=forms.NumberInput(attrs={'step': '0.001'})
     )
     orp = forms.FloatField(
-        required=False, label='ORP (mV)', widget=forms.NumberInput(attrs={'step': '0.1'})
+        required=False, label='ORP (mV)', widget=forms.NumberInput(attrs={'step': '0.001'})
     )
     condutividade = forms.FloatField(
-        required=False, label='Condutividade (µS/cm)', widget=forms.NumberInput(attrs={'step': '0.1'})
+        required=False, label='Condutividade (µS/cm)', widget=forms.NumberInput(attrs={'step': '0.001'})
     )
     turbidez = forms.FloatField(
-        required=False, label='Turbidez (NTU)', widget=forms.NumberInput(attrs={'step': '0.1'})
+        required=False, label='Turbidez (NTU)', widget=forms.NumberInput(attrs={'step': '0.001'})
     )
     od = forms.FloatField(
-        required=False, label='OD (mg/L)', widget=forms.NumberInput(attrs={'step': '0.1'})
+        required=False, label='OD (mg/L)', widget=forms.NumberInput(attrs={'step': '0.001'})
     )
     od_pct = forms.FloatField(
-        required=False, label='OD (%)', widget=forms.NumberInput(attrs={'step': '0.1'})
+        required=False, label='OD (%)', widget=forms.NumberInput(attrs={'step': '0.001'})
     )
     tds = forms.FloatField(
-        required=False, label='TDS (mg/L)', widget=forms.NumberInput(attrs={'step': '0.1'})
+        required=False, label='TDS (mg/L)', widget=forms.NumberInput(attrs={'step': '0.001'})
     )
     salinidade = forms.FloatField(
-        required=False, label='Salinidade (ppt)', widget=forms.NumberInput(attrs={'step': '0.1'})
+        required=False, label='Salinidade (ppt)', widget=forms.NumberInput(attrs={'step': '0.001'})
 
     )
     observacoes = forms.CharField(
