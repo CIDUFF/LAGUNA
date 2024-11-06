@@ -1,43 +1,61 @@
-import django_filters
-from .models import *
-from .forms import *
+from django_filters import FilterSet, CharFilter, ChoiceFilter
+from functools import wraps
+from .models import (
+    Campo,
+    ProgramaColeta,
+    TabPonto,
+    TabSetor,
+    TabLocal
+)
 
+def lazy_filter(cls):
+    """Decorator para garantir inicialização lazy e singleton das classes de filtro"""
+    _instances = {}
+    
+    @wraps(cls)
+    def get_instance(*args, **kwargs):
+        if cls not in _instances:
+            _instances[cls] = cls(*args, **kwargs)
+        return _instances[cls]
+    return get_instance
 
-class CampoFilter(django_filters.FilterSet):
+@lazy_filter
+class CampoFilter(FilterSet):
     class Meta:
         model = Campo
         fields = {
             "ponto": ["icontains"],
-            # Adicione mais campos conforme necessário
         }
 
-
-class ProgramaColetaFilter(django_filters.FilterSet):
+@lazy_filter
+class ProgramaColetaFilter(FilterSet):
     class Meta:
         model = ProgramaColeta
         fields = {
             "local_coleta": ["icontains"],
             "data_coleta_campo": ["exact"],
             "status_coleta": ["exact"],
-            # Adicione mais campos conforme necessário
         }
 
-
-class ResultadosColetaFilter(django_filters.FilterSet):
-    ponto = django_filters.CharFilter(lookup_expr="icontains", label="Ponto")
-    codigo_coleta = django_filters.CharFilter(
+@lazy_filter
+class ResultadosColetaFilter(FilterSet):
+    ponto = CharFilter(lookup_expr="icontains", label="Ponto")
+    codigo_coleta = CharFilter(
         lookup_expr="icontains", label="Código da Coleta"
     )
 
+    class Meta:
+        fields = ["ponto", "codigo_coleta"]
 
-class PontoFilter(django_filters.FilterSet):
-    codigo = django_filters.ChoiceFilter(
+@lazy_filter
+class PontoFilter(FilterSet):
+    codigo = ChoiceFilter(
         field_name="nome", lookup_expr="exact", label="Ponto"
     )
-    setor = django_filters.ChoiceFilter(
+    setor = ChoiceFilter(
         field_name="id_setor", lookup_expr="exact", label="Setor"
     )
-    status = django_filters.ChoiceFilter(
+    status = ChoiceFilter(
         field_name="status", lookup_expr="exact", label="Status"
     )
 
@@ -53,14 +71,14 @@ class PontoFilter(django_filters.FilterSet):
 
     class Meta:
         model = TabPonto
-        fields = ["nome", "status"]  # Removido 'id_setor' pois já temos o campo 'setor'
+        fields = ["nome", "status"]
 
-
-class SetorFilter(django_filters.FilterSet):
-    abreviatura = django_filters.ChoiceFilter(
+@lazy_filter
+class SetorFilter(FilterSet):
+    abreviatura = ChoiceFilter(
         field_name="abreviatura", lookup_expr="exact", label="Setor"
     )
-    local = django_filters.ChoiceFilter(
+    local = ChoiceFilter(
         field_name="id_local", lookup_expr="exact", label="Local"
     )
 
@@ -75,11 +93,11 @@ class SetorFilter(django_filters.FilterSet):
 
     class Meta:
         model = TabSetor
-        fields = ["abreviatura", "local"]  # Removido id_local, mantido apenas local
+        fields = ["abreviatura", "local"]
 
-
-class LocalFilter(django_filters.FilterSet):
-    codigo = django_filters.ChoiceFilter(
+@lazy_filter
+class LocalFilter(FilterSet):
+    codigo = ChoiceFilter(
         field_name="nome", lookup_expr="exact", label="Local"
     )
 

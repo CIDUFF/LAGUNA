@@ -8,45 +8,6 @@ from django.db import models
 from django.contrib.auth.models import User  # Importa o modelo User
 
 
-class equipes(models.Model):
-    """
-    Classe que representa as equipes que usam o sistema.
-
-    Atributos:
-        nome (str): O nome da equipe.
-        descricao (str): A descrição da equipe.
-    """
-
-    nome = models.CharField(max_length=50)
-    descricao = models.TextField(max_length=100)
-    responsavel = models.ForeignKey(User, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return f"{self.nome}"
-
-    class Meta:
-        db_table = "tab_equipe"
-
-
-# class UsuarioSistema(models.Model):
-#     """
-#     Representa um coletor de dados.
-
-#     Atributos:
-#         nome (str): O nome do coletor.
-#         email (str): O email do coletor.
-#         telefone (str): O telefone do coletor.
-#         filiacao (str): A filiação do coletor.
-#         equipe (str): A equipe do coletor.
-#     """
-
-#     nome = models.ForeignKey(User, on_delete=models.CASCADE)
-
-
-#     def __str__(self):
-#         return f'{self.nome}'
-
-
 class Ajuda(models.Model):
     """
     Classe que representa uma solicitação de ajuda.
@@ -115,9 +76,6 @@ class Solicitantes(models.Model):
     nome = models.CharField(max_length=100, blank=True, null=True)
     email = models.EmailField(max_length=100, blank=True, null=True)
     telefone = models.CharField(max_length=15, blank=True, null=True)
-
-    def __str__(self):
-        return f"{self.nome}"
 
     def __str__(self):
         return f"{self.nome}"
@@ -490,42 +448,8 @@ class UnidadesMedida(models.Model):
         db_table = "tab_unidade_medida"
 
 
-class Produto(models.Model):
-    nome = models.CharField(max_length=50, blank=True)
-    descricao = models.CharField(max_length=50, blank=True)
-
-    def __str__(self):
-        return f"{self.nome}"
 
 
-class Parametros(models.Model):
-    # PRODUTO = [
-    #     ('Água', 'Água'),
-    #     ('Sedimento', 'Sedimento'),
-    #     # ('Biota', 'Biota'),
-    #     # ('Solo', 'Solo'),
-    #     # ('Ar', 'Ar'),
-    # ]
-
-    parametro = models.CharField(max_length=50, blank=True)
-    tipo_parametro = models.ForeignKey(
-        "TipoParametro", on_delete=models.CASCADE, blank=True, null=True
-    )
-    frasco = models.ForeignKey(
-        "Frasco", on_delete=models.CASCADE, blank=True, null=True
-    )
-    descricao = models.CharField(max_length=50, blank=True)
-    unidade_medida = models.ForeignKey(
-        UnidadesMedida, on_delete=models.CASCADE, blank=True
-    )
-    produto = models.ForeignKey(
-        Produto, on_delete=models.CASCADE, blank=True, null=True
-    )
-    lim_max = models.FloatField(blank=True)
-    lim_min = models.FloatField(blank=True)
-
-    def __str__(self):
-        return f"{self.parametro}"
 
 
 class TipoParametro(models.Model):
@@ -539,58 +463,30 @@ class TipoParametro(models.Model):
         db_table = "tab_tipo_parametro"
 
 
-class Frasco(models.Model):
-    """
-    Classe que representa um frasco.
 
-    Atributos:
-        nome (str): O nome do frasco.
-        descricao (str): A descrição do frasco.
-        volume (float): O volume do frasco.
-    """
 
-    nome = models.CharField(max_length=50, blank=True)
-    descricao = models.CharField(max_length=50, blank=True)
+
+
+
+# ------------------------------------MIGRAÇÃO-----------------------------------------------------
+class TabLocal(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    nome = models.CharField(blank=True, null=True)
+    local_latitude = models.FloatField(blank=True, null=True)
+    local_longitude = models.FloatField(blank=True, null=True)
 
     def __str__(self):
         return f"{self.nome}"
 
-
-class Amostra(models.Model):
-    "É uma função que mostra o resultado das medições."
-
-    status = models.CharField(max_length=50, blank=True)
-    ponto = models.ForeignKey("TabPonto", on_delete=models.CASCADE)
-
-    codigo_coleta = models.ForeignKey(Campo, on_delete=models.CASCADE)
-    data_coleta = models.DateField(default=date.today)
-    hora_coleta = models.TimeField(auto_now=True)
-    frasco = models.ForeignKey(Frasco, on_delete=models.CASCADE)
-    observacao = models.TextField(max_length=500, blank=True)
-    usuario = models.ForeignKey(User, on_delete=models.CASCADE)
-    # unidade = models.ForeignKey(Parametros, on_delete=models.CASCADE)
-    # valor = models.FloatField(blank=True)
-
-    def __str__(self):
-        return f"{self.codigo_coleta}"
-
-
-class StatusAmostra(models.Model):
-    "É uma função que lista os status possíveis para a amostra."
-
-    status = models.CharField(max_length=50, blank=True)
-
-    def __str__(self):
-        return f"{self.status}"
-
-
-# ------------------------------------MIGRAÇÃO-----------------------------------------------------
-
+    class Meta:
+        managed = True
+        db_table = "tab_local"
+        
 
 class TabCampanha(models.Model):
     # id = models.BigAutoField(primary_key=True)
     id_local = models.ForeignKey(
-        "TabLocal", models.DO_NOTHING, db_column="id_local", blank=True, null=True
+        TabLocal, models.DO_NOTHING, db_column="id_local", blank=True, null=True
     )
     nome = models.CharField(blank=True, null=True)
     data_criacao = models.DateTimeField(blank=True, null=True)
@@ -600,7 +496,7 @@ class TabCampanha(models.Model):
         return f"{self.nome}"
 
     class Meta:
-        managed = False
+        managed = True
         db_table = "tab_campanha"
 
 
@@ -655,7 +551,7 @@ class TabAmostra(models.Model):
         return f"{self.etiqueta}"
 
     class Meta:
-        managed = False
+        managed = True
         db_table = "tab_amostra"
 
     def save(self, *args, **kwargs):
@@ -748,7 +644,7 @@ class TabEnvio(models.Model):
         return f"{self.id}"
 
     class Meta:
-        managed = False
+        managed = True
         db_table = "tab_envio"
 
 
@@ -760,7 +656,7 @@ class TabFrasco(models.Model):
         return f"{self.nome}"
 
     class Meta:
-        managed = False
+        managed = True
         db_table = "tab_frasco"
 
 
@@ -773,22 +669,11 @@ class TabLaboratorio(models.Model):
         return f"{self.nome}"
 
     class Meta:
-        managed = False
+        managed = True
         db_table = "tab_laboratorio"
 
 
-class TabLocal(models.Model):
-    id = models.BigAutoField(primary_key=True)
-    nome = models.CharField(blank=True, null=True)
-    local_latitude = models.FloatField(blank=True, null=True)
-    local_longitude = models.FloatField(blank=True, null=True)
 
-    def __str__(self):
-        return f"{self.nome}"
-
-    class Meta:
-        managed = False
-        db_table = "tab_local"
 
 
 class TabMedida(models.Model):
@@ -818,7 +703,7 @@ class TabParam(models.Model):
         return f"{self.nome}"
 
     class Meta:
-        managed = False
+        managed = True
         db_table = "tab_param"
 
 
@@ -841,7 +726,7 @@ class TabPonto(models.Model):
         return f"{self.nome}"
 
     class Meta:
-        managed = False
+        managed = True
         db_table = "tab_ponto"
 
 
@@ -854,7 +739,7 @@ class TabProduto(models.Model):
         return f"{self.nome}"
 
     class Meta:
-        managed = False
+        managed = True
         db_table = "tab_produto"
 
 
@@ -886,7 +771,7 @@ class TabProdxparam(models.Model):
         return f'{self.nome} - {self.unidade or ""}'
 
     class Meta:
-        managed = False
+        managed = True
         db_table = "tab_prodxparam"
 
 
@@ -899,7 +784,7 @@ class TabSerieClassificacao(models.Model):
         return f"{self.nome}"
 
     class Meta:
-        managed = False
+        managed = True
         db_table = "tab_serie_classificacao"
 
 
@@ -917,7 +802,7 @@ class TabSetor(models.Model):
         return f"{self.nome}"
 
     class Meta:
-        managed = False
+        managed = True
         db_table = "tab_setor"
 
 
@@ -930,7 +815,7 @@ class TabEquipe(models.Model):
     )
 
     class Meta:
-        managed = False
+        managed = True
         db_table = "tab_equipe"
 
 
