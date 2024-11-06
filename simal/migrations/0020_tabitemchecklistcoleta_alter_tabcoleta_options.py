@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("simal", "0019_tabcoleta_id_campanha_alter_tabcoleta_nome"),
     ]

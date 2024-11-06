@@ -5,7 +5,6 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("simal", "0029_alter_tabchecklistcoleta_observacao"),
     ]

@@ -2,5 +2,5 @@ from django.apps import AppConfig
 
 
 class SimalConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'simal'
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "simal"

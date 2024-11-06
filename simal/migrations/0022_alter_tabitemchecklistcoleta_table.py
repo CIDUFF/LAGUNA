@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("simal", "0021_alter_tabitemchecklistcoleta_data_cadastro_and_more"),
     ]

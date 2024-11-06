@@ -4,14 +4,13 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('simal', '0013_tabponto_id_local_tabponto_id_setor_and_more'),
+        ("simal", "0013_tabponto_id_local_tabponto_id_setor_and_more"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='tabponto',
-            options={'managed': False},
+            name="tabponto",
+            options={"managed": False},
         ),
     ]

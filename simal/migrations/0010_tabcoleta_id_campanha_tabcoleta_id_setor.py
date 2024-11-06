@@ -5,15 +5,20 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('simal', '0009_alter_tabcampanha_options_alter_tabcoleta_options'),
+        ("simal", "0009_alter_tabcampanha_options_alter_tabcoleta_options"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='tabcoleta',
-            name='id_setor',
-            field=models.ForeignKey(blank=True, db_column='id_setor', null=True, on_delete=django.db.models.deletion.DO_NOTHING, to='simal.tabsetor'),
+            model_name="tabcoleta",
+            name="id_setor",
+            field=models.ForeignKey(
+                blank=True,
+                db_column="id_setor",
+                null=True,
+                on_delete=django.db.models.deletion.DO_NOTHING,
+                to="simal.tabsetor",
+            ),
         ),
     ]

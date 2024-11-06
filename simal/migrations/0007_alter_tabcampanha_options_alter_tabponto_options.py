@@ -4,18 +4,17 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('simal', '0006_alter_tabsetor_options_rename_ponto_lat_tabponto_lat_and_more'),
+        ("simal", "0006_alter_tabsetor_options_rename_ponto_lat_tabponto_lat_and_more"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='tabcampanha',
-            options={'managed': True},
+            name="tabcampanha",
+            options={"managed": True},
         ),
         migrations.AlterModelOptions(
-            name='tabponto',
-            options={'managed': False},
+            name="tabponto",
+            options={"managed": False},
         ),
     ]

@@ -5,20 +5,31 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('simal', '0037_campo_od_pct_tabmedida_id_envio_tabmedida_id_pp'),
+        ("simal", "0037_campo_od_pct_tabmedida_id_envio_tabmedida_id_pp"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='tabmedida',
-            name='id_envio',
-            field=models.ForeignKey(blank=True, db_column='id_envio', null=True, on_delete=django.db.models.deletion.DO_NOTHING, to='simal.tabenvio'),
+            model_name="tabmedida",
+            name="id_envio",
+            field=models.ForeignKey(
+                blank=True,
+                db_column="id_envio",
+                null=True,
+                on_delete=django.db.models.deletion.DO_NOTHING,
+                to="simal.tabenvio",
+            ),
         ),
         migrations.AddField(
-            model_name='tabmedida',
-            name='id_pp',
-            field=models.ForeignKey(blank=True, db_column='id_pp', null=True, on_delete=django.db.models.deletion.DO_NOTHING, to='simal.tabprodxparam'),
+            model_name="tabmedida",
+            name="id_pp",
+            field=models.ForeignKey(
+                blank=True,
+                db_column="id_pp",
+                null=True,
+                on_delete=django.db.models.deletion.DO_NOTHING,
+                to="simal.tabprodxparam",
+            ),
         ),
     ]
