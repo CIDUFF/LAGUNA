@@ -5,70 +5,75 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('simal', '0044_tabamostracopy_etiqueta_tabcoleta_id_campanha'),
+        ("simal", "0044_tabamostracopy_etiqueta_tabcoleta_id_campanha"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='tabamostra',
-            options={'managed': True},
+            name="tabamostra",
+            options={"managed": True},
         ),
         migrations.AlterModelOptions(
-            name='tabcampanha',
-            options={'managed': True},
+            name="tabcampanha",
+            options={"managed": True},
         ),
         migrations.AlterModelOptions(
-            name='tabenvio',
-            options={'managed': True},
+            name="tabenvio",
+            options={"managed": True},
         ),
         migrations.AlterModelOptions(
-            name='tabequipe',
-            options={'managed': True},
+            name="tabequipe",
+            options={"managed": True},
         ),
         migrations.AlterModelOptions(
-            name='tabfrasco',
-            options={'managed': True},
+            name="tabfrasco",
+            options={"managed": True},
         ),
         migrations.AlterModelOptions(
-            name='tablaboratorio',
-            options={'managed': True},
+            name="tablaboratorio",
+            options={"managed": True},
         ),
         migrations.AlterModelOptions(
-            name='tablocal',
-            options={'managed': True},
+            name="tablocal",
+            options={"managed": True},
         ),
         migrations.AlterModelOptions(
-            name='tabparam',
-            options={'managed': True},
+            name="tabparam",
+            options={"managed": True},
         ),
         migrations.AlterModelOptions(
-            name='tabponto',
-            options={'managed': True},
+            name="tabponto",
+            options={"managed": True},
         ),
         migrations.AlterModelOptions(
-            name='tabproduto',
-            options={'managed': True},
+            name="tabproduto",
+            options={"managed": True},
         ),
         migrations.AlterModelOptions(
-            name='tabprodxparam',
-            options={'managed': True},
+            name="tabprodxparam",
+            options={"managed": True},
         ),
         migrations.AlterModelOptions(
-            name='tabserieclassificacao',
-            options={'managed': True},
+            name="tabserieclassificacao",
+            options={"managed": True},
         ),
         migrations.AlterModelOptions(
-            name='tabsetor',
-            options={'managed': True},
+            name="tabsetor",
+            options={"managed": True},
         ),
         migrations.AddField(
-            model_name='tabcoleta',
-            name='id_campanha',
-            field=models.ForeignKey(blank=True, db_column='id_campanha', null=True, on_delete=django.db.models.deletion.DO_NOTHING, to='simal.tabcampanha'),
+            model_name="tabcoleta",
+            name="id_campanha",
+            field=models.ForeignKey(
+                blank=True,
+                db_column="id_campanha",
+                null=True,
+                on_delete=django.db.models.deletion.DO_NOTHING,
+                to="simal.tabcampanha",
+            ),
         ),
         migrations.DeleteModel(
-            name='equipes',
+            name="equipes",
         ),
     ]

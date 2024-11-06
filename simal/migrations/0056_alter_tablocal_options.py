@@ -4,14 +4,13 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('simal', '0055_alter_tablocal_options'),
+        ("simal", "0055_alter_tablocal_options"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='tablocal',
-            options={'managed': True},
+            name="tablocal",
+            options={"managed": True},
         ),
     ]

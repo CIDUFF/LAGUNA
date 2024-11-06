@@ -4,94 +4,93 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('simal', '0058_alter_tabamostra_options_and_more'),
+        ("simal", "0058_alter_tabamostra_options_and_more"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Tbteste',
+            name="Tbteste",
             fields=[
-                ('id', models.BigAutoField(primary_key=True, serialize=False)),
-                ('nome', models.CharField(blank=True, max_length=255, null=True)),
-                ('descricao', models.TextField(blank=True, null=True)),
+                ("id", models.BigAutoField(primary_key=True, serialize=False)),
+                ("nome", models.CharField(blank=True, max_length=255, null=True)),
+                ("descricao", models.TextField(blank=True, null=True)),
             ],
             options={
-                'db_table': 'tb_teste',
-                'managed': True,
+                "db_table": "tb_teste",
+                "managed": True,
             },
         ),
         migrations.AlterModelOptions(
-            name='tabamostra',
-            options={'managed': True},
+            name="tabamostra",
+            options={"managed": True},
         ),
         migrations.AlterModelOptions(
-            name='tabamostracopy',
-            options={'managed': True},
+            name="tabamostracopy",
+            options={"managed": True},
         ),
         migrations.AlterModelOptions(
-            name='tabcampanha',
-            options={'managed': True},
+            name="tabcampanha",
+            options={"managed": True},
         ),
         migrations.AlterModelOptions(
-            name='tabcoleta',
-            options={'managed': True},
+            name="tabcoleta",
+            options={"managed": True},
         ),
         migrations.AlterModelOptions(
-            name='tabenvio',
-            options={'managed': True},
+            name="tabenvio",
+            options={"managed": True},
         ),
         migrations.AlterModelOptions(
-            name='tabenviocopy',
-            options={'managed': True},
+            name="tabenviocopy",
+            options={"managed": True},
         ),
         migrations.AlterModelOptions(
-            name='tabequipe',
-            options={'managed': True},
+            name="tabequipe",
+            options={"managed": True},
         ),
         migrations.AlterModelOptions(
-            name='tabfrasco',
-            options={'managed': True},
+            name="tabfrasco",
+            options={"managed": True},
         ),
         migrations.AlterModelOptions(
-            name='tablaboratorio',
-            options={'managed': True},
+            name="tablaboratorio",
+            options={"managed": True},
         ),
         migrations.AlterModelOptions(
-            name='tablocal',
-            options={'managed': True},
+            name="tablocal",
+            options={"managed": True},
         ),
         migrations.AlterModelOptions(
-            name='tabmedida',
-            options={'managed': True},
+            name="tabmedida",
+            options={"managed": True},
         ),
         migrations.AlterModelOptions(
-            name='tabmedidacopy',
-            options={'managed': True},
+            name="tabmedidacopy",
+            options={"managed": True},
         ),
         migrations.AlterModelOptions(
-            name='tabparam',
-            options={'managed': True},
+            name="tabparam",
+            options={"managed": True},
         ),
         migrations.AlterModelOptions(
-            name='tabponto',
-            options={'managed': True},
+            name="tabponto",
+            options={"managed": True},
         ),
         migrations.AlterModelOptions(
-            name='tabproduto',
-            options={'managed': True},
+            name="tabproduto",
+            options={"managed": True},
         ),
         migrations.AlterModelOptions(
-            name='tabprodxparam',
-            options={'managed': True},
+            name="tabprodxparam",
+            options={"managed": True},
         ),
         migrations.AlterModelOptions(
-            name='tabserieclassificacao',
-            options={'managed': True},
+            name="tabserieclassificacao",
+            options={"managed": True},
         ),
         migrations.AlterModelOptions(
-            name='tabsetor',
-            options={'managed': True},
+            name="tabsetor",
+            options={"managed": True},
         ),
     ]

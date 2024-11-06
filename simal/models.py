@@ -448,10 +448,6 @@ class UnidadesMedida(models.Model):
         db_table = "tab_unidade_medida"
 
 
-
-
-
-
 class TipoParametro(models.Model):
     nome = models.CharField(max_length=50, blank=True, unique=True)
     descricao = models.CharField(max_length=50, blank=True)
@@ -463,12 +459,9 @@ class TipoParametro(models.Model):
         db_table = "tab_tipo_parametro"
 
 
-
-
-
-
-
 # ------------------------------------MIGRAÇÃO-----------------------------------------------------
+
+
 class TabLocal(models.Model):
     id = models.BigAutoField(primary_key=True)
     nome = models.CharField(blank=True, null=True)
@@ -481,9 +474,7 @@ class TabLocal(models.Model):
     class Meta:
         managed = True
         db_table = "tab_local"
-        
 
-        
 
 class TabCampanha(models.Model):
     # id = models.BigAutoField(primary_key=True)
@@ -673,9 +664,6 @@ class TabLaboratorio(models.Model):
     class Meta:
         managed = True
         db_table = "tab_laboratorio"
-
-
-
 
 
 class TabMedida(models.Model):

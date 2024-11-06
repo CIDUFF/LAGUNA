@@ -1,23 +1,20 @@
 from django_filters import FilterSet, CharFilter, ChoiceFilter
 from functools import wraps
-from .models import (
-    Campo,
-    ProgramaColeta,
-    TabPonto,
-    TabSetor,
-    TabLocal
-)
+from .models import Campo, ProgramaColeta, TabPonto, TabSetor, TabLocal
+
 
 def lazy_filter(cls):
     """Decorator para garantir inicialização lazy e singleton das classes de filtro"""
     _instances = {}
-    
+
     @wraps(cls)
     def get_instance(*args, **kwargs):
         if cls not in _instances:
             _instances[cls] = cls(*args, **kwargs)
         return _instances[cls]
+
     return get_instance
+
 
 @lazy_filter
 class CampoFilter(FilterSet):
@@ -26,6 +23,7 @@ class CampoFilter(FilterSet):
         fields = {
             "ponto": ["icontains"],
         }
+
 
 @lazy_filter
 class ProgramaColetaFilter(FilterSet):
@@ -37,27 +35,21 @@ class ProgramaColetaFilter(FilterSet):
             "status_coleta": ["exact"],
         }
 
+
 @lazy_filter
 class ResultadosColetaFilter(FilterSet):
     ponto = CharFilter(lookup_expr="icontains", label="Ponto")
-    codigo_coleta = CharFilter(
-        lookup_expr="icontains", label="Código da Coleta"
-    )
+    codigo_coleta = CharFilter(lookup_expr="icontains", label="Código da Coleta")
 
     class Meta:
         fields = ["ponto", "codigo_coleta"]
 
+
 @lazy_filter
 class PontoFilter(FilterSet):
-    codigo = ChoiceFilter(
-        field_name="nome", lookup_expr="exact", label="Ponto"
-    )
-    setor = ChoiceFilter(
-        field_name="id_setor", lookup_expr="exact", label="Setor"
-    )
-    status = ChoiceFilter(
-        field_name="status", lookup_expr="exact", label="Status"
-    )
+    codigo = ChoiceFilter(field_name="nome", lookup_expr="exact", label="Ponto")
+    setor = ChoiceFilter(field_name="id_setor", lookup_expr="exact", label="Setor")
+    status = ChoiceFilter(field_name="status", lookup_expr="exact", label="Status")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -73,14 +65,13 @@ class PontoFilter(FilterSet):
         model = TabPonto
         fields = ["nome", "status"]
 
+
 @lazy_filter
 class SetorFilter(FilterSet):
     abreviatura = ChoiceFilter(
         field_name="abreviatura", lookup_expr="exact", label="Setor"
     )
-    local = ChoiceFilter(
-        field_name="id_local", lookup_expr="exact", label="Local"
-    )
+    local = ChoiceFilter(field_name="id_local", lookup_expr="exact", label="Local")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -95,11 +86,10 @@ class SetorFilter(FilterSet):
         model = TabSetor
         fields = ["abreviatura", "local"]
 
+
 @lazy_filter
 class LocalFilter(FilterSet):
-    codigo = ChoiceFilter(
-        field_name="nome", lookup_expr="exact", label="Local"
-    )
+    codigo = ChoiceFilter(field_name="nome", lookup_expr="exact", label="Local")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

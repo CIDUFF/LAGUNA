@@ -4,57 +4,56 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('simal', '0050_alter_tablocal_id'),
+        ("simal", "0050_alter_tablocal_id"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='amostra',
-            name='codigo_coleta',
+            model_name="amostra",
+            name="codigo_coleta",
         ),
         migrations.RemoveField(
-            model_name='amostra',
-            name='frasco',
+            model_name="amostra",
+            name="frasco",
         ),
         migrations.RemoveField(
-            model_name='amostra',
-            name='ponto',
+            model_name="amostra",
+            name="ponto",
         ),
         migrations.RemoveField(
-            model_name='amostra',
-            name='usuario',
+            model_name="amostra",
+            name="usuario",
         ),
         migrations.RemoveField(
-            model_name='parametros',
-            name='frasco',
+            model_name="parametros",
+            name="frasco",
         ),
         migrations.RemoveField(
-            model_name='parametros',
-            name='produto',
+            model_name="parametros",
+            name="produto",
         ),
         migrations.RemoveField(
-            model_name='parametros',
-            name='tipo_parametro',
+            model_name="parametros",
+            name="tipo_parametro",
         ),
         migrations.RemoveField(
-            model_name='parametros',
-            name='unidade_medida',
+            model_name="parametros",
+            name="unidade_medida",
         ),
         migrations.DeleteModel(
-            name='StatusAmostra',
+            name="StatusAmostra",
         ),
         migrations.DeleteModel(
-            name='Amostra',
+            name="Amostra",
         ),
         migrations.DeleteModel(
-            name='Frasco',
+            name="Frasco",
         ),
         migrations.DeleteModel(
-            name='Parametros',
+            name="Parametros",
         ),
         migrations.DeleteModel(
-            name='Produto',
+            name="Produto",
         ),
     ]

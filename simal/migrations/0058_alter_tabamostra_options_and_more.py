@@ -4,82 +4,81 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('simal', '0057_alter_tablocal_table'),
+        ("simal", "0057_alter_tablocal_table"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='tabamostra',
-            options={'managed': False},
+            name="tabamostra",
+            options={"managed": False},
         ),
         migrations.AlterModelOptions(
-            name='tabamostracopy',
-            options={'managed': False},
+            name="tabamostracopy",
+            options={"managed": False},
         ),
         migrations.AlterModelOptions(
-            name='tabcampanha',
-            options={'managed': False},
+            name="tabcampanha",
+            options={"managed": False},
         ),
         migrations.AlterModelOptions(
-            name='tabcoleta',
-            options={'managed': False},
+            name="tabcoleta",
+            options={"managed": False},
         ),
         migrations.AlterModelOptions(
-            name='tabenvio',
-            options={'managed': False},
+            name="tabenvio",
+            options={"managed": False},
         ),
         migrations.AlterModelOptions(
-            name='tabenviocopy',
-            options={'managed': False},
+            name="tabenviocopy",
+            options={"managed": False},
         ),
         migrations.AlterModelOptions(
-            name='tabequipe',
-            options={'managed': False},
+            name="tabequipe",
+            options={"managed": False},
         ),
         migrations.AlterModelOptions(
-            name='tabfrasco',
-            options={'managed': False},
+            name="tabfrasco",
+            options={"managed": False},
         ),
         migrations.AlterModelOptions(
-            name='tablaboratorio',
-            options={'managed': False},
+            name="tablaboratorio",
+            options={"managed": False},
         ),
         migrations.AlterModelOptions(
-            name='tablocal',
-            options={'managed': False},
+            name="tablocal",
+            options={"managed": False},
         ),
         migrations.AlterModelOptions(
-            name='tabmedida',
-            options={'managed': False},
+            name="tabmedida",
+            options={"managed": False},
         ),
         migrations.AlterModelOptions(
-            name='tabmedidacopy',
-            options={'managed': False},
+            name="tabmedidacopy",
+            options={"managed": False},
         ),
         migrations.AlterModelOptions(
-            name='tabparam',
-            options={'managed': False},
+            name="tabparam",
+            options={"managed": False},
         ),
         migrations.AlterModelOptions(
-            name='tabponto',
-            options={'managed': False},
+            name="tabponto",
+            options={"managed": False},
         ),
         migrations.AlterModelOptions(
-            name='tabproduto',
-            options={'managed': False},
+            name="tabproduto",
+            options={"managed": False},
         ),
         migrations.AlterModelOptions(
-            name='tabprodxparam',
-            options={'managed': False},
+            name="tabprodxparam",
+            options={"managed": False},
         ),
         migrations.AlterModelOptions(
-            name='tabserieclassificacao',
-            options={'managed': False},
+            name="tabserieclassificacao",
+            options={"managed": False},
         ),
         migrations.AlterModelOptions(
-            name='tabsetor',
-            options={'managed': False},
+            name="tabsetor",
+            options={"managed": False},
         ),
     ]

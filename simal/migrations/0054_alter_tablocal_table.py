@@ -4,14 +4,13 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('simal', '0053_alter_tablocal_table'),
+        ("simal", "0053_alter_tablocal_table"),
     ]
 
     operations = [
         migrations.AlterModelTable(
-            name='tablocal',
-            table='tab_local2',
+            name="tablocal",
+            table="tab_local2",
         ),
     ]

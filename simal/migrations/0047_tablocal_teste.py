@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('simal', '0046_rename_produto_tabproduto_descricao_and_more'),
+        ("simal", "0046_rename_produto_tabproduto_descricao_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='tablocal',
-            name='teste',
+            model_name="tablocal",
+            name="teste",
             field=models.CharField(blank=True, null=True),
         ),
     ]

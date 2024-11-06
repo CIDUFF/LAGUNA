@@ -4,13 +4,12 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('simal', '0059_tbteste_alter_tabamostra_options_and_more'),
+        ("simal", "0059_tbteste_alter_tabamostra_options_and_more"),
     ]
 
     operations = [
         migrations.DeleteModel(
-            name='Tbteste',
+            name="Tbteste",
         ),
     ]
