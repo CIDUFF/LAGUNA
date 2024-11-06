@@ -483,6 +483,8 @@ class TabLocal(models.Model):
         db_table = "tab_local"
         
 
+        
+
 class TabCampanha(models.Model):
     # id = models.BigAutoField(primary_key=True)
     id_local = models.ForeignKey(
