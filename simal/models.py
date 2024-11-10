@@ -479,7 +479,7 @@ class TabLocal(models.Model):
 class TabCampanha(models.Model):
     # id = models.BigAutoField(primary_key=True)
     id_local = models.ForeignKey(
-        TabLocal, models.DO_NOTHING, db_column="id_local", blank=True, null=True
+        TabLocal, on_delete=models.CASCADE, db_column="id_local", blank=True, null=True
     )
     nome = models.CharField(blank=True, null=True)
     data_criacao = models.DateTimeField(blank=True, null=True)
@@ -498,10 +498,10 @@ class TabColeta(models.Model):
     data = models.DateTimeField(blank=True, null=True)
     nome = models.CharField(blank=True, null=True)
     id_campanha = models.ForeignKey(
-        TabCampanha, models.DO_NOTHING, db_column="id_campanha", blank=True, null=True
+        TabCampanha, on_delete=models.CASCADE, db_column="id_campanha", blank=True, null=True
     )
     id_setor = models.ForeignKey(
-        "TabSetor", models.DO_NOTHING, db_column="id_setor", blank=True, null=True
+        "TabSetor", on_delete=models.CASCADE, db_column="id_setor", blank=True, null=True
     )
     ordem_servico = models.CharField("Ordem de serviço", blank=True, null=True)
     criado_por = models.ForeignKey(
@@ -530,13 +530,13 @@ class TabColeta(models.Model):
 class TabAmostra(models.Model):
     id = models.BigAutoField(primary_key=True)
     id_ponto = models.ForeignKey(
-        "TabPonto", models.DO_NOTHING, db_column="id_ponto", blank=True, null=True
+        "TabPonto", on_delete=models.CASCADE, db_column="id_ponto", blank=True, null=True
     )
     id_coleta = models.ForeignKey(
-        "TabColeta", models.DO_NOTHING, db_column="id_coleta", blank=True, null=True
+        "TabColeta", on_delete=models.CASCADE, db_column="id_coleta", blank=True, null=True
     )
     id_frasco = models.ForeignKey(
-        "TabFrasco", models.DO_NOTHING, db_column="id_frasco", blank=True, null=True
+        "TabFrasco", on_delete=models.CASCADE, db_column="id_frasco", blank=True, null=True
     )
     etiqueta = models.TextField(blank=True, null=True)
 
@@ -558,13 +558,13 @@ class TabAmostra(models.Model):
 class TabAmostraCopy(models.Model):
     id = models.BigAutoField(primary_key=True)
     id_ponto = models.ForeignKey(
-        "TabPonto", models.DO_NOTHING, db_column="id_ponto", blank=True, null=True
+        "TabPonto", on_delete=models.CASCADE, db_column="id_ponto", blank=True, null=True
     )
     id_coleta = models.ForeignKey(
-        "TabColeta", models.DO_NOTHING, db_column="id_coleta", blank=True, null=True
+        "TabColeta", on_delete=models.CASCADE, db_column="id_coleta", blank=True, null=True
     )
     id_frasco = models.ForeignKey(
-        "TabFrasco", models.DO_NOTHING, db_column="id_frasco", blank=True, null=True
+        "TabFrasco", on_delete=models.CASCADE, db_column="id_frasco", blank=True, null=True
     )
     etiqueta = models.TextField(blank=True, null=True)
 
@@ -579,11 +579,11 @@ class TabAmostraCopy(models.Model):
 class TabEnvioCopy(models.Model):
     id = models.BigAutoField(primary_key=True)
     id_amostra = models.ForeignKey(
-        TabAmostraCopy, models.DO_NOTHING, db_column="id_amostra", blank=True, null=True
+        TabAmostraCopy, on_delete=models.CASCADE, db_column="id_amostra", blank=True, null=True
     )
     id_laboratorio = models.ForeignKey(
         "TabLaboratorio",
-        models.DO_NOTHING,
+        models.CASCADE,
         db_column="id_laboratorio",
         blank=True,
         null=True,
@@ -602,10 +602,10 @@ class TabEnvioCopy(models.Model):
 class TabMedidaCopy(models.Model):
     id = models.BigAutoField(primary_key=True)
     id_envio = models.ForeignKey(
-        TabEnvioCopy, models.DO_NOTHING, db_column="id_envio", blank=True, null=True
+        TabEnvioCopy, on_delete=models.CASCADE, db_column="id_envio", blank=True, null=True
     )
     id_pp = models.ForeignKey(
-        "TabProdxparam", models.DO_NOTHING, db_column="id_pp", blank=True, null=True
+        "TabProdxparam", on_delete=models.CASCADE, db_column="id_pp", blank=True, null=True
     )
     input_valor = models.CharField(blank=True, null=True)
     valor = models.CharField(blank=True, null=True)
@@ -621,11 +621,11 @@ class TabMedidaCopy(models.Model):
 class TabEnvio(models.Model):
     id = models.BigAutoField(primary_key=True)
     id_amostra = models.ForeignKey(
-        TabAmostra, models.DO_NOTHING, db_column="id_amostra", blank=True, null=True
+        TabAmostra, on_delete=models.CASCADE, db_column="id_amostra", blank=True, null=True
     )
     id_laboratorio = models.ForeignKey(
         "TabLaboratorio",
-        models.DO_NOTHING,
+        models.CASCADE,
         db_column="id_laboratorio",
         blank=True,
         null=True,
@@ -669,12 +669,13 @@ class TabLaboratorio(models.Model):
 class TabMedida(models.Model):
     id = models.BigAutoField(primary_key=True)
     id_envio = models.ForeignKey(
-        TabEnvio, models.DO_NOTHING, db_column="id_envio", blank=True, null=True
+        TabEnvio, on_delete=models.CASCADE, db_column="id_envio", blank=True, null=True
     )
     id_pp = models.ForeignKey(
-        "TabProdxparam", models.DO_NOTHING, db_column="id_pp", blank=True, null=True
+        "TabProdxparam", on_delete=models.CASCADE, db_column="id_pp", blank=True, null=True
     )
     valor = models.TextField(blank=True, null=True)
+    input_valor = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return f"{self.valor}"
@@ -700,10 +701,10 @@ class TabParam(models.Model):
 class TabPonto(models.Model):
     id = models.BigAutoField(primary_key=True)
     id_setor = models.ForeignKey(
-        "TabSetor", models.DO_NOTHING, db_column="id_setor", blank=True, null=True
+        "TabSetor", on_delete=models.CASCADE, db_column="id_setor", blank=True, null=True
     )
     id_local = models.ForeignKey(
-        TabLocal, models.DO_NOTHING, db_column="id_local", blank=True, null=True
+        TabLocal, on_delete=models.CASCADE, db_column="id_local", blank=True, null=True
     )
     nome = models.CharField(blank=True, null=True)
     modalidade = models.CharField(blank=True, null=True)
@@ -736,14 +737,14 @@ class TabProduto(models.Model):
 class TabProdxparam(models.Model):
     id = models.BigAutoField(primary_key=True)
     id_param = models.ForeignKey(
-        TabParam, models.DO_NOTHING, db_column="id_param", blank=True, null=True
+        TabParam, on_delete=models.CASCADE, db_column="id_param", blank=True, null=True
     )
     id_produto = models.ForeignKey(
-        TabProduto, models.DO_NOTHING, db_column="id_produto", blank=True, null=True
+        TabProduto, on_delete=models.CASCADE, db_column="id_produto", blank=True, null=True
     )
     id_serie = models.ForeignKey(
         "TabSerieClassificacao",
-        models.DO_NOTHING,
+        models.CASCADE,
         db_column="id_serie",
         blank=True,
         null=True,
@@ -753,7 +754,7 @@ class TabProdxparam(models.Model):
     limite_min = models.BigIntegerField(blank=True, null=True)
     limite_max = models.BigIntegerField(blank=True, null=True)
     id_frasco = models.ForeignKey(
-        TabFrasco, models.DO_NOTHING, db_column="id_frasco", blank=True, null=True
+        TabFrasco, on_delete=models.CASCADE, db_column="id_frasco", blank=True, null=True
     )
     id_ppativacao = models.BigIntegerField(blank=True, null=True)
 
@@ -782,7 +783,7 @@ class TabSetor(models.Model):
     id = models.BigAutoField(primary_key=True)
     nome = models.CharField(blank=True, null=True)
     id_local = models.ForeignKey(
-        "TabLocal", models.DO_NOTHING, db_column="id_local", blank=True, null=True
+        "TabLocal", on_delete=models.CASCADE, db_column="id_local", blank=True, null=True
     )
     lon = models.FloatField(blank=True, null=True)
     lat = models.FloatField(blank=True, null=True)
@@ -801,7 +802,7 @@ class TabEquipe(models.Model):
     nome = models.TextField(blank=True, null=True)
     descricao = models.TextField(blank=True, null=True)
     responsavel = models.ForeignKey(
-        User, models.DO_NOTHING, db_column="responsavel_id", blank=True, null=True
+        User, on_delete=models.CASCADE, db_column="responsavel_id", blank=True, null=True
     )
 
     class Meta:

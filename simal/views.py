@@ -28,10 +28,87 @@ from django.utils import timezone
 
 from django_tables2 import RequestConfig
 
-from .filters import *
-from .forms import *
+from .filters import CampoFilter, ResultadosColetaFilter, ProgramaColetaFilter, SetorFilter, PontoFilter, LocalFilter
+from .forms import (
+    CustomUserCreationForm,
+    ColetaCampo,
+    MetadadosCampoForm,
+    AjudaForm,
+    IniciarCampanhaForm,
+    ChecklistCampoForm,
+    ProgramaColetaForm,
+    LaboratorioForm,
+    AnaliseForm,
+    LocaisForm,
+    SetorForm,
+    PontoForm,
+    ParametroForm,
+    TabEquipeForm,
+    TabFrascoForm,
+    TabLaboratorioForm,
+    TabProdutoForm,
+    TabProdxParamForm,
+    TabSerieClassificacaoForm,
+    UnidadeMedidaForm,
+    TipoParametroForm,
+    CadastroItemChecklistColetaForm,
+    ChecklistColetaForm,
+    CadastroCampanhaForm,
+    CadastroColetaForm,
+    DetalhesUsuarioForm,
+    InputFisicoQuimicoForm,
+)
 from .services import gerar_etiquetas, get_weather_description
-from .tables import *
+
+from .tables import (
+    TopCampanhas,
+    ColetaCampoTable,
+    ResultadosColetaTable,
+    ProgramaColetaTable,
+    LaboratoriosTable,
+    SetorTable,
+    PontoTable,
+    LocalTable,
+    TipoParametroTable,
+    ParametroTable,
+    FrascoTable,
+    EquipeTable,
+    LaboratorioTable,
+    ProdutoTable,
+    ProdxparamTable,
+    SerieClassificacaoTable,
+    TipoItemChecklistColetaTable,
+    ListaCampoTable,
+)
+
+from .models import (
+    TipoParametro,
+    User,
+    ProgramaColeta,
+    ChecklistCampo,
+    Campo,
+    MetadadosCampo,
+    Ajuda,
+    Laboratorios,
+    Analises,
+    TabSetor,
+    TabPonto,
+    TabLocal,
+    TabParam,
+    TabFrasco,
+    TabEquipe,
+    TabLaboratorio,
+    TabProduto,
+    TabProdxparam,
+    TabSerieClassificacao,
+    TabItemChecklistColeta,
+    TabChecklistColeta,
+    TabColeta,
+    TabAmostraCopy,
+    TabEnvioCopy,
+    TabMedidaCopy,
+    DetalhesUsuario,
+)
 
 # Configuração do logger
 logger = logging.getLogger(__name__)
@@ -319,7 +396,6 @@ def home(request):
             "weather_description": weather_description,
             "weather_description_day_before": weather_description_day_before,
             "weather_description_two_days_before": weather_description_two_days_before,
-            "data_coleta_proxima_formatada": data_coleta_proxima_formatada,
             "status_coleta": proxima_coleta.status_coleta if proxima_coleta else None,
             "local_coleta": proxima_coleta.local_coleta if proxima_coleta else None,
             "percentual_checklist": percentual_checklist if percentual_checklist else 0,
@@ -1645,6 +1721,7 @@ def fill_amostra(request, coleta_id):
 
     TabAmostraCopy.objects.bulk_create(amostras)
 
+    
     envios = []
     for amostra in amostras:
         envio = TabEnvioCopy(

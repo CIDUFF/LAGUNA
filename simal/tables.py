@@ -1,6 +1,6 @@
 import django_tables2 as tables
 from django_tables2.utils import A  # import A
-from .models import *
+from .models import Campo, ProgramaColeta, Laboratorios, TabSetor, TabPonto, TabLocal, TipoParametro, TabParam, TabFrasco, TabEquipe, TabLaboratorio, TabProduto, TabProdxparam, TabSerieClassificacao, TabItemChecklistColeta, TabMedidaCopy, TabAmostra
 from django.utils.html import format_html
 
 # TODO: Adicionar filtro e opção para exportação de dados
