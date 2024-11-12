@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("simal", "0026_tabequipe_tabcoleta_id_campanha_and_more"),
     ]

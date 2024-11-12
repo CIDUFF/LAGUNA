@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("simal", "0020_tabitemchecklistcoleta_alter_tabcoleta_options"),
     ]

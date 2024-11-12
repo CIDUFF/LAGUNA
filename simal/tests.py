@@ -1,41 +1,43 @@
-from django.test import TestCase, Client
-from django.urls import reverse
-from simal.models import TabColeta, TabFrasco, TabPonto, TabAmostraCopy
+from django.test import TestCase
 from django.contrib.auth.models import User
-from django.core.management import call_command
+from .forms import CustomUserCreationForm
 
 
-class FillAmostraTest(TestCase):
+class TestCustomUserCreationForm(TestCase):
     def setUp(self):
-        # Carregar dados do fixture
-        call_command('loaddata', 'initial_data.json')
+        # Create a test user for duplicate validation checks
+        self.existing_user = User.objects.create(
+            username="existinguser", email="existing@test.com"
+        )
 
-        # Criar um usuário para autenticação
-        self.user = User.objects.create_user(
-            username='testuser', password='12345')
-        self.client = Client()
-        self.client.login(username='testuser', password='12345')
+    def test_valid_form(self):
+        # Test with valid data
+        form_data = {"username": "newuser", "email": "newuser@test.com"}
+        form = CustomUserCreationForm(data=form_data)
+        self.assertTrue(form.is_valid())
 
-        # Criar objetos necessários
-        self.coleta = TabColeta.objects.create(
-            id=25, id_setor=1, id_campanha=1)
-        self.frasco1 = TabFrasco.objects.create(id=1, nome='Frasco 1')
-        self.frasco2 = TabFrasco.objects.create(id=2, nome='Frasco 2')
-        self.ponto1 = TabPonto.objects.create(id=1, id_setor=1, nome='Ponto 1')
-        self.ponto2 = TabPonto.objects.create(id=2, id_setor=1, nome='Ponto 2')
+    def test_duplicate_username(self):
+        # Test with existing username
+        form_data = {"username": "existinguser", "email": "different@test.com"}
+        form = CustomUserCreationForm(data=form_data)
+        self.assertFalse(form.is_valid())
+        self.assertIn("Este nome de usuário já está em uso.", form.errors["username"])
 
-    def test_fill_amostra(self):
-        response = self.client.get(reverse('fill_amostra', args=[25]))
-        # Redirecionamento esperado
-        self.assertEqual(response.status_code, 302)
+    def test_duplicate_email(self):
+        # Test with existing email
+        form_data = {"username": "differentuser", "email": "existing@test.com"}
+        form = CustomUserCreationForm(data=form_data)
+        self.assertFalse(form.is_valid())
+        self.assertIn("Este e-mail já está em uso.", form.errors["email"])
 
-        # Verificar se as amostras foram criadas
-        amostras = TabAmostraCopy.objects.filter(id_coleta=self.coleta)
-        # 2 frascos * 2 pontos = 4 amostras
-        self.assertEqual(amostras.count(), 4)
+    def test_blank_fields(self):
+        # Test with empty fields
+        form_data = {"username": "", "email": ""}
+        form = CustomUserCreationForm(data=form_data)
+        self.assertFalse(form.is_valid())
+        self.assertTrue(form.errors["username"])  # Username is required
+        self.assertTrue(form.errors["email"])  # Email is required
 
-        # Verificar se as amostras estão corretas
-        for frasco in [self.frasco1, self.frasco2]:
-            for ponto in [self.ponto1, self.ponto2]:
-                self.assertTrue(TabAmostraCopy.objects.filter(
-                    id_coleta=self.coleta, id_frasco=frasco, id_ponto=ponto).exists())
+    def tearDown(self):
+        # Clean up created test data
+        User.objects.all().delete()

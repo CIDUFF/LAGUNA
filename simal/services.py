@@ -6,11 +6,13 @@ from datetime import datetime
 from decouple import config
 import requests
 import qrcode
+
 # import os
 from dotenv import load_dotenv
 
 # Carrega as variáveis de ambiente do arquivo .env
 load_dotenv()
+
 
 def get_weather_description(city, date):
     """
@@ -31,8 +33,7 @@ def get_weather_description(city, date):
     'céu limpo, 25°C'
     """
 
-
-    api_key = config('OPENWEATHERMAP_API_KEY')
+    api_key = config("OPENWEATHERMAP_API_KEY")
 
     url = f"http://api.openweathermap.org/data/2.5/forecast?q={city}&appid={api_key}&units=metric&lang=pt_br"
 
@@ -42,13 +43,13 @@ def get_weather_description(city, date):
     except requests.RequestException as e:
         return f"Erro ao acessar a API do OpenWeatherMap: {e}"
 
-    forecasts = response.json().get('list', [])
-    target_date = datetime.strptime(date, '%Y-%m-%d').date()
+    forecasts = response.json().get("list", [])
+    target_date = datetime.strptime(date, "%Y-%m-%d").date()
     for forecast in forecasts:
-        forecast_date = datetime.fromtimestamp(forecast['dt']).date()
+        forecast_date = datetime.fromtimestamp(forecast["dt"]).date()
         if forecast_date == target_date:
-            description = forecast['weather'][0]['description']
-            temperature = forecast['main']['temp']
+            description = forecast["weather"][0]["description"]
+            temperature = forecast["main"]["temp"]
             return f"{description}, {temperature}°C"
 
     return "Previsão do tempo não encontrada para a data especificada."
@@ -74,12 +75,14 @@ def get_weather_description(city, date):
 #         codigos.add(codigo)
 #     return list(codigos)
 
+
 def gerar_qr_code(codigo, data, responsavel, codigo_servico):
     try:
         qr_data = f"Responsável: {responsavel}\nData da coleta: {data}\nCódigo de Serviço: {codigo_servico}"
         qr = qrcode.make(qr_data)
         qr_path = os.path.join(
-            '/home/marcus/projects/LAGUNA/media/tmp/', f"qr_{codigo}.png")
+            "/home/marcus/projects/LAGUNA/media/tmp/", f"qr_{codigo}.png"
+        )
         try:
             qr.save(qr_path)
         except Exception as e:
@@ -93,15 +96,23 @@ def gerar_qr_code(codigo, data, responsavel, codigo_servico):
 
 def adicionar_etiqueta(c, qr_path, codigo, data, responsavel, x, y):
     try:
-        c.drawImage(qr_path, x, y, width=20*mm, height=20*mm)
-        c.drawString(x + 25*mm, y + 15*mm, f"Código: {codigo}")
-        c.drawString(x + 25*mm, y + 7*mm, f"Data da coleta: {data}")
-        c.drawString(x + 25*mm, y + -1*mm, f"Responsável: {responsavel}")
+        c.drawImage(qr_path, x, y, width=20 * mm, height=20 * mm)
+        c.drawString(x + 25 * mm, y + 15 * mm, f"Código: {codigo}")
+        c.drawString(x + 25 * mm, y + 7 * mm, f"Data da coleta: {data}")
+        c.drawString(x + 25 * mm, y + -1 * mm, f"Responsável: {responsavel}")
     except Exception as e:
         print(f"Erro ao adicionar etiqueta: {e}")
 
 
-def desenhar_linhas_tracejadas(c, largura_pagina, altura_pagina, largura_etiqueta, altura_etiqueta, espacamento_x, espacamento_y):
+def desenhar_linhas_tracejadas(
+    c,
+    largura_pagina,
+    altura_pagina,
+    largura_etiqueta,
+    altura_etiqueta,
+    espacamento_x,
+    espacamento_y,
+):
     try:
         c.setDash(1, 2)  # Define o estilo da linha tracejada
 
@@ -126,7 +137,9 @@ def gerar_etiquetas(codigos, data, responsavel, codigo_servico):
     try:
         largura_pagina, altura_pagina = A4
         pdf_path = os.path.join(
-            '/home/marcus/projects/LAGUNA/media/pdf/', f"etiquetas_da_OS_{codigo_servico}.pdf")
+            "/home/marcus/projects/LAGUNA/media/pdf/",
+            f"etiquetas_da_OS_{codigo_servico}.pdf",
+        )
         try:
             c = canvas.Canvas(pdf_path, pagesize=A4)
         except Exception as e:
@@ -146,8 +159,15 @@ def gerar_etiquetas(codigos, data, responsavel, codigo_servico):
         qr_paths = []
 
         try:
-            desenhar_linhas_tracejadas(c, largura_pagina, altura_pagina,
-                                       largura_etiqueta, altura_etiqueta, espacamento_x, espacamento_y)
+            desenhar_linhas_tracejadas(
+                c,
+                largura_pagina,
+                altura_pagina,
+                largura_etiqueta,
+                altura_etiqueta,
+                espacamento_x,
+                espacamento_y,
+            )
         except Exception as e:
             print(f"Erro ao desenhar linhas tracejadas: {e}")
 
@@ -156,12 +176,14 @@ def gerar_etiquetas(codigos, data, responsavel, codigo_servico):
                 codigo_modificado = f"{codigo}{i}"
                 try:
                     qr_path = gerar_qr_code(
-                        codigo_modificado, data, responsavel, codigo_servico)
+                        codigo_modificado, data, responsavel, codigo_servico
+                    )
                     if qr_path:
                         qr_paths.append(qr_path)
                         try:
                             adicionar_etiqueta(
-                                c, qr_path, codigo_modificado, data, responsavel, x, y)
+                                c, qr_path, codigo_modificado, data, responsavel, x, y
+                            )
                         except Exception as e:
                             print(f"Erro ao adicionar etiqueta: {e}")
                         y -= altura_etiqueta + espacamento_y
@@ -174,11 +196,19 @@ def gerar_etiquetas(codigos, data, responsavel, codigo_servico):
                         if contador_etiquetas >= etiquetas_por_pagina:
                             c.showPage()
                             try:
-                                desenhar_linhas_tracejadas(c, largura_pagina, altura_pagina,
-                                                           largura_etiqueta, altura_etiqueta, espacamento_x, espacamento_y)
+                                desenhar_linhas_tracejadas(
+                                    c,
+                                    largura_pagina,
+                                    altura_pagina,
+                                    largura_etiqueta,
+                                    altura_etiqueta,
+                                    espacamento_x,
+                                    espacamento_y,
+                                )
                             except Exception as e:
                                 print(
-                                    f"Erro ao desenhar linhas tracejadas em nova página: {e}")
+                                    f"Erro ao desenhar linhas tracejadas em nova página: {e}"
+                                )
                             x = x_inicial
                             y = y_inicial
                             contador_etiquetas = 0
@@ -199,6 +229,8 @@ def gerar_etiquetas(codigos, data, responsavel, codigo_servico):
     except Exception as e:
         print(f"Erro ao gerar etiquetas: {e}")
         return None
+
+
 # from simal.models import *
 
 # codigos = Campo.objects.get(id="BIO20240802125946")

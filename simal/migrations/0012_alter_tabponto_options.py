@@ -4,14 +4,13 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('simal', '0011_alter_tabcoleta_options_alter_detalhesusuario_table'),
+        ("simal", "0011_alter_tabcoleta_options_alter_detalhesusuario_table"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='tabponto',
-            options={'managed': True},
+            name="tabponto",
+            options={"managed": True},
         ),
     ]

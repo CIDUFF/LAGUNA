@@ -5,7 +5,6 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("simal", "0025_tabcoleta_id_campanha_tabcoleta_ordem_servico"),
     ]
@@ -23,7 +22,6 @@ class Migration(migrations.Migration):
                 "managed": False,
             },
         ),
-
         migrations.AlterField(
             model_name="tabcoleta",
             name="ordem_servico",

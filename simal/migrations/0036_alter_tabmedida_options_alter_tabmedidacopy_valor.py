@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("simal", "0035_detalhesusuario_foto_perfil_and_more"),
     ]

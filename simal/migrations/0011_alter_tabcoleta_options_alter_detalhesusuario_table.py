@@ -4,18 +4,17 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('simal', '0010_tabcoleta_id_campanha_tabcoleta_id_setor'),
+        ("simal", "0010_tabcoleta_id_campanha_tabcoleta_id_setor"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='tabcoleta',
-            options={'managed': False},
+            name="tabcoleta",
+            options={"managed": False},
         ),
         migrations.AlterModelTable(
-            name='detalhesusuario',
-            table='tab_detalhes_usuario',
+            name="detalhesusuario",
+            table="tab_detalhes_usuario",
         ),
     ]

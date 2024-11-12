@@ -5,22 +5,23 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('simal', '0004_tabsetor_id_local_alter_tabsetor_nome'),
+        ("simal", "0004_tabsetor_id_local_alter_tabsetor_nome"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='tabponto',
-            options={'managed': True},
+            name="tabponto",
+            options={"managed": True},
         ),
         migrations.AlterField(
-            model_name='amostra',
-            name='ponto',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='simal.tabponto'),
+            model_name="amostra",
+            name="ponto",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to="simal.tabponto"
+            ),
         ),
         migrations.DeleteModel(
-            name='PontosColeta',
+            name="PontosColeta",
         ),
     ]

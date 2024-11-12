@@ -6,26 +6,30 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('simal', '0041_alter_tabcoleta_options_alter_tabmedidacopy_id'),
+        ("simal", "0041_alter_tabcoleta_options_alter_tabmedidacopy_id"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='tabcoleta',
-            name='atualizado_em',
+            model_name="tabcoleta",
+            name="atualizado_em",
             field=models.DateTimeField(auto_now=True, null=True),
         ),
         migrations.AddField(
-            model_name='tabcoleta',
-            name='criado_em',
+            model_name="tabcoleta",
+            name="criado_em",
             field=models.DateTimeField(auto_now_add=True, null=True),
         ),
         migrations.AddField(
-            model_name='tabcoleta',
-            name='criado_por',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL),
+            model_name="tabcoleta",
+            name="criado_por",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
     ]

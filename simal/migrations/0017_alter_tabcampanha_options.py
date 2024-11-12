@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("simal", "0016_tabcampanha_id_local_alter_tabcampanha_nome"),
     ]
