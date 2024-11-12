@@ -98,3 +98,4 @@ staticfiles/
 .vscode/settings.json
 reload_apache.txt
 laguna.dump
+backup_laguna.json
