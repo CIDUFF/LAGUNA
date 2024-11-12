@@ -476,6 +476,19 @@ class TabLocal(models.Model):
         db_table = "tab_local"
 
 
+class TabLocale(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    nome = models.CharField(blank=True, null=True)
+    local_latitude = models.FloatField(blank=True, null=True)
+    local_longitude = models.FloatField(blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.nome}"
+
+    class Meta:
+        managed = True
+        db_table = "tab_locale"
+
 class TabCampanha(models.Model):
     # id = models.BigAutoField(primary_key=True)
     id_local = models.ForeignKey(
