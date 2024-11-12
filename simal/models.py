@@ -807,7 +807,7 @@ class TabEquipe(models.Model):
 
     class Meta:
         managed = True
-        db_table = "tab_equipe"
+        db_table = "tab_equipes"
 
 
 class TabItemChecklistColeta(models.Model):
@@ -852,3 +852,13 @@ class TabChecklistColeta(models.Model):
 
     class Meta:
         db_table = "tab_checklist_coleta"
+
+
+class teste(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    nome = models.TextField(blank=True, null=True)
+    descricao = models.TextField(blank=True, null=True)
+
+    class Meta:
+        managed = True
+        db_table = "tab_teste"

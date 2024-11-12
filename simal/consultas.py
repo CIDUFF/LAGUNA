@@ -1,4 +1,5 @@
-from simal.models import *
+import pandas as pd
+from simal.models import TabParam, TabMedida
 
 
 # Lista de parâmetros

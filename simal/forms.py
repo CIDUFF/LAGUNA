@@ -114,8 +114,10 @@ class ColetaCampo(forms.Form):
                 " ",
                 *[
                     Row(
-                        Column(FloatingField("data_coleta", css_class="col-md-6")),
-                        Column(FloatingField("hora_inicio", css_class="col-md-6")),
+                        Column(FloatingField(
+                            "data_coleta", css_class="col-md-6")),
+                        Column(FloatingField(
+                            "hora_inicio", css_class="col-md-6")),
                     )
                 ],
                 "codigo_coleta",
@@ -124,7 +126,8 @@ class ColetaCampo(forms.Form):
                 *[
                     Row(
                         Column(FloatingField(campos[i]), css_class="col-md-6"),
-                        Column(FloatingField(campos[i + 1]), css_class="col-md-6")
+                        Column(FloatingField(
+                            campos[i + 1]), css_class="col-md-6")
                         if i + 1 < len(campos)
                         else None,
                     )
@@ -348,10 +351,12 @@ class ProgramaColetaForm(forms.Form):
         )
 
         def gerar_opcoes_unicas(modelo, campo):
-            valores_unicos = modelo.objects.values_list(campo, flat=True).distinct()
+            valores_unicos = modelo.objects.values_list(
+                campo, flat=True).distinct()
             return [(valor, valor) for valor in valores_unicos]
 
-        self.fields["local_coleta"].choices = gerar_opcoes_unicas(TabSetor, "nome")
+        self.fields["local_coleta"].choices = gerar_opcoes_unicas(
+            TabSetor, "nome")
         self.fields["equipe_coleta"].choices = [
             (group.id, group.name) for group in Group.objects.all()
         ]
@@ -417,7 +422,8 @@ class ChecklistCampoForm(forms.Form):
     ]
 
     def __init__(self, *args, **kwargs):
-        ordem_servico_selecionada = kwargs.pop("ordem_servico_selecionada", None)
+        ordem_servico_selecionada = kwargs.pop(
+            "ordem_servico_selecionada", None)
         checklist_campo_instance = kwargs.pop("instance", None)
         super(ChecklistCampoForm, self).__init__(*args, **kwargs)
 
@@ -429,7 +435,8 @@ class ChecklistCampoForm(forms.Form):
             self.fields[f"observacao_{name}"] = create_observation_field(name)
 
             if checklist_campo_instance:
-                self.fields[name].initial = getattr(checklist_campo_instance, name)
+                self.fields[name].initial = getattr(
+                    checklist_campo_instance, name)
                 self.fields[f"data_{name}"].initial = getattr(
                     checklist_campo_instance, f"data_{name}"
                 )
@@ -482,7 +489,8 @@ class ChecklistCampoForm(forms.Form):
 class AjudaForm(forms.Form):
     nome = forms.CharField()
     email = forms.EmailField()
-    pergunta = forms.CharField(widget=forms.Textarea, max_length=500, required=False)
+    pergunta = forms.CharField(
+        widget=forms.Textarea, max_length=500, required=False)
 
     def __init__(self, *args, **kwargs):
         super(AjudaForm, self).__init__(*args, **kwargs)
@@ -604,7 +612,8 @@ class LocaisForm(forms.ModelForm):
                 "Cadastro de Locais",
                 Div(Div("nome", css_class="col-md-6"), css_class="row"),
             ),
-            ButtonHolder(Submit("submit", "Salvar", css_class="btn btn-primary")),
+            ButtonHolder(Submit("submit", "Salvar",
+                         css_class="btn btn-primary")),
         )
 
 
@@ -635,7 +644,8 @@ class SetorForm(forms.ModelForm):
                     css_class="row",
                 ),
             ),
-            ButtonHolder(Submit("submit", "Salvar", css_class="btn btn-primary")),
+            ButtonHolder(Submit("submit", "Salvar",
+                         css_class="btn btn-primary")),
         )
 
 
@@ -684,7 +694,8 @@ class PontoForm(forms.ModelForm):
                     css_class="row",
                 ),
             ),
-            ButtonHolder(Submit("submit", "Salvar", css_class="btn btn-primary")),
+            ButtonHolder(Submit("submit", "Salvar",
+                         css_class="btn btn-primary")),
         )
 
 
@@ -757,7 +768,8 @@ class CadastroCampanhaForm(forms.Form):
 
 
 class CadastroCampanhaForm(forms.ModelForm):
-    data_criacao = forms.DateField(widget=forms.DateInput(attrs={"type": "date"}))
+    data_criacao = forms.DateField(
+        widget=forms.DateInput(attrs={"type": "date"}))
 
     class Meta:
         model = TabCampanha
@@ -796,7 +808,8 @@ class CadastroItemChecklistColetaForm(forms.ModelForm):
         self.helper.add_input(Submit("submit", "Salvar"))
 
     def save(self, user=None, *args, **kwargs):
-        instance = super(CadastroItemChecklistColetaForm, self).save(commit=False)
+        instance = super(CadastroItemChecklistColetaForm,
+                         self).save(commit=False)
         if user:
             instance.user = user
         instance.save()
