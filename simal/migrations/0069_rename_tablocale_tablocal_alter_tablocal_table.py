@@ -4,18 +4,17 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('simal', '0068_delete_tabequipes'),
+        ("simal", "0068_delete_tabequipes"),
     ]
 
     operations = [
         migrations.RenameModel(
-            old_name='TabLocale',
-            new_name='TabLocal',
+            old_name="TabLocale",
+            new_name="TabLocal",
         ),
         migrations.AlterModelTable(
-            name='tablocal',
-            table='tab_local',
+            name="tablocal",
+            table="tab_local",
         ),
     ]

@@ -6,25 +6,32 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('simal', '0064_teste'),
+        ("simal", "0064_teste"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='TabEquipe',
+            name="TabEquipe",
             fields=[
-                ('id', models.BigAutoField(primary_key=True, serialize=False)),
-                ('nome', models.TextField(blank=True, null=True)),
-                ('descricao', models.TextField(blank=True, null=True)),
-                ('responsavel', models.ForeignKey(blank=True, db_column='responsavel_id', null=True, on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                ("id", models.BigAutoField(primary_key=True, serialize=False)),
+                ("nome", models.TextField(blank=True, null=True)),
+                ("descricao", models.TextField(blank=True, null=True)),
+                (
+                    "responsavel",
+                    models.ForeignKey(
+                        blank=True,
+                        db_column="responsavel_id",
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'db_table': 'tab_equipes',
-                'managed': True,
+                "db_table": "tab_equipes",
+                "managed": True,
             },
         ),
-
     ]

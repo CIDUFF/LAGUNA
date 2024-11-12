@@ -2,7 +2,6 @@ from datetime import datetime, date, timedelta
 from django.utils import timezone
 import re
 import unicodedata
-import sys
 
 # from localflavor.br.models import BRCPFField
 from django.db import models
@@ -86,18 +85,15 @@ class ProgramaColeta(models.Model):
     ordem_servico = models.CharField(
         max_length=100, blank=True, verbose_name="Ordem de Serviço"
     )
-    data_coleta_campo = models.DateField(
-        null=True, verbose_name="Data da Coleta")
+    data_coleta_campo = models.DateField(null=True, verbose_name="Data da Coleta")
     data_programacao = models.DateField(
         auto_now_add=True, null=True, verbose_name="Data da Programação"
     )
     data_check_forecast = models.DateField(
         null=True, verbose_name="Data do Check Forecast"
     )
-    data_check_lab = models.DateField(
-        null=True, verbose_name="Data do Check Lab")
-    data_check_car = models.DateField(
-        null=True, verbose_name="Data do Check Car")
+    data_check_lab = models.DateField(null=True, verbose_name="Data do Check Lab")
+    data_check_car = models.DateField(null=True, verbose_name="Data do Check Car")
     data_check_material = models.DateField(
         null=True, verbose_name="Data do Check Material"
     )
@@ -113,12 +109,10 @@ class ProgramaColeta(models.Model):
     prazo_material = models.FloatField(
         null=True, verbose_name="Prazo para check de material", default=3
     )
-    equipe_coleta = models.CharField(
-        max_length=50, verbose_name="Equipe de Coleta")
+    equipe_coleta = models.CharField(max_length=50, verbose_name="Equipe de Coleta")
     # solicitante = models.CharField(
     #     max_length=50, default='João Silva', verbose_name='Responsável')
-    local_coleta = models.CharField(
-        max_length=50, verbose_name="Local de Coleta")
+    local_coleta = models.CharField(max_length=50, verbose_name="Local de Coleta")
     status_coleta = models.CharField(max_length=50, null=True)
     observacoes = models.TextField(
         max_length=500, blank=True, verbose_name="Observações"
@@ -127,14 +121,12 @@ class ProgramaColeta(models.Model):
         User, on_delete=models.CASCADE, verbose_name="Usuário", null=True
     )  # Adiciona o campo usuario
     rota = models.CharField(max_length=25, null=True)
-    bentos = models.BooleanField(
-        default=False, verbose_name="Bentos", blank=True)
+    bentos = models.BooleanField(default=False, verbose_name="Bentos", blank=True)
 
     def save(self, usuario=None, *args, **kwargs):
         if not self.ordem_servico:
             hora = datetime.now().strftime("%H%M%S")
-            localizacao = TabSetor.objects.filter(
-                nome=self.local_coleta).first()
+            localizacao = TabSetor.objects.filter(nome=self.local_coleta).first()
 
             if localizacao:
                 codigo = localizacao.abreviatura
@@ -146,8 +138,7 @@ class ProgramaColeta(models.Model):
                 ordem_servico_ascii = ordem_servico_normalized.encode(
                     "ASCII", "ignore"
                 ).decode("ASCII")
-                self.ordem_servico = re.sub(
-                    r"[\s\W_]+", "", ordem_servico_ascii)
+                self.ordem_servico = re.sub(r"[\s\W_]+", "", ordem_servico_ascii)
             else:
                 raise ValueError("Localização não encontrada")
 
@@ -160,10 +151,8 @@ class ProgramaColeta(models.Model):
         self.data_check_material = self.data_coleta_campo - timedelta(
             self.prazo_material
         )
-        self.data_check_car = self.data_coleta_campo - \
-            timedelta(self.prazo_car)
-        self.data_check_lab = self.data_coleta_campo - \
-            timedelta(self.prazo_lab)
+        self.data_check_car = self.data_coleta_campo - timedelta(self.prazo_car)
+        self.data_check_lab = self.data_coleta_campo - timedelta(self.prazo_lab)
 
         super().save(*args, **kwargs)
 
@@ -176,8 +165,7 @@ class Campo(models.Model):
     ordem_servico = models.ForeignKey(
         ProgramaColeta, on_delete=models.CASCADE, related_name="ordem_servico_campo"
     )
-    codigo_coleta = models.CharField(
-        "Código da Coleta", max_length=50, null=True)
+    codigo_coleta = models.CharField("Código da Coleta", max_length=50, null=True)
     ordem = models.FloatField("Ordem", null=True)
     clima = models.CharField("Clima", max_length=150, null=True)
     data = models.DateField(default=date.today)
@@ -194,12 +182,10 @@ class Campo(models.Model):
     od_pct = models.FloatField("OD %", null=True)
     tds = models.FloatField("TDS", null=True)
     salinidade = models.FloatField("Salinidade", null=True)
-    status_form = models.CharField(
-        "Status", max_length=20, default="Não preenchido")
+    status_form = models.CharField("Status", max_length=20, default="Não preenchido")
     check_amostras = models.BooleanField("Check Amostras", default=False)
     observacoes = models.TextField("Observações", max_length=500, blank=True)
-    foto = models.ImageField(upload_to="fotos_coleta/",
-                             null=True, verbose_name="Foto")
+    foto = models.ImageField(upload_to="fotos_coleta/", null=True, verbose_name="Foto")
 
     def save(self, *args, **kwargs):
         campos = [
@@ -243,8 +229,7 @@ class MetadadosCampo(models.Model):
         max_length=50, choices=[(acesso, acesso) for acesso in ACESSOS], null=True
     )
     dragagem = models.IntegerField("Dragagem", choices=AVALIACAO, null=True)
-    gigoga = models.IntegerField(
-        "Quantidade de gigoga", choices=AVALIACAO, null=True)
+    gigoga = models.IntegerField("Quantidade de gigoga", choices=AVALIACAO, null=True)
     odor = models.IntegerField("Odor", choices=AVALIACAO, null=True)
     fezes = models.IntegerField("Fezes", choices=AVALIACAO, null=True)
     oleo = models.IntegerField("Óleo", choices=AVALIACAO, null=True)
@@ -255,8 +240,7 @@ class MetadadosCampo(models.Model):
     animais_presentes = models.IntegerField(
         "Animais Presentes", choices=AVALIACAO, null=True
     )
-    pescadores = models.IntegerField(
-        "Pescadores", choices=AVALIACAO, null=True)
+    pescadores = models.IntegerField("Pescadores", choices=AVALIACAO, null=True)
     contato_populacao = models.IntegerField(
         "Contato com a população", choices=AVALIACAO, null=True
     )
@@ -278,8 +262,7 @@ class AnalisesLista(models.Model):
     amonia = models.FloatField(null=True, blank=True)  # Amônia
     nitrito = models.FloatField(null=True, blank=True)
     nitrato = models.FloatField(null=True, blank=True)
-    nitrogenio_total = models.FloatField(
-        null=True, blank=True)  # Nitrogênio Total
+    nitrogenio_total = models.FloatField(null=True, blank=True)  # Nitrogênio Total
     # Ortofosfato como P (Fósforo Reativo Solúvel)
     ortofosfato_como_p = models.FloatField(null=True, blank=True)
     fosfato_total = models.FloatField(null=True, blank=True)
@@ -312,8 +295,7 @@ class ChecklistCampo(models.Model):
     previsao_tempo = models.BooleanField(
         "Previsão do tempo", blank=True, null=True, default=False
     )
-    data_previsao_tempo = models.DateField(
-        "Data da previsão", blank=True, null=True)
+    data_previsao_tempo = models.DateField("Data da previsão", blank=True, null=True)
     observacao_previsao_tempo = models.TextField(
         "Observações da previsão", blank=True, null=True
     )
@@ -330,16 +312,14 @@ class ChecklistCampo(models.Model):
     observacao_reservar_carro = models.TextField(
         "Observações da reserva", blank=True, null=True
     )
-    data_reservar_carro = models.DateField(
-        "Data da reserva", blank=True, null=True)
+    data_reservar_carro = models.DateField("Data da reserva", blank=True, null=True)
     reservar_barco = models.BooleanField(
         "Reservar barco", blank=True, null=True, default=False
     )
     observacao_reservar_barco = models.TextField(
         "Observações da reserva", blank=True, null=True
     )
-    data_reservar_barco = models.DateField(
-        "Data da reserva", blank=True, null=True)
+    data_reservar_barco = models.DateField("Data da reserva", blank=True, null=True)
     separar_equipamentos = models.BooleanField(
         "Separar equipamentos", blank=True, null=True, default=False
     )
@@ -361,8 +341,7 @@ class ChecklistCampo(models.Model):
     comprar_gelo = models.BooleanField(
         "Comprar gelo", blank=True, null=True, default=False
     )
-    data_comprar_gelo = models.DateField(
-        "Data da compra", blank=True, null=True)
+    data_comprar_gelo = models.DateField("Data da compra", blank=True, null=True)
     observacao_comprar_gelo = models.TextField(
         "Observações da compra", blank=True, null=True
     )
@@ -449,8 +428,7 @@ class DetalhesUsuario(models.Model):
     telefone = models.CharField(max_length=15)
     endereco = models.CharField(max_length=255)
     cpf = models.CharField(max_length=11)
-    foto_perfil = models.ImageField(
-        upload_to="perfil_fotos/", blank=True, null=True)
+    foto_perfil = models.ImageField(upload_to="perfil_fotos/", blank=True, null=True)
 
     def __str__(self):
         return self.usuario.username
@@ -520,10 +498,18 @@ class TabColeta(models.Model):
     data = models.DateTimeField(blank=True, null=True)
     nome = models.CharField(blank=True, null=True)
     id_campanha = models.ForeignKey(
-        TabCampanha, on_delete=models.CASCADE, db_column="id_campanha", blank=True, null=True
+        TabCampanha,
+        on_delete=models.CASCADE,
+        db_column="id_campanha",
+        blank=True,
+        null=True,
     )
     id_setor = models.ForeignKey(
-        "TabSetor", on_delete=models.CASCADE, db_column="id_setor", blank=True, null=True
+        "TabSetor",
+        on_delete=models.CASCADE,
+        db_column="id_setor",
+        blank=True,
+        null=True,
     )
     ordem_servico = models.CharField("Ordem de serviço", blank=True, null=True)
     criado_por = models.ForeignKey(
@@ -552,13 +538,25 @@ class TabColeta(models.Model):
 class TabAmostra(models.Model):
     id = models.BigAutoField(primary_key=True)
     id_ponto = models.ForeignKey(
-        "TabPonto", on_delete=models.CASCADE, db_column="id_ponto", blank=True, null=True
+        "TabPonto",
+        on_delete=models.CASCADE,
+        db_column="id_ponto",
+        blank=True,
+        null=True,
     )
     id_coleta = models.ForeignKey(
-        "TabColeta", on_delete=models.CASCADE, db_column="id_coleta", blank=True, null=True
+        "TabColeta",
+        on_delete=models.CASCADE,
+        db_column="id_coleta",
+        blank=True,
+        null=True,
     )
     id_frasco = models.ForeignKey(
-        "TabFrasco", on_delete=models.CASCADE, db_column="id_frasco", blank=True, null=True
+        "TabFrasco",
+        on_delete=models.CASCADE,
+        db_column="id_frasco",
+        blank=True,
+        null=True,
     )
     etiqueta = models.TextField(blank=True, null=True)
 
@@ -580,13 +578,25 @@ class TabAmostra(models.Model):
 class TabAmostraCopy(models.Model):
     id = models.BigAutoField(primary_key=True)
     id_ponto = models.ForeignKey(
-        "TabPonto", on_delete=models.CASCADE, db_column="id_ponto", blank=True, null=True
+        "TabPonto",
+        on_delete=models.CASCADE,
+        db_column="id_ponto",
+        blank=True,
+        null=True,
     )
     id_coleta = models.ForeignKey(
-        "TabColeta", on_delete=models.CASCADE, db_column="id_coleta", blank=True, null=True
+        "TabColeta",
+        on_delete=models.CASCADE,
+        db_column="id_coleta",
+        blank=True,
+        null=True,
     )
     id_frasco = models.ForeignKey(
-        "TabFrasco", on_delete=models.CASCADE, db_column="id_frasco", blank=True, null=True
+        "TabFrasco",
+        on_delete=models.CASCADE,
+        db_column="id_frasco",
+        blank=True,
+        null=True,
     )
     etiqueta = models.TextField(blank=True, null=True)
 
@@ -601,7 +611,11 @@ class TabAmostraCopy(models.Model):
 class TabEnvioCopy(models.Model):
     id = models.BigAutoField(primary_key=True)
     id_amostra = models.ForeignKey(
-        TabAmostraCopy, on_delete=models.CASCADE, db_column="id_amostra", blank=True, null=True
+        TabAmostraCopy,
+        on_delete=models.CASCADE,
+        db_column="id_amostra",
+        blank=True,
+        null=True,
     )
     id_laboratorio = models.ForeignKey(
         "TabLaboratorio",
@@ -624,10 +638,18 @@ class TabEnvioCopy(models.Model):
 class TabMedidaCopy(models.Model):
     id = models.BigAutoField(primary_key=True)
     id_envio = models.ForeignKey(
-        TabEnvioCopy, on_delete=models.CASCADE, db_column="id_envio", blank=True, null=True
+        TabEnvioCopy,
+        on_delete=models.CASCADE,
+        db_column="id_envio",
+        blank=True,
+        null=True,
     )
     id_pp = models.ForeignKey(
-        "TabProdxparam", on_delete=models.CASCADE, db_column="id_pp", blank=True, null=True
+        "TabProdxparam",
+        on_delete=models.CASCADE,
+        db_column="id_pp",
+        blank=True,
+        null=True,
     )
     input_valor = models.CharField(blank=True, null=True)
     valor = models.CharField(blank=True, null=True)
@@ -643,7 +665,11 @@ class TabMedidaCopy(models.Model):
 class TabEnvio(models.Model):
     id = models.BigAutoField(primary_key=True)
     id_amostra = models.ForeignKey(
-        TabAmostra, on_delete=models.CASCADE, db_column="id_amostra", blank=True, null=True
+        TabAmostra,
+        on_delete=models.CASCADE,
+        db_column="id_amostra",
+        blank=True,
+        null=True,
     )
     id_laboratorio = models.ForeignKey(
         "TabLaboratorio",
@@ -694,7 +720,11 @@ class TabMedida(models.Model):
         TabEnvio, on_delete=models.CASCADE, db_column="id_envio", blank=True, null=True
     )
     id_pp = models.ForeignKey(
-        "TabProdxparam", on_delete=models.CASCADE, db_column="id_pp", blank=True, null=True
+        "TabProdxparam",
+        on_delete=models.CASCADE,
+        db_column="id_pp",
+        blank=True,
+        null=True,
     )
     valor = models.TextField(blank=True, null=True)
     input_valor = models.TextField(blank=True, null=True)
@@ -723,7 +753,11 @@ class TabParam(models.Model):
 class TabPonto(models.Model):
     id = models.BigAutoField(primary_key=True)
     id_setor = models.ForeignKey(
-        "TabSetor", on_delete=models.CASCADE, db_column="id_setor", blank=True, null=True
+        "TabSetor",
+        on_delete=models.CASCADE,
+        db_column="id_setor",
+        blank=True,
+        null=True,
     )
     id_local = models.ForeignKey(
         TabLocal, on_delete=models.CASCADE, db_column="id_local", blank=True, null=True
@@ -762,7 +796,11 @@ class TabProdxparam(models.Model):
         TabParam, on_delete=models.CASCADE, db_column="id_param", blank=True, null=True
     )
     id_produto = models.ForeignKey(
-        TabProduto, on_delete=models.CASCADE, db_column="id_produto", blank=True, null=True
+        TabProduto,
+        on_delete=models.CASCADE,
+        db_column="id_produto",
+        blank=True,
+        null=True,
     )
     id_serie = models.ForeignKey(
         "TabSerieClassificacao",
@@ -776,7 +814,11 @@ class TabProdxparam(models.Model):
     limite_min = models.BigIntegerField(blank=True, null=True)
     limite_max = models.BigIntegerField(blank=True, null=True)
     id_frasco = models.ForeignKey(
-        TabFrasco, on_delete=models.CASCADE, db_column="id_frasco", blank=True, null=True
+        TabFrasco,
+        on_delete=models.CASCADE,
+        db_column="id_frasco",
+        blank=True,
+        null=True,
     )
     id_ppativacao = models.BigIntegerField(blank=True, null=True)
 
@@ -805,7 +847,11 @@ class TabSetor(models.Model):
     id = models.BigAutoField(primary_key=True)
     nome = models.CharField(blank=True, null=True)
     id_local = models.ForeignKey(
-        "TabLocal", on_delete=models.CASCADE, db_column="id_local", blank=True, null=True
+        "TabLocal",
+        on_delete=models.CASCADE,
+        db_column="id_local",
+        blank=True,
+        null=True,
     )
     lon = models.FloatField(blank=True, null=True)
     lat = models.FloatField(blank=True, null=True)
@@ -824,7 +870,11 @@ class TabEquipe(models.Model):
     nome = models.TextField(blank=True, null=True)
     descricao = models.TextField(blank=True, null=True)
     responsavel = models.ForeignKey(
-        User, on_delete=models.CASCADE, db_column="responsavel_id", blank=True, null=True
+        User,
+        on_delete=models.CASCADE,
+        db_column="responsavel_id",
+        blank=True,
+        null=True,
     )
 
     class Meta:

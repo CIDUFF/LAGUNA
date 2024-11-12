@@ -5,28 +5,45 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('simal', '0066_tablocale_delete_tabequipes'),
+        ("simal", "0066_tablocale_delete_tabequipes"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='tabcampanha',
-            name='id_local',
-            field=models.ForeignKey(blank=True, db_column='id_local', null=True, on_delete=django.db.models.deletion.CASCADE, to='simal.tablocale'),
+            model_name="tabcampanha",
+            name="id_local",
+            field=models.ForeignKey(
+                blank=True,
+                db_column="id_local",
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="simal.tablocale",
+            ),
         ),
         migrations.AlterField(
-            model_name='tabponto',
-            name='id_local',
-            field=models.ForeignKey(blank=True, db_column='id_local', null=True, on_delete=django.db.models.deletion.CASCADE, to='simal.tablocale'),
+            model_name="tabponto",
+            name="id_local",
+            field=models.ForeignKey(
+                blank=True,
+                db_column="id_local",
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="simal.tablocale",
+            ),
         ),
         migrations.AlterField(
-            model_name='tabsetor',
-            name='id_local',
-            field=models.ForeignKey(blank=True, db_column='id_local', null=True, on_delete=django.db.models.deletion.CASCADE, to='simal.tablocale'),
+            model_name="tabsetor",
+            name="id_local",
+            field=models.ForeignKey(
+                blank=True,
+                db_column="id_local",
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="simal.tablocale",
+            ),
         ),
         migrations.DeleteModel(
-            name='TabLocal',
+            name="TabLocal",
         ),
     ]

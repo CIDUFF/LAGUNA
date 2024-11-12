@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('simal', '0060_delete_tbteste'),
+        ("simal", "0060_delete_tbteste"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='tabmedida',
-            name='input_valor',
+            model_name="tabmedida",
+            name="input_valor",
             field=models.TextField(blank=True, null=True),
         ),
     ]

@@ -4,23 +4,22 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('simal', '0065_tabequipe_delete_tabequipes'),
+        ("simal", "0065_tabequipe_delete_tabequipes"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='TabLocale',
+            name="TabLocale",
             fields=[
-                ('id', models.BigAutoField(primary_key=True, serialize=False)),
-                ('nome', models.CharField(blank=True, null=True)),
-                ('local_latitude', models.FloatField(blank=True, null=True)),
-                ('local_longitude', models.FloatField(blank=True, null=True)),
+                ("id", models.BigAutoField(primary_key=True, serialize=False)),
+                ("nome", models.CharField(blank=True, null=True)),
+                ("local_latitude", models.FloatField(blank=True, null=True)),
+                ("local_longitude", models.FloatField(blank=True, null=True)),
             ],
             options={
-                'db_table': 'tab_locale',
-                'managed': True,
+                "db_table": "tab_locale",
+                "managed": True,
             },
         ),
     ]

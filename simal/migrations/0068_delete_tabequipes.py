@@ -4,13 +4,12 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('simal', '0067_alter_tabcampanha_id_local_alter_tabponto_id_local_and_more'),
+        ("simal", "0067_alter_tabcampanha_id_local_alter_tabponto_id_local_and_more"),
     ]
 
     operations = [
         migrations.DeleteModel(
-            name='TabEquipes',
+            name="TabEquipes",
         ),
     ]
