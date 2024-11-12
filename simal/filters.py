@@ -39,7 +39,8 @@ class ProgramaColetaFilter(FilterSet):
 # @lazy_filter
 class ResultadosColetaFilter(FilterSet):
     ponto = CharFilter(lookup_expr="icontains", label="Ponto")
-    codigo_coleta = CharFilter(lookup_expr="icontains", label="Código da Coleta")
+    codigo_coleta = CharFilter(
+        lookup_expr="icontains", label="Código da Coleta")
 
     class Meta:
         fields = ["ponto", "codigo_coleta"]
@@ -47,9 +48,12 @@ class ResultadosColetaFilter(FilterSet):
 
 # @lazy_filter
 class PontoFilter(FilterSet):
-    codigo = ChoiceFilter(field_name="nome", lookup_expr="exact", label="Ponto")
-    setor = ChoiceFilter(field_name="id_setor", lookup_expr="exact", label="Setor")
-    status = ChoiceFilter(field_name="status", lookup_expr="exact", label="Status")
+    codigo = ChoiceFilter(
+        field_name="nome", lookup_expr="exact", label="Ponto")
+    setor = ChoiceFilter(field_name="id_setor",
+                         lookup_expr="exact", label="Setor")
+    status = ChoiceFilter(field_name="status",
+                          lookup_expr="exact", label="Status")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -59,7 +63,8 @@ class PontoFilter(FilterSet):
         self.filters["setor"].extra["choices"] = [
             (setor.id, setor.nome) for setor in TabSetor.objects.all().distinct()
         ]
-        self.filters["status"].extra["choices"] = [(True, "Ativo"), (False, "Inativo")]
+        self.filters["status"].extra["choices"] = [
+            (True, "Ativo"), (False, "Inativo")]
 
     class Meta:
         model = TabPonto
@@ -71,7 +76,8 @@ class SetorFilter(FilterSet):
     abreviatura = ChoiceFilter(
         field_name="abreviatura", lookup_expr="exact", label="Setor"
     )
-    local = ChoiceFilter(field_name="id_local", lookup_expr="exact", label="Local")
+    local = ChoiceFilter(field_name="id_local",
+                         lookup_expr="exact", label="Local")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -89,7 +95,8 @@ class SetorFilter(FilterSet):
 
 # @lazy_filter
 class LocalFilter(FilterSet):
-    codigo = ChoiceFilter(field_name="nome", lookup_expr="exact", label="Local")
+    codigo = ChoiceFilter(
+        field_name="nome", lookup_expr="exact", label="Local")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
