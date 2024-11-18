@@ -262,6 +262,9 @@ class MetadadosCampo(models.Model):
 
     def __str__(self):
         return f"Metadados do campo {self.codigo_coleta}"
+    
+    class Meta:
+        db_table = "tab_metadados_campo"
 
 
 class AnalisesLista(models.Model):
@@ -858,3 +861,58 @@ class TabChecklistColeta(models.Model):
 
     class Meta:
         db_table = "tab_checklist_coleta"
+        
+
+class MetadadosCampoCopy(models.Model):
+    ACESSOS = [
+        "Ponte",
+        "Caiaque",
+        "Margem",
+    ]
+    AVALIACAO = [
+        (-1, "Negativo"),
+        (0, "Neutro"),
+        (1, "Positivo"),
+    ]
+
+    codigo_coleta = models.ForeignKey(
+        TabAmostra, on_delete=models.CASCADE, related_name="metadados_campo"
+    )
+    acesso_ponto = models.CharField(
+        max_length=50, choices=[(acesso, acesso) for acesso in ACESSOS], null=True
+    )
+    dragagem = models.IntegerField("Dragagem", choices=AVALIACAO, null=True)
+    gigoga = models.IntegerField(
+        "Quantidade de gigoga", choices=AVALIACAO, null=True)
+    odor = models.IntegerField("Odor", choices=AVALIACAO, null=True)
+    fezes = models.IntegerField("Fezes", choices=AVALIACAO, null=True)
+    oleo = models.IntegerField("Óleo", choices=AVALIACAO, null=True)
+    residuos_solidos = models.IntegerField(
+        "Resíduos Sólidos", choices=AVALIACAO, null=True
+    )
+    lodo = models.IntegerField("Lodo", choices=AVALIACAO, null=True)
+    animais_presentes = models.IntegerField(
+        "Animais Presentes", choices=AVALIACAO, null=True
+    )
+    pescadores = models.IntegerField(
+        "Pescadores", choices=AVALIACAO, null=True)
+    contato_populacao = models.IntegerField(
+        "Contato com a população", choices=AVALIACAO, null=True
+    )
+
+    def __str__(self):
+        return f"Metadados do campo {self.codigo_coleta}"
+
+    class Meta:
+        db_table = "tab_metadados_campo_copy"
+        
+
+class TabAnexoAmostra(models.Model):
+    id_amostra = models.ForeignKey(
+        TabAmostra, on_delete=models.CASCADE, related_name="anexos"
+    )
+    anexo = models.FileField(upload_to="anexos_amostras/", null=True)
+
+    def __str__(self):
+        return f"Anexo da amostra {self.id_amostra}"
+    

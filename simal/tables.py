@@ -76,6 +76,10 @@ class ResultadosColetaTable(tables.Table):
             "od_pct",
             "tds",
             "salinidade",
+            "status_form",
+            "check_amostras",
+            "observacoes",
+            "foto"
         ]
         empty_text = "Não há dados para exibir"
         orderable = True
@@ -94,6 +98,10 @@ class ResultadosColetaTable(tables.Table):
             "od_pct",
             "tds",
             "salinidade",
+            "status_form",
+            "check_amostras",
+            "observacoes",
+            "foto"
         )
         per_page = 25
         paginator_class = tables.LazyPaginator
