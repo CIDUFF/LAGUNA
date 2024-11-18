@@ -111,9 +111,9 @@ from .models import (
     TabItemChecklistColeta,
     TabChecklistColeta,
     TabColeta,
-    TabAmostraCopy,
-    TabEnvioCopy,
-    TabMedidaCopy,
+    TabAmostra,
+    TabEnvio,
+    TabMedida,
     DetalhesUsuario,
 )
 
@@ -233,31 +233,38 @@ def home(request):
                     dict(
                         Tarefa="Avisar Laboratórios",
                         Inicio=proxima_coleta.data_check_lab,
-                        Termino=proxima_coleta.data_check_lab + timedelta(days=2),
+                        Termino=proxima_coleta.data_check_lab + \
+                        timedelta(days=2),
                         Cor="#2ca02c" if checklist.avisar_labs else "#d62728",
                     ),
                     dict(
                         Tarefa="Reservar Carro e barco",
                         Inicio=proxima_coleta.data_check_car,
-                        Termino=proxima_coleta.data_check_car + timedelta(days=2),
+                        Termino=proxima_coleta.data_check_car + \
+                        timedelta(days=2),
                         Cor="#2ca02c" if checklist.reservar_carro else "#d62728",
                     ),
                     dict(
                         Tarefa="Checar Equipamentos",
                         Inicio=proxima_coleta.data_check_material,
-                        Termino=proxima_coleta.data_check_material + timedelta(days=3),
+                        Termino=proxima_coleta.data_check_material + \
+                        timedelta(days=3),
                         Cor="#2ca02c" if checklist.separar_equipamentos else "#d62728",
                     ),
                     dict(
                         Tarefa="Etiquetar frascos",
-                        Inicio=proxima_coleta.data_check_material + timedelta(days=3),
-                        Termino=proxima_coleta.data_check_material + timedelta(days=3),
+                        Inicio=proxima_coleta.data_check_material + \
+                        timedelta(days=3),
+                        Termino=proxima_coleta.data_check_material + \
+                        timedelta(days=3),
                         Cor="#2ca02c" if checklist.conferir_equipamentos else "#d62728",
                     ),
                     dict(
                         Tarefa="Comprar gelo",
-                        Inicio=proxima_coleta.data_check_material + timedelta(days=3),
-                        Termino=proxima_coleta.data_check_material + timedelta(days=3),
+                        Inicio=proxima_coleta.data_check_material + \
+                        timedelta(days=3),
+                        Termino=proxima_coleta.data_check_material + \
+                        timedelta(days=3),
                         Cor="#2ca02c" if checklist.conferir_equipamentos else "#d62728",
                     ),
                 ]
@@ -278,25 +285,29 @@ def home(request):
                     dict(
                         Tarefa="Contatar Laboratórios",
                         Inicio=proxima_coleta.data_check_lab,
-                        Termino=proxima_coleta.data_check_lab + timedelta(days=2),
+                        Termino=proxima_coleta.data_check_lab + \
+                        timedelta(days=2),
                         Cor="#2ca02c",
                     ),  # Verde moderno para tarefas já feitas
                     dict(
                         Tarefa="Reservar Carro",
                         Inicio=proxima_coleta.data_check_car,
-                        Termino=proxima_coleta.data_check_car + timedelta(days=2),
+                        Termino=proxima_coleta.data_check_car + \
+                        timedelta(days=2),
                         Cor="#2ca02c",
                     ),  # Verde moderno para tarefas já feitas
                     dict(
                         Tarefa="Preparar Equipamentos",
                         Inicio=proxima_coleta.data_check_material,
-                        Termino=proxima_coleta.data_check_material + timedelta(days=3),
+                        Termino=proxima_coleta.data_check_material + \
+                        timedelta(days=3),
                         Cor="#2ca02c",
                     ),  # Verde moderno para tarefas já feitas
                     dict(
                         Tarefa="Etiquetar frascos",
                         Inicio=proxima_coleta.data_check_material,
-                        Termino=proxima_coleta.data_check_material + timedelta(days=3),
+                        Termino=proxima_coleta.data_check_material + \
+                        timedelta(days=3),
                         Cor="#2ca02c",
                     ),  # Verde moderno para tarefas já feitas
                     dict(
@@ -438,7 +449,8 @@ def atualizar_coleta(request, id):
         "ponto"
     )
 
-    form_data = {field: getattr(coleta, field) for field in ColetaCampo.base_fields}
+    form_data = {field: getattr(coleta, field)
+                 for field in ColetaCampo.base_fields}
     form_data["hora_inicio"] = timezone.now().strftime("%H:%M")
     form = ColetaCampo(initial=form_data)
 
@@ -461,7 +473,8 @@ def atualizar_coleta(request, id):
             )
 
             if todos_pontos_preenchidos:
-                campanha = ProgramaColeta.objects.get(id=coleta.ordem_servico.id)
+                campanha = ProgramaColeta.objects.get(
+                    id=coleta.ordem_servico.id)
                 campanha.status_coleta = "Coleta realizada"
                 campanha.save()
 
@@ -496,7 +509,8 @@ def meta_coleta(request, id):
     coleta = get_object_or_404(Campo, id=id)
 
     # Verifica se já existe um registro de metadados para o código de coleta
-    metadados, created = MetadadosCampo.objects.get_or_create(codigo_coleta=coleta)
+    metadados, created = MetadadosCampo.objects.get_or_create(
+        codigo_coleta=coleta)
 
     if created:
         messages.info(
@@ -539,7 +553,8 @@ def lista_coleta(request, ordem_servico=None):
     ordem_servico = ProgramaColeta.objects.get(id=ordem_servico)
     responsavel = ProgramaColeta.objects.get(id=ordem_servico.id).usuario
     filtro = CampoFilter(
-        request.GET, queryset=Campo.objects.filter(ordem_servico_id=ordem_servico)
+        request.GET, queryset=Campo.objects.filter(
+            ordem_servico_id=ordem_servico)
     )
     table = ColetaCampoTable(filtro.qs)
     RequestConfig(request, paginate={"per_page": 25}).configure(table)
@@ -572,7 +587,8 @@ def resultados(request):
 
 @login_required
 def coletas_agendas(request):
-    filtro = ProgramaColetaFilter(request.GET, queryset=ProgramaColeta.objects.all())
+    filtro = ProgramaColetaFilter(
+        request.GET, queryset=ProgramaColeta.objects.all())
     table = ProgramaColetaTable(filtro.qs)
     RequestConfig(request, paginate={"per_page": 25}).configure(table)
     return render(
@@ -646,7 +662,8 @@ def atualizar_programacao(request, id):
         }
         for date_field in ["data_coleta_campo"]:
             if date_field in form_data and form_data[date_field]:
-                form_data[date_field] = form_data[date_field].strftime("%Y-%m-%d")
+                form_data[date_field] = form_data[date_field].strftime(
+                    "%Y-%m-%d")
         form = ProgramaColetaForm(initial=form_data)
     return render(request, "coleta/agendar_coleta.html", {"form": form})
 
@@ -671,7 +688,8 @@ def deletar_programacao(request, id):
 
     """
     if not request.user.is_superuser:
-        messages.warning(request, "Você não tem permissão para executar esta ação.")
+        messages.warning(
+            request, "Você não tem permissão para executar esta ação.")
         raise PermissionDenied
 
     programacao = get_object_or_404(ProgramaColeta, id=id)
@@ -707,7 +725,8 @@ def cancelar_programacao(request, id):
     else:
         programacao.status_coleta = "Cancelada"
         programacao.save()
-        messages.success(request, "Programação de coleta cancelada com sucesso!")
+        messages.success(
+            request, "Programação de coleta cancelada com sucesso!")
         return redirect("coletas_agendas")
 
 
@@ -803,7 +822,8 @@ def checklist_campanha(request, ordem_servico=None):
         ProgramaColeta, ordem_servico=ordem_servico_selecionada
     )
     if campanha.status_coleta == "Cancelada":
-        messages.warning(request, "Não é possível iniciar uma campanha cancelada")
+        messages.warning(
+            request, "Não é possível iniciar uma campanha cancelada")
         return redirect("coletas_agendas")
     try:
         checklist_campanha = ChecklistCampo.objects.get(ordem_servico=campanha)
@@ -890,7 +910,8 @@ def checklist_campanha(request, ordem_servico=None):
     campanha.save()
 
     data = campanha.data_coleta_campo
-    previsao_tempo = get_weather_description("Maricá", data.strftime("%Y-%m-%d"))
+    previsao_tempo = get_weather_description(
+        "Maricá", data.strftime("%Y-%m-%d"))
 
     context = {
         "form": form,
@@ -907,13 +928,15 @@ def gerar_rota_campanha(request, ordem_servico=None):
     ordem_servico = request.GET.get("ordem_servico", ordem_servico)
     campanha = None
     if ordem_servico:
-        campanha = get_object_or_404(ProgramaColeta, ordem_servico=ordem_servico)
+        campanha = get_object_or_404(
+            ProgramaColeta, ordem_servico=ordem_servico)
 
     previsao_tempo = None
     pontos_coleta = []
     if campanha:
         data = campanha.data_coleta_campo
-        previsao_tempo = get_weather_description("Maricá", data.strftime("%Y-%m-%d"))
+        previsao_tempo = get_weather_description(
+            "Maricá", data.strftime("%Y-%m-%d"))
 
         local_campanha = campanha.local_coleta
         setor_local = TabSetor.objects.get(nome=local_campanha)
@@ -945,7 +968,8 @@ def etiquetagem(request, ordem_servico=None):
     ordem_servico = request.GET.get("ordem_servico", ordem_servico)
     campanha = None
     if ordem_servico:
-        campanha = get_object_or_404(ProgramaColeta, ordem_servico=ordem_servico)
+        campanha = get_object_or_404(
+            ProgramaColeta, ordem_servico=ordem_servico)
 
         data = campanha.data_coleta_campo.strftime("%d/%m/%Y")
         responsavel = campanha.usuario
@@ -996,7 +1020,8 @@ def cadastro_laboratorio(request):
         formset = AnaliseFormSet()
 
     return render(
-        request, "cadastro_laboratorio.html", {"form": form, "formset": formset}
+        request, "cadastro_laboratorio.html", {
+            "form": form, "formset": formset}
     )
 
 
@@ -1034,7 +1059,8 @@ def atualizar_laboratorio(request, id):
         formset = AnaliseFormSet(instance=laboratorio)
 
     return render(
-        request, "cadastro_laboratorio.html", {"form": form, "formset": formset}
+        request, "cadastro_laboratorio.html", {
+            "form": form, "formset": formset}
     )
 
 
@@ -1283,7 +1309,8 @@ def cadastro_unidade_medida(request):
         form = UnidadeMedidaForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, "Unidade de Medida cadastrada com sucesso.")
+            messages.success(
+                request, "Unidade de Medida cadastrada com sucesso.")
             return redirect("cadastro_unidade_medida")
     else:
         form = UnidadeMedidaForm()
@@ -1296,13 +1323,15 @@ def cadastro_tipo_parametro(request):
         form = TipoParametroForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, "Tipo de Parâmetro cadastrado com sucesso.")
+            messages.success(
+                request, "Tipo de Parâmetro cadastrado com sucesso.")
             return redirect("cadastro_tipo_parametro")
     else:
         form = TipoParametroForm()
 
     table_tipo_parametro = TipoParametroTable(TipoParametro.objects.all())
-    RequestConfig(request, paginate={"per_page": 25}).configure(table_tipo_parametro)
+    RequestConfig(request, paginate={"per_page": 25}).configure(
+        table_tipo_parametro)
 
     return render(
         request,
@@ -1344,24 +1373,28 @@ def configuracoes_view(request):
                 produto_form.save()
                 messages.success(request, "Produto salvo com sucesso.")
         elif "prodxparam_submit" in request.POST:
-            prodxparam_form = TabProdxParamForm(request.POST, label_suffix="prodxparam")
+            prodxparam_form = TabProdxParamForm(
+                request.POST, label_suffix="prodxparam")
             if prodxparam_form.is_valid():
                 prodxparam_form.save()
-                messages.success(request, "Produto x Parâmetro salvo com sucesso.")
+                messages.success(
+                    request, "Produto x Parâmetro salvo com sucesso.")
         elif "serie_classificacao_submit" in request.POST:
             serie_classificacao_form = TabSerieClassificacaoForm(
                 request.POST, label_suffix="serie_classificacao"
             )
             if serie_classificacao_form.is_valid():
                 serie_classificacao_form.save()
-                messages.success(request, "Série de Classificação salva com sucesso.")
+                messages.success(
+                    request, "Série de Classificação salva com sucesso.")
         elif "item_checklist_submit" in request.POST:
             item_checklist_form = CadastroItemChecklistColetaForm(
                 request.POST, label_suffix="item_checklist"
             )
             if item_checklist_form.is_valid():
                 item_checklist_form.save(user=request.user)
-                messages.success(request, "Item de checklist cadastrado com sucesso.")
+                messages.success(
+                    request, "Item de checklist cadastrado com sucesso.")
 
         return redirect("configuracoes")
     else:
@@ -1389,12 +1422,15 @@ def configuracoes_view(request):
     )
 
     # Configurar a paginação das tabelas
-    RequestConfig(request, paginate={"per_page": 25}).configure(table_parametro)
+    RequestConfig(request, paginate={"per_page": 25}).configure(
+        table_parametro)
     RequestConfig(request, paginate={"per_page": 25}).configure(table_frasco)
     RequestConfig(request, paginate={"per_page": 25}).configure(table_equipe)
-    RequestConfig(request, paginate={"per_page": 25}).configure(table_laboratorio)
+    RequestConfig(request, paginate={"per_page": 25}).configure(
+        table_laboratorio)
     RequestConfig(request, paginate={"per_page": 25}).configure(table_produto)
-    RequestConfig(request, paginate={"per_page": 25}).configure(table_prodxparam)
+    RequestConfig(request, paginate={"per_page": 25}).configure(
+        table_prodxparam)
     RequestConfig(request, paginate={"per_page": 25}).configure(
         table_serie_classificacao
     )
@@ -1472,12 +1508,14 @@ def perfil_usuario(request):
         detalhes_usuario = DetalhesUsuario(usuario=usuario)
 
     if request.method == "POST":
-        detalhes_form = DetalhesUsuarioForm(request.POST, instance=detalhes_usuario)
+        detalhes_form = DetalhesUsuarioForm(
+            request.POST, instance=detalhes_usuario)
         senha_form = PasswordChangeForm(user=usuario, data=request.POST)
 
         if detalhes_form.is_valid():
             detalhes_form.save()
-            messages.success(request, "Detalhes do perfil atualizados com sucesso.")
+            messages.success(
+                request, "Detalhes do perfil atualizados com sucesso.")
 
         if senha_form.is_valid():
             user = senha_form.save()
@@ -1510,7 +1548,8 @@ def cadastro_usuarios_adm(request):
             subject = "Bem-vindo ao sistema LAGUNA"
             message = f"Olá {user.username},\n\nVocê foi cadastrado no sistema LAGUNA. Por favor, clique no link abaixo para definir sua senha e completar seu cadastro:\n\n{settings.SITE_URL}/accounts/password/reset/"
             recipient_list = [user.email]
-            send_mail(subject, message, settings.EMAIL_HOST_USER, recipient_list)
+            send_mail(subject, message,
+                      settings.EMAIL_HOST_USER, recipient_list)
 
             messages.success(
                 request,
@@ -1565,7 +1604,8 @@ def cadastro_item_checklist_coleta(request):
         form = CadastroItemChecklistColetaForm(request.POST)
         if form.is_valid():
             form.save(user=request.user)
-            messages.success(request, "Item de checklist cadastrado com sucesso.")
+            messages.success(
+                request, "Item de checklist cadastrado com sucesso.")
             return redirect("cadastro_item_checklist_coleta")
     else:
         form = CadastroItemChecklistColetaForm()
@@ -1575,7 +1615,8 @@ def cadastro_item_checklist_coleta(request):
     RequestConfig(request).configure(table)
 
     return render(
-        request, "cadastro_item_checklist_coleta.html", {"form": form, "table": table}
+        request, "cadastro_item_checklist_coleta.html", {
+            "form": form, "table": table}
     )
 
 
@@ -1670,7 +1711,8 @@ def checklist_coleta(request, coleta_id):
     campanha = coleta.id_campanha
     if request.method == "POST":
         formset = ChecklistColetaFormSet(
-            request.POST, queryset=TabChecklistColeta.objects.filter(id_coleta=coleta)
+            request.POST, queryset=TabChecklistColeta.objects.filter(
+                id_coleta=coleta)
         )
         if formset.is_valid():
             formset.save()
@@ -1697,7 +1739,7 @@ def fill_amostra(request, coleta_id):
     Preenche as amostras e envios para uma coleta específica.
 
     Esta função obtém a coleta com base no ID fornecido, recupera todos os frascos e pontos de coleta
-    associados ao setor da coleta, e cria instâncias de TabAmostraCopy e TabEnvioCopy para cada combinação
+    associados ao setor da coleta, e cria instâncias de TabAmostra e TabEnvio para cada combinação
     de frasco e ponto de coleta. As instâncias são salvas no banco de dados.
 
     Parâmetros:
@@ -1718,7 +1760,7 @@ def fill_amostra(request, coleta_id):
     amostras = []
     for frasco in frascos:
         for ponto in pontos_coleta:
-            amostra = TabAmostraCopy(
+            amostra = TabAmostra(
                 id_coleta=coleta,
                 id_frasco=frasco,
                 id_ponto=ponto,
@@ -1726,16 +1768,16 @@ def fill_amostra(request, coleta_id):
             )
             amostras.append(amostra)
 
-    TabAmostraCopy.objects.bulk_create(amostras)
+    TabAmostra.objects.bulk_create(amostras)
 
     envios = []
     for amostra in amostras:
-        envio = TabEnvioCopy(
+        envio = TabEnvio(
             id_amostra=amostra,
         )
         envios.append(envio)
 
-    TabEnvioCopy.objects.bulk_create(envios)
+    TabEnvio.objects.bulk_create(envios)
 
     return redirect("fill_campo_medida", coleta_id=coleta_id)
 
@@ -1755,7 +1797,7 @@ def fill_campo_medida(request, coleta_id):
     Retorna:
     HttpResponseRedirect: Redireciona para a página inicial após a conclusão do preenchimento dos campos de medida.
     """
-    envios = TabEnvioCopy.objects.filter(
+    envios = TabEnvio.objects.filter(
         id_amostra__id_coleta=coleta_id, id_amostra__id_frasco=1
     )
     parametros = TabProdxparam.objects.filter(id_frasco=1)
@@ -1763,13 +1805,13 @@ def fill_campo_medida(request, coleta_id):
     campos = []
     for envio in envios:
         for parametro in parametros:
-            campo = TabMedidaCopy(
+            campo = TabMedida(
                 id_envio=envio,
                 id_pp=parametro,
             )
             campos.append(campo)
 
-    TabMedidaCopy.objects.bulk_create(campos)
+    TabMedida.objects.bulk_create(campos)
 
     return redirect("info_coleta", coleta_id=coleta_id)
 
@@ -1789,7 +1831,7 @@ def info_coleta(request, coleta_id):
         data_criacao = coleta.criado_em
 
         # Verificar se o fill amostra foi gerado para o frasco 1
-        fill_amostra_gerado = TabMedidaCopy.objects.filter(
+        fill_amostra_gerado = TabMedida.objects.filter(
             id_envio__id_amostra__id_coleta=coleta.id, id_envio__id_amostra__id_frasco=1
         ).exists()
 
@@ -1799,7 +1841,8 @@ def info_coleta(request, coleta_id):
         )
 
         # Cálculo do percentual do checklist
-        total_items = TabChecklistColeta.objects.filter(id_coleta=coleta).count()
+        total_items = TabChecklistColeta.objects.filter(
+            id_coleta=coleta).count()
         items_preenchidos = TabChecklistColeta.objects.filter(
             id_coleta=coleta, status=True
         ).count()
@@ -1831,7 +1874,7 @@ def info_coleta(request, coleta_id):
 @login_required
 def input_fisico_quimico(request, coleta_id, ponto_id):
     MedidaFormSet = modelformset_factory(
-        TabMedidaCopy, form=InputFisicoQuimicoForm, extra=0, fields="__all__"
+        TabMedida, form=InputFisicoQuimicoForm, extra=0, fields="__all__"
     )
     coleta = get_object_or_404(TabColeta, id=coleta_id)
     ponto = get_object_or_404(
@@ -1841,7 +1884,7 @@ def input_fisico_quimico(request, coleta_id, ponto_id):
     if request.method == "POST":
         formset = MedidaFormSet(
             request.POST,
-            queryset=TabMedidaCopy.objects.filter(
+            queryset=TabMedida.objects.filter(
                 id_envio__id_amostra__id_coleta=coleta_id,
                 id_envio__id_amostra__id_ponto=ponto_id,
                 id_envio__id_amostra__id_frasco=1,
@@ -1864,7 +1907,7 @@ def input_fisico_quimico(request, coleta_id, ponto_id):
                 return redirect("info_coleta", coleta_id=coleta_id)
     else:
         formset = MedidaFormSet(
-            queryset=TabMedidaCopy.objects.filter(
+            queryset=TabMedida.objects.filter(
                 id_envio__id_amostra__id_coleta=coleta_id,
                 id_envio__id_amostra__id_ponto=ponto_id,
                 id_envio__id_amostra__id_frasco=1,
@@ -1883,7 +1926,7 @@ def lista_campo(request, coleta_id):
     coleta = get_object_or_404(TabColeta, id=coleta_id)
 
     # Filtra as amostras da coleta atual
-    amostras = TabAmostraCopy.objects.filter(
+    amostras = TabAmostra.objects.filter(
         id_coleta=coleta,
         id_frasco=1,  # Assumindo que queremos apenas amostras do frasco 1
     ).order_by("id_ponto")
