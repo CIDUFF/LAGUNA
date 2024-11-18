@@ -28,7 +28,14 @@ from django.utils import timezone
 
 from django_tables2 import RequestConfig
 
-from .filters import CampoFilter, ResultadosColetaFilter, ProgramaColetaFilter, SetorFilter, PontoFilter, LocalFilter
+from .filters import (
+    CampoFilter,
+    ResultadosColetaFilter,
+    ProgramaColetaFilter,
+    SetorFilter,
+    PontoFilter,
+    LocalFilter,
+)
 from .forms import (
     CustomUserCreationForm,
     ColetaCampo,
@@ -104,9 +111,9 @@ from .models import (
     TabItemChecklistColeta,
     TabChecklistColeta,
     TabColeta,
-    TabAmostraCopy,
-    TabEnvioCopy,
-    TabMedidaCopy,
+    TabAmostra,
+    TabEnvio,
+    TabMedida,
     DetalhesUsuario,
 )
 
@@ -1732,7 +1739,7 @@ def fill_amostra(request, coleta_id):
     Preenche as amostras e envios para uma coleta específica.
 
     Esta função obtém a coleta com base no ID fornecido, recupera todos os frascos e pontos de coleta
-    associados ao setor da coleta, e cria instâncias de TabAmostraCopy e TabEnvioCopy para cada combinação
+    associados ao setor da coleta, e cria instâncias de TabAmostra e TabEnvio para cada combinação
     de frasco e ponto de coleta. As instâncias são salvas no banco de dados.
 
     Parâmetros:
@@ -1753,7 +1760,7 @@ def fill_amostra(request, coleta_id):
     amostras = []
     for frasco in frascos:
         for ponto in pontos_coleta:
-            amostra = TabAmostraCopy(
+            amostra = TabAmostra(
                 id_coleta=coleta,
                 id_frasco=frasco,
                 id_ponto=ponto,
@@ -1761,16 +1768,16 @@ def fill_amostra(request, coleta_id):
             )
             amostras.append(amostra)
 
-    TabAmostraCopy.objects.bulk_create(amostras)
+    TabAmostra.objects.bulk_create(amostras)
 
     envios = []
     for amostra in amostras:
-        envio = TabEnvioCopy(
+        envio = TabEnvio(
             id_amostra=amostra,
         )
         envios.append(envio)
 
-    TabEnvioCopy.objects.bulk_create(envios)
+    TabEnvio.objects.bulk_create(envios)
 
     return redirect("fill_campo_medida", coleta_id=coleta_id)
 
@@ -1790,7 +1797,7 @@ def fill_campo_medida(request, coleta_id):
     Retorna:
     HttpResponseRedirect: Redireciona para a página inicial após a conclusão do preenchimento dos campos de medida.
     """
-    envios = TabEnvioCopy.objects.filter(
+    envios = TabEnvio.objects.filter(
         id_amostra__id_coleta=coleta_id, id_amostra__id_frasco=1
     )
     parametros = TabProdxparam.objects.filter(id_frasco=1)
@@ -1798,13 +1805,13 @@ def fill_campo_medida(request, coleta_id):
     campos = []
     for envio in envios:
         for parametro in parametros:
-            campo = TabMedidaCopy(
+            campo = TabMedida(
                 id_envio=envio,
                 id_pp=parametro,
             )
             campos.append(campo)
 
-    TabMedidaCopy.objects.bulk_create(campos)
+    TabMedida.objects.bulk_create(campos)
 
     return redirect("info_coleta", coleta_id=coleta_id)
 
@@ -1824,7 +1831,7 @@ def info_coleta(request, coleta_id):
         data_criacao = coleta.criado_em
 
         # Verificar se o fill amostra foi gerado para o frasco 1
-        fill_amostra_gerado = TabMedidaCopy.objects.filter(
+        fill_amostra_gerado = TabMedida.objects.filter(
             id_envio__id_amostra__id_coleta=coleta.id, id_envio__id_amostra__id_frasco=1
         ).exists()
 
@@ -1867,7 +1874,7 @@ def info_coleta(request, coleta_id):
 @login_required
 def input_fisico_quimico(request, coleta_id, ponto_id):
     MedidaFormSet = modelformset_factory(
-        TabMedidaCopy, form=InputFisicoQuimicoForm, extra=0, fields="__all__"
+        TabMedida, form=InputFisicoQuimicoForm, extra=0, fields="__all__"
     )
     coleta = get_object_or_404(TabColeta, id=coleta_id)
     ponto = get_object_or_404(
@@ -1877,7 +1884,7 @@ def input_fisico_quimico(request, coleta_id, ponto_id):
     if request.method == "POST":
         formset = MedidaFormSet(
             request.POST,
-            queryset=TabMedidaCopy.objects.filter(
+            queryset=TabMedida.objects.filter(
                 id_envio__id_amostra__id_coleta=coleta_id,
                 id_envio__id_amostra__id_ponto=ponto_id,
                 id_envio__id_amostra__id_frasco=1,
@@ -1900,7 +1907,7 @@ def input_fisico_quimico(request, coleta_id, ponto_id):
                 return redirect("info_coleta", coleta_id=coleta_id)
     else:
         formset = MedidaFormSet(
-            queryset=TabMedidaCopy.objects.filter(
+            queryset=TabMedida.objects.filter(
                 id_envio__id_amostra__id_coleta=coleta_id,
                 id_envio__id_amostra__id_ponto=ponto_id,
                 id_envio__id_amostra__id_frasco=1,
@@ -1919,7 +1926,7 @@ def lista_campo(request, coleta_id):
     coleta = get_object_or_404(TabColeta, id=coleta_id)
 
     # Filtra as amostras da coleta atual
-    amostras = TabAmostraCopy.objects.filter(
+    amostras = TabAmostra.objects.filter(
         id_coleta=coleta,
         id_frasco=1,  # Assumindo que queremos apenas amostras do frasco 1
     ).order_by("id_ponto")

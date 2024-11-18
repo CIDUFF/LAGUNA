@@ -1,6 +1,24 @@
 import django_tables2 as tables
 from django_tables2.utils import A  # import A
-from .models import Campo, ProgramaColeta, Laboratorios, TabSetor, TabPonto, TabLocal, TipoParametro, TabParam, TabFrasco, TabEquipe, TabLaboratorio, TabProduto, TabProdxparam, TabSerieClassificacao, TabItemChecklistColeta, TabMedidaCopy, TabAmostra
+from .models import (
+    Campo,
+    ProgramaColeta,
+    Laboratorios,
+    TabSetor,
+    TabPonto,
+    TabLocal,
+    TipoParametro,
+    TabParam,
+    TabFrasco,
+    TabEquipe,
+    TabLaboratorio,
+    TabProduto,
+    TabProdxparam,
+    TabSerieClassificacao,
+    TabItemChecklistColeta,
+    TabMedida,
+    TabAmostra,
+)
 from django.utils.html import format_html
 
 # TODO: Adicionar filtro e opção para exportação de dados
@@ -58,6 +76,10 @@ class ResultadosColetaTable(tables.Table):
             "od_pct",
             "tds",
             "salinidade",
+            "status_form",
+            "check_amostras",
+            "observacoes",
+            "foto"
         ]
         empty_text = "Não há dados para exibir"
         orderable = True
@@ -76,6 +98,10 @@ class ResultadosColetaTable(tables.Table):
             "od_pct",
             "tds",
             "salinidade",
+            "status_form",
+            "check_amostras",
+            "observacoes",
+            "foto"
         )
         per_page = 25
         paginator_class = tables.LazyPaginator
@@ -484,7 +510,7 @@ class ListaCampoTable(tables.Table):
     )
 
     def render_status(self, record):
-        medida = TabMedidaCopy.objects.filter(
+        medida = TabMedida.objects.filter(
             id_envio__id_amostra=record,
             id_envio__id_amostra__id_frasco=1,  # Filtro para frasco_id=1
         ).first()

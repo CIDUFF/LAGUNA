@@ -1,5 +1,4 @@
 from django_filters import FilterSet, CharFilter, ChoiceFilter
-from functools import wraps
 from .models import Campo, ProgramaColeta, TabPonto, TabSetor, TabLocal
 
 

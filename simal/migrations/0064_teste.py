@@ -4,22 +4,21 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('simal', '0063_rename_tabequipe_tabequipes'),
+        ("simal", "0063_rename_tabequipe_tabequipes"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='teste',
+            name="teste",
             fields=[
-                ('id', models.BigAutoField(primary_key=True, serialize=False)),
-                ('nome', models.TextField(blank=True, null=True)),
-                ('descricao', models.TextField(blank=True, null=True)),
+                ("id", models.BigAutoField(primary_key=True, serialize=False)),
+                ("nome", models.TextField(blank=True, null=True)),
+                ("descricao", models.TextField(blank=True, null=True)),
             ],
             options={
-                'db_table': 'tab_teste',
-                'managed': True,
+                "db_table": "tab_teste",
+                "managed": True,
             },
         ),
     ]

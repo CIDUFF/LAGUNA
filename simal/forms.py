@@ -19,7 +19,30 @@ from django.utils import timezone
 from django import forms
 from django.utils.html import format_html
 from django.urls import reverse
-from .models import *
+from .models import (
+    MetadadosCampo,
+    ProgramaColeta,
+    TabSetor,
+    Laboratorios,
+    Analises,
+    TabLocal,
+    TabPonto,
+    TabParam,
+    UnidadesMedida,
+    TipoParametro,
+    TabFrasco,
+    TabEquipe,
+    TabLaboratorio,
+    TabProduto,
+    TabProdxparam,
+    TabSerieClassificacao,
+    TabCampanha,
+    TabColeta,
+    TabItemChecklistColeta,
+    TabChecklistColeta,
+    TabMedida,
+    DetalhesUsuario,
+)
 
 
 class ColetaCampo(forms.Form):
@@ -587,6 +610,14 @@ class CustomUserCreationForm(UserCreationForm):
         model = User
         fields = ("username", "email", "password1", "password2", "groups")
 
+    def clean_email(self):
+        email = self.cleaned_data.get("email")
+        if User.objects.filter(email=email).exists():
+            raise forms.ValidationError(
+                "Um usuário com este endereço de e-mail já existe."
+            )
+        return email
+
     def save(self, commit=True):
         user = super().save(commit=False)
         user.email = self.cleaned_data["email"]
@@ -753,20 +784,6 @@ class TabSerieClassificacaoForm(forms.ModelForm):
         fields = "__all__"
 
 
-class CadastroCampanhaForm(forms.Form):
-    data_criacao_campanha = forms.DateField(
-        label="Data de criação da campanha",
-        widget=forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
-    )
-    equipe_coleta = forms.ChoiceField(label="Equipe de coleta")
-    local_coleta = forms.ChoiceField(label="Setor")
-    observacoes = forms.CharField(
-        label="Observações",
-        widget=forms.Textarea(attrs={"rows": 3, "cols": 40}),
-        required=False,
-    )
-
-
 class CadastroCampanhaForm(forms.ModelForm):
     data_criacao = forms.DateField(
         widget=forms.DateInput(attrs={"type": "date"}))
@@ -853,7 +870,7 @@ class InputFisicoQuimicoForm(forms.ModelForm):
     # Campo de valor numérico
     input_valor = forms.DecimalField(
         label="Valor",
-        required=True,
+        required=False,
         min_value=0,  # Define o valor mínimo permitido
         max_digits=10,  # Número máximo de dígitos (incluindo decimais)
         decimal_places=2,  # Número de casas decimais
@@ -867,7 +884,7 @@ class InputFisicoQuimicoForm(forms.ModelForm):
     )
 
     class Meta:
-        model = TabMedidaCopy
+        model = TabMedida
         exclude = ["valor", "id_pp"]  # Excluir 'id_pp' para mantê-lo oculto
 
     def __init__(self, *args, **kwargs):
@@ -909,26 +926,3 @@ class DetalhesUsuarioForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(DetalhesUsuarioForm, self).__init__(*args, **kwargs)
         # Remova a linha que desabilita o campo 'usuario'
-
-
-class CustomUserCreationForm(forms.ModelForm):
-    class Meta:
-        model = User
-        fields = ["username", "email"]
-
-    def __init__(self, *args, **kwargs):
-        super(CustomUserCreationForm, self).__init__(*args, **kwargs)
-        self.fields["username"].label = "Nome de Usuário"
-        self.fields["email"].label = "E-mail"
-
-    def clean_username(self):
-        username = self.cleaned_data.get("username")
-        if User.objects.filter(username=username).exists():
-            raise forms.ValidationError("Este nome de usuário já está em uso.")
-        return username
-
-    def clean_email(self):
-        email = self.cleaned_data.get("email")
-        if User.objects.filter(email=email).exists():
-            raise forms.ValidationError("Este e-mail já está em uso.")
-        return email
