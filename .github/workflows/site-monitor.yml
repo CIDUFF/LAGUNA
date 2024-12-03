@@ -13,7 +13,7 @@ jobs:
       - name: Check site status
         id: status_check
         run: |
-          response=$(curl -s -o /dev/null -w "%{http_code}" https://laguna.app.br)
+          response=$(curl -s -o /dev/null -w "%{http_code}" https://laguna.app)
           echo "HTTP Status: $response"
           if [ "$response" != "200" ]; then
             echo "status=down" >> $GITHUB_OUTPUT
