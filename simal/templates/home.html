@@ -19,17 +19,19 @@
                         <div class="d-none d-md-flex">
                           <img src="static/images/icone-calendario.svg" alt="Calendário" class="img-fluid"/>
                         </div>
-                        <div class="d-flex flex-column mx-3">
-                                <p class="card-title fs-6">Campanha atual:</p>
-                                <p class="card-text fs-3">{{local_coleta}}</p>
-                        </div>
-                        <div class="d-flex">        
-                                <p class="card-desc fs-6">
-                                  Status: {{status_coleta}} <br>
-                                  Data: {{data_coleta_proxima_formatada}} <br>
-                                  OS: {{ ordem_servico }}
-                                </p>
-                        </div>
+                          <div class="d-flex flex-column align-items-stretch align-items-md-start">
+                            <div class="d-flex flex-column mx-3">
+                                    <p class="card-title fs-6">Campanha atual:</p>
+                                    <p class="card-text fs-3">{{local_coleta}}</p>
+                            </div>
+                            <div class="d-flex">        
+                                    <p class="card-desc fs-6">
+                                      Status: {{status_coleta}} <br>
+                                      Data: {{data_coleta_proxima_formatada}} <br>
+                                      OS: {{ ordem_servico }}
+                                    </p>
+                            </div>
+                          </div>  
                     </div>
                 </a>
               </div>
@@ -65,8 +67,8 @@
                               <p class="card-desc fs-6">Progresso</p> 
                             </div>
                             <div class="d-flex flex-row align-items-center">    
-                              <p class="card-text fs-3">Checklist</p>
-                              <p class="card-text fs-3 justify-content-center">{{percentual_checklist}}%</p>
+                              <p class="card-text fs-3">Checklist </p>
+                              <p class="card-text fs-3 justify-content-center"> {{percentual_checklist}}%</p>
                             </div>
                           </div>
                     </div>

@@ -231,12 +231,48 @@ class LaboratoriosTable(tables.Table):
         table_pagination = True
 
 
+
+# class TopCampanhas(tables.Table):
+#     class Meta:
+#         model = ProgramaColeta
+#         template_name = "django_tables2/bootstrap5-responsive.html"
+#         fields = ["ordem_servico", "data_coleta_campo",
+#                   "local_coleta", "status_coleta"]
+#         empty_text = "Não há dados para exibir"
+#         orderable = True
+#         exclude = ("id", "created_at", "updated_at", "campo")
+#         sequence = (
+#             "ordem_servico",
+#             "data_coleta_campo",
+#             "local_coleta",
+#             "status_coleta",
+#         )
+#         per_page = 3
+#         paginator_class = tables.LazyPaginator
+#         table_pagination = True
+
+#     def render_status_coleta(self, value):
+#         status_to_class = {
+#             "Iniciada": "bg-primary",
+#             "Cancelada": "bg-danger",
+#             "Coleta realizada": "bg-success",
+#             "Programada": "bg-warning text-dark",
+#         }
+#         badge_class = status_to_class.get(value, "")
+#         if badge_class:
+#             return format_html('<span class="badge {}">{}</span>', badge_class, value)
+#         return value
+
 class TopCampanhas(tables.Table):
+    ordem_servico = tables.Column(attrs={"th": {"class": "d-none d-md-table-cell"}, "td": {"class": "d-none d-md-table-cell"}})
+    data_coleta_campo = tables.DateColumn(format="d/m/Y", attrs={"th": {"class": "d-none d-md-table-cell"}, "td": {"class": "d-none d-md-table-cell"}})
+    local_coleta = tables.Column()
+    status_coleta = tables.Column()
+
     class Meta:
         model = ProgramaColeta
-        template_name = "django_tables2/bootstrap5-responsive.html"
-        fields = ["ordem_servico", "data_coleta_campo",
-                  "local_coleta", "status_coleta"]
+        template_name = "tables/bootstrap5.html"
+        fields = ["ordem_servico", "data_coleta_campo", "local_coleta", "status_coleta"]
         empty_text = "Não há dados para exibir"
         orderable = True
         exclude = ("id", "created_at", "updated_at", "campo")
@@ -249,6 +285,11 @@ class TopCampanhas(tables.Table):
         per_page = 3
         paginator_class = tables.LazyPaginator
         table_pagination = True
+        attrs = {
+            "class": "table table-bordered table-hover",
+            "thead": {"class": "thead-light"},
+            
+        }
 
     def render_status_coleta(self, value):
         status_to_class = {
@@ -262,6 +303,20 @@ class TopCampanhas(tables.Table):
             return format_html('<span class="badge {}">{}</span>', badge_class, value)
         return value
 
+    def render_local_coleta(self, value):
+        return format_html('<span class="d-inline d-md-none font-weight-bold">Local:</span> {}', value)
+
+    def render_status_coleta(self, value):
+        status_to_class = {
+            "Iniciada": "bg-primary",
+            "Cancelada": "bg-danger",
+            "Coleta realizada": "bg-success",
+            "Programada": "bg-warning text-dark",
+        }
+        badge_class = status_to_class.get(value, "")
+        if badge_class:
+            return format_html('<span class="d-inline d-md-none font-weight-bold">Status:</span> <span class="badge {}">{}</span>', badge_class, value)
+        return format_html('<span class="d-inline d-md-none font-weight-bold">Status:</span> {}', value)
 
 class SetorTable(tables.Table):
     update = tables.LinkColumn(
