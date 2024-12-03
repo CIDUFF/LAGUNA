@@ -1068,24 +1068,26 @@ def exportar_resultados_csv(request):
         response["Content-Disposition"] = 'attachment; filename="resultados_coleta.csv"'
 
         writer = csv.writer(response)
-        writer.writerow([
-            "Código Coleta",
-            "Hora Início",
-            "Hora Fim",
-            "Ponto",
-            "Temperatura",
-            "pH",
-            "ORP",
-            "Condutividade",
-            "Turbidez",
-            "OD",
-            "OD %",
-            "TDS",
-            "Salinidade",
-            "Status",
-            "Check Amostras",
-            "Observações"
-        ])
+        writer.writerow(
+            [
+                "Código Coleta",
+                "Hora Início",
+                "Hora Fim",
+                "Ponto",
+                "Temperatura",
+                "pH",
+                "ORP",
+                "Condutividade",
+                "Turbidez",
+                "OD",
+                "OD %",
+                "TDS",
+                "Salinidade",
+                "Status",
+                "Check Amostras",
+                "Observações",
+            ]
+        )
 
         try:
             resultados = Campo.objects.all().values_list(
@@ -1104,27 +1106,34 @@ def exportar_resultados_csv(request):
                 "salinidade",
                 "status_form",
                 "check_amostras",
-                "observacoes"
+                "observacoes",
             )
         except ObjectDoesNotExist:
             logger.error("Nenhum resultado encontrado.")
-            return HttpResponse("Nenhum resultado encontrado.", content_type="text/plain")
+            return HttpResponse(
+                "Nenhum resultado encontrado.", content_type="text/plain"
+            )
         except Exception as e:
             logger.error(f"Erro ao consultar o banco de dados: {e}")
-            return HttpResponse(f"Erro ao consultar o banco de dados: {e}", content_type="text/plain")
+            return HttpResponse(
+                f"Erro ao consultar o banco de dados: {e}", content_type="text/plain"
+            )
 
         for resultado in resultados:
             try:
                 writer.writerow(resultado)
             except Exception as e:
                 logger.error(f"Erro ao escrever linha CSV: {e}")
-                return HttpResponse(f"Erro ao escrever linha CSV: {e}", content_type="text/plain")
+                return HttpResponse(
+                    f"Erro ao escrever linha CSV: {e}", content_type="text/plain"
+                )
 
         return response
 
     except Exception as e:
         logger.error(f"Erro ao gerar CSV: {e}")
         return HttpResponse(f"Erro ao gerar CSV: {e}", content_type="text/plain")
+
 
 def exportar_resultados_xlsx(request):
     try:
@@ -1148,7 +1157,7 @@ def exportar_resultados_xlsx(request):
             "Salinidade",
             "Status",
             "Check Amostras",
-            "Observações"
+            "Observações",
         ]
 
         for col, header in enumerate(headers, 1):
@@ -1171,14 +1180,18 @@ def exportar_resultados_xlsx(request):
                 "salinidade",
                 "status_form",
                 "check_amostras",
-                "observacoes"
+                "observacoes",
             )
         except ObjectDoesNotExist:
             logger.error("Nenhum resultado encontrado.")
-            return HttpResponse("Nenhum resultado encontrado.", content_type="text/plain")
+            return HttpResponse(
+                "Nenhum resultado encontrado.", content_type="text/plain"
+            )
         except Exception as e:
             logger.error(f"Erro ao consultar o banco de dados: {e}")
-            return HttpResponse(f"Erro ao consultar o banco de dados: {e}", content_type="text/plain")
+            return HttpResponse(
+                f"Erro ao consultar o banco de dados: {e}", content_type="text/plain"
+            )
 
         for row_num, resultado in enumerate(resultados, 2):
             try:
@@ -1186,7 +1199,9 @@ def exportar_resultados_xlsx(request):
                     ws.cell(row=row_num, column=col_num, value=value)
             except Exception as e:
                 logger.error(f"Erro ao escrever linha XLSX: {e}")
-                return HttpResponse(f"Erro ao escrever linha XLSX: {e}", content_type="text/plain")
+                return HttpResponse(
+                    f"Erro ao escrever linha XLSX: {e}", content_type="text/plain"
+                )
 
         for col in range(1, len(headers) + 1):
             ws.column_dimensions[get_column_letter(col)].auto_size = True
@@ -1194,7 +1209,9 @@ def exportar_resultados_xlsx(request):
         response = HttpResponse(
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
-        response["Content-Disposition"] = 'attachment; filename="resultados_coleta.xlsx"'
+        response["Content-Disposition"] = (
+            'attachment; filename="resultados_coleta.xlsx"'
+        )
 
         wb.save(response)
         return response
@@ -1913,9 +1930,7 @@ def input_fisico_quimico(request, coleta_id, ponto_id):
         TabMedida, form=InputFisicoQuimicoForm, extra=0, fields="__all__"
     )
     coleta = get_object_or_404(TabColeta, id=coleta_id)
-    ponto = get_object_or_404(
-        TabPonto, id=ponto_id, status=True
-    )  
+    ponto = get_object_or_404(TabPonto, id=ponto_id, status=True)
 
     if request.method == "POST":
         formset = MedidaFormSet(
@@ -1987,8 +2002,7 @@ def meta_ponto(request, id):
     coleta = get_object_or_404(TabColeta, id=id)
 
     # Verifica se já existe um registro de metadados para o código de coleta
-    metadados, created = MetadadosPonto.objects.get_or_create(
-        codigo_coleta=coleta)
+    metadados, created = MetadadosPonto.objects.get_or_create(codigo_coleta=coleta)
 
     if created:
         messages.info(

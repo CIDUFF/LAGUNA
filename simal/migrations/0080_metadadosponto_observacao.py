@@ -4,15 +4,16 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('simal', '0079_metadadosponto_tabanexoamostra_atualizado_em_and_more'),
+        ("simal", "0079_metadadosponto_tabanexoamostra_atualizado_em_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='metadadosponto',
-            name='observacao',
-            field=models.TextField(blank=True, max_length=500, null=True, verbose_name='Observações'),
+            model_name="metadadosponto",
+            name="observacao",
+            field=models.TextField(
+                blank=True, max_length=500, null=True, verbose_name="Observações"
+            ),
         ),
     ]

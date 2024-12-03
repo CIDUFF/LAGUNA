@@ -842,18 +842,17 @@ class TabChecklistColeta(models.Model):
         db_table = "tab_checklist_coleta"
 
 
-
-
 class TabAnexoAmostra(models.Model):
     id_amostra = models.ForeignKey(
         TabAmostra, on_delete=models.CASCADE, related_name="anexos"
     )
     anexo = models.FileField(upload_to="anexos_amostras/", null=True)
-    atualizado_em = models.DateTimeField(auto_now=True,blank=True, null=True)
+    atualizado_em = models.DateTimeField(auto_now=True, blank=True, null=True)
     criado_em = models.DateTimeField(auto_now_add=True, blank=True, null=True)
 
     def __str__(self):
         return f"Anexo da amostra {self.id_amostra}"
+
     class Meta:
         db_table = "tab_anexo_amostra"
 
@@ -893,10 +892,9 @@ class MetadadosPonto(models.Model):
         "Contato com a população", choices=AVALIACAO, null=True
     )
     observacao = models.TextField("Observações", max_length=500, blank=True, null=True)
-    
+
     def __str__(self):
         return f"{self.codigo_coleta}"
-    
+
     class Meta:
         db_table = "tab_metadados_ponto"
-    

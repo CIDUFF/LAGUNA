@@ -1,4 +1,3 @@
-from typing import Any, Mapping
 from crispy_forms.helper import FormHelper
 from crispy_bootstrap5.bootstrap5 import FloatingField, Switch
 from crispy_forms.layout import (
@@ -14,9 +13,6 @@ from crispy_forms.layout import (
 )
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.forms import UserCreationForm
-from django.core.files.base import File
-from django.db.models.base import Model
-from django.forms.utils import ErrorList
 from django.utils import timezone
 
 # from django.forms import ModelChoiceField
@@ -47,7 +43,6 @@ from .models import (
     TabMedida,
     DetalhesUsuario,
     MetadadosPonto,
-    
 )
 
 
@@ -909,8 +904,8 @@ class InputFisicoQuimicoForm(forms.ModelForm):
                 css_class="form-row",
             )
         )
-        
-        
+
+
 class MetadadosPontoForm(forms.ModelForm):
     class Meta:
         model = MetadadosPonto
@@ -1021,7 +1016,6 @@ class MetadadosPontoForm(forms.ModelForm):
                 }
             ),
         }
-        
 
 
 class DetalhesUsuarioForm(forms.ModelForm):
