@@ -5,43 +5,153 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('simal', '0077_alter_tabcoleta_id'),
+        ("simal", "0077_alter_tabcoleta_id"),
     ]
 
     operations = [
         migrations.AlterModelTable(
-            name='metadadoscampo',
-            table='tab_metadados_campo',
+            name="metadadoscampo",
+            table="tab_metadados_campo",
         ),
         migrations.CreateModel(
-            name='TabAnexoAmostra',
+            name="TabAnexoAmostra",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('anexo', models.FileField(null=True, upload_to='anexos_amostras/')),
-                ('id_amostra', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='anexos', to='simal.tabamostra')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("anexo", models.FileField(null=True, upload_to="anexos_amostras/")),
+                (
+                    "id_amostra",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="anexos",
+                        to="simal.tabamostra",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='MetadadosCampoCopy',
+            name="MetadadosCampoCopy",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('acesso_ponto', models.CharField(choices=[('Ponte', 'Ponte'), ('Caiaque', 'Caiaque'), ('Margem', 'Margem')], max_length=50, null=True)),
-                ('dragagem', models.IntegerField(choices=[(-1, 'Negativo'), (0, 'Neutro'), (1, 'Positivo')], null=True, verbose_name='Dragagem')),
-                ('gigoga', models.IntegerField(choices=[(-1, 'Negativo'), (0, 'Neutro'), (1, 'Positivo')], null=True, verbose_name='Quantidade de gigoga')),
-                ('odor', models.IntegerField(choices=[(-1, 'Negativo'), (0, 'Neutro'), (1, 'Positivo')], null=True, verbose_name='Odor')),
-                ('fezes', models.IntegerField(choices=[(-1, 'Negativo'), (0, 'Neutro'), (1, 'Positivo')], null=True, verbose_name='Fezes')),
-                ('oleo', models.IntegerField(choices=[(-1, 'Negativo'), (0, 'Neutro'), (1, 'Positivo')], null=True, verbose_name='Óleo')),
-                ('residuos_solidos', models.IntegerField(choices=[(-1, 'Negativo'), (0, 'Neutro'), (1, 'Positivo')], null=True, verbose_name='Resíduos Sólidos')),
-                ('lodo', models.IntegerField(choices=[(-1, 'Negativo'), (0, 'Neutro'), (1, 'Positivo')], null=True, verbose_name='Lodo')),
-                ('animais_presentes', models.IntegerField(choices=[(-1, 'Negativo'), (0, 'Neutro'), (1, 'Positivo')], null=True, verbose_name='Animais Presentes')),
-                ('pescadores', models.IntegerField(choices=[(-1, 'Negativo'), (0, 'Neutro'), (1, 'Positivo')], null=True, verbose_name='Pescadores')),
-                ('contato_populacao', models.IntegerField(choices=[(-1, 'Negativo'), (0, 'Neutro'), (1, 'Positivo')], null=True, verbose_name='Contato com a população')),
-                ('codigo_coleta', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='metadados_campo', to='simal.tabamostra')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "acesso_ponto",
+                    models.CharField(
+                        choices=[
+                            ("Ponte", "Ponte"),
+                            ("Caiaque", "Caiaque"),
+                            ("Margem", "Margem"),
+                        ],
+                        max_length=50,
+                        null=True,
+                    ),
+                ),
+                (
+                    "dragagem",
+                    models.IntegerField(
+                        choices=[(-1, "Negativo"), (0, "Neutro"), (1, "Positivo")],
+                        null=True,
+                        verbose_name="Dragagem",
+                    ),
+                ),
+                (
+                    "gigoga",
+                    models.IntegerField(
+                        choices=[(-1, "Negativo"), (0, "Neutro"), (1, "Positivo")],
+                        null=True,
+                        verbose_name="Quantidade de gigoga",
+                    ),
+                ),
+                (
+                    "odor",
+                    models.IntegerField(
+                        choices=[(-1, "Negativo"), (0, "Neutro"), (1, "Positivo")],
+                        null=True,
+                        verbose_name="Odor",
+                    ),
+                ),
+                (
+                    "fezes",
+                    models.IntegerField(
+                        choices=[(-1, "Negativo"), (0, "Neutro"), (1, "Positivo")],
+                        null=True,
+                        verbose_name="Fezes",
+                    ),
+                ),
+                (
+                    "oleo",
+                    models.IntegerField(
+                        choices=[(-1, "Negativo"), (0, "Neutro"), (1, "Positivo")],
+                        null=True,
+                        verbose_name="Óleo",
+                    ),
+                ),
+                (
+                    "residuos_solidos",
+                    models.IntegerField(
+                        choices=[(-1, "Negativo"), (0, "Neutro"), (1, "Positivo")],
+                        null=True,
+                        verbose_name="Resíduos Sólidos",
+                    ),
+                ),
+                (
+                    "lodo",
+                    models.IntegerField(
+                        choices=[(-1, "Negativo"), (0, "Neutro"), (1, "Positivo")],
+                        null=True,
+                        verbose_name="Lodo",
+                    ),
+                ),
+                (
+                    "animais_presentes",
+                    models.IntegerField(
+                        choices=[(-1, "Negativo"), (0, "Neutro"), (1, "Positivo")],
+                        null=True,
+                        verbose_name="Animais Presentes",
+                    ),
+                ),
+                (
+                    "pescadores",
+                    models.IntegerField(
+                        choices=[(-1, "Negativo"), (0, "Neutro"), (1, "Positivo")],
+                        null=True,
+                        verbose_name="Pescadores",
+                    ),
+                ),
+                (
+                    "contato_populacao",
+                    models.IntegerField(
+                        choices=[(-1, "Negativo"), (0, "Neutro"), (1, "Positivo")],
+                        null=True,
+                        verbose_name="Contato com a população",
+                    ),
+                ),
+                (
+                    "codigo_coleta",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="metadados_campo",
+                        to="simal.tabamostra",
+                    ),
+                ),
             ],
             options={
-                'db_table': 'tab_metadados_campo_copy',
+                "db_table": "tab_metadados_campo_copy",
             },
         ),
     ]

@@ -51,6 +51,7 @@ from simal.views import (
     cadastro_usuarios_adm,
     info_coleta,
     lista_campo,
+    exportar_resultados_xlsx
 )
 
 urlpatterns = [
@@ -112,6 +113,9 @@ urlpatterns = [
     path("calendario/", calendario_campanhas, name="calendario_campanhas"),
     path(
         "exportar_resultados/", exportar_resultados_csv, name="exportar_resultados_csv"
+    ),
+    path(
+        "exportar_resultados_xlsx/", exportar_resultados_xlsx, name="exportar_resultados_xlsx"
     ),
     path("etiquetagem/<str:ordem_servico>/", etiquetagem, name="etiquetagem"),
     path("cadastro-usuarios/", cadastro_usuarios, name="cadastro_usuarios"),

@@ -1,0 +1,43 @@
+name: Site Status Monitor
+
+on:
+  schedule:
+    - cron: '0 * * * *'  # Executa a cada hora
+  workflow_dispatch:  # Permite execução manual
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Get current time
+        run: echo "CURRENT_TIME=$(date +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_ENV
+
+      - name: Check site status
+        id: status_check
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" https://laguna.app.br)
+          echo "HTTP Status: $response"
+          if [ "$response" != "200" ]; then
+            echo "status=down" >> $GITHUB_OUTPUT
+          else
+            echo "status=up" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Send notification email
+        if: steps.status_check.outputs.status == 'down'
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: 'ALERTA: laguna.app.br está fora do ar'
+          to: marcusantonio@id.uff.br, moisesleaogil@gmail.com, alexanderventura@id.uff.br, sysadm.cid@gmail.com
+          from: GitHub Actions
+          body: |
+            O site laguna.app.br está inacessível no momento. Contate o administrador do sistema para mais informações.
+            
+            Data/Hora: ${{ env.CURRENT_TIME }}
+            
+            Este é um email automático, por favor não responda.

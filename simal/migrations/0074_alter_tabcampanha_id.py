@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('simal', '0073_remove_tabenviocopy_id_amostra_and_more'),
+        ("simal", "0073_remove_tabenviocopy_id_amostra_and_more"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='tabcampanha',
-            name='id',
+            model_name="tabcampanha",
+            name="id",
             field=models.BigAutoField(primary_key=True, serialize=False),
         ),
     ]

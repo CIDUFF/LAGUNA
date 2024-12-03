@@ -4,13 +4,12 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('simal', '0071_alter_tablocal_options'),
+        ("simal", "0071_alter_tablocal_options"),
     ]
 
     operations = [
         migrations.DeleteModel(
-            name='teste',
+            name="teste",
         ),
     ]

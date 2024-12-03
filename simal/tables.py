@@ -79,7 +79,7 @@ class ResultadosColetaTable(tables.Table):
             "status_form",
             "check_amostras",
             "observacoes",
-            "foto"
+            "foto",
         ]
         empty_text = "Não há dados para exibir"
         orderable = True
@@ -101,7 +101,7 @@ class ResultadosColetaTable(tables.Table):
             "status_form",
             "check_amostras",
             "observacoes",
-            "foto"
+            "foto",
         )
         per_page = 25
         paginator_class = tables.LazyPaginator
@@ -211,8 +211,7 @@ class LaboratoriosTable(tables.Table):
         empty_values=[],
         text="EDITAR",
     )
-    analises = tables.Column(
-        empty_values=(), orderable=False, verbose_name="Análises")
+    analises = tables.Column(empty_values=(), orderable=False, verbose_name="Análises")
 
     def render_analises(self, record):
         return ", ".join([analise.analise for analise in record.analises.all()])
@@ -224,8 +223,7 @@ class LaboratoriosTable(tables.Table):
         empty_text = "Não há dados para exibir"
         orderable = False
         exclude = ("id", "created_at", "updated_at")
-        sequence = ("nome", "email", "telefone",
-                    "endereco", "tipo", "analises")
+        sequence = ("nome", "email", "telefone", "endereco", "tipo", "analises")
         per_page = 10
         paginator_class = tables.LazyPaginator
         table_pagination = True
@@ -352,8 +350,7 @@ class PontoTable(tables.Table):
     class Meta:
         model = TabPonto
         template_name = "django_tables2/bootstrap5-responsive.html"
-        fields = ["nome", "id_setor", "id_local",
-                  "modalidade", "lat", "lon", "status"]
+        fields = ["nome", "id_setor", "id_local", "modalidade", "lat", "lon", "status"]
         empty_text = "Não há dados para exibir"
         orderable = True
         exclude = ("id", "created_at", "updated_at")
@@ -552,8 +549,7 @@ class TipoItemChecklistColetaTable(tables.Table):
 
 
 class ListaCampoTable(tables.Table):
-    status = tables.Column(
-        empty_values=[], verbose_name="Status", orderable=False)
+    status = tables.Column(empty_values=[], verbose_name="Status", orderable=False)
 
     update = tables.LinkColumn(
         "input_fisico_quimico",

@@ -17,6 +17,7 @@
 
     <div class="table-responsive">
         <a href="{% url 'exportar_resultados_csv' %}" class="btn btn-primary">Exportar resultados para CSV</a>
+        <a href="{% url 'exportar_resultados_xlsx' %}" class="btn btn-primary">Exportar resultados para xlsx</a>
         <table class="table">
             {% render_table table_campo %}
         </table>

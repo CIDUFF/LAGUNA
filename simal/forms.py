@@ -1,3 +1,4 @@
+from typing import Any, Mapping
 from crispy_forms.helper import FormHelper
 from crispy_bootstrap5.bootstrap5 import FloatingField, Switch
 from crispy_forms.layout import (
@@ -13,6 +14,9 @@ from crispy_forms.layout import (
 )
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.forms import UserCreationForm
+from django.core.files.base import File
+from django.db.models.base import Model
+from django.forms.utils import ErrorList
 from django.utils import timezone
 
 # from django.forms import ModelChoiceField
@@ -42,6 +46,8 @@ from .models import (
     TabChecklistColeta,
     TabMedida,
     DetalhesUsuario,
+    MetadadosPonto,
+    
 )
 
 
@@ -137,10 +143,8 @@ class ColetaCampo(forms.Form):
                 " ",
                 *[
                     Row(
-                        Column(FloatingField(
-                            "data_coleta", css_class="col-md-6")),
-                        Column(FloatingField(
-                            "hora_inicio", css_class="col-md-6")),
+                        Column(FloatingField("data_coleta", css_class="col-md-6")),
+                        Column(FloatingField("hora_inicio", css_class="col-md-6")),
                     )
                 ],
                 "codigo_coleta",
@@ -149,8 +153,7 @@ class ColetaCampo(forms.Form):
                 *[
                     Row(
                         Column(FloatingField(campos[i]), css_class="col-md-6"),
-                        Column(FloatingField(
-                            campos[i + 1]), css_class="col-md-6")
+                        Column(FloatingField(campos[i + 1]), css_class="col-md-6")
                         if i + 1 < len(campos)
                         else None,
                     )
@@ -374,12 +377,10 @@ class ProgramaColetaForm(forms.Form):
         )
 
         def gerar_opcoes_unicas(modelo, campo):
-            valores_unicos = modelo.objects.values_list(
-                campo, flat=True).distinct()
+            valores_unicos = modelo.objects.values_list(campo, flat=True).distinct()
             return [(valor, valor) for valor in valores_unicos]
 
-        self.fields["local_coleta"].choices = gerar_opcoes_unicas(
-            TabSetor, "nome")
+        self.fields["local_coleta"].choices = gerar_opcoes_unicas(TabSetor, "nome")
         self.fields["equipe_coleta"].choices = [
             (group.id, group.name) for group in Group.objects.all()
         ]
@@ -445,8 +446,7 @@ class ChecklistCampoForm(forms.Form):
     ]
 
     def __init__(self, *args, **kwargs):
-        ordem_servico_selecionada = kwargs.pop(
-            "ordem_servico_selecionada", None)
+        ordem_servico_selecionada = kwargs.pop("ordem_servico_selecionada", None)
         checklist_campo_instance = kwargs.pop("instance", None)
         super(ChecklistCampoForm, self).__init__(*args, **kwargs)
 
@@ -458,8 +458,7 @@ class ChecklistCampoForm(forms.Form):
             self.fields[f"observacao_{name}"] = create_observation_field(name)
 
             if checklist_campo_instance:
-                self.fields[name].initial = getattr(
-                    checklist_campo_instance, name)
+                self.fields[name].initial = getattr(checklist_campo_instance, name)
                 self.fields[f"data_{name}"].initial = getattr(
                     checklist_campo_instance, f"data_{name}"
                 )
@@ -512,8 +511,7 @@ class ChecklistCampoForm(forms.Form):
 class AjudaForm(forms.Form):
     nome = forms.CharField()
     email = forms.EmailField()
-    pergunta = forms.CharField(
-        widget=forms.Textarea, max_length=500, required=False)
+    pergunta = forms.CharField(widget=forms.Textarea, max_length=500, required=False)
 
     def __init__(self, *args, **kwargs):
         super(AjudaForm, self).__init__(*args, **kwargs)
@@ -643,8 +641,7 @@ class LocaisForm(forms.ModelForm):
                 "Cadastro de Locais",
                 Div(Div("nome", css_class="col-md-6"), css_class="row"),
             ),
-            ButtonHolder(Submit("submit", "Salvar",
-                         css_class="btn btn-primary")),
+            ButtonHolder(Submit("submit", "Salvar", css_class="btn btn-primary")),
         )
 
 
@@ -675,8 +672,7 @@ class SetorForm(forms.ModelForm):
                     css_class="row",
                 ),
             ),
-            ButtonHolder(Submit("submit", "Salvar",
-                         css_class="btn btn-primary")),
+            ButtonHolder(Submit("submit", "Salvar", css_class="btn btn-primary")),
         )
 
 
@@ -725,8 +721,7 @@ class PontoForm(forms.ModelForm):
                     css_class="row",
                 ),
             ),
-            ButtonHolder(Submit("submit", "Salvar",
-                         css_class="btn btn-primary")),
+            ButtonHolder(Submit("submit", "Salvar", css_class="btn btn-primary")),
         )
 
 
@@ -785,8 +780,7 @@ class TabSerieClassificacaoForm(forms.ModelForm):
 
 
 class CadastroCampanhaForm(forms.ModelForm):
-    data_criacao = forms.DateField(
-        widget=forms.DateInput(attrs={"type": "date"}))
+    data_criacao = forms.DateField(widget=forms.DateInput(attrs={"type": "date"}))
 
     class Meta:
         model = TabCampanha
@@ -825,8 +819,7 @@ class CadastroItemChecklistColetaForm(forms.ModelForm):
         self.helper.add_input(Submit("submit", "Salvar"))
 
     def save(self, user=None, *args, **kwargs):
-        instance = super(CadastroItemChecklistColetaForm,
-                         self).save(commit=False)
+        instance = super(CadastroItemChecklistColetaForm, self).save(commit=False)
         if user:
             instance.user = user
         instance.save()
@@ -916,6 +909,119 @@ class InputFisicoQuimicoForm(forms.ModelForm):
                 css_class="form-row",
             )
         )
+        
+        
+class MetadadosPontoForm(forms.ModelForm):
+    class Meta:
+        model = MetadadosPonto
+        exclude = ["codigo_coleta"]  # Exclui o campo codigo_coleta
+        labels = {
+            "acesso_ponto": "Acesso ao Ponto",
+            "dragagem": "Dragagem",
+            "gigoga": "Quantidade de Gigoga",
+            "odor": "Odor",
+            "fezes": "Fezes",
+            "oleo": "Óleo",
+            "residuos_solidos": "Resíduos Sólidos",
+            "lodo": "Lodo",
+            "animais_presentes": "Animais Presentes",
+            "pescadores": "Pescadores",
+            "contato_populacao": "Contato com a População",
+        }
+        widgets = {
+            "acesso_ponto": forms.Select(attrs={"class": "form-select"}),
+            "dragagem": forms.NumberInput(
+                attrs={
+                    "type": "range",
+                    "min": -1,
+                    "max": 1,
+                    "step": 1,
+                    "class": "form-range",
+                }
+            ),
+            "gigoga": forms.NumberInput(
+                attrs={
+                    "type": "range",
+                    "min": -1,
+                    "max": 1,
+                    "step": 1,
+                    "class": "form-range",
+                }
+            ),
+            "odor": forms.NumberInput(
+                attrs={
+                    "type": "range",
+                    "min": -1,
+                    "max": 1,
+                    "step": 1,
+                    "class": "form-range",
+                }
+            ),
+            "fezes": forms.NumberInput(
+                attrs={
+                    "type": "range",
+                    "min": -1,
+                    "max": 1,
+                    "step": 1,
+                    "class": "form-range",
+                }
+            ),
+            "oleo": forms.NumberInput(
+                attrs={
+                    "type": "range",
+                    "min": -1,
+                    "max": 1,
+                    "step": 1,
+                    "class": "form-range",
+                }
+            ),
+            "residuos_solidos": forms.NumberInput(
+                attrs={
+                    "type": "range",
+                    "min": -1,
+                    "max": 1,
+                    "step": 1,
+                    "class": "form-range",
+                }
+            ),
+            "lodo": forms.NumberInput(
+                attrs={
+                    "type": "range",
+                    "min": -1,
+                    "max": 1,
+                    "step": 1,
+                    "class": "form-range",
+                }
+            ),
+            "animais_presentes": forms.NumberInput(
+                attrs={
+                    "type": "range",
+                    "min": -1,
+                    "max": 1,
+                    "step": 1,
+                    "class": "form-range",
+                }
+            ),
+            "pescadores": forms.NumberInput(
+                attrs={
+                    "type": "range",
+                    "min": -1,
+                    "max": 1,
+                    "step": 1,
+                    "class": "form-range",
+                }
+            ),
+            "contato_populacao": forms.NumberInput(
+                attrs={
+                    "type": "range",
+                    "min": -1,
+                    "max": 1,
+                    "step": 1,
+                    "class": "form-range",
+                }
+            ),
+        }
+        
 
 
 class DetalhesUsuarioForm(forms.ModelForm):
