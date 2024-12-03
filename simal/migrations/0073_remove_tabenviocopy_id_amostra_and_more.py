@@ -4,35 +4,34 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('simal', '0072_delete_teste'),
+        ("simal", "0072_delete_teste"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='tabenviocopy',
-            name='id_amostra',
+            model_name="tabenviocopy",
+            name="id_amostra",
         ),
         migrations.RemoveField(
-            model_name='tabenviocopy',
-            name='id_laboratorio',
+            model_name="tabenviocopy",
+            name="id_laboratorio",
         ),
         migrations.RemoveField(
-            model_name='tabmedidacopy',
-            name='id_envio',
+            model_name="tabmedidacopy",
+            name="id_envio",
         ),
         migrations.RemoveField(
-            model_name='tabmedidacopy',
-            name='id_pp',
+            model_name="tabmedidacopy",
+            name="id_pp",
         ),
         migrations.DeleteModel(
-            name='TabAmostraCopy',
+            name="TabAmostraCopy",
         ),
         migrations.DeleteModel(
-            name='TabEnvioCopy',
+            name="TabEnvioCopy",
         ),
         migrations.DeleteModel(
-            name='TabMedidaCopy',
+            name="TabMedidaCopy",
         ),
     ]

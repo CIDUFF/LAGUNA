@@ -1,0 +1,20 @@
+{% extends 'base/base_site.html' %}
+{% load crispy_forms_tags %}
+{% block title %}Registro de coleta de Campo - metadados{% endblock %}
+{% block content %}
+<div class="card checklist">
+    <h1 class="m-3 d-flex justify-content-center">Registro de coleta de Campo - informações extras</h1>
+    <br>
+    <div class="row">
+        <div class="col-md-12">
+            <p><strong>Ordem de Serviço:</strong> {{ ordem_servico }}</p>
+            <p><strong>Ponto Atual:</strong> {{ ponto }}</p>
+            <form method="post">
+                {% csrf_token %}
+                {% crispy form %}
+
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
