@@ -13,7 +13,7 @@ jobs:
       - name: Check site status
         id: status_check
         run: |
-          response=$(curl -s -o /dev/null -w "%{http_code}" https://laguna.app)
+          response=$(curl -s -o /dev/null -w "%{http_code}" https://laguna.app.br)
           echo "HTTP Status: $response"
           if [ "$response" != "200" ]; then
             echo "status=down" >> $GITHUB_OUTPUT
@@ -30,10 +30,10 @@ jobs:
           username: ${{ secrets.EMAIL_USERNAME }}
           password: ${{ secrets.EMAIL_PASSWORD }}
           subject: 'ALERTA: laguna.app.br está fora do ar'
-          to: marcusantonio@id.uff.br
+          to: marcusantonio@id.uff.br, moisesleaogil@gmail.com, alexanderventura@id.uff.br, sysadm.cid@gmail.com
           from: GitHub Actions
           body: |
-            O site laguna.app.br está inacessível.
+            O site laguna.app.br está inacessível no momento. Contate o administrador do sistema para mais informações.
             
             Data/Hora: ${{ format(github.event.schedule) }}
             
