@@ -10,6 +10,9 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
+      - name: Get current time
+        run: echo "CURRENT_TIME=$(date +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_ENV
+
       - name: Check site status
         id: status_check
         run: |
@@ -35,6 +38,6 @@ jobs:
           body: |
             O site laguna.app.br está inacessível no momento. Contate o administrador do sistema para mais informações.
             
-            Data/Hora: ${{ format(github.event.schedule) }}
+            Data/Hora: ${{ env.CURRENT_TIME }}
             
             Este é um email automático, por favor não responda.
