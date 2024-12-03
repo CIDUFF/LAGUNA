@@ -25,6 +25,9 @@ from django.http import FileResponse, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
+from openpyxl import Workbook
+from openpyxl.utils import get_column_letter
+
 
 from django_tables2 import RequestConfig
 
@@ -1065,23 +1068,24 @@ def exportar_resultados_csv(request):
         response["Content-Disposition"] = 'attachment; filename="resultados_coleta.csv"'
 
         writer = csv.writer(response)
-        writer.writerow(
-            [
-                "Código Coleta",
-                "Hora Início",
-                "Hora Fim",
-                "Ponto",
-                "Temperatura",
-                "pH",
-                "ORP",
-                "Condutividade",
-                "Turbidez",
-                "OD",
-                "OD %",
-                "TDS",
-                "Salinidade",
-            ]
-        )
+        writer.writerow([
+            "Código Coleta",
+            "Hora Início",
+            "Hora Fim",
+            "Ponto",
+            "Temperatura",
+            "pH",
+            "ORP",
+            "Condutividade",
+            "Turbidez",
+            "OD",
+            "OD %",
+            "TDS",
+            "Salinidade",
+            "Status",
+            "Check Amostras",
+            "Observações"
+        ])
 
         try:
             resultados = Campo.objects.all().values_list(
@@ -1098,32 +1102,106 @@ def exportar_resultados_csv(request):
                 "od_pct",
                 "tds",
                 "salinidade",
+                "status_form",
+                "check_amostras",
+                "observacoes"
             )
         except ObjectDoesNotExist:
             logger.error("Nenhum resultado encontrado.")
-            return HttpResponse(
-                "Nenhum resultado encontrado.", content_type="text/plain"
-            )
+            return HttpResponse("Nenhum resultado encontrado.", content_type="text/plain")
         except Exception as e:
             logger.error(f"Erro ao consultar o banco de dados: {e}")
-            return HttpResponse(
-                f"Erro ao consultar o banco de dados: {e}", content_type="text/plain"
-            )
+            return HttpResponse(f"Erro ao consultar o banco de dados: {e}", content_type="text/plain")
 
         for resultado in resultados:
             try:
                 writer.writerow(resultado)
             except Exception as e:
                 logger.error(f"Erro ao escrever linha CSV: {e}")
-                return HttpResponse(
-                    f"Erro ao escrever linha CSV: {e}", content_type="text/plain"
-                )
+                return HttpResponse(f"Erro ao escrever linha CSV: {e}", content_type="text/plain")
 
         return response
 
     except Exception as e:
         logger.error(f"Erro ao gerar CSV: {e}")
         return HttpResponse(f"Erro ao gerar CSV: {e}", content_type="text/plain")
+
+def exportar_resultados_xlsx(request):
+    try:
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Resultados Coleta"
+
+        headers = [
+            "Código Coleta",
+            "Hora Início",
+            "Hora Fim",
+            "Ponto",
+            "Temperatura",
+            "pH",
+            "ORP",
+            "Condutividade",
+            "Turbidez",
+            "OD",
+            "OD %",
+            "TDS",
+            "Salinidade",
+            "Status",
+            "Check Amostras",
+            "Observações"
+        ]
+
+        for col, header in enumerate(headers, 1):
+            ws.cell(row=1, column=col, value=header)
+
+        try:
+            resultados = Campo.objects.all().values_list(
+                "codigo_coleta",
+                "hora_inicio",
+                "hora_fim",
+                "ponto",
+                "temperatura",
+                "ph",
+                "orp",
+                "condutividade",
+                "turbidez",
+                "od",
+                "od_pct",
+                "tds",
+                "salinidade",
+                "status_form",
+                "check_amostras",
+                "observacoes"
+            )
+        except ObjectDoesNotExist:
+            logger.error("Nenhum resultado encontrado.")
+            return HttpResponse("Nenhum resultado encontrado.", content_type="text/plain")
+        except Exception as e:
+            logger.error(f"Erro ao consultar o banco de dados: {e}")
+            return HttpResponse(f"Erro ao consultar o banco de dados: {e}", content_type="text/plain")
+
+        for row_num, resultado in enumerate(resultados, 2):
+            try:
+                for col_num, value in enumerate(resultado, 1):
+                    ws.cell(row=row_num, column=col_num, value=value)
+            except Exception as e:
+                logger.error(f"Erro ao escrever linha XLSX: {e}")
+                return HttpResponse(f"Erro ao escrever linha XLSX: {e}", content_type="text/plain")
+
+        for col in range(1, len(headers) + 1):
+            ws.column_dimensions[get_column_letter(col)].auto_size = True
+
+        response = HttpResponse(
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        response["Content-Disposition"] = 'attachment; filename="resultados_coleta.xlsx"'
+
+        wb.save(response)
+        return response
+
+    except Exception as e:
+        logger.error(f"Erro ao gerar XLSX: {e}")
+        return HttpResponse(f"Erro ao gerar XLSX: {e}", content_type="text/plain")
 
 
 @login_required
