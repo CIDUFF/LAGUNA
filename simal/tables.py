@@ -36,7 +36,7 @@ class ColetaCampoTable(tables.Table):
 
     class Meta:
         model = Campo
-        template_name = "django_tables2/bootstrap5-responsive.html"
+        template_name = "tables/bootstrap5.html"
         fields = ["ponto", "codigo_coleta", "status_form", "update"]
         # attrs = {'class': 'table table-striped table-bordered table-hover'}
         empty_text = "Não há dados para exibir"
@@ -61,7 +61,7 @@ class ColetaCampoTable(tables.Table):
 class ResultadosColetaTable(tables.Table):
     class Meta:
         model = Campo
-        template_name = "django_tables2/bootstrap5-responsive.html"
+        template_name = "tables/bootstrap5.html"
         fields = [
             "codigo_coleta",
             "hora_inicio",
@@ -164,7 +164,7 @@ class ProgramaColetaTable(tables.Table):
 
     class Meta:
         model = ProgramaColeta
-        template_name = "django_tables2/bootstrap5-responsive.html"
+        template_name = "tables/bootstrap5.html"
         fields = [
             "ordem_servico",
             "usuario",
@@ -218,7 +218,7 @@ class LaboratoriosTable(tables.Table):
 
     class Meta:
         model = Laboratorios
-        template_name = "django_tables2/bootstrap5-responsive.html"
+        template_name = "tables/bootstrap5.html"
         fields = ["nome", "email", "telefone", "endereco", "tipo"]
         empty_text = "Não há dados para exibir"
         orderable = False
@@ -327,7 +327,7 @@ class SetorTable(tables.Table):
 
     class Meta:
         model = TabSetor
-        template_name = "django_tables2/bootstrap5-responsive.html"
+        template_name = "tables/bootstrap5.html"
         fields = ["nome", "local", "lat", "lon", "abreviatura"]
         empty_text = "Não há dados para exibir"
         orderable = False
@@ -349,7 +349,7 @@ class PontoTable(tables.Table):
 
     class Meta:
         model = TabPonto
-        template_name = "django_tables2/bootstrap5-responsive.html"
+        template_name = "tables/bootstrap5.html"
         fields = ["nome", "id_setor", "id_local", "modalidade", "lat", "lon", "status"]
         empty_text = "Não há dados para exibir"
         orderable = True
@@ -379,7 +379,7 @@ class LocalTable(tables.Table):
 
     class Meta:
         model = TabLocal
-        template_name = "django_tables2/bootstrap5-responsive.html"
+        template_name = "tables/bootstrap5.html"
         fields = ["nome", "desc"]
         empty_text = "Não há dados para exibir"
         orderable = False
@@ -395,7 +395,7 @@ class TipoParametroTable(tables.Table):
 
     class Meta:
         model = TipoParametro
-        template_name = "django_tables2/bootstrap5-responsive.html"
+        template_name = "tables/bootstrap5.html"
         fields = ["nome", "descricao"]
         empty_text = "Não há dados para exibir"
         orderable = False
@@ -538,7 +538,7 @@ class TipoItemChecklistColetaTable(tables.Table):
 
     class Meta:
         model = TabItemChecklistColeta
-        template_name = "django_tables2/bootstrap5-responsive.html"
+        template_name = "tables/bootstrap5.html"
         fields = ("item",)
         # exclude = ['id', 'data_cadastro']
         # empty_text = 'Não há dados para exibir'
@@ -574,7 +574,7 @@ class ListaCampoTable(tables.Table):
 
     class Meta:
         model = TabAmostra
-        template_name = "django_tables2/bootstrap5-responsive.html"
+        template_name = "tables/bootstrap5.html"
         fields = ["id_ponto", "etiqueta", "status", "update"]
         empty_text = "Não há dados para exibir"
         orderable = True

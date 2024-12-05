@@ -183,7 +183,7 @@ def home(request):
         )
         table = TopCampanhas(ProgramaColeta.objects.all())
         RequestConfig(request, paginate={"per_page": 3}).configure(table)
-
+        hoje = timezone.now().strftime("%d/%m/%Y")
         percentual_checklist = None
         data_coleta_proxima_formatada = None
         weather_description = None
@@ -198,8 +198,14 @@ def home(request):
                 .first()
             )
             data_coleta_proxima_formatada = proxima_coleta.data_coleta_campo.strftime(
-                "%d/%m/%Y"
-            )
+                "%d/%m/%Y")
+            
+            data_coleta_menos_um = (proxima_coleta.data_coleta_campo - timedelta(days=1)).strftime(
+                "%d/%m/%Y")
+            
+            data_coleta_menos_dois = (proxima_coleta.data_coleta_campo - timedelta(days=2)).strftime(
+                "%d/%m/%Y")
+
             weather_description = get_weather_description(
                 "Maricá", proxima_coleta.data_coleta_campo.strftime("%Y-%m-%d")
             )
@@ -396,14 +402,12 @@ def home(request):
                 evento["className"] = "evento-cancelado"
             eventos.append(evento)
 
+
         context = {
             "data_coleta_proxima_formatada": data_coleta_proxima_formatada,
-            "data_coleta_formatada_menos_um": (
-                timezone.now() - timedelta(days=1)
-            ).strftime("%d/%m/%Y"),
-            "data_coleta_formatada_menos_dois": (
-                timezone.now() - timedelta(days=2)
-            ).strftime("%d/%m/%Y"),
+            "data_coleta_formatada_menos_um": data_coleta_menos_um,
+            "data_coleta_formatada_menos_dois": data_coleta_menos_dois,
+            "hoje":hoje,
             "weather_description": weather_description,
             "weather_description_day_before": weather_description_day_before,
             "weather_description_two_days_before": weather_description_two_days_before,
