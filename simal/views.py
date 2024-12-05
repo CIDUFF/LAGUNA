@@ -186,6 +186,8 @@ def home(request):
         hoje = timezone.now().strftime("%d/%m/%Y")
         percentual_checklist = None
         data_coleta_proxima_formatada = None
+        data_coleta_menos_um = None
+        data_coleta_menos_dois = None
         weather_description = None
         weather_description_day_before = None
         weather_description_two_days_before = None
