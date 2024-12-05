@@ -183,7 +183,7 @@ def home(request):
         )
         table = TopCampanhas(ProgramaColeta.objects.all())
         RequestConfig(request, paginate={"per_page": 3}).configure(table)
-
+        hoje = timezone.now().strftime("%d/%m/%Y")
         percentual_checklist = None
         data_coleta_proxima_formatada = None
         weather_description = None
@@ -198,8 +198,8 @@ def home(request):
                 .first()
             )
             data_coleta_proxima_formatada = proxima_coleta.data_coleta_campo.strftime(
-                "%d/%m/%Y"
-            )
+                "%d/%m/%Y")
+            
             weather_description = get_weather_description(
                 "Maricá", proxima_coleta.data_coleta_campo.strftime("%Y-%m-%d")
             )
@@ -404,6 +404,7 @@ def home(request):
             "data_coleta_formatada_menos_dois": (
                 timezone.now() - timedelta(days=2)
             ).strftime("%d/%m/%Y"),
+            "hoje":hoje,
             "weather_description": weather_description,
             "weather_description_day_before": weather_description_day_before,
             "weather_description_two_days_before": weather_description_two_days_before,
