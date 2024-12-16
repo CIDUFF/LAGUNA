@@ -22,6 +22,7 @@ from django.urls import reverse
 from .models import (
     MetadadosCampo,
     ProgramaColeta,
+    TabAnexoAmostra,
     TabSetor,
     Laboratorios,
     Analises,
@@ -845,28 +846,27 @@ class ChecklistColetaForm(forms.ModelForm):
 
 
 class InputFisicoQuimicoForm(forms.ModelForm):
-    # Campo oculto para armazenar o ID real
     id_pp_hidden = forms.ModelChoiceField(
-        queryset=TabProdxparam.objects.all(), widget=forms.HiddenInput(), required=False
+        queryset=TabProdxparam.objects.all(), 
+        widget=forms.HiddenInput(),
+        required=False
     )
-
-    # Campo de texto somente leitura para exibir o nome
+    
     id_pp_display = forms.CharField(
         label="Parâmetro - unidade",
         required=False,
         widget=forms.TextInput(attrs={"readonly": True, "disabled": True}),
     )
-
-    # Campo de valor numérico
+    
     input_valor = forms.DecimalField(
         label="Valor",
         required=False,
-        min_value=0,  # Define o valor mínimo permitido
-        max_digits=10,  # Número máximo de dígitos (incluindo decimais)
-        decimal_places=2,  # Número de casas decimais
+        min_value=0,
+        max_digits=10,
+        decimal_places=2,
         widget=forms.NumberInput(
             attrs={
-                "step": "0.01",  # Incremento permitido
+                "step": "0.01",
                 "min": "0",
                 "class": "form-control",
             }
@@ -878,23 +878,20 @@ class InputFisicoQuimicoForm(forms.ModelForm):
         exclude = ["valor", "id_pp"]  # Excluir 'id_pp' para mantê-lo oculto
         fields = ["id_pp_hidden", "id_pp_display", "input_valor"]  # Exibir 'id_pp_hidden' e 'id_envio'
 
+
     def __init__(self, *args, **kwargs):
         super(InputFisicoQuimicoForm, self).__init__(*args, **kwargs)
-        # Definir o valor inicial do campo oculto e do display
         if self.instance and self.instance.id_pp:
             self.fields["id_pp_hidden"].initial = self.instance.id_pp
-            # Ajuste 'nome' conforme o campo correto no modelo TabProdxparam
             self.fields["id_pp_display"].initial = self.instance.id_pp
         else:
             self.fields["id_pp_display"].initial = "N/A"
 
-        # Configurações adicionais dos campos
         self.fields["id_envio"].widget.attrs.update(
             {"readonly": True, "disabled": True}
         )
         self.fields["id_envio"].widget = forms.HiddenInput()
 
-        # Configuração do Crispy Forms
         self.helper = FormHelper(self)
         self.helper.form_tag = False
         self.helper.form_show_labels = True
@@ -905,9 +902,20 @@ class InputFisicoQuimicoForm(forms.ModelForm):
                 Field("input_valor"),  # Exibe a coluna "Valor" em seguida
                 Field("id_pp_display"),  # Exibe a coluna "Parâmetro" primeiro
                 Field("id_pp_hidden"),  # Campo oculto para o ID real
+
                 css_class="form-row",
             )
         )
+
+class AnexoAmostraForm(forms.ModelForm):
+    class Meta:
+        model = TabAnexoAmostra
+        fields = "__all__"
+        
+    def __init__(self, *args, **kwargs):
+        super(AnexoAmostraForm, self).__init__(*args, **kwargs)
+
+        
 
 
 class MetadadosPontoForm(forms.ModelForm):
