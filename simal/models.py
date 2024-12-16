@@ -843,10 +843,11 @@ class TabChecklistColeta(models.Model):
 
 
 class TabAnexoAmostra(models.Model):
-    id_amostra = models.ForeignKey(
-        TabAmostra, on_delete=models.CASCADE, related_name="anexos"
+    id_envio = models.ForeignKey(
+        TabEnvio, on_delete=models.CASCADE, db_column="id_envio", blank=True, null=True
     )
     anexo = models.FileField(upload_to="anexos_amostras/", null=True)
+    observacao = models.TextField(blank=True, null=True)
     atualizado_em = models.DateTimeField(auto_now=True, blank=True, null=True)
     criado_em = models.DateTimeField(auto_now_add=True, blank=True, null=True)
 
