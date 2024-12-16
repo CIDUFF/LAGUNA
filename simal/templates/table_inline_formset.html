@@ -15,7 +15,7 @@
     </div>
 
     <div class="table-responsive">
-        <table {% if form_id %} id="{{ form_id }}_table"{% endif %} class="table table-striped table-hover table-bordered text-center align-middle pastel-table">
+        <table {% if form_id %} id="{{ form_id }}_table"{% endif %} class="table table-hover table-bordered text-center align-middle pastel-table">
             <thead class="table-light">
                 {% if formset.readonly and not formset.queryset.exists %}
                 {% else %}
@@ -46,9 +46,9 @@
                     <tr>
                         {% for field in form %}
                             {% if field|is_checkbox %}
-                                <td class="form-check form-switch">
-                                    {{ field|as_crispy_field }}
-                                </td>
+                                    <td class="form-check form-switch">
+                                        {{ field|as_crispy_field }}
+                                    </td>    
                             {% else %}
                                 {% include 'bootstrap5/field.html' with tag="td" form_show_labels=False %}
                             {% endif %}
