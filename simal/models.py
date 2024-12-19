@@ -520,6 +520,13 @@ class TabColeta(models.Model):
     )
     criado_em = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     atualizado_em = models.DateTimeField(auto_now=True, blank=True, null=True)
+    status = models.ForeignKey(
+        "TabStatusColeta",
+        on_delete=models.CASCADE,
+        db_column="status",
+        blank=True,
+        null=True,
+    )
 
     def __str__(self):
         return f"{self.nome}"
@@ -536,6 +543,18 @@ class TabColeta(models.Model):
     class Meta:
         managed = True
         db_table = "tab_coleta"
+
+
+class TabStatusColeta(models.Model):
+    status = models.CharField(max_length=50, blank=True, null=True)
+    descricao = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.status}"
+
+    class Meta:
+        managed = True
+        db_table = "tab_status_coleta"
 
 
 class TabAmostra(models.Model):

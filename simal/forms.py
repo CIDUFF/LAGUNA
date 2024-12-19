@@ -845,17 +845,15 @@ class ChecklistColetaForm(forms.ModelForm):
 
 class InputFisicoQuimicoForm(forms.ModelForm):
     id_pp_hidden = forms.ModelChoiceField(
-        queryset=TabProdxparam.objects.all(), 
-        widget=forms.HiddenInput(),
-        required=False
+        queryset=TabProdxparam.objects.all(), widget=forms.HiddenInput(), required=False
     )
-    
+
     id_pp_display = forms.CharField(
         label="Parâmetro - unidade",
         required=False,
         widget=forms.TextInput(attrs={"readonly": True, "disabled": True}),
     )
-    
+
     input_valor = forms.DecimalField(
         label="Valor",
         required=False,
@@ -901,15 +899,14 @@ class InputFisicoQuimicoForm(forms.ModelForm):
             )
         )
 
+
 class AnexoAmostraForm(forms.ModelForm):
     class Meta:
         model = TabAnexoAmostra
         fields = "__all__"
-        
+
     def __init__(self, *args, **kwargs):
         super(AnexoAmostraForm, self).__init__(*args, **kwargs)
-
-        
 
 
 class MetadadosPontoForm(forms.ModelForm):

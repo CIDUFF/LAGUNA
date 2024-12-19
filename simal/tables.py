@@ -4,6 +4,7 @@ from .models import (
     Campo,
     ProgramaColeta,
     Laboratorios,
+    TabColeta,
     TabSetor,
     TabPonto,
     TabLocal,
@@ -525,5 +526,30 @@ class ListaCampoTable(tables.Table):
         exclude = ("id", "created_at", "updated_at", "campo")
         sequence = ("id_ponto", "etiqueta", "status", "update")
         per_page = 40
+        paginator_class = tables.LazyPaginator
+        table_pagination = True
+
+
+class TabColetaTable(tables.Table):
+    update = tables.LinkColumn(
+        "atualizar_coleta",
+        args=[A("pk")],
+        orderable=False,
+        empty_values=[],
+        text="EDITAR",
+        attrs={"a": {"class": "btn btn-success btn-sm"}},
+    )
+
+    class Meta:
+        model = TabColeta
+        template_name = "django_tables2/bootstrap5-responsive.html"
+        fields = ["data", "nome", "id_campanha", "id_setor", "ordem_servico",
+                  "criado_por", "criado_em", "atualizado_em", "status", "update"]
+        empty_text = "Não há dados para exibir"
+        orderable = True
+        exclude = ("id",)
+        sequence = ("data", "nome", "id_campanha", "id_setor", "ordem_servico",
+                    "criado_por", "criado_em", "atualizado_em", "status", "update")
+        per_page = 10
         paginator_class = tables.LazyPaginator
         table_pagination = True

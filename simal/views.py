@@ -40,7 +40,6 @@ from .filters import (
     LocalFilter,
 )
 from .forms import (
-    AnexoAmostraForm,
     CustomUserCreationForm,
     ColetaCampo,
     MetadadosCampoForm,
@@ -1926,20 +1925,20 @@ def info_coleta(request, coleta_id):
         )
 
 
-@login_required 
+@login_required
 def input_fisico_quimico(request, coleta_id, ponto_id):
     MedidaFormSet = modelformset_factory(
         TabMedida, form=InputFisicoQuimicoForm, extra=0, fields="__all__"
     )
-    
+
     coleta = get_object_or_404(TabColeta, id=coleta_id)
     ponto = get_object_or_404(TabPonto, id=ponto_id, status=True)
-    
+
     # Busca anexo existente
     anexo_existente = TabAnexoAmostra.objects.filter(
         id_envio__id_amostra__id_coleta=coleta_id,
         id_envio__id_amostra__id_ponto=ponto_id,
-        id_envio__id_amostra__id_frasco=1
+        id_envio__id_amostra__id_frasco=1,
     ).first()
 
     if request.method == "POST":
@@ -1952,28 +1951,30 @@ def input_fisico_quimico(request, coleta_id, ponto_id):
                 id_envio__id_amostra__id_frasco=1,
             ),
         )
-        
+
         if formset.is_valid():
             instances = formset.save()
-            
+
             # Processa o anexo se houver arquivo ou observação
-            if request.FILES.get('anexo') or request.POST.get('observacao_anexo'):
+            if request.FILES.get("anexo") or request.POST.get("observacao_anexo"):
                 primeiro_envio = instances[0].id_envio if instances else None
                 if primeiro_envio:
                     # Se já existe um anexo, atualiza
                     if anexo_existente:
-                        if request.FILES.get('anexo'):
-                            anexo_existente.anexo = request.FILES['anexo']
-                        anexo_existente.observacao = request.POST.get('observacao_anexo')
+                        if request.FILES.get("anexo"):
+                            anexo_existente.anexo = request.FILES["anexo"]
+                        anexo_existente.observacao = request.POST.get(
+                            "observacao_anexo"
+                        )
                         anexo_existente.save()
                     # Se não existe, cria novo
                     else:
                         TabAnexoAmostra.objects.create(
                             id_envio=primeiro_envio,
-                            anexo=request.FILES.get('anexo'),
-                            observacao=request.POST.get('observacao_anexo')
+                            anexo=request.FILES.get("anexo"),
+                            observacao=request.POST.get("observacao_anexo"),
                         )
-            
+
             proximo_ponto = TabPonto.objects.filter(
                 id_setor=coleta.id_setor, status=True, id__gt=ponto.id
             ).first()
@@ -2000,11 +2001,11 @@ def input_fisico_quimico(request, coleta_id, ponto_id):
         request,
         "input_fisico_quimico.html",
         {
-            "formset": formset, 
-            "coleta": coleta, 
+            "formset": formset,
+            "coleta": coleta,
             "ponto": ponto,
-            "anexo_existente": anexo_existente
-        }
+            "anexo_existente": anexo_existente,
+        },
     )
 
 
@@ -2065,3 +2066,10 @@ def meta_ponto(request, id):
     }
 
     return render(request, "coleta/meta_coleta.html", context)
+
+
+@login_required
+def lista_de_coletas(request):
+    
+
+    return render(request, "lista_de_coletas.html", {"coleta": coleta})

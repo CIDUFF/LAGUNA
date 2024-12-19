@@ -5,19 +5,24 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('simal', '0081_alter_metadadosponto_table_and_more'),
+        ("simal", "0081_alter_metadadosponto_table_and_more"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='tabanexoamostra',
-            name='id_amostra',
+            model_name="tabanexoamostra",
+            name="id_amostra",
         ),
         migrations.AddField(
-            model_name='tabanexoamostra',
-            name='id_envio',
-            field=models.ForeignKey(blank=True, db_column='id_envio', null=True, on_delete=django.db.models.deletion.CASCADE, to='simal.tabenvio'),
+            model_name="tabanexoamostra",
+            name="id_envio",
+            field=models.ForeignKey(
+                blank=True,
+                db_column="id_envio",
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="simal.tabenvio",
+            ),
         ),
     ]

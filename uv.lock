@@ -475,6 +475,20 @@ wheels = [
 ]
 
 [[package]]
+name = "django-pandas"
+version = "0.6.7"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pandas", version = "2.1.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
+    { name = "pandas", version = "2.2.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
+    { name = "six" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/c0/a9/d4afe3d373c87eca29c3cf514521fe9b4653c97c4129361f2fcb79e482ef/django-pandas-0.6.7.tar.gz", hash = "sha256:f64fdf4aec1ff36f853a87400482f2f7826c403a2582a7429610a3eae97dca02", size = 32454 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/71/28/c187bed88a594984132f2fa543d88a969958f793d65b78620e96e0639b81/django_pandas-0.6.7-py3-none-any.whl", hash = "sha256:09db19db618591da76a555b8cf01cef632856261c5d39e47d3ce0a172bac1829", size = 22650 },
+]
+
+[[package]]
 name = "django-tables2"
 version = "2.7.0"
 source = { registry = "https://pypi.org/simple" }
@@ -749,6 +763,7 @@ dependencies = [
     { name = "django-extensions" },
     { name = "django-filter" },
     { name = "django-localflavor" },
+    { name = "django-pandas" },
     { name = "django-tables2" },
     { name = "djangorestframework" },
     { name = "exceptiongroup" },
@@ -851,6 +866,7 @@ requires-dist = [
     { name = "django-extensions", specifier = "==3.2.3" },
     { name = "django-filter", specifier = "==24.2" },
     { name = "django-localflavor", specifier = "==4.0" },
+    { name = "django-pandas", specifier = ">=0.6.7" },
     { name = "django-tables2", specifier = "==2.7.0" },
     { name = "djangorestframework", specifier = "==3.15.2" },
     { name = "exceptiongroup", specifier = "==1.2.1" },

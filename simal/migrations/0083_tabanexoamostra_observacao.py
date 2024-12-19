@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('simal', '0082_remove_tabanexoamostra_id_amostra_and_more'),
+        ("simal", "0082_remove_tabanexoamostra_id_amostra_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='tabanexoamostra',
-            name='observacao',
+            model_name="tabanexoamostra",
+            name="observacao",
             field=models.TextField(blank=True, null=True),
         ),
     ]
