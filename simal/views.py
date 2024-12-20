@@ -71,6 +71,7 @@ from .forms import (
 from .services import gerar_etiquetas, get_weather_description
 
 from .tables import (
+    TabColetaTable,
     TopCampanhas,
     ColetaCampoTable,
     ResultadosColetaTable,
@@ -2070,6 +2071,26 @@ def meta_ponto(request, id):
 
 @login_required
 def lista_de_coletas(request):
+
+    coletas = TabColeta.objects.all()
+    table = TabColetaTable(coletas)
+    RequestConfig(request, paginate={"per_page": 10}).configure(table)
+    
+    return render(request, "lista_de_coletas.html", {"table": table})
     
 
-    return render(request, "lista_de_coletas.html", {"coleta": coleta})
+
+# @login_required
+# def coletas_agendas(request):
+#     filtro = ProgramaColetaFilter(
+#         request.GET, queryset=ProgramaColeta.objects.all())
+#     table = ProgramaColetaTable(filtro.qs)
+#     RequestConfig(request, paginate={"per_page": 25}).configure(table)
+#     return render(
+#         request,
+#         "coleta/coletas_agendas.html",
+#         {
+#             "table_agenda_coleta": table,
+#             "filtro": filtro,
+#         },
+#     )

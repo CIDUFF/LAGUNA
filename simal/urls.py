@@ -6,6 +6,7 @@ from simal.views import (
     iniciar_campanha,
     lista_coleta,
     atualizar_coleta,
+    lista_de_coletas,
     meta_coleta,
     deletar_programacao,
     cancelar_programacao,
@@ -185,4 +186,6 @@ urlpatterns = [
     path("cadastro_usuarios_adm/", cadastro_usuarios_adm, name="cadastro_usuarios_adm"),
     path("info_coleta/<int:coleta_id>/", info_coleta, name="info_coleta"),
     path("lista_campo/<int:coleta_id>/", lista_campo, name="lista_campo"),
+    path("lista_de_coletas/", lista_de_coletas,
+            name="lista_de_coletas"),
 ]

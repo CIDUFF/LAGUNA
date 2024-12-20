@@ -103,5 +103,4 @@ dependencies = [
 [dependency-groups]
 dev = [
     "ruff>=0.7.2",
-    "werkzeug>=3.1.3",
 ]

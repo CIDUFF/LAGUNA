@@ -550,6 +550,6 @@ class TabColetaTable(tables.Table):
         exclude = ("id",)
         sequence = ("data", "nome", "id_campanha", "id_setor", "ordem_servico",
                     "criado_por", "criado_em", "atualizado_em", "status", "update")
-        per_page = 10
+        per_page = 5
         paginator_class = tables.LazyPaginator
         table_pagination = True
