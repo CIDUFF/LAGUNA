@@ -539,17 +539,27 @@ class TabColetaTable(tables.Table):
         text="EDITAR",
         attrs={"a": {"class": "btn btn-success btn-sm"}},
     )
+    
+    detalhes = tables.LinkColumn(
+        "info_coleta", 
+        args=[A("pk")],
+        orderable=False,
+        empty_values=[],
+        text="DETALHES",
+        attrs={"a": {"class": "btn btn-info btn-sm"}},
+    )
 
     class Meta:
         model = TabColeta
         template_name = "django_tables2/bootstrap5-responsive.html"
         fields = ["data", "nome", "id_campanha", "id_setor", "ordem_servico",
-                  "criado_por", "criado_em", "atualizado_em", "status", "update"]
+                  "criado_por", "criado_em", "atualizado_em", "status", "update", "detalhes"]
         empty_text = "Não há dados para exibir"
         orderable = True
         exclude = ("id",)
         sequence = ("data", "nome", "id_campanha", "id_setor", "ordem_servico",
-                    "criado_por", "criado_em", "atualizado_em", "status", "update")
+                    "criado_por", "criado_em", "atualizado_em", "status", "update", "detalhes")
         per_page = 5
         paginator_class = tables.LazyPaginator
         table_pagination = True
+        order_by = "-data"  # Adiciona ordenação decrescente por data

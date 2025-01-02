@@ -530,7 +530,7 @@ class TabColeta(models.Model):
         blank=True,
         null=True,
     )
-
+    observacao = models.TextField(blank=True, null=True)
     def save(self, *args, **kwargs):
         data_hora = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         campanha_id = self.id_campanha.id
@@ -541,8 +541,8 @@ class TabColeta(models.Model):
         super().save(*args, **kwargs)
 
     def update(self, **kwargs):
-        for field, value in kwargs.items():
-            setattr(self, field, value)
+        self.atualizado_em = timezone.now()
+        self.atualizado_por = kwargs.get("usuario")
         self.save()
 
     class Meta:

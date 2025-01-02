@@ -792,7 +792,7 @@ class CadastroCampanhaForm(forms.ModelForm):
 
 
 class CadastroColetaForm(forms.ModelForm):
-    data = forms.DateField(widget=forms.DateInput(attrs={"type": "date"}))
+    data = forms.DateField(widget=forms.DateInput(attrs={"type": "date"}), required=False)
 
     class Meta:
         model = TabColeta
