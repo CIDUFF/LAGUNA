@@ -532,7 +532,7 @@ class ListaCampoTable(tables.Table):
 
 class TabColetaTable(tables.Table):
     update = tables.LinkColumn(
-        "atualizar_coleta",
+        "update_coleta",
         args=[A("pk")],
         orderable=False,
         empty_values=[],

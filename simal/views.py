@@ -2079,6 +2079,20 @@ def lista_de_coletas(request):
     return render(request, "lista_de_coletas.html", {"table": table})
     
 
+@login_required
+def update_coleta(request, id):
+    coleta = get_object_or_404(TabColeta, id=id)
+    if request.method == "POST":
+        form = CadastroColetaForm(request.POST, instance=coleta)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Coleta atualizada com sucesso.")
+            return redirect("lista_de_coletas")
+    else:
+        form = CadastroColetaForm(instance=coleta)
+    return render(request, "cadastro_coleta.html", {"form": form})
+
+
 
 # @login_required
 # def coletas_agendas(request):
@@ -2094,3 +2108,6 @@ def lista_de_coletas(request):
 #             "filtro": filtro,
 #         },
 #     )
+
+
+

@@ -53,6 +53,7 @@ from simal.views import (
     info_coleta,
     lista_campo,
     exportar_resultados_xlsx,
+    update_coleta,
 )
 
 urlpatterns = [
@@ -188,4 +189,5 @@ urlpatterns = [
     path("lista_campo/<int:coleta_id>/", lista_campo, name="lista_campo"),
     path("lista_de_coletas/", lista_de_coletas,
             name="lista_de_coletas"),
+    path("update_coleta/<int:id>/", update_coleta, name="update_coleta"),
 ]
