@@ -2093,6 +2093,25 @@ def update_coleta(request, id):
     return render(request, "cadastro_coleta.html", {"form": form})
 
 
+@login_required
+def aplicar_acao(request):
+    if request.method == "POST":
+        acao = request.POST.get("acao")
+        selecionados = request.POST.getlist("selecionar")
+
+        if acao and selecionados:
+            if acao == "editar":
+                return redirect("update_coleta", id=selecionados[0])
+            elif acao == "detalhes":
+                return redirect("info_coleta", coleta_id=selecionados[0])
+            # Adicione outras ações conforme necessário
+
+    return redirect("lista_de_coletas")
+
+@login_required
+def detalhes_coleta_popup(request, coleta_id):
+    coleta = get_object_or_404(TabColeta, id=coleta_id)
+    return render(request, "detalhes_coleta_popup.html", {"coleta": coleta})
 
 # @login_required
 # def coletas_agendas(request):

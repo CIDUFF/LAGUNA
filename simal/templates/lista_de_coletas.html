@@ -6,24 +6,130 @@
 
 {% block content %}  
 
-
 <div class="card">
+    <h2 class="m-3">Lista de Coletas agendadas</h2>
 
-    <h2 class = "m-3">Lista de Campanhas agendadas</h2>
-
-  {% comment %} <form method="get" class="form-inline">
-    {% bootstrap_form filtro.form layout='floating' %}
-    {% bootstrap_button 'Filtro' %}
-  </form> {% endcomment %}
-  <div class = "m-3">
-
-      {% render_table table %} 
-
-    <div class="d-flex justify-content-center m-3">
-        <a href="{% url 'direcionamento_campanha' %}" class="btn btn-primary">Criar Nova Campanha</a>
-    </div>
-
-  </div>
-
+    <form method="post" action="{% url 'aplicar_acao' %}">
+        {% csrf_token %}
+        <div class="m-3">
+            {% render_table table %}
+        </div>
+        <div class="d-flex justify-content-center m-3">
+            <button type="submit" name="acao" value="editar" class="btn btn-primary ms-2">Editar</button>
+            <button type="submit" name="acao" value="detalhes" class="btn btn-secondary ms-2">Detalhes</button>
+            <a href="{% url 'direcionamento_campanha' %}" class="btn btn-success ms-2">Nova campanha</a>
+        </div>
+    </form>
 </div>
+
+<style>
+    table tbody tr:hover {
+        background-color: #f5f5f5;
+        cursor: pointer;
+    }
+    .popup {
+        display: none;
+        position: absolute;
+        background-color: #fff;
+        border: 1px solid #ccc;
+        padding: 15px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        z-index: 1000;
+        max-width: 300px;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+    .popup h4 {
+        margin-top: 0;
+        font-size: 16px;
+        font-weight: bold;
+    }
+    .popup p {
+        margin: 5px 0;
+    }
+    @media (max-width: 768px) {
+        .popup {
+            display: none !important;
+        }
+    }
+    .single-select {
+        width: 20px;
+        height: 20px;
+    }
+</style>
+
+<div id="popup" class="popup"></div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const rows = document.querySelectorAll('table tbody tr');
+        const popup = document.getElementById('popup');
+        let popupTimeout;
+        let currentRequest = null;
+
+        function isMobile() {
+            return window.innerWidth <= 768;
+        }
+
+        rows.forEach(row => {
+            const radio = row.querySelector('.single-select');
+
+            row.addEventListener('mouseenter', function() {
+                if (isMobile()) return;
+                const coletaId = radio.value;
+                clearTimeout(popupTimeout);
+                if (currentRequest) {
+                    currentRequest.abort();
+                }
+                currentRequest = fetch(`/detalhes_coleta_popup/${coletaId}/`)
+                    .then(response => response.text())
+                    .then(data => {
+                        popup.innerHTML = data;
+                        popup.style.display = 'block';
+                        currentRequest = null;
+                    })
+                    .catch(() => {
+                        currentRequest = null;
+                    });
+            });
+
+            row.addEventListener('mouseleave', function() {
+                if (isMobile()) return;
+                popupTimeout = setTimeout(() => {
+                    popup.style.display = 'none';
+                    popup.innerHTML = '';
+                }, 300);
+            });
+
+            row.addEventListener('mousemove', function(e) {
+                if (isMobile()) return;
+                popup.style.top = `${e.clientY + 10}px`;
+                popup.style.left = `${e.clientX + 10}px`;
+            });
+
+            row.addEventListener('click', function(e) {
+                if (e.target.closest('td').querySelector('.single-select')) {
+                    return;
+                }
+                const coletaId = radio.value;
+                window.location.href = `{% url 'info_coleta' coleta_id=0 %}`.replace('0', coletaId);
+            });
+        });
+
+        const radios = document.querySelectorAll('.single-select');
+        radios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                if (this.checked) {
+                    radios.forEach(rb => {
+                        if (rb !== this) {
+                            rb.checked = false;
+                        }
+                    });
+                }
+            });
+        });
+    });
+</script>
+
 {% endblock %}
