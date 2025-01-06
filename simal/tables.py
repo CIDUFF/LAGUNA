@@ -4,6 +4,7 @@ from .models import (
     Campo,
     ProgramaColeta,
     Laboratorios,
+    TabColeta,
     TabSetor,
     TabPonto,
     TabLocal,
@@ -583,3 +584,42 @@ class ListaCampoTable(tables.Table):
         per_page = 40
         paginator_class = tables.LazyPaginator
         table_pagination = True
+
+
+class TabColetaTable(tables.Table):
+    selecionar = tables.TemplateColumn(
+        '<input type="radio" name="selecionar" value="{{ record.pk }}" class="single-select">',
+        orderable=False,
+        attrs={
+            "input": {"class": "single-select"},
+            "th__input": {"style": "display:none;"}
+        }
+    )
+
+    class Meta:
+        model = TabColeta
+        template_name = "django_tables2/bootstrap5-responsive.html"
+        fields = ["selecionar", "data", "nome", "id_campanha", "id_setor", "ordem_servico",
+                   "status"]
+        empty_text = "Não há dados para exibir"
+        orderable = True
+        exclude = ("id",)
+        sequence = ("selecionar", "data", "nome", "id_campanha", "id_setor", "ordem_servico",
+                     "status")
+        per_page = 5
+        paginator_class = tables.LazyPaginator
+        table_pagination = True
+        order_by = "-data"  # Adiciona ordenação decrescente por data
+        labels = {
+            "data": "Data",
+            "nome": "Nome",
+            "id_campanha": "Campanha",
+            "id_setor": "Setor",
+            "ordem_servico": "Ordem de Serviço",
+            "status": "Status"
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.base_columns["id_campanha"].verbose_name = "Campanha"
+        self.base_columns["id_setor"].verbose_name = "Setor"

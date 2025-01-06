@@ -40,7 +40,6 @@ from .filters import (
     LocalFilter,
 )
 from .forms import (
-    AnexoAmostraForm,
     CustomUserCreationForm,
     ColetaCampo,
     MetadadosCampoForm,
@@ -72,6 +71,7 @@ from .forms import (
 from .services import gerar_etiquetas, get_weather_description
 
 from .tables import (
+    TabColetaTable,
     TopCampanhas,
     ColetaCampoTable,
     ResultadosColetaTable,
@@ -1932,20 +1932,20 @@ def info_coleta(request, coleta_id):
         )
 
 
-@login_required 
+@login_required
 def input_fisico_quimico(request, coleta_id, ponto_id):
     MedidaFormSet = modelformset_factory(
         TabMedida, form=InputFisicoQuimicoForm, extra=0, fields="__all__"
     )
-    
+
     coleta = get_object_or_404(TabColeta, id=coleta_id)
     ponto = get_object_or_404(TabPonto, id=ponto_id, status=True)
-    
+
     # Busca anexo existente
     anexo_existente = TabAnexoAmostra.objects.filter(
         id_envio__id_amostra__id_coleta=coleta_id,
         id_envio__id_amostra__id_ponto=ponto_id,
-        id_envio__id_amostra__id_frasco=1
+        id_envio__id_amostra__id_frasco=1,
     ).first()
 
     if request.method == "POST":
@@ -1958,28 +1958,30 @@ def input_fisico_quimico(request, coleta_id, ponto_id):
                 id_envio__id_amostra__id_frasco=1,
             ),
         )
-        
+
         if formset.is_valid():
             instances = formset.save()
-            
+
             # Processa o anexo se houver arquivo ou observação
-            if request.FILES.get('anexo') or request.POST.get('observacao_anexo'):
+            if request.FILES.get("anexo") or request.POST.get("observacao_anexo"):
                 primeiro_envio = instances[0].id_envio if instances else None
                 if primeiro_envio:
                     # Se já existe um anexo, atualiza
                     if anexo_existente:
-                        if request.FILES.get('anexo'):
-                            anexo_existente.anexo = request.FILES['anexo']
-                        anexo_existente.observacao = request.POST.get('observacao_anexo')
+                        if request.FILES.get("anexo"):
+                            anexo_existente.anexo = request.FILES["anexo"]
+                        anexo_existente.observacao = request.POST.get(
+                            "observacao_anexo"
+                        )
                         anexo_existente.save()
                     # Se não existe, cria novo
                     else:
                         TabAnexoAmostra.objects.create(
                             id_envio=primeiro_envio,
-                            anexo=request.FILES.get('anexo'),
-                            observacao=request.POST.get('observacao_anexo')
+                            anexo=request.FILES.get("anexo"),
+                            observacao=request.POST.get("observacao_anexo"),
                         )
-            
+
             proximo_ponto = TabPonto.objects.filter(
                 id_setor=coleta.id_setor, status=True, id__gt=ponto.id
             ).first()
@@ -2006,11 +2008,11 @@ def input_fisico_quimico(request, coleta_id, ponto_id):
         request,
         "input_fisico_quimico.html",
         {
-            "formset": formset, 
-            "coleta": coleta, 
+            "formset": formset,
+            "coleta": coleta,
             "ponto": ponto,
-            "anexo_existente": anexo_existente
-        }
+            "anexo_existente": anexo_existente,
+        },
     )
 
 
@@ -2071,3 +2073,66 @@ def meta_ponto(request, id):
     }
 
     return render(request, "coleta/meta_coleta.html", context)
+
+
+@login_required
+def lista_de_coletas(request):
+
+    coletas = TabColeta.objects.all()
+    table = TabColetaTable(coletas)
+    RequestConfig(request, paginate={"per_page": 10}).configure(table)
+    
+    return render(request, "lista_de_coletas.html", {"table": table})
+    
+
+@login_required
+def update_coleta(request, id):
+    coleta = get_object_or_404(TabColeta, id=id)
+    if request.method == "POST":
+        form = CadastroColetaForm(request.POST, instance=coleta)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Coleta atualizada com sucesso.")
+            return redirect("lista_de_coletas")
+    else:
+        form = CadastroColetaForm(instance=coleta)
+    return render(request, "cadastro_coleta.html", {"form": form})
+
+
+@login_required
+def aplicar_acao(request):
+    if request.method == "POST":
+        acao = request.POST.get("acao")
+        selecionados = request.POST.getlist("selecionar")
+
+        if acao and selecionados:
+            if acao == "editar":
+                return redirect("update_coleta", id=selecionados[0])
+            elif acao == "detalhes":
+                return redirect("info_coleta", coleta_id=selecionados[0])
+            # Adicione outras ações conforme necessário
+
+    return redirect("lista_de_coletas")
+
+@login_required
+def detalhes_coleta_popup(request, coleta_id):
+    coleta = get_object_or_404(TabColeta, id=coleta_id)
+    return render(request, "detalhes_coleta_popup.html", {"coleta": coleta})
+
+# @login_required
+# def coletas_agendas(request):
+#     filtro = ProgramaColetaFilter(
+#         request.GET, queryset=ProgramaColeta.objects.all())
+#     table = ProgramaColetaTable(filtro.qs)
+#     RequestConfig(request, paginate={"per_page": 25}).configure(table)
+#     return render(
+#         request,
+#         "coleta/coletas_agendas.html",
+#         {
+#             "table_agenda_coleta": table,
+#             "filtro": filtro,
+#         },
+#     )
+
+
+

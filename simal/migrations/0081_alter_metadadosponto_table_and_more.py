@@ -4,18 +4,17 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('simal', '0080_metadadosponto_observacao'),
+        ("simal", "0080_metadadosponto_observacao"),
     ]
 
     operations = [
         migrations.AlterModelTable(
-            name='metadadosponto',
-            table='tab_metadados_ponto',
+            name="metadadosponto",
+            table="tab_metadados_ponto",
         ),
         migrations.AlterModelTable(
-            name='tabanexoamostra',
-            table='tab_anexo_amostra',
+            name="tabanexoamostra",
+            table="tab_anexo_amostra",
         ),
     ]

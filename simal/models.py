@@ -497,9 +497,8 @@ class TabCampanha(models.Model):
 
 
 class TabColeta(models.Model):
-    # id = models.BigAutoField(primary_key=True)
     data = models.DateTimeField(blank=True, null=True)
-    nome = models.CharField(blank=True, null=True)
+    nome = models.CharField(max_length=255, blank=True, null=True)
     id_campanha = models.ForeignKey(
         TabCampanha,
         on_delete=models.CASCADE,
@@ -514,16 +513,24 @@ class TabColeta(models.Model):
         blank=True,
         null=True,
     )
-    ordem_servico = models.CharField("Ordem de serviço", blank=True, null=True)
+    ordem_servico = models.CharField(
+        "Ordem de serviço", max_length=255, blank=True, null=True)
     criado_por = models.ForeignKey(
-        User, on_delete=models.SET_NULL, null=True, blank=True
+        User, on_delete=models.SET_NULL, null=True, blank=True, related_name="coletas_criadas"
+    )
+    atualizado_por = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True, related_name="coletas_atualizadas"
     )
     criado_em = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     atualizado_em = models.DateTimeField(auto_now=True, blank=True, null=True)
-
-    def __str__(self):
-        return f"{self.nome}"
-
+    status = models.ForeignKey(
+        "TabStatusColeta",
+        on_delete=models.CASCADE,
+        db_column="status",
+        blank=True,
+        null=True,
+    )
+    observacao = models.TextField(blank=True, null=True)
     def save(self, *args, **kwargs):
         data_hora = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         campanha_id = self.id_campanha.id
@@ -533,9 +540,26 @@ class TabColeta(models.Model):
         self.ordem_servico = re.sub(r"[^A-Za-z0-9]", "", raw_ordem_servico)
         super().save(*args, **kwargs)
 
+    def update(self, **kwargs):
+        self.atualizado_em = timezone.now()
+        self.atualizado_por = kwargs.get("usuario")
+        self.save()
+
     class Meta:
         managed = True
         db_table = "tab_coleta"
+
+
+class TabStatusColeta(models.Model):
+    status = models.CharField(max_length=50, blank=True, null=True)
+    descricao = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.status}"
+
+    class Meta:
+        managed = True
+        db_table = "tab_status_coleta"
 
 
 class TabAmostra(models.Model):
