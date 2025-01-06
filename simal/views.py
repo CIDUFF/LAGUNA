@@ -202,13 +202,16 @@ def home(request):
                 .first()
             )
             data_coleta_proxima_formatada = proxima_coleta.data_coleta_campo.strftime(
-                "%d/%m/%Y")
-            
-            data_coleta_menos_um = (proxima_coleta.data_coleta_campo - timedelta(days=1)).strftime(
-                "%d/%m/%Y")
-            
-            data_coleta_menos_dois = (proxima_coleta.data_coleta_campo - timedelta(days=2)).strftime(
-                "%d/%m/%Y")
+                "%d/%m/%Y"
+            )
+
+            data_coleta_menos_um = (
+                proxima_coleta.data_coleta_campo - timedelta(days=1)
+            ).strftime("%d/%m/%Y")
+
+            data_coleta_menos_dois = (
+                proxima_coleta.data_coleta_campo - timedelta(days=2)
+            ).strftime("%d/%m/%Y")
 
             weather_description = get_weather_description(
                 "Maricá", proxima_coleta.data_coleta_campo.strftime("%Y-%m-%d")
@@ -406,12 +409,11 @@ def home(request):
                 evento["className"] = "evento-cancelado"
             eventos.append(evento)
 
-
         context = {
             "data_coleta_proxima_formatada": data_coleta_proxima_formatada,
             "data_coleta_formatada_menos_um": data_coleta_menos_um,
             "data_coleta_formatada_menos_dois": data_coleta_menos_dois,
-            "hoje":hoje,
+            "hoje": hoje,
             "weather_description": weather_description,
             "weather_description_day_before": weather_description_day_before,
             "weather_description_two_days_before": weather_description_two_days_before,
@@ -1792,9 +1794,6 @@ def checklist_coleta(request, coleta_id):
     )
 
 
-# TODO #208 Criar página de acompanhamento da coleta com detalhes da coleta, amostras, envios e medidas
-
-
 @login_required
 def fill_amostra(request, coleta_id):
     """
@@ -2077,13 +2076,12 @@ def meta_ponto(request, id):
 
 @login_required
 def lista_de_coletas(request):
-
     coletas = TabColeta.objects.all()
     table = TabColetaTable(coletas)
     RequestConfig(request, paginate={"per_page": 10}).configure(table)
-    
+
     return render(request, "lista_de_coletas.html", {"table": table})
-    
+
 
 @login_required
 def update_coleta(request, id):
@@ -2114,10 +2112,12 @@ def aplicar_acao(request):
 
     return redirect("lista_de_coletas")
 
+
 @login_required
 def detalhes_coleta_popup(request, coleta_id):
     coleta = get_object_or_404(TabColeta, id=coleta_id)
     return render(request, "detalhes_coleta_popup.html", {"coleta": coleta})
+
 
 # @login_required
 # def coletas_agendas(request):
@@ -2133,6 +2133,3 @@ def detalhes_coleta_popup(request, coleta_id):
 #             "filtro": filtro,
 #         },
 #     )
-
-
-

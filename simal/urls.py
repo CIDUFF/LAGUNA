@@ -189,9 +189,12 @@ urlpatterns = [
     path("cadastro_usuarios_adm/", cadastro_usuarios_adm, name="cadastro_usuarios_adm"),
     path("info_coleta/<int:coleta_id>/", info_coleta, name="info_coleta"),
     path("lista_campo/<int:coleta_id>/", lista_campo, name="lista_campo"),
-    path("lista_de_coletas/", lista_de_coletas,
-            name="lista_de_coletas"),
+    path("lista_de_coletas/", lista_de_coletas, name="lista_de_coletas"),
     path("update_coleta/<int:id>/", update_coleta, name="update_coleta"),
-    path('aplicar_acao/', aplicar_acao, name='aplicar_acao'),
-    path('detalhes_coleta_popup/<int:coleta_id>/', detalhes_coleta_popup, name='detalhes_coleta_popup'),
+    path("aplicar_acao/", aplicar_acao, name="aplicar_acao"),
+    path(
+        "detalhes_coleta_popup/<int:coleta_id>/",
+        detalhes_coleta_popup,
+        name="detalhes_coleta_popup",
+    ),
 ]

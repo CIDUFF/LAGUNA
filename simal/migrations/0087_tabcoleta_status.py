@@ -5,15 +5,20 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('simal', '0086_remove_tabcoleta_status_tabcoleta_atualizado_por_and_more'),
+        ("simal", "0086_remove_tabcoleta_status_tabcoleta_atualizado_por_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='tabcoleta',
-            name='status',
-            field=models.ForeignKey(blank=True, db_column='status', null=True, on_delete=django.db.models.deletion.CASCADE, to='simal.tabstatuscoleta'),
+            model_name="tabcoleta",
+            name="status",
+            field=models.ForeignKey(
+                blank=True,
+                db_column="status",
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="simal.tabstatuscoleta",
+            ),
         ),
     ]

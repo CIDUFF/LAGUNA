@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('simal', '0087_tabcoleta_status'),
+        ("simal", "0087_tabcoleta_status"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='tabcoleta',
-            name='observacao',
+            model_name="tabcoleta",
+            name="observacao",
             field=models.TextField(blank=True, null=True),
         ),
     ]
