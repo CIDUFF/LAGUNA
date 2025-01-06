@@ -401,7 +401,7 @@ a.sidebar-link:hover {
   font-size: 1rem !important;
   color: #9197b3 !important;
   font-weight: 300;
-  padding-left: 2rem;
+  padding-left: 1rem !important;
   margin-bottom: 0rem !important; /* Adicione esta linha para diminuir a margem inferior */
 }
 
@@ -409,7 +409,7 @@ a.sidebar-link:hover {
   font-size: 2rem !important;
   font-weight: 500;
   color: #000000 !important;
-  padding-left: 2rem;
+  padding-left: 1rem !important;
   margin-top: 0rem !important; /* Adicione esta linha para diminuir a margem superior */
   margin-bottom: 0rem !important; /* Adicione esta linha para diminuir a margem inferior */
 }
@@ -418,7 +418,7 @@ a.sidebar-link:hover {
   font-size: 1rem !important;
   color: #9197b3 !important;
   font-weight: 300;
-  padding-left: 2rem;
+  padding-left: 2rem !important;
 }
 
 .home-title {

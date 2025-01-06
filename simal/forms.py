@@ -833,6 +833,7 @@ class ChecklistColetaForm(forms.ModelForm):
         model = TabChecklistColeta
         fields = ["item_nome", "status", "observacao"]
 
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if self.instance and self.instance.pk:
@@ -841,6 +842,7 @@ class ChecklistColetaForm(forms.ModelForm):
         self.helper.form_tag = False
         self.helper.template = "table_inline_formset.html"
         self.helper.form_show_labels = False
+       
 
 
 class InputFisicoQuimicoForm(forms.ModelForm):
@@ -871,7 +873,9 @@ class InputFisicoQuimicoForm(forms.ModelForm):
 
     class Meta:
         model = TabMedida
-        exclude = ["valor", "id_pp"]
+        exclude = ["valor", "id_pp"]  # Excluir 'id_pp' para mantê-lo oculto
+        fields = ["id_pp_hidden", "id_pp_display", "input_valor"]  # Exibir 'id_pp_hidden' e 'id_envio'
+
 
     def __init__(self, *args, **kwargs):
         super(InputFisicoQuimicoForm, self).__init__(*args, **kwargs)
@@ -889,12 +893,14 @@ class InputFisicoQuimicoForm(forms.ModelForm):
         self.helper = FormHelper(self)
         self.helper.form_tag = False
         self.helper.form_show_labels = True
+        self.order_fields(["id_pp_hidden", "id_pp_display", "input_valor"])
         self.helper.template = "table_inline_formset.html"
         self.helper.layout = Layout(
             Div(
-                Field("id_pp_display"),
-                Field("input_valor"),
-                Field("id_pp_hidden"),
+                Field("input_valor"),  # Exibe a coluna "Valor" em seguida
+                Field("id_pp_display"),  # Exibe a coluna "Parâmetro" primeiro
+                Field("id_pp_hidden"),  # Campo oculto para o ID real
+
                 css_class="form-row",
             )
         )

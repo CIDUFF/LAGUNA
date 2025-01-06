@@ -37,7 +37,7 @@ class ColetaCampoTable(tables.Table):
 
     class Meta:
         model = Campo
-        template_name = "django_tables2/bootstrap5-responsive.html"
+        template_name = "tables/bootstrap5.html"
         fields = ["ponto", "codigo_coleta", "status_form", "update"]
         # attrs = {'class': 'table table-striped table-bordered table-hover'}
         empty_text = "Não há dados para exibir"
@@ -62,7 +62,7 @@ class ColetaCampoTable(tables.Table):
 class ResultadosColetaTable(tables.Table):
     class Meta:
         model = Campo
-        template_name = "django_tables2/bootstrap5-responsive.html"
+        template_name = "tables/bootstrap5.html"
         fields = [
             "codigo_coleta",
             "hora_inicio",
@@ -165,7 +165,7 @@ class ProgramaColetaTable(tables.Table):
 
     class Meta:
         model = ProgramaColeta
-        template_name = "django_tables2/bootstrap5-responsive.html"
+        template_name = "tables/bootstrap5.html"
         fields = [
             "ordem_servico",
             "usuario",
@@ -219,7 +219,7 @@ class LaboratoriosTable(tables.Table):
 
     class Meta:
         model = Laboratorios
-        template_name = "django_tables2/bootstrap5-responsive.html"
+        template_name = "tables/bootstrap5.html"
         fields = ["nome", "email", "telefone", "endereco", "tipo"]
         empty_text = "Não há dados para exibir"
         orderable = False
@@ -230,10 +230,47 @@ class LaboratoriosTable(tables.Table):
         table_pagination = True
 
 
+
+# class TopCampanhas(tables.Table):
+#     class Meta:
+#         model = ProgramaColeta
+#         template_name = "django_tables2/bootstrap5-responsive.html"
+#         fields = ["ordem_servico", "data_coleta_campo",
+#                   "local_coleta", "status_coleta"]
+#         empty_text = "Não há dados para exibir"
+#         orderable = True
+#         exclude = ("id", "created_at", "updated_at", "campo")
+#         sequence = (
+#             "ordem_servico",
+#             "data_coleta_campo",
+#             "local_coleta",
+#             "status_coleta",
+#         )
+#         per_page = 3
+#         paginator_class = tables.LazyPaginator
+#         table_pagination = True
+
+#     def render_status_coleta(self, value):
+#         status_to_class = {
+#             "Iniciada": "bg-primary",
+#             "Cancelada": "bg-danger",
+#             "Coleta realizada": "bg-success",
+#             "Programada": "bg-warning text-dark",
+#         }
+#         badge_class = status_to_class.get(value, "")
+#         if badge_class:
+#             return format_html('<span class="badge {}">{}</span>', badge_class, value)
+#         return value
+
 class TopCampanhas(tables.Table):
+    ordem_servico = tables.Column(attrs={"th": {"class": "d-none d-md-table-cell"}, "td": {"class": "d-none d-md-table-cell"}})
+    data_coleta_campo = tables.DateColumn(format="d/m/Y", attrs={"th": {"class": "d-none d-md-table-cell"}, "td": {"class": "d-none d-md-table-cell"}})
+    local_coleta = tables.Column()
+    status_coleta = tables.Column()
+
     class Meta:
         model = ProgramaColeta
-        template_name = "django_tables2/bootstrap5-responsive.html"
+        template_name = "tables/bootstrap5.html"
         fields = ["ordem_servico", "data_coleta_campo", "local_coleta", "status_coleta"]
         empty_text = "Não há dados para exibir"
         orderable = True
@@ -247,6 +284,11 @@ class TopCampanhas(tables.Table):
         per_page = 3
         paginator_class = tables.LazyPaginator
         table_pagination = True
+        attrs = {
+            "class": "table table-bordered table-hover",
+            "thead": {"class": "thead-light"},
+            
+        }
 
     def render_status_coleta(self, value):
         status_to_class = {
@@ -260,6 +302,20 @@ class TopCampanhas(tables.Table):
             return format_html('<span class="badge {}">{}</span>', badge_class, value)
         return value
 
+    def render_local_coleta(self, value):
+        return format_html('<span class="d-inline d-md-none font-weight-bold">Local:</span> {}', value)
+
+    def render_status_coleta(self, value):
+        status_to_class = {
+            "Iniciada": "bg-primary",
+            "Cancelada": "bg-danger",
+            "Coleta realizada": "bg-success",
+            "Programada": "bg-warning text-dark",
+        }
+        badge_class = status_to_class.get(value, "")
+        if badge_class:
+            return format_html('<span class="d-inline d-md-none font-weight-bold">Status:</span> <span class="badge {}">{}</span>', badge_class, value)
+        return format_html('<span class="d-inline d-md-none font-weight-bold">Status:</span> {}', value)
 
 class SetorTable(tables.Table):
     update = tables.LinkColumn(
@@ -272,7 +328,7 @@ class SetorTable(tables.Table):
 
     class Meta:
         model = TabSetor
-        template_name = "django_tables2/bootstrap5-responsive.html"
+        template_name = "tables/bootstrap5.html"
         fields = ["nome", "local", "lat", "lon", "abreviatura"]
         empty_text = "Não há dados para exibir"
         orderable = False
@@ -294,7 +350,7 @@ class PontoTable(tables.Table):
 
     class Meta:
         model = TabPonto
-        template_name = "django_tables2/bootstrap5-responsive.html"
+        template_name = "tables/bootstrap5.html"
         fields = ["nome", "id_setor", "id_local", "modalidade", "lat", "lon", "status"]
         empty_text = "Não há dados para exibir"
         orderable = True
@@ -324,7 +380,7 @@ class LocalTable(tables.Table):
 
     class Meta:
         model = TabLocal
-        template_name = "django_tables2/bootstrap5-responsive.html"
+        template_name = "tables/bootstrap5.html"
         fields = ["nome", "desc"]
         empty_text = "Não há dados para exibir"
         orderable = False
@@ -340,7 +396,7 @@ class TipoParametroTable(tables.Table):
 
     class Meta:
         model = TipoParametro
-        template_name = "django_tables2/bootstrap5-responsive.html"
+        template_name = "tables/bootstrap5.html"
         fields = ["nome", "descricao"]
         empty_text = "Não há dados para exibir"
         orderable = False
@@ -483,7 +539,7 @@ class TipoItemChecklistColetaTable(tables.Table):
 
     class Meta:
         model = TabItemChecklistColeta
-        template_name = "django_tables2/bootstrap5-responsive.html"
+        template_name = "tables/bootstrap5.html"
         fields = ("item",)
         # exclude = ['id', 'data_cadastro']
         # empty_text = 'Não há dados para exibir'
@@ -519,7 +575,7 @@ class ListaCampoTable(tables.Table):
 
     class Meta:
         model = TabAmostra
-        template_name = "django_tables2/bootstrap5-responsive.html"
+        template_name = "tables/bootstrap5.html"
         fields = ["id_ponto", "etiqueta", "status", "update"]
         empty_text = "Não há dados para exibir"
         orderable = True
