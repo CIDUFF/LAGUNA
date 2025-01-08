@@ -24,7 +24,6 @@ jobs:
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
           port: 22022  # Especifica a porta de conexão SSH
           timeout: 60s  
           script: |
