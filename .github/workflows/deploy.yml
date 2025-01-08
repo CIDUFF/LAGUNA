@@ -35,7 +35,6 @@ jobs:
             . .venv/bin/activate
             python manage.py migrate
             sudo /etc/init.d/apache2 reload
-            sudo systemctl status apache2
 
       - name: Enviar e-mail de sucesso
         if: success()
