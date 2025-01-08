@@ -506,6 +506,7 @@ class TabColeta(models.Model):
         blank=True,
         null=True,
     )
+    analise_bentos = models.BooleanField(blank=True, null=True)
     id_setor = models.ForeignKey(
         "TabSetor",
         on_delete=models.CASCADE,

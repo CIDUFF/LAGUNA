@@ -43,6 +43,13 @@ para gerar o diagrama ER dos modelos, execute o comando:
 python manage.py graph_models simal -o EntidadeRelacionamento.png
 ```
 
+ou 
+
+```bash
+uv run ./manage.py graph_models simal | dot -Tpdf -o output.pdf
+evince output.pdf
+```	
+
 
 <!-- Não usar docker -->
 <!-- Ou com docker instalado: -->

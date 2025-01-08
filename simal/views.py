@@ -2014,6 +2014,12 @@ def input_fisico_quimico(request, coleta_id, ponto_id):
         },
     )
 
+#TODO: Implementar a view de input_lab
+@login_required
+def input_lab(request, coleta_id):
+    
+    return
+
 
 @login_required
 def lista_campo(request, coleta_id):
