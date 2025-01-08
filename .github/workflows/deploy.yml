@@ -28,3 +28,15 @@ jobs:
             . .venv/bin/activate
             python manage.py migrate
             sudo /etc/init.d/apache2 reload
+
+      - name: Send success email
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: lagunasyst@gmail.com
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: 'Deploy Successful'
+          body: 'The deployment was successful.'
+          to: marcusantonio@id.uff.br
+          from: lagunasyst@gmail.com
