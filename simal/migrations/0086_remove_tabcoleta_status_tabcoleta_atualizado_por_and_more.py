@@ -6,35 +6,48 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('simal', '0085_tabstatuscoleta'),
+        ("simal", "0085_tabstatuscoleta"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='tabcoleta',
-            name='status',
+            model_name="tabcoleta",
+            name="status",
         ),
         migrations.AddField(
-            model_name='tabcoleta',
-            name='atualizado_por',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='coletas_atualizadas', to=settings.AUTH_USER_MODEL),
+            model_name="tabcoleta",
+            name="atualizado_por",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="coletas_atualizadas",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AlterField(
-            model_name='tabcoleta',
-            name='criado_por',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='coletas_criadas', to=settings.AUTH_USER_MODEL),
+            model_name="tabcoleta",
+            name="criado_por",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="coletas_criadas",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AlterField(
-            model_name='tabcoleta',
-            name='nome',
+            model_name="tabcoleta",
+            name="nome",
             field=models.CharField(blank=True, max_length=255, null=True),
         ),
         migrations.AlterField(
-            model_name='tabcoleta',
-            name='ordem_servico',
-            field=models.CharField(blank=True, max_length=255, null=True, verbose_name='Ordem de serviço'),
+            model_name="tabcoleta",
+            name="ordem_servico",
+            field=models.CharField(
+                blank=True, max_length=255, null=True, verbose_name="Ordem de serviço"
+            ),
         ),
     ]

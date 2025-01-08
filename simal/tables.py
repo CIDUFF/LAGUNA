@@ -230,7 +230,6 @@ class LaboratoriosTable(tables.Table):
         table_pagination = True
 
 
-
 # class TopCampanhas(tables.Table):
 #     class Meta:
 #         model = ProgramaColeta
@@ -262,9 +261,21 @@ class LaboratoriosTable(tables.Table):
 #             return format_html('<span class="badge {}">{}</span>', badge_class, value)
 #         return value
 
+
 class TopCampanhas(tables.Table):
-    ordem_servico = tables.Column(attrs={"th": {"class": "d-none d-md-table-cell"}, "td": {"class": "d-none d-md-table-cell"}})
-    data_coleta_campo = tables.DateColumn(format="d/m/Y", attrs={"th": {"class": "d-none d-md-table-cell"}, "td": {"class": "d-none d-md-table-cell"}})
+    ordem_servico = tables.Column(
+        attrs={
+            "th": {"class": "d-none d-md-table-cell"},
+            "td": {"class": "d-none d-md-table-cell"},
+        }
+    )
+    data_coleta_campo = tables.DateColumn(
+        format="d/m/Y",
+        attrs={
+            "th": {"class": "d-none d-md-table-cell"},
+            "td": {"class": "d-none d-md-table-cell"},
+        },
+    )
     local_coleta = tables.Column()
     status_coleta = tables.Column()
 
@@ -287,7 +298,6 @@ class TopCampanhas(tables.Table):
         attrs = {
             "class": "table table-bordered table-hover",
             "thead": {"class": "thead-light"},
-            
         }
 
     def render_status_coleta(self, value):
@@ -303,7 +313,9 @@ class TopCampanhas(tables.Table):
         return value
 
     def render_local_coleta(self, value):
-        return format_html('<span class="d-inline d-md-none font-weight-bold">Local:</span> {}', value)
+        return format_html(
+            '<span class="d-inline d-md-none font-weight-bold">Local:</span> {}', value
+        )
 
     def render_status_coleta(self, value):
         status_to_class = {
@@ -314,8 +326,15 @@ class TopCampanhas(tables.Table):
         }
         badge_class = status_to_class.get(value, "")
         if badge_class:
-            return format_html('<span class="d-inline d-md-none font-weight-bold">Status:</span> <span class="badge {}">{}</span>', badge_class, value)
-        return format_html('<span class="d-inline d-md-none font-weight-bold">Status:</span> {}', value)
+            return format_html(
+                '<span class="d-inline d-md-none font-weight-bold">Status:</span> <span class="badge {}">{}</span>',
+                badge_class,
+                value,
+            )
+        return format_html(
+            '<span class="d-inline d-md-none font-weight-bold">Status:</span> {}', value
+        )
+
 
 class SetorTable(tables.Table):
     update = tables.LinkColumn(
@@ -592,20 +611,34 @@ class TabColetaTable(tables.Table):
         orderable=False,
         attrs={
             "input": {"class": "single-select"},
-            "th__input": {"style": "display:none;"}
-        }
+            "th__input": {"style": "display:none;"},
+        },
     )
 
     class Meta:
         model = TabColeta
         template_name = "django_tables2/bootstrap5-responsive.html"
-        fields = ["selecionar", "data", "nome", "id_campanha", "id_setor", "ordem_servico",
-                   "status"]
+        fields = [
+            "selecionar",
+            "data",
+            "nome",
+            "id_campanha",
+            "id_setor",
+            "ordem_servico",
+            "status",
+        ]
         empty_text = "Não há dados para exibir"
         orderable = True
         exclude = ("id",)
-        sequence = ("selecionar", "data", "nome", "id_campanha", "id_setor", "ordem_servico",
-                     "status")
+        sequence = (
+            "selecionar",
+            "data",
+            "nome",
+            "id_campanha",
+            "id_setor",
+            "ordem_servico",
+            "status",
+        )
         per_page = 5
         paginator_class = tables.LazyPaginator
         table_pagination = True
@@ -616,7 +649,7 @@ class TabColetaTable(tables.Table):
             "id_campanha": "Campanha",
             "id_setor": "Setor",
             "ordem_servico": "Ordem de Serviço",
-            "status": "Status"
+            "status": "Status",
         }
 
     def __init__(self, *args, **kwargs):

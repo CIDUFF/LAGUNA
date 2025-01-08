@@ -99,3 +99,4 @@ staticfiles/
 reload_apache.txt
 laguna.dump
 backup_laguna.json
+output.pdf

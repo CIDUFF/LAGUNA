@@ -506,6 +506,7 @@ class TabColeta(models.Model):
         blank=True,
         null=True,
     )
+    analise_bentos = models.BooleanField(blank=True, null=True)
     id_setor = models.ForeignKey(
         "TabSetor",
         on_delete=models.CASCADE,
@@ -514,12 +515,21 @@ class TabColeta(models.Model):
         null=True,
     )
     ordem_servico = models.CharField(
-        "Ordem de serviço", max_length=255, blank=True, null=True)
+        "Ordem de serviço", max_length=255, blank=True, null=True
+    )
     criado_por = models.ForeignKey(
-        User, on_delete=models.SET_NULL, null=True, blank=True, related_name="coletas_criadas"
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="coletas_criadas",
     )
     atualizado_por = models.ForeignKey(
-        User, on_delete=models.SET_NULL, null=True, blank=True, related_name="coletas_atualizadas"
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="coletas_atualizadas",
     )
     criado_em = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     atualizado_em = models.DateTimeField(auto_now=True, blank=True, null=True)
@@ -531,6 +541,7 @@ class TabColeta(models.Model):
         null=True,
     )
     observacao = models.TextField(blank=True, null=True)
+
     def save(self, *args, **kwargs):
         data_hora = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         campanha_id = self.id_campanha.id
