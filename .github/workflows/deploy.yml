@@ -25,6 +25,8 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
+          port: 22022  # Especifica a porta de conexão SSH
+          timeout: 60s  # Aumente o tempo limite para 60 segundos
           script: |
             cd /home/marcus/projects/LAGUNA
             git pull origin main
