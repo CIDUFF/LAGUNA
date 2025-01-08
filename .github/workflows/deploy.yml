@@ -25,7 +25,8 @@ jobs:
           script: |
             cd /home/marcus/projects/LAGUNA
             git pull origin main
-            uv run ./manage.py migrate
+            . .venv/bin/activate
+            python manage.py migrate
             sudo /etc/init.d/apache2 reload
 
       - name: Send success email
