@@ -39,6 +39,6 @@ jobs:
           password: ${{ secrets.EMAIL_PASSWORD }}
           subject: Deploy bem sucedido!
           to: marcusantonio@id.uff.br
-          from: no-reply@example.com
+          from: lagunasyst@gmail.com
           body: |
             O deploy foi realizado com sucesso na branch main.
