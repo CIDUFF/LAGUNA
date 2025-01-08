@@ -24,6 +24,8 @@ jobs:
           timeout: 60s  
           script: |
             cd /home/marcus/projects/LAGUNA
+            git config --global credential.helper store
+            echo "https://${{ secrets.REPO_ACCESS_TOKEN }}:x-oauth-basic@github.com" > ~/.git-credentials
             git pull origin main
             . .venv/bin/activate
             python manage.py migrate
