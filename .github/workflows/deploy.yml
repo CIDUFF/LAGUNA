@@ -21,10 +21,6 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan github.com >> ~/.ssh/known_hosts
 
-      - name: Configure sudoers
-        run: |
-          echo "marcus ALL=(ALL) NOPASSWD: /etc/init.d/apache2 reload" | sudo tee /etc/sudoers.d/apache2-reload
-
       - name: Execute remote commands via SSH
         uses: appleboy/ssh-action@v0.1.5
         with:
