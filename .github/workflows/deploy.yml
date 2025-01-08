@@ -1,7 +1,4 @@
-name: Deploy
-
-on:
-  push:
+push:
     branches:
       - main
   workflow_dispatch:
@@ -20,29 +17,12 @@ jobs:
           ssh-private-key: ${{ secrets.SSH_KEY }}
 
       - name: Execute remote commands via SSH
-        uses: appleboy/ssh-action@v0.1.5
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
-          port: 22022  # Especifica a porta de conexão SSH
-          timeout: 60s  # Aumente o tempo limite para 60 segundos
-          script: |
+        run: |
+          ssh -o StrictHostKeyChecking=no -i ${{ secrets.SSH_KEY }} -p 22022 ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
             cd /home/marcus/projects/LAGUNA
             git pull origin main
             uv run ./manage.py migrate
             sudo /etc/init.d/apache2 reload
+          EOF
 
       - name: Send success email
-        if: success()
-        uses: dawidd6/action-send-mail@v3
-        with:
-          server_address: smtp.example.com
-          server_port: 587
-          username: ${{ secrets.EMAIL_USERNAME }}
-          password: ${{ secrets.EMAIL_PASSWORD }}
-          subject: Deploy bem sucedido!
-          to: marcusantonio@id.uff.br
-          from: no-reply@example.com
-          body: |
-            O deploy foi realizado com sucesso na branch main.
