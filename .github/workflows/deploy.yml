@@ -28,17 +28,3 @@ jobs:
             . .venv/bin/activate
             python manage.py migrate
             sudo /etc/init.d/apache2 reload
-
-      - name: Send success email
-        if: success()
-        uses: dawidd6/action-send-mail@v3
-        with:
-          server_address: smtp.example.com
-          server_port: 587
-          username: ${{ secrets.EMAIL_USERNAME }}
-          password: ${{ secrets.EMAIL_PASSWORD }}
-          subject: Deploy bem sucedido!
-          to: marcusantonio@id.uff.br
-          from: lagunasyst@gmail.com
-          body: |
-            O deploy foi realizado com sucesso na branch main.
