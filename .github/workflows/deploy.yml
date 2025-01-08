@@ -27,7 +27,7 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
-          port: 22022  # Especifica a porta de conexão SSH
+          port: 22022 # porta de conexão do ultron
           timeout: 60s  
           script: |
             cd /home/marcus/projects/LAGUNA
