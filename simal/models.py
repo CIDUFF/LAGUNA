@@ -549,6 +549,7 @@ class TabColeta(models.Model):
         setor_abreviatura = setor.abreviatura
         raw_ordem_servico = f"{setor_abreviatura}{campanha_id}{data_hora}"
         self.ordem_servico = re.sub(r"[^A-Za-z0-9]", "", raw_ordem_servico)
+        self.status = TabStatusColeta.objects.get(id=1)
         super().save(*args, **kwargs)
 
     def update(self, **kwargs):

@@ -776,11 +776,15 @@ class TabSerieClassificacaoForm(forms.ModelForm):
 
 
 class CadastroCampanhaForm(forms.ModelForm):
-    data_criacao = forms.DateField(widget=forms.DateInput(attrs={"type": "date"}))
+    # data_criacao = forms.DateField(widget=forms.DateInput(attrs={"type": "date"}))
 
     class Meta:
         model = TabCampanha
-        exclude = ["id"]
+        exclude = ["id", "data_criacao"]
+        labels = {
+            "id_local": "Local",
+        }
+            
 
     def __init__(self, *args, **kwargs):
         super(CadastroCampanhaForm, self).__init__(*args, **kwargs)
@@ -793,17 +797,24 @@ class CadastroCampanhaForm(forms.ModelForm):
 
 class CadastroColetaForm(forms.ModelForm):
     data = forms.DateField(
-        widget=forms.DateInput(attrs={"type": "date"}), required=False
+        widget=forms.DateInput(attrs={"type": "date"}),
+        required=False,
+        label="Data programada" 
     )
 
     class Meta:
         model = TabColeta
-        exclude = ["id", "ordem_servico", "criado_por"]
+        exclude = ["id", "ordem_servico", "criado_por", "atualizado_por", "status"]
+        labels = {
+            "id_campanha": "Campanha",
+            "id_setor": "Setor",
+        }
 
     def __init__(self, *args, **kwargs):
         super(CadastroColetaForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.add_input(Submit("submit", "Salvar"))
+
 
 
 class CadastroItemChecklistColetaForm(forms.ModelForm):
