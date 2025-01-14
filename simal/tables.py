@@ -19,6 +19,7 @@ from .models import (
     TabItemChecklistColeta,
     TabMedida,
     TabAmostra,
+    EmailTemplate,
 )
 from django.utils.html import format_html
 
@@ -439,6 +440,21 @@ class ParametroTable(tables.Table):
         model = TabParam
         template_name = "django_tables2/bootstrap.html"
         fields = ("nome", "param_meta_dado")
+        
+
+class EmailTable(tables.Table):
+    update = tables.LinkColumn(
+        "editar_registro",
+        args=["email", A("pk")],
+        orderable=False,
+        empty_values=[],
+        text="EDITAR",
+    )
+
+    class Meta:
+        model = EmailTemplate
+        template_name = "django_tables2/bootstrap.html"
+        fields = ("nome", "assunto", "corpo")
 
 
 # class ParametroTable(tables.Table):

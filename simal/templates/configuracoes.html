@@ -34,6 +34,9 @@ Configurações
   <li class="nav-item">
     <button class="nav-link text-dark" id="tab_item_checklist-tab" data-bs-toggle="tab" data-bs-target="#tab_item_checklist" type="button" role="tab" aria-controls="tab_item_checklist" aria-selected="false">Itens de Checklist</button>
   </li>
+  <li class="nav-item">
+    <button class="nav-link text-dark" id="tab_email-tab" data-bs-toggle="tab" data-bs-target="#tab_email" type="button" role="tab" aria-controls="tab_email" aria-selected="false">Templates de e-mail</button>
+  </li>
 </ul>
 <div class="tab-content" id="configTabContent">
   <div class="tab-pane fade show active" id="tab_param" role="tabpanel" aria-labelledby="tab_param-tab">
@@ -131,7 +134,19 @@ Configurações
         </form>
         {% render_table table_item_checklist %}
     </div>
-</div>
+  </div>
+  <div class="tab-pane fade" id="tab_email" role="tabpanel" aria-labelledby="tab_email-tab">
+    <div class="card checklist mt-4">
+        <h3>Templates de e-mail</h3>
+        <form method="post" class="form">
+            {% csrf_token %}
+            <input type="hidden" name="email_submit" value="1">
+            {% bootstrap_form email_form layout='floating' %}
+            <button type="submit" class="btn btn-primary">Salvar</button>
+        </form>
+        {% render_table table_email %}
+    </div>
+  </div>
 </div>
 <script>
   // Salva a aba ativa no localStorage

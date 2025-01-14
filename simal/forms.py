@@ -44,6 +44,7 @@ from .models import (
     TabMedida,
     DetalhesUsuario,
     MetadadosPonto,
+    EmailTemplate,
 )
 
 
@@ -725,7 +726,7 @@ class ParametroForm(forms.ModelForm):
     class Meta:
         model = TabParam
         fields = "__all__"
-
+        
 
 class UnidadeMedidaForm(forms.ModelForm):
     class Meta:
@@ -1048,3 +1049,8 @@ class DetalhesUsuarioForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(DetalhesUsuarioForm, self).__init__(*args, **kwargs)
         # Remova a linha que desabilita o campo 'usuario'
+
+class EmailForm(forms.ModelForm):
+    class Meta:
+        model = EmailTemplate
+        fields = "__all__"
