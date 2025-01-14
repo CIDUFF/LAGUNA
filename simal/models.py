@@ -6,6 +6,7 @@ import unicodedata
 # from localflavor.br.models import BRCPFField
 from django.db import models
 from django.contrib.auth.models import User  # Importa o modelo User
+from phonenumber_field.modelfields import PhoneNumberField
 
 
 class Ajuda(models.Model):
@@ -658,6 +659,7 @@ class TabLaboratorio(models.Model):
     nome = models.TextField(blank=True, null=True)
     laboratorio_descricao = models.TextField(blank=True, null=True)
     email = models.EmailField(max_length=100, blank=True, null=True)
+    telefone = PhoneNumberField(blank=True, null=True, region='BR')
 
     def __str__(self):
         return f"{self.nome}"
