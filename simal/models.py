@@ -549,6 +549,7 @@ class TabColeta(models.Model):
         setor_abreviatura = setor.abreviatura
         raw_ordem_servico = f"{setor_abreviatura}{campanha_id}{data_hora}"
         self.ordem_servico = re.sub(r"[^A-Za-z0-9]", "", raw_ordem_servico)
+        self.status = TabStatusColeta.objects.get(id=1)
         super().save(*args, **kwargs)
 
     def update(self, **kwargs):
@@ -606,10 +607,10 @@ class TabAmostra(models.Model):
         db_table = "tab_amostra"
 
     def save(self, *args, **kwargs):
-        etiqueta = (
-            f"{self.id_coleta.ordem_servico}{self.id_ponto.nome}{self.id_frasco.nome}"
-        )
-        self.etiqueta = etiqueta
+        # etiqueta = (
+        #     f"{self.id_coleta.ordem_servico}{self.id_ponto.nome}{self.id_frasco.id}"
+        # )
+        # self.etiqueta = etiqueta
         super().save(*args, **kwargs)
 
 
@@ -645,7 +646,7 @@ class TabFrasco(models.Model):
     nome = models.TextField(blank=True, null=True)
 
     def __str__(self):
-        return f"{self.nome}"
+        return f"{self.id}"
 
     class Meta:
         managed = True
@@ -656,6 +657,7 @@ class TabLaboratorio(models.Model):
     id = models.BigAutoField(primary_key=True)
     nome = models.TextField(blank=True, null=True)
     laboratorio_descricao = models.TextField(blank=True, null=True)
+    email = models.EmailField(max_length=100, blank=True, null=True)
 
     def __str__(self):
         return f"{self.nome}"
@@ -663,6 +665,7 @@ class TabLaboratorio(models.Model):
     class Meta:
         managed = True
         db_table = "tab_laboratorio"
+        
 
 
 class TabMedida(models.Model):
@@ -934,3 +937,19 @@ class MetadadosPonto(models.Model):
 
     class Meta:
         db_table = "tab_metadados_ponto"
+
+
+class EmailTemplate(models.Model):
+    nome = models.CharField(max_length=50, blank=True, null=True)
+    assunto = models.CharField(max_length=50, blank=True, null=True)
+    cc = models.EmailField(max_length=100, blank=True, null=True)
+    cco = models.EmailField(max_length=100, blank=True, null=True)
+    corpo = models.TextField(blank=True, null=True)
+    
+
+    def __str__(self):
+        return f"{self.nome}"
+
+    class Meta:
+        db_table = "tab_email_template"
+    

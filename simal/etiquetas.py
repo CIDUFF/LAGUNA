@@ -79,7 +79,7 @@ class etiquetas():
         try:
             largura_pagina, altura_pagina = A4
             pdf_path = os.path.join(
-                "/home/marcus/projects/LAGUNA/media/pdf/",
+                "media/pdf/",
                 f"etiquetas_da_OS_{codigo_servico}.pdf",
             )
             try:

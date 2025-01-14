@@ -42,6 +42,7 @@ from .filters import (
 from .forms import (
     CustomUserCreationForm,
     ColetaCampo,
+    EmailForm,
     MetadadosCampoForm,
     AjudaForm,
     IniciarCampanhaForm,
@@ -71,6 +72,7 @@ from .forms import (
 from .services import gerar_etiquetas, get_weather_description
 
 from .tables import (
+    EmailTable,
     TabColetaTable,
     TopCampanhas,
     ColetaCampoTable,
@@ -93,6 +95,7 @@ from .tables import (
 )
 
 from .models import (
+    EmailTemplate,
     MetadadosPonto,
     TabAnexoAmostra,
     TipoParametro,
@@ -1468,6 +1471,13 @@ def configuracoes_view(request):
             if item_checklist_form.is_valid():
                 item_checklist_form.save(user=request.user)
                 messages.success(request, "Item de checklist cadastrado com sucesso.")
+        elif "email_submit" in request.POST:
+            email_form = EmailForm(
+                request.POST, label_suffix="email"
+            )
+            if email_form.is_valid():
+                email_form.save()
+                messages.success(request, "Novo template de e-mail cadastrado com sucesso.")
 
         return redirect("configuracoes")
     else:
@@ -1479,6 +1489,7 @@ def configuracoes_view(request):
         prodxparam_form = TabProdxParamForm()
         serie_classificacao_form = TabSerieClassificacaoForm()
         item_checklist_form = CadastroItemChecklistColetaForm()
+        email_form = EmailForm()
 
     # Instanciar as tabelas
     table_parametro = ParametroTable(TabParam.objects.all())
@@ -1493,6 +1504,7 @@ def configuracoes_view(request):
     table_item_checklist = TipoItemChecklistColetaTable(
         TabItemChecklistColeta.objects.all()
     )
+    table_email = EmailTable(EmailTemplate.objects.all())
 
     # Configurar a paginação das tabelas
     RequestConfig(request, paginate={"per_page": 25}).configure(table_parametro)
@@ -1505,6 +1517,8 @@ def configuracoes_view(request):
         table_serie_classificacao
     )
     RequestConfig(request).configure(table_item_checklist)
+    RequestConfig(request).configure(table_email)
+    
 
     # Renderizar o template com os formulários e tabelas
     return render(
@@ -1519,6 +1533,7 @@ def configuracoes_view(request):
             "prodxparam_form": prodxparam_form,
             "serie_classificacao_form": serie_classificacao_form,
             "item_checklist_form": item_checklist_form,
+            "email_form": email_form,
             "table_parametro": table_parametro,
             "table_frasco": table_frasco,
             "table_equipe": table_equipe,
@@ -1527,6 +1542,8 @@ def configuracoes_view(request):
             "table_prodxparam": table_prodxparam,
             "table_serie_classificacao": table_serie_classificacao,
             "table_item_checklist": table_item_checklist,
+            "table_email": table_email,
+            
         },
     )
 
@@ -1542,6 +1559,7 @@ def editar_registro(request, tabela, pk):
         "prodxparam": (TabProdxparam, TabProdxParamForm),
         "serie_classificacao": (TabSerieClassificacao, TabSerieClassificacaoForm),
         "item_checklist": (TabItemChecklistColeta, CadastroItemChecklistColetaForm),
+        "email": (EmailTemplate, EmailForm),
     }
 
     if tabela not in model_map:
@@ -1817,29 +1835,33 @@ def fill_amostra(request, coleta_id):
         id_setor=coleta.id_setor,
         status=True,  # Apenas pontos ativos
     )
-
+    
+    
     amostras = []
     for frasco in frascos:
+        # Verifica se a análise de bentos está desativada e pula os frascos 5, 6 e 7
+        if not coleta.analise_bentos and frasco.id in [5, 6, 7]:
+            continue
         for ponto in pontos_coleta:
             amostra = TabAmostra(
                 id_coleta=coleta,
                 id_frasco=frasco,
                 id_ponto=ponto,
-                etiqueta=f"{coleta.ordem_servico}{str(frasco.id).zfill(2)}{str(ponto.id).zfill(3)}",
+                etiqueta=f"{coleta.ordem_servico}{str(ponto.id).zfill(3)}{str(frasco.id).zfill(2)}",
             )
             amostras.append(amostra)
-
+    
     TabAmostra.objects.bulk_create(amostras)
-
+    
     envios = []
     for amostra in amostras:
         envio = TabEnvio(
             id_amostra=amostra,
         )
         envios.append(envio)
-
+    
     TabEnvio.objects.bulk_create(envios)
-
+    
     return redirect("fill_campo_medida", coleta_id=coleta_id)
 
 
@@ -2030,7 +2052,7 @@ def lista_campo(request, coleta_id):
         id_coleta=coleta,
         id_frasco=1,  # Assumindo que queremos apenas amostras do frasco 1
     ).order_by("id_ponto")
-
+    
     # Cria a tabela com as amostras
     table = ListaCampoTable(amostras)
 
@@ -2118,24 +2140,29 @@ def aplicar_acao(request):
 
     return redirect("lista_de_coletas")
 
-
 @login_required
 def detalhes_coleta_popup(request, coleta_id):
     coleta = get_object_or_404(TabColeta, id=coleta_id)
     return render(request, "detalhes_coleta_popup.html", {"coleta": coleta})
 
 
+
 # @login_required
-# def coletas_agendas(request):
-#     filtro = ProgramaColetaFilter(
-#         request.GET, queryset=ProgramaColeta.objects.all())
-#     table = ProgramaColetaTable(filtro.qs)
-#     RequestConfig(request, paginate={"per_page": 25}).configure(table)
-#     return render(
-#         request,
-#         "coleta/coletas_agendas.html",
-#         {
-#             "table_agenda_coleta": table,
-#             "filtro": filtro,
-#         },
-#     )
+# def resultados_coleta(request):
+    
+#     return render(request, "resultados_campo.html")
+
+
+@login_required
+def cadastro_email(request):
+    if request.method == "POST":
+        form = EmailForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(
+                request, "Template de email cadastrado com sucesso.")
+            return redirect("cadastro_email")
+    else:
+        form = EmailForm()
+
+    return render(request, "cadastro_email.html", {"form": form})
