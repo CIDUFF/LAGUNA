@@ -6,7 +6,7 @@ from datetime import datetime
 from decouple import config
 import requests
 import qrcode
-
+import urllib.parse
 # import os
 from dotenv import load_dotenv
 
@@ -241,3 +241,18 @@ def gerar_etiquetas(codigos, data, responsavel, codigo_servico):
 # responsavel = "Samuel"
 # codigo_servico = "BIO20240803142052"
 # gerar_etiquetas(codigos, data, responsavel, codigo_servico)
+
+def generate_whatsapp_link(phone_number, message):
+    """
+    Gera um link para enviar uma mensagem via WhatsApp Web.
+
+    Parâmetros:
+    - phone_number: str, número de telefone no formato internacional sem espaços ou símbolos.
+    - message: str, a mensagem que será enviada.
+
+    Retorna:
+    - str: URL para enviar a mensagem via WhatsApp Web.
+    """
+    encoded_message = urllib.parse.quote(message)
+    link = f"https://wa.me/{phone_number}?text={encoded_message}"
+    return link
