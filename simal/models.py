@@ -607,10 +607,10 @@ class TabAmostra(models.Model):
         db_table = "tab_amostra"
 
     def save(self, *args, **kwargs):
-        etiqueta = (
-            f"{self.id_coleta.ordem_servico}{self.id_ponto.nome}{self.id_frasco.nome}"
-        )
-        self.etiqueta = etiqueta
+        # etiqueta = (
+        #     f"{self.id_coleta.ordem_servico}{self.id_ponto.nome}{self.id_frasco.id}"
+        # )
+        # self.etiqueta = etiqueta
         super().save(*args, **kwargs)
 
 
@@ -646,7 +646,7 @@ class TabFrasco(models.Model):
     nome = models.TextField(blank=True, null=True)
 
     def __str__(self):
-        return f"{self.nome}"
+        return f"{self.id}"
 
     class Meta:
         managed = True

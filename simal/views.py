@@ -1817,29 +1817,33 @@ def fill_amostra(request, coleta_id):
         id_setor=coleta.id_setor,
         status=True,  # Apenas pontos ativos
     )
-
+    
+    
     amostras = []
     for frasco in frascos:
+        # Verifica se a análise de bentos está desativada e pula os frascos 5, 6 e 7
+        if not coleta.analise_bentos and frasco.id in [5, 6, 7]:
+            continue
         for ponto in pontos_coleta:
             amostra = TabAmostra(
                 id_coleta=coleta,
                 id_frasco=frasco,
                 id_ponto=ponto,
-                etiqueta=f"{coleta.ordem_servico}{str(frasco.id).zfill(2)}{str(ponto.id).zfill(3)}",
+                etiqueta=f"{coleta.ordem_servico}{str(ponto.id).zfill(3)}{str(frasco.id).zfill(2)}",
             )
             amostras.append(amostra)
-
+    
     TabAmostra.objects.bulk_create(amostras)
-
+    
     envios = []
     for amostra in amostras:
         envio = TabEnvio(
             id_amostra=amostra,
         )
         envios.append(envio)
-
+    
     TabEnvio.objects.bulk_create(envios)
-
+    
     return redirect("fill_campo_medida", coleta_id=coleta_id)
 
 
@@ -2118,24 +2122,10 @@ def aplicar_acao(request):
 
     return redirect("lista_de_coletas")
 
-
 @login_required
 def detalhes_coleta_popup(request, coleta_id):
     coleta = get_object_or_404(TabColeta, id=coleta_id)
     return render(request, "detalhes_coleta_popup.html", {"coleta": coleta})
 
 
-# @login_required
-# def coletas_agendas(request):
-#     filtro = ProgramaColetaFilter(
-#         request.GET, queryset=ProgramaColeta.objects.all())
-#     table = ProgramaColetaTable(filtro.qs)
-#     RequestConfig(request, paginate={"per_page": 25}).configure(table)
-#     return render(
-#         request,
-#         "coleta/coletas_agendas.html",
-#         {
-#             "table_agenda_coleta": table,
-#             "filtro": filtro,
-#         },
-#     )
+
