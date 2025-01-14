@@ -942,8 +942,8 @@ class MetadadosPonto(models.Model):
 class EmailTemplate(models.Model):
     nome = models.CharField(max_length=50, blank=True, null=True)
     assunto = models.CharField(max_length=50, blank=True, null=True)
-    c = models.EmailField(max_length=100, blank=True, null=True)
     cc = models.EmailField(max_length=100, blank=True, null=True)
+    cco = models.EmailField(max_length=100, blank=True, null=True)
     corpo = models.TextField(blank=True, null=True)
     
 
