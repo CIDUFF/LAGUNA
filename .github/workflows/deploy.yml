@@ -33,7 +33,6 @@ jobs:
             cd /home/marcus/projects/LAGUNA
             git pull origin main
             . .venv/bin/activate
-            pip install uv
             uv sync
             python manage.py migrate
             sudo /etc/init.d/apache2 reload
