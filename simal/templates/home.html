@@ -19,19 +19,23 @@
                         <div class="d-none d-md-flex">
                           <img src="static/images/icone-calendario.svg" alt="Calendário" class="img-fluid"/>
                         </div>
-                          <div class="d-flex flex-column align-items-stretch align-items-md-start">
+                        <div class="d-flex flex-column align-items-stretch align-items-md-start">
+                          {% if local_coleta and status_coleta and data_coleta_proxima_formatada and ordem_servico %}
                             <div class="d-flex flex-column mx-3">
-                                    <p class="card-title fs-6">Campanha atual:</p>
-                                    <p class="card-text fs-3">{{local_coleta}}</p>
+                              <p class="card-title fs-6">Campanha atual:</p>
+                              <p class="card-text fs-3">{{local_coleta}}</p>
                             </div>
                             <div class="d-flex">        
-                                    <p class="card-desc fs-6">
-                                      Status: {{status_coleta}} <br>
-                                      Data: {{data_coleta_proxima_formatada}} <br>
-                                      OS: {{ ordem_servico }}
-                                    </p>
+                              <p class="card-desc fs-6">
+                                Status: {{status_coleta}} <br>
+                                Data: {{data_coleta_proxima_formatada}} <br>
+                                OS: {{ ordem_servico }}
+                              </p>
                             </div>
-                          </div>  
+                          {% else %}
+                            <p class="card-text fs-3">Não existem campanhas agendadas no momento.</p>
+                          {% endif %}
+                        </div>
                     </div>
                 </a>
               </div>
@@ -89,10 +93,13 @@
     <div class="container-campanha">
       
       <div class="card cronograma d-none d-sm-block px-3 pb-3 overflow-auto" id="gantt-div">
-
           <p class="title-campanha fs-1">Cronograma da Campanha</p>
-          {{ gantt_div|safe }}
-
+      
+          {% if gantt_div and gantt_div != 'None' and gantt_div != 'none' and gantt_div != 'null' %}
+              {{ gantt_div|safe }}
+          {% else %}
+              <h2 class="text-center my-4">Não existem campanhas agendadas no momento</h2>
+          {% endif %}
       </div>
       
       <div class="card calendario d-none d-sm-block px-3 pb-3 overflow-auto">
