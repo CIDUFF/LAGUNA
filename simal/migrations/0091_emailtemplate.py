@@ -4,22 +4,29 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('simal', '0090_tablaboratorio_email'),
+        ("simal", "0090_tablaboratorio_email"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='EmailTemplate',
+            name="EmailTemplate",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('nome', models.CharField(blank=True, max_length=50, null=True)),
-                ('assunto', models.CharField(blank=True, max_length=50, null=True)),
-                ('corpo', models.TextField(blank=True, null=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("nome", models.CharField(blank=True, max_length=50, null=True)),
+                ("assunto", models.CharField(blank=True, max_length=50, null=True)),
+                ("corpo", models.TextField(blank=True, null=True)),
             ],
             options={
-                'db_table': 'tab_email_template',
+                "db_table": "tab_email_template",
             },
         ),
     ]

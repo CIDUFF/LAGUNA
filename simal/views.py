@@ -1472,12 +1472,12 @@ def configuracoes_view(request):
                 item_checklist_form.save(user=request.user)
                 messages.success(request, "Item de checklist cadastrado com sucesso.")
         elif "email_submit" in request.POST:
-            email_form = EmailForm(
-                request.POST, label_suffix="email"
-            )
+            email_form = EmailForm(request.POST, label_suffix="email")
             if email_form.is_valid():
                 email_form.save()
-                messages.success(request, "Novo template de e-mail cadastrado com sucesso.")
+                messages.success(
+                    request, "Novo template de e-mail cadastrado com sucesso."
+                )
 
         return redirect("configuracoes")
     else:
@@ -1518,7 +1518,6 @@ def configuracoes_view(request):
     )
     RequestConfig(request).configure(table_item_checklist)
     RequestConfig(request).configure(table_email)
-    
 
     # Renderizar o template com os formulários e tabelas
     return render(
@@ -1543,7 +1542,6 @@ def configuracoes_view(request):
             "table_serie_classificacao": table_serie_classificacao,
             "table_item_checklist": table_item_checklist,
             "table_email": table_email,
-            
         },
     )
 
@@ -1835,8 +1833,7 @@ def fill_amostra(request, coleta_id):
         id_setor=coleta.id_setor,
         status=True,  # Apenas pontos ativos
     )
-    
-    
+
     amostras = []
     for frasco in frascos:
         # Verifica se a análise de bentos está desativada e pula os frascos 5, 6 e 7
@@ -1850,18 +1847,18 @@ def fill_amostra(request, coleta_id):
                 etiqueta=f"{coleta.ordem_servico}{str(ponto.id).zfill(3)}{str(frasco.id).zfill(2)}",
             )
             amostras.append(amostra)
-    
+
     TabAmostra.objects.bulk_create(amostras)
-    
+
     envios = []
     for amostra in amostras:
         envio = TabEnvio(
             id_amostra=amostra,
         )
         envios.append(envio)
-    
+
     TabEnvio.objects.bulk_create(envios)
-    
+
     return redirect("fill_campo_medida", coleta_id=coleta_id)
 
 
@@ -2036,10 +2033,10 @@ def input_fisico_quimico(request, coleta_id, ponto_id):
         },
     )
 
-#TODO: Implementar a view de input_lab
+
+# TODO: Implementar a view de input_lab
 @login_required
 def input_lab(request, coleta_id):
-    
     return
 
 
@@ -2052,7 +2049,7 @@ def lista_campo(request, coleta_id):
         id_coleta=coleta,
         id_frasco=1,  # Assumindo que queremos apenas amostras do frasco 1
     ).order_by("id_ponto")
-    
+
     # Cria a tabela com as amostras
     table = ListaCampoTable(amostras)
 
@@ -2140,16 +2137,16 @@ def aplicar_acao(request):
 
     return redirect("lista_de_coletas")
 
+
 @login_required
 def detalhes_coleta_popup(request, coleta_id):
     coleta = get_object_or_404(TabColeta, id=coleta_id)
     return render(request, "detalhes_coleta_popup.html", {"coleta": coleta})
 
 
-
 # @login_required
 # def resultados_coleta(request):
-    
+
 #     return render(request, "resultados_campo.html")
 
 
@@ -2159,8 +2156,7 @@ def cadastro_email(request):
         form = EmailForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(
-                request, "Template de email cadastrado com sucesso.")
+            messages.success(request, "Template de email cadastrado com sucesso.")
             return redirect("cadastro_email")
     else:
         form = EmailForm()

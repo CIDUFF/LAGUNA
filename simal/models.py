@@ -659,7 +659,7 @@ class TabLaboratorio(models.Model):
     nome = models.TextField(blank=True, null=True)
     laboratorio_descricao = models.TextField(blank=True, null=True)
     email = models.EmailField(max_length=100, blank=True, null=True)
-    telefone = PhoneNumberField(blank=True, null=True, region='BR')
+    telefone = PhoneNumberField(blank=True, null=True, region="BR")
 
     def __str__(self):
         return f"{self.nome}"
@@ -667,7 +667,6 @@ class TabLaboratorio(models.Model):
     class Meta:
         managed = True
         db_table = "tab_laboratorio"
-        
 
 
 class TabMedida(models.Model):
@@ -947,11 +946,9 @@ class EmailTemplate(models.Model):
     cc = models.EmailField(max_length=100, blank=True, null=True)
     cco = models.EmailField(max_length=100, blank=True, null=True)
     corpo = models.TextField(blank=True, null=True)
-    
 
     def __str__(self):
         return f"{self.nome}"
 
     class Meta:
         db_table = "tab_email_template"
-    

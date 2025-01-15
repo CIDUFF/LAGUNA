@@ -7,6 +7,7 @@ from decouple import config
 import requests
 import qrcode
 import urllib.parse
+
 # import os
 from dotenv import load_dotenv
 
@@ -241,6 +242,7 @@ def gerar_etiquetas(codigos, data, responsavel, codigo_servico):
 # responsavel = "Samuel"
 # codigo_servico = "BIO20240803142052"
 # gerar_etiquetas(codigos, data, responsavel, codigo_servico)
+
 
 def generate_whatsapp_link(phone_number, message):
     """

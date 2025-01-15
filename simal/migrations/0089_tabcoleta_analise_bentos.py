@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('simal', '0088_tabcoleta_observacao'),
+        ("simal", "0088_tabcoleta_observacao"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='tabcoleta',
-            name='analise_bentos',
+            model_name="tabcoleta",
+            name="analise_bentos",
             field=models.BooleanField(blank=True, null=True),
         ),
     ]

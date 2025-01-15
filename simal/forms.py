@@ -726,7 +726,7 @@ class ParametroForm(forms.ModelForm):
     class Meta:
         model = TabParam
         fields = "__all__"
-        
+
 
 class UnidadeMedidaForm(forms.ModelForm):
     class Meta:
@@ -785,7 +785,6 @@ class CadastroCampanhaForm(forms.ModelForm):
         labels = {
             "id_local": "Local",
         }
-            
 
     def __init__(self, *args, **kwargs):
         super(CadastroCampanhaForm, self).__init__(*args, **kwargs)
@@ -800,7 +799,7 @@ class CadastroColetaForm(forms.ModelForm):
     data = forms.DateField(
         widget=forms.DateInput(attrs={"type": "date"}),
         required=False,
-        label="Data programada" 
+        label="Data programada",
     )
 
     class Meta:
@@ -815,7 +814,6 @@ class CadastroColetaForm(forms.ModelForm):
         super(CadastroColetaForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.add_input(Submit("submit", "Salvar"))
-
 
 
 class CadastroItemChecklistColetaForm(forms.ModelForm):
@@ -1049,6 +1047,7 @@ class DetalhesUsuarioForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(DetalhesUsuarioForm, self).__init__(*args, **kwargs)
         # Remova a linha que desabilita o campo 'usuario'
+
 
 class EmailForm(forms.ModelForm):
     class Meta:
