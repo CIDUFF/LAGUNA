@@ -1895,6 +1895,39 @@ def fill_campo_medida(request, coleta_id):
 
     return redirect("info_coleta", coleta_id=coleta_id)
 
+@login_required
+def fill_frasco_medida(request, coleta_id, frasco_id):
+    """
+    Preenche o campo de medida para uma coleta específica.
+
+    Esta função filtra os envios e parâmetros com base no ID da coleta e no ID do frasco,
+    cria instâncias de TabMedida para cada combinação de envio e parâmetro, e as salva no banco de dados.
+
+    Parâmetros:
+    request (HttpRequest): O objeto de solicitação HTTP.
+    coleta_id (int): O ID da coleta para a qual os campos de medida serão preenchidos.
+
+    Retorna:
+    HttpResponseRedirect: Redireciona para a página inicial após a conclusão do preenchimento dos campos de medida.
+    """
+    envios = TabEnvio.objects.filter(
+        id_amostra__id_coleta=coleta_id, id_amostra__id_frasco=frasco_id
+    )
+    parametros = TabProdxparam.objects.filter(id_frasco=frasco_id)
+
+    campos = []
+    for envio in envios:
+        for parametro in parametros:
+            campo = TabMedida(
+                id_envio=envio,
+                id_pp=parametro,
+            )
+            campos.append(campo)
+
+    TabMedida.objects.bulk_create(campos)
+
+    return redirect("info_coleta", coleta_id=coleta_id)
+
 
 @login_required
 def info_coleta(request, coleta_id):
