@@ -27,9 +27,11 @@ from django.urls import reverse
 from django.utils import timezone
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
+from django.http import JsonResponse
 
 
 from django_tables2 import RequestConfig
+import urllib.parse
 
 from .filters import (
     CampoFilter,
@@ -69,7 +71,7 @@ from .forms import (
     DetalhesUsuarioForm,
     InputFisicoQuimicoForm,
 )
-from .services import gerar_etiquetas, get_weather_description
+from .services import generate_whatsapp_link, gerar_etiquetas, get_weather_description
 
 from .tables import (
     EmailTable,
@@ -1942,6 +1944,14 @@ def info_coleta(request, coleta_id):
 
         # Data de criação da coleta
         data_criacao = coleta.criado_em
+        
+        link_sistema = f"{settings.SITE_URL}/info_coleta/{coleta_id}"
+        
+        mensagem = f"Foi criada uma nova coleta para a data {data_coleta.strftime('%d/%m/%Y')} em {coleta.id_setor}, com a ordem de serviço {coleta.ordem_servico}, Observação: {coleta.observacao}. Link para acesso: {link_sistema}"
+        
+        encoded_message = urllib.parse.quote(mensagem)
+        link = f"https://wa.me/?text={encoded_message}"
+        
 
         # Verificar se o fill amostra foi gerado para o frasco 1
         fill_amostra_gerado = TabMedida.objects.filter(
@@ -1971,6 +1981,7 @@ def info_coleta(request, coleta_id):
             "fill_amostra_gerado": fill_amostra_gerado,
             "previsao_tempo": previsao_tempo,
             "percentual_checklist": percentual_checklist,
+            "link": link,
         }
 
         return render(request, "info_coleta.html", context)
@@ -2195,3 +2206,6 @@ def cadastro_email(request):
         form = EmailForm()
 
     return render(request, "cadastro_email.html", {"form": form})
+
+
+
