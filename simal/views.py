@@ -1947,11 +1947,10 @@ def info_coleta(request, coleta_id):
         
         link_sistema = f"{settings.SITE_URL}/info_coleta/{coleta_id}"
         
-        mensagem = f"Foi criada uma nova coleta para a data {data_coleta.strftime('%d/%m/%Y')} em {coleta.id_setor}, com a ordem de serviço {coleta.ordem_servico}, Observação: {coleta.observacao}. Link para acesso: {link_sistema}"
+        mensagem = f"Foi criada uma nova coleta para a data {data_coleta.strftime('%d/%m/%Y')} em {coleta.id_setor}, com a ordem de serviço {coleta.ordem_servico}, Observação: {coleta.observacao}.\n Link para acesso: {link_sistema} "
         
         encoded_message = urllib.parse.quote(mensagem)
         link = f"https://wa.me/?text={encoded_message}"
-        
 
         # Verificar se o fill amostra foi gerado para o frasco 1
         fill_amostra_gerado = TabMedida.objects.filter(
