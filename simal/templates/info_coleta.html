@@ -1,5 +1,23 @@
 {% extends 'base/base_site.html' %}
 {% load django_bootstrap5 %}
+
+{% block extra_head %}
+<!-- Adicionar CSS do Leaflet -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" 
+      crossorigin=""/>
+
+<!-- Adicionar JavaScript do Leaflet -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" 
+        crossorigin=""></script>
+
+<!-- CSS do plugin Locate -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol/dist/L.Control.Locate.min.css" />
+<!-- JavaScript do plugin Locate -->
+<script src="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol/dist/L.Control.Locate.min.js"></script>
+{% endblock %}
+
 {% block title %}Informações da Coleta{% endblock %}
 {% block content %}
 <div class="container mt-4">
