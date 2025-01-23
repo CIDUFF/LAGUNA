@@ -206,6 +206,30 @@ document.addEventListener('DOMContentLoaded', function() {
             form.classList.add('was-validated');
         }, false);
     });
+
+    // Adiciona formatação e validação para inputs numéricos
+    const numericInputs = document.querySelectorAll('input[type="number"]');
+    numericInputs.forEach(input => {
+        // Define atributos para aceitar até 5 casas decimais
+        input.setAttribute('step', '0.00001');
+        input.setAttribute('pattern', '^-?\\d*\\.?\\d{0,5}$');
+        
+        // Validação em tempo real
+        input.addEventListener('input', function(e) {
+            let value = e.target.value;
+            if (value !== '') {
+                // Remove zeros à direita após o decimal
+                value = Number(value).toString();
+                // Limita a 5 casas decimais
+                const parts = value.split('.');
+                if (parts.length > 1 && parts[1].length > 5) {
+                    parts[1] = parts[1].substring(0, 5);
+                    value = parts.join('.');
+                    e.target.value = value;
+                }
+            }
+        });
+    });
 });
 </script>
 

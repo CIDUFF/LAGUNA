@@ -871,12 +871,14 @@ class InputFisicoQuimicoForm(forms.ModelForm):
         required=False,
         min_value=0,
         max_digits=10,
-        decimal_places=2,
+        decimal_places=5,
         widget=forms.NumberInput(
             attrs={
-                "step": "0.01",
+                "step": "0.00001",
                 "min": "0",
                 "class": "form-control",
+                'pattern': '^-?\d*\.?\d{0,5}$',
+                'placeholder': 'Digite o valor...'
             }
         ),
     )

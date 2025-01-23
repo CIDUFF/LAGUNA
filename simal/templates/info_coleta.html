@@ -136,46 +136,50 @@
 
         <!-- Coluna da direita -->
         <div class="col-md-6">
-            <div class="card border-0 rounded-4 shadow-sm hover-shadow h-100 d-flex flex-column">
+            <div class="card border-0 rounded-4 shadow-sm hover-shadow h-100"> <!-- Adicione h-100 aqui -->
                 <div class="card-header bg-gradient border-0 rounded-top-4" style="background-color: #38b000;">
                     <h5 class="card-title mb-0 text-white"><i class="bi bi-geo-alt-fill me-2"></i>Mapa das estações amostrais</h5>
                 </div>
-                <div class="card-body p-0 flex-grow-1">
-                    <div id="map" class="rounded-bottom-4" style="height: 100%; min-height: 500px;"></div>
+                <div class="card-body p-0 flex-grow-1"> <!-- Adicione flex-grow-1 aqui -->
+                    <div id="map" class="rounded-bottom-4" style="height: 100%; min-height: 500px;"></div> <!-- Ajuste para height: 100% -->
                 </div>
             </div>
         </div>
-    </div>
+    </div> <!-- Fechamento da row anterior -->
 
-    <!-- Barra de ações -->
-    <div class="card border-0 rounded-4 shadow-sm hover-shadow mt-4">
-        <div class="card-body p-4">
-            <div class="d-flex gap-3 flex-wrap justify-content-start">
-                {% if not fill_amostra_gerado %}
-                    <a href="{% url 'fill_amostra' coleta %}" class="btn btn-primary btn-lg rounded-pill">
-                        <i class="bi bi-file-earmark-plus me-2"></i>Gerar Formulários
-                    </a>
-                {% endif %}
-                <a href="{% url 'checklist_coleta' coleta %}" class="btn btn-success btn-lg rounded-pill">
-                    <i class="bi bi-arrow-left me-2"></i>Voltar ao Checklist
-                </a>
-                <div class="dropdown">
-                    <button class="btn btn-success btn-lg rounded-pill dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                        <i class="bi bi-pencil-square me-2"></i>Inserir Resultados
-                    </button>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item py-2" href="{% url 'lista_campo' coleta %}">
-                            <i class="bi bi-thermometer me-2"></i>Campo
-                        </a></li>
-                        <li><a class="dropdown-item py-2" href="{% url 'lista_campo' coleta %}">
-                            <i class="bi bi-flask me-2"></i>Laboratório
-                        </a></li>
-                    </ul>
+    <!-- Barra de ações em uma nova row -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-0 rounded-4 shadow-sm hover-shadow">
+                <div class="card-body p-4">
+                    <div class="d-flex gap-3 flex-wrap justify-content-start">
+                        {% if not fill_amostra_gerado %}
+                            <a href="{% url 'fill_amostra' coleta %}" class="btn btn-primary btn-lg rounded-pill">
+                                <i class="bi bi-file-earmark-plus me-2"></i>Gerar Formulários
+                            </a>
+                        {% endif %}
+                        <a href="{% url 'checklist_coleta' coleta %}" class="btn btn-success btn-lg rounded-pill">
+                            <i class="bi bi-arrow-left me-2"></i>Voltar ao Checklist
+                        </a>
+                        <div class="dropdown">
+                            <button class="btn btn-success btn-lg rounded-pill dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-pencil-square me-2"></i>Inserir Resultados
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item py-2" href="{% url 'lista_campo' coleta %}">
+                                    <i class="bi bi-thermometer me-2"></i>Campo
+                                </a></li>
+                                <li><a class="dropdown-item py-2" href="{% url 'lista_campo' coleta %}">
+                                    <i class="bi bi-flask me-2"></i>Laboratório
+                                </a></li>
+                            </ul>
+                        </div>
+                        <a href="{{ link }}" target="_blank" class="btn btn-lg rounded-pill" 
+                           style="background-color: #25D366; color: white;">
+                            <i class="bi bi-whatsapp me-2"></i>Compartilhar
+                        </a>
+                    </div>
                 </div>
-                <a href="{{ link }}" target="_blank" class="btn btn-lg rounded-pill" 
-                   style="background-color: #25D366; color: white;">
-                    <i class="bi bi-whatsapp me-2"></i>Compartilhar
-                </a>
             </div>
         </div>
     </div>
@@ -219,7 +223,74 @@
 
 @media (max-width: 768px) {
     #map {
-        min-height: 400px;
+        height: 400px; /* Altura menor em telas pequenas */
+        margin-bottom: 1rem; /* Espaçamento extra no mobile */
+    }
+    
+    .card {
+        margin-bottom: 1rem; /* Espaçamento entre cards no mobile */
+    }
+    
+    /* Ajustes para os botões em mobile */
+    .btn {
+        margin-bottom: 0.5rem;
+        width: 100%; /* Botões ocupam largura total em mobile */
+    }
+    
+    .d-flex.gap-3 {
+        flex-direction: column; /* Empilha os botões em mobile */
+    }
+    
+    /* Ajuste do dropdown em mobile */
+    .dropdown {
+        width: 100%;
+    }
+    
+    .dropdown-toggle {
+        width: 100%;
+        text-align: center;
+    }
+
+    /* Ajuste da estrutura do layout em mobile */
+    .container {
+        padding-bottom: 70px; /* Adiciona espaço extra no final da página */
+    }
+
+    #map {
+        height: 300px !important; /* Reduz altura do mapa no mobile */
+        position: relative !important; /* Remove posicionamento absoluto */
+        width: 100%;
+    }
+    
+    /* Ajuste dos cards no mobile */
+    .card {
+        margin-bottom: 1.5rem;
+    }
+
+    /* Ajuste da última row que contém os botões */
+    .row:last-child {
+        position: relative;
+        margin-top: 2rem;
+        z-index: 100; /* Garante que os botões fiquem acima do mapa */
+    }
+    
+    /* Ajustes para os botões */
+    .btn {
+        margin-bottom: 0.5rem;
+        width: 100%;
+    }
+    
+    .d-flex.gap-3 {
+        flex-direction: column;
+    }
+    
+    .dropdown {
+        width: 100%;
+    }
+    
+    .dropdown-toggle {
+        width: 100%;
+        text-align: center;
     }
 }
 </style>

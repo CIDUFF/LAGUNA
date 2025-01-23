@@ -1660,6 +1660,15 @@ def cadastro_campanha(request):
     return render(request, "cadastro_campanha.html", {"form": form})
 
 
+from threading import Thread
+
+def enviar_email_async(subject, message, from_email, recipient_list):
+    """Função auxiliar para enviar email de forma assíncrona"""
+    try:
+        send_mail(subject, message, from_email, recipient_list)
+    except Exception as e:
+        logger.error(f"Erro ao enviar email: {e}")
+
 @login_required
 def cadastro_coleta_view(request):
     if request.method == "POST":
@@ -1680,11 +1689,12 @@ def cadastro_coleta_view(request):
             subject = "Não responda - Coleta programada com sucesso"
             message = f"Olá {request.user.username},\n\nA coleta com a ordem de serviço {coleta.ordem_servico} foi criada com sucesso. \n\nAcesse o sistema em {settings.SITE_URL}/info_coleta/{coleta.id} para mais informações. \n\n Este é um e-mail automático, favor não responder."
             recipient_list = [request.user.email, ]
-            send_mail(subject, message,
-                      settings.EMAIL_HOST_USER, recipient_list)
             
-            #enviar e-mail para laboratório
-            
+            # Iniciar thread para envio de email
+            Thread(
+                target=enviar_email_async,
+                args=(subject, message, settings.EMAIL_HOST_USER, recipient_list)
+            ).start()
 
             return redirect("checklist_coleta", coleta_id=coleta.id)
     else:
@@ -1958,7 +1968,7 @@ def info_coleta(request, coleta_id):
         link_sistema = f"{settings.SITE_URL}/info_coleta/{coleta_id}"
 
         hoje = datetime.today()
-        if data_coleta < hoje:
+        if (data_coleta < hoje):
             mensagem = f"Foi criada uma coleta para a data de {data_coleta.strftime('%d/%m/%Y')} em {coleta.id_setor}, com a ordem de serviço {coleta.ordem_servico}, Observação: {coleta.observacao}.\n\nLink para acesso: {link_sistema}"
         else:
             mensagem = f"Será realizada uma nova coleta para a data de {data_coleta.strftime('%d/%m/%Y')} em {coleta.id_setor}, com a ordem de serviço {coleta.ordem_servico}. \n\nObservação: {coleta.observacao}.\n\nLink para acesso: {link_sistema}"
