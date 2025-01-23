@@ -4,20 +4,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('simal', '0091_emailtemplate'),
+        ("simal", "0091_emailtemplate"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='emailtemplate',
-            name='c',
+            model_name="emailtemplate",
+            name="c",
             field=models.EmailField(blank=True, max_length=100, null=True),
         ),
         migrations.AddField(
-            model_name='emailtemplate',
-            name='cc',
+            model_name="emailtemplate",
+            name="cc",
             field=models.EmailField(blank=True, max_length=100, null=True),
         ),
     ]

@@ -27,9 +27,11 @@ from django.urls import reverse
 from django.utils import timezone
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
+from django.http import JsonResponse
 
 
 from django_tables2 import RequestConfig
+import urllib.parse
 
 from .filters import (
     CampoFilter,
@@ -69,7 +71,7 @@ from .forms import (
     DetalhesUsuarioForm,
     InputFisicoQuimicoForm,
 )
-from .services import gerar_etiquetas, get_weather_description
+from .services import generate_whatsapp_link, gerar_etiquetas, get_weather_description
 
 from .tables import (
     EmailTable,
@@ -1472,12 +1474,12 @@ def configuracoes_view(request):
                 item_checklist_form.save(user=request.user)
                 messages.success(request, "Item de checklist cadastrado com sucesso.")
         elif "email_submit" in request.POST:
-            email_form = EmailForm(
-                request.POST, label_suffix="email"
-            )
+            email_form = EmailForm(request.POST, label_suffix="email")
             if email_form.is_valid():
                 email_form.save()
-                messages.success(request, "Novo template de e-mail cadastrado com sucesso.")
+                messages.success(
+                    request, "Novo template de e-mail cadastrado com sucesso."
+                )
 
         return redirect("configuracoes")
     else:
@@ -1518,7 +1520,6 @@ def configuracoes_view(request):
     )
     RequestConfig(request).configure(table_item_checklist)
     RequestConfig(request).configure(table_email)
-    
 
     # Renderizar o template com os formulários e tabelas
     return render(
@@ -1543,7 +1544,6 @@ def configuracoes_view(request):
             "table_serie_classificacao": table_serie_classificacao,
             "table_item_checklist": table_item_checklist,
             "table_email": table_email,
-            
         },
     )
 
@@ -1835,8 +1835,7 @@ def fill_amostra(request, coleta_id):
         id_setor=coleta.id_setor,
         status=True,  # Apenas pontos ativos
     )
-    
-    
+
     amostras = []
     for frasco in frascos:
         # Verifica se a análise de bentos está desativada e pula os frascos 5, 6 e 7
@@ -1850,18 +1849,18 @@ def fill_amostra(request, coleta_id):
                 etiqueta=f"{coleta.ordem_servico}{str(ponto.id).zfill(3)}{str(frasco.id).zfill(2)}",
             )
             amostras.append(amostra)
-    
+
     TabAmostra.objects.bulk_create(amostras)
-    
+
     envios = []
     for amostra in amostras:
         envio = TabEnvio(
             id_amostra=amostra,
         )
         envios.append(envio)
-    
+
     TabEnvio.objects.bulk_create(envios)
-    
+
     return redirect("fill_campo_medida", coleta_id=coleta_id)
 
 
@@ -1898,6 +1897,39 @@ def fill_campo_medida(request, coleta_id):
 
     return redirect("info_coleta", coleta_id=coleta_id)
 
+@login_required
+def fill_frasco_medida(request, coleta_id, frasco_id):
+    """
+    Preenche o campo de medida para uma coleta específica.
+
+    Esta função filtra os envios e parâmetros com base no ID da coleta e no ID do frasco,
+    cria instâncias de TabMedida para cada combinação de envio e parâmetro, e as salva no banco de dados.
+
+    Parâmetros:
+    request (HttpRequest): O objeto de solicitação HTTP.
+    coleta_id (int): O ID da coleta para a qual os campos de medida serão preenchidos.
+
+    Retorna:
+    HttpResponseRedirect: Redireciona para a página inicial após a conclusão do preenchimento dos campos de medida.
+    """
+    envios = TabEnvio.objects.filter(
+        id_amostra__id_coleta=coleta_id, id_amostra__id_frasco=frasco_id
+    )
+    parametros = TabProdxparam.objects.filter(id_frasco=frasco_id)
+
+    campos = []
+    for envio in envios:
+        for parametro in parametros:
+            campo = TabMedida(
+                id_envio=envio,
+                id_pp=parametro,
+            )
+            campos.append(campo)
+
+    TabMedida.objects.bulk_create(campos)
+
+    return redirect("info_coleta", coleta_id=coleta_id)
+
 
 @login_required
 def info_coleta(request, coleta_id):
@@ -1912,6 +1944,13 @@ def info_coleta(request, coleta_id):
 
         # Data de criação da coleta
         data_criacao = coleta.criado_em
+        
+        link_sistema = f"{settings.SITE_URL}/info_coleta/{coleta_id}"
+        
+        mensagem = f"Foi criada uma nova coleta para a data {data_coleta.strftime('%d/%m/%Y')} em {coleta.id_setor}, com a ordem de serviço {coleta.ordem_servico}, Observação: {coleta.observacao}.\n Link para acesso: {link_sistema} "
+        
+        encoded_message = urllib.parse.quote(mensagem)
+        link = f"https://wa.me/?text={encoded_message}"
 
         # Verificar se o fill amostra foi gerado para o frasco 1
         fill_amostra_gerado = TabMedida.objects.filter(
@@ -1941,6 +1980,7 @@ def info_coleta(request, coleta_id):
             "fill_amostra_gerado": fill_amostra_gerado,
             "previsao_tempo": previsao_tempo,
             "percentual_checklist": percentual_checklist,
+            "link": link,
         }
 
         return render(request, "info_coleta.html", context)
@@ -2036,10 +2076,10 @@ def input_fisico_quimico(request, coleta_id, ponto_id):
         },
     )
 
-#TODO: Implementar a view de input_lab
+
+# TODO: Implementar a view de input_lab
 @login_required
 def input_lab(request, coleta_id):
-    
     return
 
 
@@ -2052,7 +2092,7 @@ def lista_campo(request, coleta_id):
         id_coleta=coleta,
         id_frasco=1,  # Assumindo que queremos apenas amostras do frasco 1
     ).order_by("id_ponto")
-    
+
     # Cria a tabela com as amostras
     table = ListaCampoTable(amostras)
 
@@ -2140,16 +2180,16 @@ def aplicar_acao(request):
 
     return redirect("lista_de_coletas")
 
+
 @login_required
 def detalhes_coleta_popup(request, coleta_id):
     coleta = get_object_or_404(TabColeta, id=coleta_id)
     return render(request, "detalhes_coleta_popup.html", {"coleta": coleta})
 
 
-
 # @login_required
 # def resultados_coleta(request):
-    
+
 #     return render(request, "resultados_campo.html")
 
 
@@ -2159,10 +2199,12 @@ def cadastro_email(request):
         form = EmailForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(
-                request, "Template de email cadastrado com sucesso.")
+            messages.success(request, "Template de email cadastrado com sucesso.")
             return redirect("cadastro_email")
     else:
         form = EmailForm()
 
     return render(request, "cadastro_email.html", {"form": form})
+
+
+

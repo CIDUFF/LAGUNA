@@ -318,23 +318,6 @@ class TopCampanhas(tables.Table):
             '<span class="d-inline d-md-none font-weight-bold">Local:</span> {}', value
         )
 
-    def render_status_coleta(self, value):
-        status_to_class = {
-            "Iniciada": "bg-primary",
-            "Cancelada": "bg-danger",
-            "Coleta realizada": "bg-success",
-            "Programada": "bg-warning text-dark",
-        }
-        badge_class = status_to_class.get(value, "")
-        if badge_class:
-            return format_html(
-                '<span class="d-inline d-md-none font-weight-bold">Status:</span> <span class="badge {}">{}</span>',
-                badge_class,
-                value,
-            )
-        return format_html(
-            '<span class="d-inline d-md-none font-weight-bold">Status:</span> {}', value
-        )
 
 
 class SetorTable(tables.Table):
@@ -440,7 +423,7 @@ class ParametroTable(tables.Table):
         model = TabParam
         template_name = "django_tables2/bootstrap.html"
         fields = ("nome", "param_meta_dado")
-        
+
 
 class EmailTable(tables.Table):
     update = tables.LinkColumn(

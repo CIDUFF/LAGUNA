@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('simal', '0089_tabcoleta_analise_bentos'),
+        ("simal", "0089_tabcoleta_analise_bentos"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='tablaboratorio',
-            name='email',
+            model_name="tablaboratorio",
+            name="email",
             field=models.EmailField(blank=True, max_length=100, null=True),
         ),
     ]

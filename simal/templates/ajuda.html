@@ -6,24 +6,7 @@
     <div class="container">
         <h1>Ajuda</h1>
         <p>Preencha o formulário abaixo para obter ajuda</p>
-        {% comment %} <div class="card faq"> {% endcomment %}
-            {% comment %} <h2 class="title-campanha">Perguntas Frequentes</h2>
-            <div class="faq-item">
-                <div class="card faq-question">Como faço para redefinir minha senha?</div>
-                <div class="faq-answer">
-                    Vá na aba "usuário" (último ícone localizado embaixo no canto esquerdo).<br>
-                    Logo em seguida clique na parte da "senha", modifique e salve as alterações.
-                </div>
-            </div>
-            <div class="faq-item">
-                <div class="card faq-question">Como faço para cadastrar uma nova campanha?</div>
-                <div class="faq-answer">[Instruções para cadastrar uma nova campanha]</div>
-            </div>
-            <div class="faq-item">
-                <div class="card faq-question">Como entro em contato com o suporte?</div>
-                <div class="faq-answer">[Instruções para contato com o suporte]</div>
-            </div> {% endcomment %}
-        {% comment %} </div> {% endcomment %}
+
         <div class="card help-section">
             {% csrf_token %} {% crispy form %} 
         </div>

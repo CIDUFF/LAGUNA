@@ -12,23 +12,22 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-class etiquetas():
+class etiquetas:
     def consulta(self, id):
         coleta = TabColeta.objects.get(id=id)
         os = coleta.ordem_servico
         responsavel = coleta.criado_por
-        amostras = TabAmostra.objects.filter(id_coleta = coleta.id)
-        setor  = coleta.id_setor
+        amostras = TabAmostra.objects.filter(id_coleta=coleta.id)
+        setor = coleta.id_setor
         campanha = coleta.id_campanha
         nome = coleta.nome
         data_coleta = coleta.data
-    
+
         return os, responsavel, amostras, setor, campanha, nome, data_coleta
-        
 
     def qr_code(self, id):
         try:
-            site = config('SITE_URL')
+            site = config("SITE_URL")
             url = f"{site}/info_coleta/{id}"
             qr = qrcode.make(url)
             qr_path = f"media/qr_codes/{id}.png"
@@ -36,8 +35,8 @@ class etiquetas():
             return qr_path
         except Exception as e:
             print(f"Erro ao gerar QR Code: {e}")
-            return None     
-        
+            return None
+
     def adicionar_etiqueta(c, qr_path, codigo, data, responsavel, x, y):
         try:
             c.drawImage(qr_path, x, y, width=20 * mm, height=20 * mm)
@@ -74,7 +73,7 @@ class etiquetas():
             c.setDash()  # Reseta o estilo da linha para o padrão
         except Exception as e:
             print(f"Erro ao desenhar linhas tracejadas: {e}")
-            
+
     def gerar_etiquetas(self, codigos, data, responsavel, codigo_servico):
         try:
             largura_pagina, altura_pagina = A4
@@ -124,7 +123,13 @@ class etiquetas():
                             qr_paths.append(qr_path)
                             try:
                                 self.adicionar_etiqueta(
-                                    c, qr_path, codigo_modificado, data, responsavel, x, y
+                                    c,
+                                    qr_path,
+                                    codigo_modificado,
+                                    data,
+                                    responsavel,
+                                    x,
+                                    y,
                                 )
                             except Exception as e:
                                 print(f"Erro ao adicionar etiqueta: {e}")
@@ -171,6 +176,3 @@ class etiquetas():
         except Exception as e:
             print(f"Erro ao gerar etiquetas: {e}")
             return None
-
-        
-        

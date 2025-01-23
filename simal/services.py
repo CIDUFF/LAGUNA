@@ -7,6 +7,7 @@ from decouple import config
 import requests
 import qrcode
 import urllib.parse
+
 # import os
 from dotenv import load_dotenv
 
@@ -242,7 +243,8 @@ def gerar_etiquetas(codigos, data, responsavel, codigo_servico):
 # codigo_servico = "BIO20240803142052"
 # gerar_etiquetas(codigos, data, responsavel, codigo_servico)
 
-def generate_whatsapp_link(phone_number, message):
+
+def generate_whatsapp_link(message):
     """
     Gera um link para enviar uma mensagem via WhatsApp Web.
 
@@ -254,5 +256,5 @@ def generate_whatsapp_link(phone_number, message):
     - str: URL para enviar a mensagem via WhatsApp Web.
     """
     encoded_message = urllib.parse.quote(message)
-    link = f"https://wa.me/{phone_number}?text={encoded_message}"
+    link = f"https://wa.me/?text={encoded_message}"
     return link

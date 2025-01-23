@@ -53,7 +53,7 @@ INSTALLED_APPS = [
     "django_bootstrap5",
     "django_extensions",
     "localflavor",
-    'phonenumber_field',
+    "phonenumber_field",
 ]
 
 AUTHENTICATION_BACKENDS = [

@@ -5,15 +5,16 @@ import phonenumber_field.modelfields
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('simal', '0093_rename_c_emailtemplate_cco'),
+        ("simal", "0093_rename_c_emailtemplate_cco"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='tablaboratorio',
-            name='telefone',
-            field=phonenumber_field.modelfields.PhoneNumberField(blank=True, max_length=128, null=True, region='BR'),
+            model_name="tablaboratorio",
+            name="telefone",
+            field=phonenumber_field.modelfields.PhoneNumberField(
+                blank=True, max_length=128, null=True, region="BR"
+            ),
         ),
     ]
