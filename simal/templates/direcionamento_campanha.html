@@ -1,23 +1,93 @@
 {% extends 'base/base_site.html' %}
-{% block title %} Direcionamento de Campanha {% endblock %}
+{% block title %}Direcionamento de Campanha{% endblock %}
 {% block content %}
 
 {% if user.is_authenticated %}
-<div class="container mt-5">
-    <h3 class="text-center mb-3">A campanha já existe ou deseja criar uma nova campanha?</h3>
-    <div class="d-flex justify-content-center">
-        <a href="{% url 'cadastro_coleta' %}" class="btn btn-primary mx-2">Já existe</a>
-        <a href="{% url 'cadastro_campanha' %}" class="btn btn-secondary mx-2">Quero criar uma nova campanha</a>
-    </div>
-</div>
-{% else %}
-    <div class="container mt-5">
-        <h1 class="text-center">Olá, visitante</h1>
-        <p class="text-center">Faça login para visualizar o sistema</p>
-        <div class="d-flex justify-content-center">
-            <a href="{% url 'account_login' %}" class="btn btn-primary">Clique aqui para logar</a>
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col">
+            <div class="d-flex align-items-center">
+                <h1 class="display-5 mb-0">
+                    <i class="bi bi-signpost-split text-primary"></i> Direcionamento de Campanha
+                </h1>
+            </div>
         </div>
     </div>
+
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-6">
+            <div class="card border-0 rounded-4 shadow-sm hover-shadow">
+                <div class="card-header bg-gradient border-0 rounded-top-4" style="background-color: #4361ee;">
+                    <h5 class="card-title mb-0 text-white">
+                        <i class="bi bi-question-circle-fill me-2"></i>Escolha uma Opção
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="text-center mb-4">
+                        <i class="bi bi-arrow-down-up-circle display-1 text-primary mb-3"></i>
+                        <h4 class="mb-3">A campanha já existe ou deseja criar uma nova?</h4>
+                    </div>
+                    
+                    <div class="d-flex flex-column gap-3">
+                        <a href="{% url 'cadastro_coleta' %}" 
+                           class="btn btn-primary btn-lg rounded-pill hover-scale">
+                            <i class="bi bi-folder-check me-2"></i>Usar Campanha Existente
+                        </a>
+                        <a href="{% url 'cadastro_campanha' %}" 
+                           class="btn btn-success btn-lg rounded-pill hover-scale">
+                            <i class="bi bi-plus-circle me-2"></i>Criar Nova Campanha
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.hover-shadow {
+    transition: all 0.3s ease;
+}
+.hover-shadow:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+.hover-scale {
+    transition: all 0.3s ease;
+}
+.hover-scale:hover {
+    transform: scale(1.02);
+}
+
+@media (max-width: 768px) {
+    .display-5 {
+        font-size: 2rem;
+    }
+    
+    .card-body {
+        padding: 1.5rem;
+    }
+    
+    .btn {
+        padding: 1rem;
+    }
+}
+</style>
+
+{% else %}
+<div class="container mt-5">
+    <div class="card border-0 rounded-4 shadow-sm p-5 text-center">
+        <i class="bi bi-person-lock display-1 text-primary mb-3"></i>
+        <h1>Olá, visitante</h1>
+        <p class="lead mb-4">Faça login para acessar o sistema</p>
+        <div>
+            <a href="{% url 'account_login' %}" class="btn btn-primary btn-lg rounded-pill">
+                <i class="bi bi-box-arrow-in-right me-2"></i>Entrar no Sistema
+            </a>
+        </div>
+    </div>
+</div>
 {% endif %}
 
 {% endblock %}

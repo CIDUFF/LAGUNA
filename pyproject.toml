@@ -1,7 +1,7 @@
 [project]
 name = "laguna"
 version = "0.1.0"
-description = "Add your description here"
+description = "LAGUNA - Laboratório Avançado para Gerenciamento, Uso e Análise de Amostras"
 readme = "README.md"
 requires-python = ">=3.10"
 
@@ -22,7 +22,7 @@ dependencies = [
     "debugpy==1.8.2",
     "decorator==5.1.1",
     "dill==0.3.8",
-    "Django==4.2.17",
+    "Django==5.1.5",
     "django-allauth==0.62.0",
     "django-bootstrap-form==3.4",
     "django-bootstrap5==24.2",
