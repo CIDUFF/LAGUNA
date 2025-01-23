@@ -2017,6 +2017,7 @@ def info_coleta(request, coleta_id):
                 formulario_preenchido = medida and medida.input_valor is not None
 
             pontos_coleta.append({
+                'id': ponto.id,  # Adicionado o ID do ponto
                 'nome': ponto.nome,
                 'lat': ponto.lat,
                 'lon': ponto.lon,
