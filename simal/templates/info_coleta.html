@@ -1,23 +1,5 @@
 {% extends 'base/base_site.html' %}
 {% load django_bootstrap5 %}
-
-{% block extra_head %}
-<!-- Adicionar CSS do Leaflet -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
-      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" 
-      crossorigin=""/>
-
-<!-- Adicionar JavaScript do Leaflet -->
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
-        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" 
-        crossorigin=""></script>
-
-<!-- CSS do plugin Locate -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol/dist/L.Control.Locate.min.css" />
-<!-- JavaScript do plugin Locate -->
-<script src="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol/dist/L.Control.Locate.min.js"></script>
-{% endblock %}
-
 {% block title %}Informações da Coleta{% endblock %}
 {% block content %}
 <div class="container mt-4">
@@ -317,60 +299,11 @@
     var map = L.map('map');
     var totalPontos = 0;
     var pontosPreenchidos = 0;
-    var userMarker;
     
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
 
-    // Adicionar controle de localização
-    var lc = L.control.locate({
-        position: 'topleft',
-        strings: {
-            title: "Mostrar minha localização"
-        },
-        locateOptions: {
-            enableHighAccuracy: true,
-            maxZoom: 16
-        }
-    }).addTo(map);
-
-    // Função para atualizar a posição do usuário
-    function onLocationFound(e) {
-        var radius = e.accuracy / 2;
-
-        // Remove marcador anterior se existir
-        if (userMarker) {
-            map.removeLayer(userMarker);
-        }
-
-        // Adiciona novo marcador com ícone personalizado
-        var userIcon = L.icon({
-            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
-            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-            iconSize: [25, 41],
-            iconAnchor: [12, 41],
-            popupAnchor: [1, -34],
-            shadowSize: [41, 41]
-        });
-
-        userMarker = L.marker(e.latlng, {icon: userIcon}).addTo(map)
-            .bindTooltip("Você está aqui", {permanent: false, direction: 'top'});
-
-        // Adiciona círculo de precisão
-        L.circle(e.latlng, radius).addTo(map);
-    }
-
-    // Função para tratar erros de localização
-    function onLocationError(e) {
-        console.log(e.message);
-    }
-
-    // Adicionar event listeners para localização
-    map.on('locationfound', onLocationFound);
-    map.on('locationerror', onLocationError);
-
-    // Resto do código existente para os pontos de coleta
     var pontos = {{ pontos_coleta|safe }};
     var bounds = L.latLngBounds();
 
@@ -440,8 +373,4 @@
         }, 300);
     });
 </script>
-
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol/dist/L.Control.Locate.min.css" />
-<script src="https://cdn.jsdelivr.net/npm/leaflet.locatecontrol/dist/L.Control.Locate.min.js" charset="utf-8"></script>
-
 {% endblock %}
