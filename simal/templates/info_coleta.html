@@ -74,17 +74,8 @@
                         {% endif %}
                     </div>
 
+                    <!-- Progresso do Checklist movido para cima -->
                     <div class="status-item mb-4">
-                        <div class="d-flex align-items-center mb-2">
-                            <i class="bi bi-cloud-sun me-2 text-primary"></i>
-                            <h6 class="mb-0">Previsão do Tempo</h6>
-                        </div>
-                        <div class="weather-badge p-3 bg-light rounded-3 mt-2">
-                            {{ previsao_tempo }}
-                        </div>
-                    </div>
-
-                    <div class="status-item">
                         <div class="d-flex align-items-center justify-content-between mb-2">
                             <div class="d-flex align-items-center">
                                 <i class="bi bi-list-check me-2 text-primary"></i>
@@ -104,18 +95,53 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Progresso da coleta -->
+                    <div class="status-item mb-4">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-clipboard-data me-2 text-primary"></i>
+                                <h6 class="mb-0">Progresso da coleta</h6>
+                            </div>
+                            <div class="ms-2">
+                                <span class="badge bg-info fs-6">{{ percentual_formularios|floatformat:1 }}%</span>
+                            </div>
+                        </div>
+                        <div class="progress rounded-pill" style="height: 15px;">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated bg-info" 
+                                 role="progressbar" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100"
+                                 aria-valuenow="{{ percentual_formularios }}"
+                                 style="width: 0%">
+                            </div>
+                        </div>
+                        <div class="mt-2 small text-muted text-center">
+                            {{ formularios_preenchidos }} de {{ total_formularios }} formulários preenchidos
+                        </div>
+                    </div>
+
+                    <div class="status-item">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="bi bi-cloud-sun me-2 text-primary"></i>
+                            <h6 class="mb-0">Previsão do Tempo</h6>
+                        </div>
+                        <div class="weather-badge p-3 bg-light rounded-3 mt-2">
+                            {{ previsao_tempo }}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Coluna da direita -->
         <div class="col-md-6">
-            <div class="card border-0 rounded-4 shadow-sm hover-shadow h-100">
+            <div class="card border-0 rounded-4 shadow-sm hover-shadow h-100 d-flex flex-column">
                 <div class="card-header bg-gradient border-0 rounded-top-4" style="background-color: #38b000;">
-                    <h5 class="card-title mb-0 text-white"><i class="bi bi-geo-alt-fill me-2"></i>Mapa dos Pontos</h5>
+                    <h5 class="card-title mb-0 text-white"><i class="bi bi-geo-alt-fill me-2"></i>Mapa das estações amostrais</h5>
                 </div>
-                <div class="card-body p-0">
-                    <div id="map" class="rounded-bottom-4" style="height: 600px;"></div>
+                <div class="card-body p-0 flex-grow-1">
+                    <div id="map" class="rounded-bottom-4" style="height: 100%; min-height: 500px;"></div>
                 </div>
             </div>
         </div>
@@ -170,10 +196,38 @@
     transition: width 1s ease-in-out;
     width: 0%;
 }
+
+/* Estilos para o mapa */
+.card.h-100 {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.card-body.flex-grow-1 {
+    flex: 1;
+    position: relative;
+}
+
+#map {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+@media (max-width: 768px) {
+    #map {
+        min-height: 400px;
+    }
+}
 </style>
 
 <script>
     var map = L.map('map');
+    var totalPontos = 0;
+    var pontosPreenchidos = 0;
     
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -184,6 +238,11 @@
 
     pontos.forEach(function(ponto) {
         if (ponto.status === true) {  // Verifica se o ponto está ativo
+            totalPontos++;
+            if (ponto.formulario_preenchido) {
+                pontosPreenchidos++;
+            }
+            
             var markerColor = ponto.formulario_preenchido ? 'green' : 'blue';
             var markerIcon = L.icon({
                 iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${markerColor}.png`,
@@ -206,15 +265,33 @@
         map.fitBounds(bounds, {padding: [50, 50]});
     }
 
-// Adicionar animação da barra de progresso
-document.addEventListener('DOMContentLoaded', function() {
-    const progressBar = document.querySelector('.progress-bar');
-    const targetProgress = parseFloat({{ percentual_checklist }}).toFixed(1);
-    
-    // Aguarda um momento para iniciar a animação
-    setTimeout(() => {
-        progressBar.style.width = targetProgress + '%';
-    }, 300);
-});
+    // Calcula a porcentagem de formulários preenchidos
+    var percentualPreenchido = totalPontos > 0 ? (pontosPreenchidos / totalPontos * 100) : 0;
+
+    // Atualiza a barra de progresso e o texto
+    document.addEventListener('DOMContentLoaded', function() {
+        // Seleciona as barras de progresso especificamente
+        const progressBarChecklist = document.querySelector('.status-item:nth-child(2) .progress-bar');
+        const progressBarFormularios = document.querySelector('.status-item:nth-child(3) .progress-bar');
+        
+        // Atualiza o texto do progresso dos formulários
+        const badgeFormularios = document.querySelector('.status-item:nth-child(3) .badge');
+        const textoFormularios = document.querySelector('.status-item:nth-child(3) .text-muted');
+        
+        if (badgeFormularios && textoFormularios) {
+            badgeFormularios.textContent = percentualPreenchido.toFixed(1) + '%';
+            textoFormularios.textContent = `${pontosPreenchidos} de ${totalPontos} estações amostrais preenchidas`;
+        }
+        
+        // Aguarda um momento para iniciar a animação
+        setTimeout(() => {
+            if (progressBarChecklist) {
+                progressBarChecklist.style.width = parseFloat({{ percentual_checklist }}).toFixed(1) + '%';
+            }
+            if (progressBarFormularios) {
+                progressBarFormularios.style.width = percentualPreenchido.toFixed(1) + '%';
+            }
+        }, 300);
+    });
 </script>
 {% endblock %}

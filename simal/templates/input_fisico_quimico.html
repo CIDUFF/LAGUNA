@@ -1,80 +1,226 @@
 {% extends 'base/base_site.html' %}
 {% load crispy_forms_tags %}
-{% block title %}Formulario Físico-Químico{% endblock %}
+{% block title %}Formulário Físico-Químico{% endblock %}
 {% block content %}
 {% if user.is_authenticated %}
-<div class="card checklist">
-    <div class="card-header">
-        <h2>Formulário de Coleta</h2>
-        <div class="row">
-            <div class="col-md-6">
-                <div class="mb-2">
-                    <strong>Setor:</strong> {{ coleta.id_setor }}
-                </div>
-                <div class="mb-2">
-                    <strong>Ponto:</strong> {{ponto}}
-                    
-                </div>
-                <div class="mb-2">
-                    <strong>OS:</strong> {{coleta.ordem_servico}}
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="mb-2">
-                    <strong>Data da coleta:</strong> {{ coleta.data|date:"d/m/Y" }}
-                </div>
-                <div class="mb-2">
-                    <strong>Criada em:</strong> {{ coleta.criado_em|date:"d/m/Y" }}
-                </div>
-                <div class="mb-2">
-                    <strong>Responsável:</strong> {{coleta.criado_por}}
-                </div>
+<div class="container mt-4">
+    <div class="row mb-3 mb-md-4">
+        <div class="col">
+            <div class="d-flex align-items-center">
+                <h1 class="display-6 display-md-5 mb-0">
+                    <i class="bi bi-clipboard-data text-primary"></i> Formulário Físico-Químico
+                </h1>
             </div>
         </div>
     </div>
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}  <!-- Garantir que está presente -->
-        {{ formset.management_form|crispy }}
-        {% for form in formset %}
-            {% if forloop.first %}
-                <div class="inlineform">
-                    {% crispy form %}
+
+    <div class="row g-3 g-md-4">
+        <!-- Card de Informações -->
+        <div class="col-12 col-md-4">
+            <div class="card border-0 rounded-4 shadow-sm hover-shadow">
+                <div class="card-header bg-gradient border-0 rounded-top-4" style="background-color: #4361ee;">
+                    <h5 class="card-title mb-0 text-white">
+                        <i class="bi bi-info-circle-fill me-2"></i>Informações da Coleta
+                    </h5>
                 </div>
-            {% endif %}
-        {% endfor %}
-                
-        <div class="form-group">
-            <label for="anexo">Anexo</label>
-            {% if anexo_existente %}
-                <p>Anexo atual: <a href="{{ anexo_existente.anexo.url }}" target="_blank">{{ anexo_existente.anexo.name }}</a></p>
-            {% endif %}
-            <input type="file" name="anexo" id="anexo" class="form-control">
-            
-            <label for="observacao_anexo" class="mt-2">Observação do Anexo</label>
-            <textarea name="observacao_anexo" id="observacao_anexo" class="form-control">
-                {% if anexo_existente %}
-                {{ anexo_existente.observacao }}
-                {% endif %}</textarea>
+                <div class="card-body p-3 p-md-4">
+                    <div class="d-flex flex-column gap-3">
+                        <div class="d-flex align-items-center">
+                            <div class="rounded-circle bg-light p-2 me-3">
+                                <i class="bi bi-map text-primary"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted">Setor</small>
+                                <p class="mb-0 fw-bold">{{ coleta.id_setor }}</p>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <div class="rounded-circle bg-light p-2 me-3">
+                                <i class="bi bi-geo-alt text-primary"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted">Ponto</small>
+                                <p class="mb-0 fw-bold">{{ ponto }}</p>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <div class="rounded-circle bg-light p-2 me-3">
+                                <i class="bi bi-hash text-primary"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted">Ordem de Serviço</small>
+                                <p class="mb-0 fw-bold">{{ coleta.ordem_servico }}</p>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <div class="rounded-circle bg-light p-2 me-3">
+                                <i class="bi bi-calendar-event text-primary"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted">Data da Coleta</small>
+                                <p class="mb-0 fw-bold">{{ coleta.data|date:"d/m/Y" }}</p>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <div class="rounded-circle bg-light p-2 me-3">
+                                <i class="bi bi-person text-primary"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted">Responsável</small>
+                                <p class="mb-0 fw-bold">{{ coleta.criado_por }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <button type="submit" class="btn btn-primary">Salvar</button>
-    </form>
+        <!-- Card do Formulário -->
+        <div class="col-12 col-md-8">
+            <div class="card border-0 rounded-4 shadow-sm hover-shadow">
+                <div class="card-header bg-gradient border-0 rounded-top-4" style="background-color: #4895ef;">
+                    <h5 class="card-title mb-0 text-white">
+                        <i class="bi bi-input-cursor-text me-2"></i>Dados da Análise
+                    </h5>
+                </div>
+                <div class="card-body p-3 p-md-4">
+                    <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        {{ formset.management_form|crispy }}
+                        {% for form in formset %}
+                            {% if forloop.first %}
+                                <div class="inlineform">
+                                    {% crispy form %}
+                                </div>
+                            {% endif %}
+                        {% endfor %}
 
-    <div class="mt-3">
-        {% if proximo_ponto %}
-            <a href="{% url 'input_fisico_quimico' coleta.id proximo_ponto.id %}" class="btn btn-secondary">Voltar para o ponto anterior</a>
-        {% else %}
-            <a href="{% url 'lista_campo' coleta.id %}" class="btn btn-secondary">Voltar para a lista de campo</a>
-        {% endif %}
+                        <div class="card mt-3 mt-md-4 border-0 bg-light rounded-4">
+                            <div class="card-body p-3">
+                                <h6 class="mb-3">
+                                    <i class="bi bi-paperclip me-2"></i>Anexos e Observações
+                                </h6>
+                                <div class="mb-3">
+                                    <label for="anexo" class="form-label">Arquivo Anexo</label>
+                                    {% if anexo_existente %}
+                                        <div class="alert alert-info d-flex align-items-center">
+                                            <i class="bi bi-file-earmark me-2"></i>
+                                            <a href="{{ anexo_existente.anexo.url }}" target="_blank" class="text-decoration-none">
+                                                {{ anexo_existente.anexo.name }}
+                                            </a>
+                                        </div>
+                                    {% endif %}
+                                    <input type="file" name="anexo" id="anexo" class="form-control">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="observacao_anexo" class="form-label">Observações</label>
+                                    <textarea name="observacao_anexo" id="observacao_anexo" 
+                                              class="form-control" rows="3">{% if anexo_existente %}{{ anexo_existente.observacao }}{% endif %}</textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex flex-column flex-md-row gap-3 mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg rounded-pill w-100 w-md-auto">
+                                <i class="bi bi-check-circle me-2"></i>Salvar
+                            </button>
+                            {% if proximo_ponto %}
+                                <a href="{% url 'input_fisico_quimico' coleta.id proximo_ponto.id %}" 
+                                   class="btn btn-secondary btn-lg rounded-pill w-100 w-md-auto">
+                                    <i class="bi bi-arrow-left me-2"></i>Ponto Anterior
+                                </a>
+                            {% else %}
+                                <a href="{% url 'lista_campo' coleta.id %}" 
+                                   class="btn btn-secondary btn-lg rounded-pill w-100 w-md-auto">
+                                    <i class="bi bi-list-check me-2"></i>Lista de Campo
+                                </a>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+
+<style>
+.hover-shadow {
+    transition: all 0.3s ease;
+}
+.hover-shadow:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+@media (max-width: 768px) {
+    .card {
+        margin-bottom: 1rem;
+    }
+    
+    .form-control, .form-select {
+        font-size: 16px; /* Evita zoom em inputs no iOS */
+    }
+    
+    .btn {
+        padding: 0.8rem 1.5rem;
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    
+    .display-6 {
+        font-size: 1.5rem;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+}
+
+/* Melhoria no touch target para dispositivos móveis */
+@media (hover: none) {
+    .btn, 
+    .form-control,
+    .form-select {
+        min-height: 44px;
+    }
+    
+    .dropdown-item {
+        padding-top: 0.75rem;
+        padding-bottom: 0.75rem;
+    }
+}
+</style>
+
+<script>
+// Adicionar validação de formulário
+document.addEventListener('DOMContentLoaded', function() {
+    const forms = document.querySelectorAll('.needs-validation');
+    
+    Array.from(forms).forEach(form => {
+        form.addEventListener('submit', event => {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        }, false);
+    });
+});
+</script>
+
 {% else %}
-    <div class="container mt-5">
-        <h1 class="text-center">Olá, visitante</h1>
-        <p class="text-center">Faça login para visualizar o sistema</p>
-        <div class="d-flex justify-content-center">
-            <a href="{% url 'account_login' %}" class="btn btn-primary">Clique aqui para logar</a>
+<div class="container mt-5">
+    <div class="card border-0 rounded-4 shadow-sm p-5 text-center">
+        <i class="bi bi-person-lock display-1 text-primary mb-3"></i>
+        <h1>Olá, visitante</h1>
+        <p class="lead mb-4">Faça login para acessar o sistema</p>
+        <div>
+            <a href="{% url 'account_login' %}" class="btn btn-primary btn-lg rounded-pill">
+                <i class="bi bi-box-arrow-in-right me-2"></i>Entrar no Sistema
+            </a>
         </div>
     </div>
+</div>
 {% endif %}
 {% endblock %}
