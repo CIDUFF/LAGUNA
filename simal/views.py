@@ -28,6 +28,7 @@ from django.utils import timezone
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
 from django.http import JsonResponse
+from django.core.serializers.json import DjangoJSONEncoder
 
 
 from django_tables2 import RequestConfig
@@ -200,7 +201,7 @@ def home(request):
         weather_description_two_days_before = None
         gantt_div = None
 
-        if proxima_coleta:
+        if (proxima_coleta):
             percentual_checklist = (
                 ChecklistCampo.objects.filter(ordem_servico=proxima_coleta.id)
                 .values_list("progresso", flat=True)
@@ -357,7 +358,7 @@ def home(request):
 
             # Adiciona bolinhas para tarefas com duração zero
             for i, row in df.iterrows():
-                if row["Duracao"] == 0:
+                if (row["Duracao"] == 0):
                     fig.add_scatter(
                         x=[row["Inicio"]],
                         y=[row["Tarefa"]],
@@ -1064,11 +1065,9 @@ def calendario_campanhas(request):
     for campanha in campanhas:
         eventos.append(
             {
-                # Substitua 'id' por um campo existente apropriado
                 "title": campanha.ordem_servico,
                 "start": campanha.data_coleta_campo.isoformat(),
                 "end": campanha.data_coleta_campo.isoformat(),
-                # URL corrigida para detalhes da campanha
                 "url": f"/checklist_campanha/{campanha.ordem_servico}/",
             }
         )
@@ -1955,9 +1954,8 @@ def info_coleta(request, coleta_id):
 
         # Data de criação da coleta
         data_criacao = coleta.criado_em
-        
+
         link_sistema = f"{settings.SITE_URL}/info_coleta/{coleta_id}"
-        
 
         hoje = datetime.today()
         if data_coleta < hoje:
@@ -1965,7 +1963,6 @@ def info_coleta(request, coleta_id):
         else:
             mensagem = f"Será realizada uma nova coleta para a data de {data_coleta.strftime('%d/%m/%Y')} em {coleta.id_setor}, com a ordem de serviço {coleta.ordem_servico}. \n\nObservação: {coleta.observacao}.\n\nLink para acesso: {link_sistema}"
 
-        
         encoded_message = urllib.parse.quote(mensagem)
         link = f"https://wa.me/?text={encoded_message}"
 
@@ -1980,13 +1977,44 @@ def info_coleta(request, coleta_id):
         )
 
         # Cálculo do percentual do checklist
-        total_items = TabChecklistColeta.objects.filter(id_coleta=coleta).count()
+        total_items = TabChecklistColeta.objects.filter(
+            id_coleta=coleta).count()
         items_preenchidos = TabChecklistColeta.objects.filter(
             id_coleta=coleta, status=True
         ).count()
         percentual_checklist = (
             (items_preenchidos / total_items) * 100 if total_items > 0 else 0
         )
+
+        # Obter pontos de coleta e verificar preenchimento do formulário
+        pontos_coleta = []
+        pontos = TabPonto.objects.filter(id_setor=coleta.id_setor)
+        
+        for ponto in pontos:
+            # Verifica se existe uma amostra para este ponto e coleta
+            amostra = TabAmostra.objects.filter(
+                id_coleta=coleta,
+                id_ponto=ponto,
+                id_frasco=1  # Apenas frasco 1
+            ).first()
+            
+            formulario_preenchido = False
+            if amostra:
+                # Verifica se existe medida preenchida
+                medida = TabMedida.objects.filter(
+                    id_envio__id_amostra=amostra,
+                ).first()
+                formulario_preenchido = medida and medida.input_valor is not None
+
+            pontos_coleta.append({
+                'nome': ponto.nome,
+                'lat': ponto.lat,
+                'lon': ponto.lon,
+                'status': ponto.status,
+                'formulario_preenchido': formulario_preenchido
+            })
+
+        pontos_coleta_json = json.dumps(pontos_coleta, cls=DjangoJSONEncoder)
 
         context = {
             "coleta": coleta.id,
@@ -1998,6 +2026,7 @@ def info_coleta(request, coleta_id):
             "previsao_tempo": previsao_tempo,
             "percentual_checklist": percentual_checklist,
             "link": link,
+            "pontos_coleta": pontos_coleta_json,
         }
 
         return render(request, "info_coleta.html", context)
@@ -2094,6 +2123,7 @@ def input_fisico_quimico(request, coleta_id, ponto_id):
     )
 
 
+
 # TODO: Implementar a view de input_lab
 @login_required
 def input_lab(request, coleta_id):
@@ -2188,7 +2218,7 @@ def aplicar_acao(request):
         acao = request.POST.get("acao")
         selecionados = request.POST.getlist("selecionar")
 
-        if acao and selecionados:
+        if acao and selecionados:  # Corrigido de 'e' para 'and'
             if acao == "editar":
                 return redirect("update_coleta", id=selecionados[0])
             elif acao == "detalhes":
