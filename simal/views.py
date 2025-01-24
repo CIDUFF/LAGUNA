@@ -1992,9 +1992,7 @@ def info_coleta(request, coleta_id):
         items_preenchidos = TabChecklistColeta.objects.filter(
             id_coleta=coleta, status=True
         ).count()
-        percentual_checklist = (
-            (items_preenchidos / total_items) * 100 if total_items > 0 else 0
-        )
+        percentual_checklist = float((items_preenchidos / total_items) * 100) if total_items > 0 else 0.0
 
         # Obter pontos de coleta e verificar preenchimento do formulário
         pontos_coleta = []
