@@ -1,0 +1,669 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap");
+
+/* Variáveis de cores */
+:root {
+  --primary-color: #ffffff; /* Define a cor primária do site */
+  --secondary-color: #5783b6; /* Define a cor secundária do site */
+  --tertiary-color: #000000; /* Define a cor terciária do site */
+  --quaternary-color: #9197b3; /* Define a cor quaternária do site */
+}
+
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap");
+
+/* Estilos gerais */
+body {
+  margin: 10px 10px 20px; /* Define as margens do corpo do site */
+}
+
+form {
+  width: 100%; /* Define a largura dos formulários para ocupar toda a largura disponível */
+}
+
+.main-content {
+  margin-top: 20px; /* Define a margem superior do conteúdo principal */
+}
+
+/* Estilos de cores primárias */
+.fas,
+.btn-custom,
+.btn {
+  color: var(
+    --primary-color
+  ); /* Define a cor do texto dos elementos h1, legend, .fas, .btn-custom e .btn para a cor primária */
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+legend {
+  color: var(
+    --tertiary-color
+  ) !important; /* Define a cor do texto dos títulos h1, h2, h3, h4, h5 e h6 para a cor primária */
+}
+
+/* paginacao */
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  padding: 1em 0;
+}
+
+.pagination a {
+  color: var(--primary-color);
+  background-color: #9197b3;
+  float: left;
+  padding: 8px 16px;
+  text-decoration: non e;
+  transition: background-color 0.3s;
+  border: 1px solid var(--primary-color);
+  margin: 0 4px;
+  border-radius: 5px; /* Adiciona cantos arredondados */
+}
+
+.pagination a.active {
+  background-color: var(--primary-color);
+  color: white;
+  border: 1px solid var(--primary-color);
+  border-radius: 5px; /* Adiciona cantos arredondados */
+}
+
+.pagination a:hover:not(.active) {
+  background-color: #ddd;
+}
+
+/* Estilos de botões */
+.btn-custom,
+.btn {
+  background-color: var(
+    --primary-color
+  ); /* Define a cor de fundo dos botões para a cor primária */
+  border-color: var(
+    --primary-color
+  ); /* Define a cor da borda dos botões para a cor primária */
+  color: white; /* Define a cor do texto dos botões para branco */
+}
+
+.btn-custom:hover,
+.btn-custom:focus,
+.btn-custom:active,
+.btn-custom:visited,
+.btn:hover,
+.btn:focus,
+.btn:active,
+.btn:visited {
+  background-color: var(
+    --secondary-color
+  ); /* Define a cor de fundo dos botões quando o mouse passa sobre eles, quando estão focados, ativos ou visitados para a cor secundária */
+  border-color: var(
+    --secondary-color
+  ); /* Define a cor da borda dos botões quando o mouse passa sobre eles, quando estão focados, ativos ou visitados para a cor secundária */
+  color: white; /* Define a cor do texto dos botões quando o mouse passa sobre eles, quando estão focados, ativos ou visitados para branco */
+  text-decoration-color: aliceblue; /* Define a cor da decoração do texto dos botões quando o mouse passa sobre eles, quando estão focados, ativos ou visitados para aliceblue */
+}
+
+/* Estilos de navegação */
+.nav-link {
+  color: white !important; /* Define a cor do texto dos links de navegação para branco */
+}
+
+.nav-link:hover {
+  transform: translateY(
+    -5px
+  ); /* Move os links de navegação 3 pixels para cima quando o mouse passa sobre eles */
+  transition: all 0.2s ease-in-out; /* Adiciona uma animação suave à transformação dos links de navegação quando o mouse passa sobre eles */
+}
+
+footer {
+  background-color: var(
+    --primary-color
+  ) !important; /* Define a cor de fundo do rodapé para a cor primária */
+  color: white !important; /* Define a cor do texto do rodapé para branco */
+}
+
+.navbar-toggler {
+  border-color: white !important; /* Define a cor de fundo do botão de alternância da barra de navegação para a cor primária */
+}
+.dropdown-menu {
+  background-color: var(
+    --primary-color
+  ) !important; /* Define a cor de fundo do menu suspenso para a cor primária */
+  color: white !important; /* Define a cor do texto do menu suspenso para branco */
+}
+
+/* Estilos de formulários */
+
+label {
+  color: var(
+    --tertiary-color
+  ) !important; /* Define a cor do texto das etiquetas para a cor primária */
+  font-weight: bold; /* Define o peso da fonte das etiquetas para negrito */
+  font-size: medium;
+}
+
+.form-control {
+  color: var(
+    --tertiary-color
+  ) !important; /* Define a cor do texto dos controles para a cor primária */
+  text-align: left; /* Centraliza o texto nos controles */
+}
+
+.table-container::-webkit-scrollbar {
+  width: 30px; /* Ajuste a espessura da barra de rolagem vertical */
+  height: 30px; /* Ajuste a espessura da barra de rolagem horizontal */
+}
+
+.table-container::-webkit-scrollbar-track {
+  background: #f1f1f1; /* Cor de fundo da barra de rolagem */
+}
+
+.table-container::-webkit-scrollbar-thumb {
+  background: #888; /* Cor da barra de rolagem */
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+  background: #555; /* Cor da barra de rolagem ao passar o mouse */
+}
+
+.table-container {
+  overflow-x: auto;
+}
+
+table {
+  min-width: 100%; /* Ajuste este valor conforme necessário */
+  /* outros estilos da tabela */
+}
+
+/* sidebar */
+
+::after,
+::before {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+a {
+  text-decoration: none;
+}
+
+li {
+  list-style: none;
+}
+
+h1 {
+  font-weight: 600;
+  font-size: 1.5rem;
+}
+
+body {
+  font-family: "Poppins", sans-serif !important;
+}
+
+.wrapper {
+  display: flex;
+}
+
+.main {
+  min-height: 100vh;
+  width: 100%;
+  overflow: hidden;
+  transition: all 0.35s ease-in-out;
+  background-color: #fafbfe;
+}
+
+#sidebar {
+  width: 70px;
+  min-width: 70px;
+  z-index: 1000;
+  transition: all 0.25s ease-in-out;
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+}
+
+#sidebar.expand {
+  width: 17.5rem;
+  min-width: 17.5rem;
+}
+
+.toggle-btn {
+  background-color: transparent;
+  cursor: pointer;
+  border: 0;
+  padding: 1rem 1.5rem;
+}
+
+.toggle-btn i {
+  font-size: 1.5rem;
+  color: #fff;
+}
+
+.sidebar-logo {
+  margin: auto 0;
+}
+
+.sidebar-logo a {
+  color: #fff;
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+#sidebar:not(.expand) .sidebar-logo,
+#sidebar:not(.expand) a.sidebar-link span {
+  display: none;
+}
+
+.sidebar-nav {
+  padding: 2rem 0;
+  flex: 1 1 auto;
+}
+
+a.sidebar-link {
+  padding: 0.625rem 1.625rem;
+  color: #fff;
+  display: block;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  border-left: 3px solid transparent;
+}
+
+.sidebar-link i {
+  font-size: 1.1rem;
+  margin-right: 0.75rem;
+}
+
+a.sidebar-link:hover {
+  background-color: rgba(255, 255, 255, 0.075);
+  border-left: 3px solid var(--primary-color);
+}
+
+.sidebar-item {
+  position: relative;
+  text-decoration: none;
+}
+
+#sidebar:not(.expand) .sidebar-item .sidebar-dropdown {
+  position: absolute;
+  top: 0;
+  left: 70px;
+  width: 200%;
+  background-color: #ffffffc7;
+  border-radius: 10px;
+  min-width: 16rem;
+  display: none;
+}
+
+#sidebar:not(.expand) .sidebar-item:hover .has-dropdown + .sidebar-dropdown {
+  display: inline;
+  max-height: 15em;
+  width: 100%;
+  opacity: 1;
+}
+
+#sidebar:not(.expand)
+  .sidebar-item:hover
+  .has-dropdown
+  + .sidebar-dropdown
+  .sidebar-link
+  span {
+  display: inline;
+}
+
+.list-unstyled {
+  padding-left: 5rem; /* Add a padding-left to create a small indentation */
+}
+
+#sidebar.expand .sidebar-link[data-bs-toggle="collapse"]::after {
+  border: solid;
+  border-width: 0 0.075rem 0.075rem 0;
+  content: "";
+  display: inline-block;
+  padding: 2px;
+  position: absolute;
+  right: 1.5rem;
+  top: 1.4rem;
+  transform: rotate(45deg);
+  transition: all 0.2s ease-out;
+}
+
+#sidebar.expand .sidebar-link[data-bs-toggle="collapse"].collapsed::after {
+  transform: rotate(-45deg);
+  transition: all 0.2s ease-out;
+}
+
+#sidebar.expand .sidebar-dropdown {
+  padding-left: 1rem;
+}
+
+.sidebar-dropdown {
+  padding-left: 1rem;
+}
+
+.menu-itens {
+  max-height: 100vh; /* Define a altura máxima do contêiner */
+  overflow-y: auto; /* Permite a rolagem vertical */
+}
+
+.sidebar-link {
+  text-decoration: none;
+}
+
+.authentication {
+  position: relative;
+  margin-top: 10rem;
+  display: flex;
+  flex-direction: column; /* Organiza os itens em uma coluna */
+  gap: 1.5rem !important; /* Adiciona um espaçamento mínimo entre os itens */
+}
+
+.navigation-icons {
+  display: flex;
+  flex-direction: column; /* Organiza os itens em uma coluna */
+  display: flex; /* Organiza os itens em uma linha */
+  gap: 1.2rem; /* Adiciona um espaçamento mínimo entre os itens */
+}
+
+#sidebar a,
+#sidebar i {
+  color: #9197b3;
+}
+
+.img-larger {
+  transform: scale(2.5); /* Ajuste o valor conforme necessário */
+  margin-top: 2rem;
+  margin-bottom: 1.5rem;
+  margin-left: 2rem;
+}
+
+.card {
+  background-color: #ffffff;
+  border-radius: 1.5rem !important;
+  box-shadow: 0 1rem 1rem 0 rgba(0, 0, 0, 0.1); /* Ajuste a sombra para aparecer apenas na parte inferior */
+  padding: 0.5rem;
+}
+
+.small-card {
+  background-color: #ffffff !important;
+  border: none !important; /* Remove a borda */
+  box-shadow: 0 1rem 1rem 0 rgba(0, 0, 0, 0.1) !important; /* Remove a sombra */
+  /* padding: 0.5rem !important; */
+  outline: none !important; /* Remove o contorno */
+  margin-bottom: 1rem !important; /* Adicione esta linha para diminuir a margem inferior */
+  height: 10rem !important;
+  margin: 0.5rem;
+}
+
+.card-title {
+  font-size: 1rem !important;
+  color: #9197b3 !important;
+  font-weight: 300;
+  padding-left: 1rem !important;
+  margin-bottom: 0rem !important; /* Adicione esta linha para diminuir a margem inferior */
+}
+
+.card-text {
+  font-size: 2rem !important;
+  font-weight: 500;
+  color: #000000 !important;
+  padding-left: 1rem !important;
+  margin-top: 0rem !important; /* Adicione esta linha para diminuir a margem superior */
+  margin-bottom: 0rem !important; /* Adicione esta linha para diminuir a margem inferior */
+}
+
+.card-desc {
+  font-size: 1rem !important;
+  color: #9197b3 !important;
+  font-weight: 300;
+  padding-left: 2rem !important;
+}
+
+.home-title {
+  font-size: 2rem !important;
+  font-weight: 300;
+  color: #000000 !important;
+  padding-left: 2rem;
+  margin-top: 0rem !important; /* Adicione esta linha para diminuir a margem superior */
+  font-family: "Poppins", sans-serif !important;
+}
+
+.card.cronograma {
+  background-color: #ffffff;
+  border-radius: 1.5rem !important;
+  box-shadow: 0 1rem 1rem 0 rgba(0, 0, 0, 0.1); /* Ajuste a sombra para aparecer apenas na parte inferior */
+  padding: 0.5rem;
+  margin: 1rem !important;
+  width: 50% !important;
+  margin-top: 2rem !important;
+}
+.card.calendario {
+  background-color: #ffffff;
+  border-radius: 1.5rem !important;
+  box-shadow: 0 1rem 1rem 0 rgba(0, 0, 0, 0.1); /* Ajuste a sombra para aparecer apenas na parte inferior */
+  padding: 0.5rem;
+  margin: 1rem !important;
+  margin-top: 2rem !important;
+  width: 50% !important;
+}
+.card.campanha {
+  background-color: #ffffff;
+  border-radius: 1.5rem !important;
+  box-shadow: 0 1rem 1rem 0 rgba(0, 0, 0, 0.1); /* Ajuste a sombra para aparecer apenas na parte inferior */
+  padding: 0.5rem;
+  margin: 1rem !important;
+  margin-top: 1rem !important;
+}
+
+.container-campanha {
+  display: flex;
+  justify-content: space-between;
+}
+
+.title-campanha {
+  font-size: 1.5em !important;
+  font-weight: 500;
+  color: #000000 !important;
+  text-align: center !important;
+  padding-left: 2rem;
+  margin-top: 1rem !important; /* Adicione esta linha para diminuir a margem superior */
+  margin-bottom: 1rem !important; /* Adicione esta linha para diminuir a margem inferior */
+}
+
+.subtitulo-campanha {
+  font-size: 1rem !important;
+  color: #9197b3 !important;
+  font-weight: 300;
+  padding-left: 1rem;
+  text-align: center !important;
+  margin-bottom: 0rem !important; /* Adicione esta linha para diminuir a margem inferior */
+}
+
+/*Estilos para a tela de Ajuda*/
+.card.faq {
+  margin-top: 20px;
+}
+
+.faq-item {
+  border-bottom: 1px solid #eee;
+  padding: 10px 0;
+}
+
+.card.faq-question {
+  cursor: pointer;
+  color: #000000;
+  font-weight: 500;
+  padding: 30px;
+}
+
+.faq-answer {
+  display: none;
+  padding: 10px 0;
+  color: #6e6e6e;
+}
+
+.card.help-section {
+  background-color: #f8e4e4;
+  padding: 20px;
+  margin-top: 20px;
+  border-radius: 5px;
+}
+
+.help-section h2 {
+  color: #333;
+}
+
+.help-section textarea {
+  width: 100%;
+  height: 100px;
+  margin-bottom: 10px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.help-section button {
+  background-color: #0d6efd;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.help-section button:hover {
+  background-color: #0b5ed7;
+}
+
+.last-updated {
+  text-align: right;
+  color: #999;
+}
+
+.footer {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 0.9em;
+  color: #666;
+}
+
+.card.checklist {
+  background-color: #ffffff;
+  border-radius: 1.5rem !important;
+  box-shadow: 0 1rem 1rem 0 rgba(0, 0, 0, 0.1); /* Ajuste a sombra para aparecer apenas na parte inferior */
+  padding: 2rem;
+  margin: 1rem !important;
+  margin-top: 1rem !important;
+}
+
+.card.form-checklist {
+  background-color: #ffffff !important;
+  border-width: thin !important;
+  border-color: #b0b0b0 !important;
+  border-radius: 0.5rem !important;
+  box-shadow: 0 1rem 1rem 0 rgba(0, 0, 0, 0.1); /* Ajuste a sombra para aparecer apenas na parte inferior */
+  padding: 2rem;
+  margin: 1rem !important;
+  margin-top: 1rem !important;
+}
+
+.btn-campanha {
+  background-color: #0d6efd !important;
+  display: inline-block !important;
+  color: white !important;
+  padding: 10px 20px !important;
+  border: none !important;
+  border-radius: 5px !important;
+  cursor: pointer !important;
+}
+.btn-campanha:hover {
+  background-color: #0b5ed7 !important;
+}
+
+.lista-campanha {
+  display: block !important;
+  position: absolute !important;
+  cursor: pointer !important;
+}
+
+.filtro {
+  width: 30%;
+}
+
+.container-coleta {
+  display: flex;
+  justify-content: space-between;
+}
+
+.form-floating {
+  margin: 1rem !important;
+}
+
+.btn btn-outline-primary btn-sm:hover {
+  color: white !important;
+}
+
+.calendar-container {
+  width: 30% !important; /* Ajuste a largura conforme necessário */
+  height: 50vh !important; /* Ajuste a altura conforme necessário */
+  margin: 0 auto; /* Centraliza o calendário horizontalmente */
+}
+
+.nav-link-checklist {
+  background-color: #ffcccc; /* Cor para a aba Checklist */
+}
+.nav-link-form {
+  background-color: #ccffcc; /* Cor para a aba Formulário */
+}
+.nav-link-checklist.active {
+  background-color: #ff9999; /* Cor para a aba Checklist ativa */
+}
+.nav-link-form.active {
+  background-color: #99ff99; /* Cor para a aba Formulário ativa */
+}
+.nav-link-checklist:not(.active) {
+  background-color: #ffcccc; /* Cor para a aba Checklist inativa */
+}
+.nav-link-form:not(.active) {
+  background-color: #ccffcc; /* Cor para a aba Formulário inativa */
+}
+
+.true {
+  color: rgb(137, 218, 15) !important;
+}
+
+.form-check-input {
+  width: 2em;
+  height: 1em;
+  background-color: #ddd;
+  border-radius: 1em;
+  position: relative;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  outline: none;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.form-check-input:checked {
+  background-color: #0d6efd;
+}
+
+.form-check-input::before {
+  content: "";
+  position: absolute;
+  top: 0.1em;
+  left: 0.1em;
+  width: 0.8em;
+  height: 0.8em;
+  background-color: #fff;
+  border-radius: 50%;
+  transition: transform 0.3s;
+}
+
+.form-check-input:checked::before {
+  transform: translateX(1em);
+}
