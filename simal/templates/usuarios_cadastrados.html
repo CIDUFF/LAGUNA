@@ -1,51 +1,143 @@
 {% extends 'base/base_site.html' %}
 {% load django_bootstrap5 %}
-{% block title %} Usuários Cadastrados {% endblock %}
+{% block title %}Usuários Cadastrados{% endblock %}
 {% block content %}
 {% if user.is_authenticated %}
-<div class="container mt-5">
-    <h1 class="text-center">Usuários Cadastrados</h1>
-
-    <div class="card">
-            <div class="d-flex justify-content-begin m-3">
-        <a href="{% url 'cadastro_usuarios_adm' %}" class="btn btn-success">Cadastrar Novo Usuário</a>
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col">
+            <div class="d-flex align-items-center">
+                <h1 class="display-5 mb-0">
+                    <i class="bi bi-people-fill text-primary"></i> Usuários Cadastrados
+                </h1>
+            </div>
+        </div>
     </div>
-        <div class="card-body">
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Nome de Usuário</th>
-                        <th>Email</th>
-                        <th>Data de Criação</th>
-                        <th>Equipe</th>
-                        <th>Ações</th> <!-- Adiciona a coluna Ações -->
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for usuario in usuarios %}
-                    <tr>
-                        <td>{{ usuario.id }}</td>
-                        <td>{{ usuario.username }}</td>
-                        <td>{{ usuario.email }}</td>
-                        <td>{{ usuario.date_joined }}</td>
-                        <td>{{ usuario.groups.all|join:", " }}</td>
-                        <td>
-                            <a href="{% url 'editar_usuario' usuario.id %}" class="btn btn-warning btn-sm">Editar</a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 rounded-4 shadow-sm hover-shadow">
+                <div class="card-header bg-gradient border-0 rounded-top-4" style="background-color: #4361ee;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0 text-white">
+                            <i class="bi bi-person-lines-fill me-2"></i>Lista de Usuários
+                        </h5>
+                        <a href="{% url 'cadastro_usuarios_adm' %}" class="btn btn-light btn-sm rounded-pill">
+                            <i class="bi bi-person-plus-fill me-2"></i>Novo Usuário
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nome de Usuário</th>
+                                    <th>Email</th>
+                                    <th>Data de Criação</th>
+                                    <th>Equipe</th>
+                                    <th class="text-center">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for usuario in usuarios %}
+                                <tr>
+                                    <td>{{ usuario.id }}</td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-person-circle me-2 text-primary"></i>
+                                            {{ usuario.username }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-envelope me-2 text-primary"></i>
+                                            {{ usuario.email }}
+                                        </div>
+                                    </td>
+                                    <td>{{ usuario.date_joined|date:"d/m/Y" }}</td>
+                                    <td>{{ usuario.groups.all|join:", " }}</td>
+                                    <td class="text-center">
+                                        <a href="{% url 'editar_usuario' usuario.id %}" 
+                                           class="btn btn-sm btn-outline-primary rounded-pill">
+                                            <i class="bi bi-pencil-square me-1"></i>Editar
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
+<style>
+.hover-shadow {
+    transition: all 0.3s ease;
+}
+.hover-shadow:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+.table {
+    margin-bottom: 0;
+}
+
+.table th {
+    background-color: #f8f9fa;
+    border-top: none;
+    padding: 1rem;
+}
+
+.table td {
+    padding: 1rem;
+    vertical-align: middle;
+}
+
+@media (max-width: 768px) {
+    .display-5 {
+        font-size: 1.5rem;
+    }
+    
+    .table {
+        font-size: 0.9rem;
+    }
+    
+    .table td, .table th {
+        padding: 0.75rem;
+    }
+    
+    .btn-sm {
+        width: auto;
+        padding: 0.25rem 0.5rem;
+    }
+    
+    .card-body {
+        padding: 0;
+    }
+    
+    .container {
+        padding-bottom: 2rem;
+    }
+}
+</style>
+
 {% else %}
 <div class="container mt-5">
-    <h1 class="text-center">Olá, visitante</h1>
-    <p class="text-center">Faça login para visualizar o sistema</p>
-    <div class="d-flex justify-content-center">
-        <a href="{% url 'account_login' %}" class="btn btn-primary">Clique aqui para logar</a>
+    <div class="card border-0 rounded-4 shadow-sm p-5 text-center">
+        <i class="bi bi-person-lock display-1 text-primary mb-3"></i>
+        <h1>Olá, visitante</h1>
+        <p class="lead mb-4">Faça login para visualizar o sistema</p>
+        <div>
+            <a href="{% url 'account_login' %}" class="btn btn-primary btn-lg rounded-pill">
+                <i class="bi bi-box-arrow-in-right me-2"></i>Entrar no Sistema
+            </a>
+        </div>
     </div>
 </div>
 {% endif %}

@@ -55,6 +55,12 @@
                             </div>
                         </div>
                     </div>
+                    <!-- Botão Voltar movido para aqui -->
+                    <div class="mt-4">
+                        <a href="{% url 'info_coleta' coleta.id %}" class="btn btn-secondary w-100 rounded-pill">
+                            <i class="bi bi-arrow-left me-2"></i>Voltar
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -76,11 +82,12 @@
         </div>
     </div>
 
-    <div class="mt-4">
+    <!-- Remover esta div que continha o botão originalmente -->
+    <!-- <div class="mt-4">
         <a href="{% url 'info_coleta' coleta.id %}" class="btn btn-secondary btn-lg rounded-pill">
             <i class="bi bi-arrow-left me-2"></i>Voltar
         </a>
-    </div>
+    </div> -->
 </div>
 
 <style>

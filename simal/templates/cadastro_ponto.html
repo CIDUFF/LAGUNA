@@ -1,24 +1,153 @@
 {% extends 'base/base_site.html' %}
 {% load crispy_forms_tags %}
-{% block title %} Cadastro de Pontos {% endblock %}
+{% block title %}Cadastro de Pontos{% endblock %}
 {% block content %}
 {% if user.is_authenticated %}
-<div class="card checklist">
-    <div class="card-header">
-        <h3 class="text-center mb-3">Cadastro de Pontos</h3>
-    </div>
-    <form method="post">
-        {% csrf_token %}
-        {% crispy form %}
-    </form>
-</div>
-{% else %}
-    <div class="container mt-5">
-        <h1 class="text-center">Olá, visitante</h1>
-        <p class="text-center">Faça login para visualizar o sistema</p>
-        <div class="d-flex justify-content-center">
-        <a href="{% url 'account_login' %}" class="btn btn-primary">Clique aqui para logar</a>
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col">
+            <div class="d-flex align-items-center">
+                <h1 class="display-5 mb-0">
+                    <i class="bi bi-geo-alt-fill text-primary"></i> Cadastro de Pontos
+                </h1>
+            </div>
         </div>
     </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 rounded-4 shadow-sm hover-shadow">
+                <div class="card-header bg-gradient border-0 rounded-top-4" style="background-color: #4361ee;">
+                    <h5 class="card-title mb-0 text-white">
+                        <i class="bi bi-pin-map-fill me-2"></i>Novo Ponto de Coleta
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        <div class="row g-4">
+                            {% for field in form %}
+                                <div class="col-md-6">
+                                    {{ field|as_crispy_field }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div class="d-flex gap-3 mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg rounded-pill">
+                                <i class="bi bi-save me-2"></i>Salvar
+                            </button>
+                            <a href="{% url 'locais_cadastrados' %}" class="btn btn-secondary btn-lg rounded-pill">
+                                <i class="bi bi-arrow-left me-2"></i>Voltar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.hover-shadow {
+    transition: all 0.3s ease;
+}
+.hover-shadow:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.asteriskField {
+    color: #dc3545;
+    margin-left: 2px;
+}
+
+@media (max-width: 768px) {
+    .display-5 {
+        font-size: 1.5rem;
+    }
+    
+    .card {
+        margin-bottom: 1rem;
+    }
+    
+    .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    
+    .d-flex.gap-3 {
+        flex-direction: column;
+    }
+    
+    .form-control, .form-select {
+        font-size: 16px;
+    }
+    
+    .container {
+        padding-bottom: 2rem;
+    }
+}
+
+/* Melhoria no touch target para dispositivos móveis */
+@media (hover: none) {
+    .btn, 
+    .form-control,
+    .form-select {
+        min-height: 44px;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Validação do formulário
+    const forms = document.querySelectorAll('.needs-validation');
+    Array.from(forms).forEach(form => {
+        form.addEventListener('submit', event => {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        }, false);
+    });
+
+    // Validação especial para coordenadas
+    const latInput = document.querySelector('input[name="lat"]');
+    const lonInput = document.querySelector('input[name="lon"]');
+
+    if (latInput && lonInput) {
+        const validateCoordinate = (input, min, max) => {
+            const value = parseFloat(input.value);
+            if (isNaN(value) || value < min || value > max) {
+                input.setCustomValidity('Coordenada inválida');
+            } else {
+                input.setCustomValidity('');
+            }
+        };
+
+        latInput.addEventListener('input', () => validateCoordinate(latInput, -90, 90));
+        lonInput.addEventListener('input', () => validateCoordinate(lonInput, -180, 180));
+    }
+});
+</script>
+
+{% else %}
+<div class="container mt-5">
+    <div class="card border-0 rounded-4 shadow-sm p-5 text-center">
+        <i class="bi bi-person-lock display-1 text-primary mb-3"></i>
+        <h1>Olá, visitante</h1>
+        <p class="lead mb-4">Faça login para acessar o sistema</p>
+        <div>
+            <a href="{% url 'account_login' %}" class="btn btn-primary btn-lg rounded-pill">
+                <i class="bi bi-box-arrow-in-right me-2"></i>Entrar no Sistema
+            </a>
+        </div>
+    </div>
+</div>
 {% endif %}
 {% endblock %}

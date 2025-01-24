@@ -27,7 +27,7 @@
         <div class="menu-itens ">
           <div class="d-flex">
             <button class="toggle-btn" type="button">
-              <i class="bi bi-nut" style="color: #000 !important;"></i>
+              <i class="bi bi-list" style="color: #000 !important;"></i>
             </button>
             <div class="sidebar-logo">
               <a href="{% url 'home' %}" style="color: #000 !important;">Laguna </a>
@@ -75,27 +75,7 @@
                   </ul>
                 </li>
               </li>
-              {% comment %} <li class="sidebar-item">
-                <a href="#" class="sidebar-link collapsed has-dropdown" data-bs-toggle="collapse" data-bs-target="#cadastro" aria-expanded="false" aria-controls="cadastro">
-                  <i class="lni lni-capsule"></i>
-                  <span>Laboratórios</span>
-                </a>
-                <ul id="cadastro" class="sidebar-dropdown list-unstyled collapse" data-bs-parent="#sidebar">
-                  <li class="sidebar-item">
-                    <a href="{% url 'cadastro_laboratorio' %}" class="sidebar-link">
-                      <i class="bi bi-building-add"></i>
-                      <span>Cadastro de laboratórios</span>
-                    </a>
-                  </li>
-                  <li class="sidebar-item">
-                    <a href="{% url 'laboratorios_cadastrados' %}" class="sidebar-link">
-                      <i class="bi bi-card-list"></i>
-                      <span>Laboratórios Cadastrados</span>
-                    </a>
-                  </li>
-                
-                </ul>
-              </li> {% endcomment %}
+
               
               {% if request.user.is_superuser %}
                   <li class="sidebar-item">
