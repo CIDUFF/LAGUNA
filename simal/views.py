@@ -1902,7 +1902,7 @@ def fill_campo_medida(request, coleta_id):
     envios = TabEnvio.objects.filter(
         id_amostra__id_coleta=coleta_id, id_amostra__id_frasco=1
     )
-    parametros = TabProdxparam.objects.filter(id_frasco=1)
+    parametros = TabProdxparam.objects.filter(id_frasco=1, status=True)
 
     campos = []
     for envio in envios:
