@@ -776,6 +776,7 @@ class TabProdxparam(models.Model):
         null=True,
     )
     id_ppativacao = models.BigIntegerField(blank=True, null=True)
+    status = models.BooleanField("Status",default=True,blank=True, null=True)
 
     def __str__(self):
         return f'{self.nome} - {self.unidade or ""}'
