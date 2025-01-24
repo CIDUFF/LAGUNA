@@ -885,7 +885,7 @@ class TabAnexoAmostra(models.Model):
     id_envio = models.ForeignKey(
         TabEnvio, on_delete=models.CASCADE, db_column="id_envio", blank=True, null=True
     )
-    anexo = models.FileField(upload_to="anexos_amostras/", null=True)
+    anexo = models.FileField(upload_to="anexos_amostras/", null=True, blank=True)  # Adicione blank=True
     observacao = models.TextField(blank=True, null=True)
     atualizado_em = models.DateTimeField(auto_now=True, blank=True, null=True)
     criado_em = models.DateTimeField(auto_now_add=True, blank=True, null=True)
@@ -895,6 +895,12 @@ class TabAnexoAmostra(models.Model):
 
     class Meta:
         db_table = "tab_anexo_amostra"
+
+    def save(self, *args, **kwargs):
+        # Se não houver anexo e não houver observação, não salva
+        if not self.anexo and not self.observacao:
+            return
+        super().save(*args, **kwargs)
 
 
 class MetadadosPonto(models.Model):

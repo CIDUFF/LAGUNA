@@ -2057,12 +2057,21 @@ def input_fisico_quimico(request, coleta_id, ponto_id):
     coleta = get_object_or_404(TabColeta, id=coleta_id)
     ponto = get_object_or_404(TabPonto, id=ponto_id, status=True)
 
-    # Busca anexo existente
-    anexo_existente = TabAnexoAmostra.objects.filter(
+    # Busca anexo existente 
+    anexo_existente = None
+    anexo_query = TabAnexoAmostra.objects.filter(
         id_envio__id_amostra__id_coleta=coleta_id,
         id_envio__id_amostra__id_ponto=ponto_id,
         id_envio__id_amostra__id_frasco=1,
     ).first()
+
+    # Se encontrou um anexo, verifica se tem arquivo ou observação
+    if anexo_query:
+        anexo_existente = anexo_query
+        # Se não tem arquivo nem observação, deleta o registro
+        if not anexo_existente.anexo and not anexo_existente.observacao:
+            anexo_existente.delete()
+            anexo_existente = None
 
     if request.method == "POST":
         formset = MedidaFormSet(

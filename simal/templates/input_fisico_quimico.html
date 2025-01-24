@@ -102,7 +102,7 @@
                                 </h6>
                                 <div class="mb-3">
                                     <label for="anexo" class="form-label">Arquivo Anexo</label>
-                                    {% if anexo_existente %}
+                                    {% if anexo_existente and anexo_existente.anexo %}
                                         <div class="alert alert-info d-flex align-items-center">
                                             <i class="bi bi-file-earmark me-2"></i>
                                             <a href="{{ anexo_existente.anexo.url }}" target="_blank" class="text-decoration-none">
