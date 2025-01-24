@@ -150,9 +150,14 @@
                 <div class="card-header bg-gradient border-0 rounded-top-4" style="background-color: #38b000;">
                     <div class="d-flex justify-content-between align-items-center">
                         <h5 class="card-title mb-0 text-white"><i class="bi bi-geo-alt-fill me-2"></i>Mapa das estações amostrais</h5>
-                        <button class="btn btn-light btn-sm" onclick="openFullscreenMap()">
-                            <i class="bi bi-arrows-fullscreen"></i>
-                        </button>
+                        <div>
+                            <button class="btn btn-light btn-sm me-2" id="toggleLocation">
+                                <i class="bi bi-geo-alt"></i>
+                            </button>
+                            <button class="btn btn-light btn-sm" onclick="openFullscreenMap()">
+                                <i class="bi bi-arrows-fullscreen"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <div class="card-body p-0 flex-grow-1"> <!-- Adicione flex-grow-1 aqui -->
@@ -348,9 +353,115 @@
     height: 100%;
     width: 100%;
 }
+
+#toggleLocation {
+    background-color: white;
+    transition: all 0.3s ease;
+}
+
+#toggleLocation.active {
+    background-color: #4CAF50;
+    color: white;
+}
+
+/* Estilos adicionais para suporte mobile */
+@media (max-width: 768px) {
+    #toggleLocation,
+    #fullscreenLocation {
+        width: auto !important;
+        margin-bottom: 0 !important;
+    }
+    
+    /* Ajusta o tamanho dos botões para mobile */
+    .leaflet-control button {
+        padding: 8px 12px !important;
+        font-size: 16px !important;
+    }
+}
+
+/* Estilos para o botão de localização */
+#toggleLocation.active,
+#fullscreenLocation.active {
+    background-color: #4CAF50 !important;
+    color: white !important;
+}
 </style>
 
 <script>
+// Adiciona funções globais de geolocalização
+const geolocationControl = {
+    locationMarker: null,
+    watchId: null,
+    tracking: false,
+
+    // Função para atualizar a localização do usuário
+    updateLocation: function(position, mapInstance) {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+        
+        if (this.locationMarker) {
+            this.locationMarker.setLatLng([lat, lon]);
+        } else {
+            const locationIcon = L.icon({
+                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+                popupAnchor: [1, -34],
+                shadowSize: [41, 41]
+            });
+
+            this.locationMarker = L.marker([lat, lon], {icon: locationIcon})
+                .addTo(mapInstance)
+                .bindPopup('Sua localização atual');
+        }
+        
+        mapInstance.setView([lat, lon], mapInstance.getZoom() || 15);
+    },
+
+    // Função para lidar com erros
+    handleLocationError: function(error) {
+        console.error('Erro ao obter localização:', error);
+        alert('Não foi possível obter sua localização. Verifique se permitiu o acesso à localização.');
+    },
+
+    // Função para iniciar/parar rastreamento
+    toggleTracking: function(button, mapInstance) {
+        if (!this.tracking) {
+            if ("geolocation" in navigator) {
+                this.watchId = navigator.geolocation.watchPosition(
+                    (position) => this.updateLocation(position, mapInstance),
+                    this.handleLocationError,
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 5000,
+                        maximumAge: 0
+                    }
+                );
+                this.tracking = true;
+                button.classList.add('active');
+                button.querySelector('i').classList.remove('bi-geo-alt');
+                button.querySelector('i').classList.add('bi-geo-alt-fill');
+            } else {
+                alert("Seu navegador não suporta geolocalização");
+            }
+        } else {
+            if (this.watchId) {
+                navigator.geolocation.clearWatch(this.watchId);
+                this.watchId = null;
+            }
+            if (this.locationMarker) {
+                mapInstance.removeLayer(this.locationMarker);
+                this.locationMarker = null;
+            }
+            this.tracking = false;
+            button.classList.remove('active');
+            button.querySelector('i').classList.remove('bi-geo-alt-fill');
+            button.querySelector('i').classList.add('bi-geo-alt');
+        }
+    }
+};
+
 document.addEventListener('DOMContentLoaded', function() {
     // Mantém os pontos acessíveis globalmente
     window.pontosColeta = {{ pontos_coleta|safe }};
@@ -474,6 +585,47 @@ document.addEventListener('DOMContentLoaded', function() {
             progressBarFormularios.style.width = `${percentualPreenchido}%`;
         }
     }, 300);
+
+    let locationMarker = null;
+    let watchId = null;
+    let tracking = false;
+
+    // Função para atualizar a localização do usuário
+    function updateLocation(position) {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+        
+        if (locationMarker) {
+            locationMarker.setLatLng([lat, lon]);
+        } else {
+            const locationIcon = L.icon({
+                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+                popupAnchor: [1, -34],
+                shadowSize: [41, 41]
+            });
+
+            locationMarker = L.marker([lat, lon], {icon: locationIcon})
+                .addTo(map)
+                .bindPopup('Sua localização atual');
+        }
+        
+        map.setView([lat, lon], map.getZoom());
+    }
+
+    // Função para lidar com erros de geolocalização
+    function handleLocationError(error) {
+        console.error('Erro ao obter localização:', error);
+        alert('Não foi possível obter sua localização. Verifique se permitiu o acesso à localização.');
+    }
+
+    // Botão para alternar rastreamento de localização
+    document.getElementById('toggleLocation').addEventListener('click', function() {
+        geolocationControl.toggleTracking(this, map);
+    });
+
 });
 
 let fullscreenMap = null;
@@ -566,6 +718,23 @@ function initFullscreenMap() {
         }
         fullscreenMap.invalidateSize();
     }, 100);
+
+    // Adiciona botão de localização no mapa em tela cheia
+    const fullscreenLocationButton = L.control({position: 'topleft'});
+    fullscreenLocationButton.onAdd = function(map) {
+        const button = L.DomUtil.create('button', 'btn btn-light');
+        button.innerHTML = '<i class="bi bi-geo-alt"></i>';
+        button.style.margin = '10px';
+        button.style.padding = '6px 10px';
+        button.id = 'fullscreenLocation';
+        
+        L.DomEvent.on(button, 'click', function() {
+            geolocationControl.toggleTracking(this, fullscreenMap);
+        });
+        
+        return button;
+    };
+    fullscreenLocationButton.addTo(fullscreenMap);
 }
 
 // Limpa o mapa quando o modal é fechado
