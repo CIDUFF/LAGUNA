@@ -148,7 +148,12 @@
         <div class="col-md-6">
             <div class="card border-0 rounded-4 shadow-sm hover-shadow h-100"> <!-- Adicione h-100 aqui -->
                 <div class="card-header bg-gradient border-0 rounded-top-4" style="background-color: #38b000;">
-                    <h5 class="card-title mb-0 text-white"><i class="bi bi-geo-alt-fill me-2"></i>Mapa das estações amostrais</h5>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0 text-white"><i class="bi bi-geo-alt-fill me-2"></i>Mapa das estações amostrais</h5>
+                        <button class="btn btn-light btn-sm" onclick="openFullscreenMap()">
+                            <i class="bi bi-arrows-fullscreen"></i>
+                        </button>
+                    </div>
                 </div>
                 <div class="card-body p-0 flex-grow-1"> <!-- Adicione flex-grow-1 aqui -->
                     <div id="map" class="rounded-bottom-4" style="height: 100%; min-height: 500px;"></div> <!-- Ajuste para height: 100% -->
@@ -195,6 +200,21 @@
     </div>
 </div>
 
+<!-- Modal do Mapa -->
+<div class="modal fade" id="mapModal" tabindex="-1">
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Mapa das Estações Amostrais</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div id="fullscreenMap"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <style>
 .hover-shadow {
     transition: all 0.3s ease;
@@ -229,6 +249,11 @@
     left: 0;
     right: 0;
     bottom: 0;
+}
+
+#fullscreenMap {
+    width: 100%;
+    height: calc(100vh - 56px); /* Ajusta altura considerando o header do modal */
 }
 
 @media (max-width: 768px) {
@@ -303,20 +328,67 @@
         text-align: center;
     }
 }
+
+/* Estilos para o mapa em tela cheia */
+.modal-content {
+    height: 100vh;
+}
+
+.modal-body {
+    position: relative;
+    height: calc(100vh - 60px); /* Altura total menos o header */
+}
+
+#fullscreenMap {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 100%;
+    width: 100%;
+}
 </style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Mantém os pontos acessíveis globalmente
+    window.pontosColeta = {{ pontos_coleta|safe }};
     var map = L.map('map');
     var totalPontos = 0;
     var pontosPreenchidos = 0;
     
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    // Camada OpenStreetMap
+    var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
         crossOrigin: 'anonymous',
         subdomains: ['a', 'b', 'c'],
         maxZoom: 19
-    }).addTo(map);
+    });
+
+    // Camada de Satélite ESRI
+    var satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+        maxZoom: 19
+    });
+
+    // Nova camada topográfica com OpenTopoMap
+    var topoLayer = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+        maxZoom: 17,
+        attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a>'
+    });
+
+    // Definir camada padrão (alterado para osmLayer)
+    osmLayer.addTo(map);
+
+    // Adicionar controle de camadas com todas as opções
+    var baseLayers = {
+        "Mapa Padrão": osmLayer,
+        "Topográfico": topoLayer,
+        "Satélite": satelliteLayer
+    };
+
+    L.control.layers(baseLayers).addTo(map);
 
     var pontos = {{ pontos_coleta|safe }};
     var bounds = L.latLngBounds();
@@ -402,6 +474,106 @@ document.addEventListener('DOMContentLoaded', function() {
             progressBarFormularios.style.width = `${percentualPreenchido}%`;
         }
     }, 300);
+});
+
+let fullscreenMap = null;
+
+function openFullscreenMap() {
+    const modal = new bootstrap.Modal(document.getElementById('mapModal'));
+    modal.show();
+    
+    // Inicializa o mapa quando o modal estiver completamente visível
+    document.getElementById('mapModal').addEventListener('shown.bs.modal', function() {
+        initFullscreenMap();
+    }, { once: true });
+}
+
+function initFullscreenMap() {
+    if (fullscreenMap) {
+        fullscreenMap.remove();
+    }
+
+    // Inicializa o mapa em tela cheia
+    fullscreenMap = L.map('fullscreenMap');
+    
+    // Configura as camadas do mapa
+    const osmLayerFull = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(fullscreenMap);
+
+    const topoLayerFull = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+        maxZoom: 17,
+        attribution: 'Map data: &copy; OpenStreetMap contributors'
+    });
+
+    const satelliteLayerFull = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        maxZoom: 19,
+        attribution: 'Tiles &copy; Esri'
+    });
+
+    const baseLayersFull = {
+        "Mapa Padrão": osmLayerFull,
+        "Topográfico": topoLayerFull,
+        "Satélite": satelliteLayerFull
+    };
+
+    L.control.layers(baseLayersFull).addTo(fullscreenMap);
+
+    // Adiciona os marcadores usando os pontos globais
+    const bounds = L.latLngBounds();
+    
+    window.pontosColeta.forEach(function(ponto) {
+        if (ponto.status === true) {
+            let markerColor;
+            if (ponto.formulario_preenchido) {
+                markerColor = 'green';
+            } else if (ponto.parcialmente_preenchido) {
+                markerColor = 'orange';
+            } else {
+                markerColor = 'blue';
+            }
+
+            const markerIcon = L.icon({
+                iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${markerColor}.png`,
+                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+                popupAnchor: [1, -34],
+                shadowSize: [41, 41]
+            });
+
+            let tooltipText = `${ponto.nome} ${ponto.formulario_preenchido ? '(Preenchido)' : 
+                             ponto.parcialmente_preenchido ? '(Parcialmente preenchido)' : '(Pendente)'}`;
+
+            L.marker([ponto.lat, ponto.lon], {icon: markerIcon})
+                .addTo(fullscreenMap)
+                .bindTooltip(tooltipText)
+                .on('click', function() {
+                    window.location.href = `/input_fisico_quimico/{{ coleta }}/${ponto.id}/`;
+                });
+
+            bounds.extend([ponto.lat, ponto.lon]);
+        }
+    });
+
+    // Ajusta a visualização do mapa
+    setTimeout(() => {
+        if (!bounds.isValid()) {
+            fullscreenMap.setView([-22.91, -43.20], 12);
+        } else {
+            fullscreenMap.fitBounds(bounds, {padding: [50, 50]});
+        }
+        fullscreenMap.invalidateSize();
+    }, 100);
+}
+
+// Limpa o mapa quando o modal é fechado
+document.getElementById('mapModal').addEventListener('hidden.bs.modal', function () {
+    if (fullscreenMap) {
+        fullscreenMap.remove();
+        fullscreenMap = null;
+    }
 });
 </script>
 
