@@ -328,7 +328,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 pontosPreenchidos++;
             }
             
-            var markerColor = ponto.formulario_preenchido ? 'green' : 'blue';
+            // Define a cor do marcador baseado no estado do formulário
+            let markerColor;
+            if (ponto.formulario_preenchido) {
+                markerColor = 'green';
+            } else if (ponto.parcialmente_preenchido) {
+                markerColor = 'orange';
+            } else {
+                markerColor = 'blue';
+            }
+
             var markerIcon = L.icon({
                 iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-' + markerColor + '.png',
                 shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
@@ -338,9 +347,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 shadowSize: [41, 41]
             });
 
+            // Atualiza o texto do tooltip para incluir o estado parcial
+            let tooltipText = ponto.nome;
+            if (ponto.formulario_preenchido) {
+                tooltipText += ' (Preenchido)';
+            } else if (ponto.parcialmente_preenchido) {
+                tooltipText += ' (Parcialmente preenchido)';
+            } else {
+                tooltipText += ' (Pendente)';
+            }
+
             var marker = L.marker([ponto.lat, ponto.lon], {icon: markerIcon})
                 .addTo(map)
-                .bindTooltip(ponto.nome + (ponto.formulario_preenchido ? ' (Preenchido)' : ' (Pendente)'));
+                .bindTooltip(tooltipText);
             
             marker.on('click', function() {
                 window.location.href = '/input_fisico_quimico/' + {{ coleta }} + '/' + ponto.id + '/';

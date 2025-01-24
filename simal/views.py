@@ -2007,20 +2007,27 @@ def info_coleta(request, coleta_id):
             ).first()
             
             formulario_preenchido = False
+            parcialmente_preenchido = False
             if amostra:
-                # Verifica se existe medida preenchida
-                medida = TabMedida.objects.filter(
-                    id_envio__id_amostra=amostra,
-                ).first()
-                formulario_preenchido = medida and medida.input_valor is not None
+                # Busca todas as medidas para esta amostra
+                medidas = TabMedida.objects.filter(id_envio__id_amostra=amostra)
+                total_medidas = medidas.count()
+                medidas_preenchidas = medidas.exclude(input_valor__isnull=True).exclude(input_valor__exact='').count()
+                
+                if total_medidas > 0:
+                    if medidas_preenchidas == total_medidas:
+                        formulario_preenchido = True
+                    elif medidas_preenchidas > 0:
+                        parcialmente_preenchido = True
 
             pontos_coleta.append({
-                'id': ponto.id,  # Adicionado o ID do ponto
+                'id': ponto.id,
                 'nome': ponto.nome,
                 'lat': ponto.lat,
                 'lon': ponto.lon,
                 'status': ponto.status,
-                'formulario_preenchido': formulario_preenchido
+                'formulario_preenchido': formulario_preenchido,
+                'parcialmente_preenchido': parcialmente_preenchido
             })
 
         pontos_coleta_json = json.dumps(pontos_coleta, cls=DjangoJSONEncoder)

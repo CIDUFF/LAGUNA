@@ -319,14 +319,14 @@ class TopCampanhas(tables.Table):
         )
 
 
-
 class SetorTable(tables.Table):
     update = tables.LinkColumn(
-        "atualizar_setor",
-        args=[A("pk")],
+        'atualizar_setor',
+        args=[A('pk')],
         orderable=False,
         empty_values=[],
-        text="EDITAR",
+        text=lambda record: format_html('<i class="bi bi-pencil-square me-1"></i>Editar'),
+        attrs={'a': {'class': 'btn btn-sm btn-outline-primary rounded-pill'}}
     )
 
     class Meta:
@@ -344,11 +344,12 @@ class SetorTable(tables.Table):
 
 class PontoTable(tables.Table):
     update = tables.LinkColumn(
-        "atualizar_ponto",
-        args=[A("pk")],
+        'atualizar_ponto',
+        args=[A('pk')],
         orderable=False,
         empty_values=[],
-        text="EDITAR",
+        text=lambda record: format_html('<i class="bi bi-pencil-square me-1"></i>Editar'),
+        attrs={'a': {'class': 'btn btn-sm btn-outline-primary rounded-pill'}}
     )
 
     class Meta:
@@ -374,11 +375,12 @@ class PontoTable(tables.Table):
 
 class LocalTable(tables.Table):
     update = tables.LinkColumn(
-        "atualizar_local",
-        args=[A("pk")],
+        'atualizar_local',
+        args=[A('pk')],
         orderable=False,
         empty_values=[],
-        text="EDITAR",
+        text=lambda record: format_html('<i class="bi bi-pencil-square me-1"></i>Editar'),
+        attrs={'a': {'class': 'btn btn-sm btn-outline-primary rounded-pill'}}
     )
 
     class Meta:
