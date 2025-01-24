@@ -8,6 +8,7 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
     crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-realtime/2.2.0/leaflet-realtime.min.js"></script>
 {% endblock %}
 
 {% block title %}Informações da Coleta{% endblock %}
@@ -308,8 +309,9 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     var map = L.map('map');
-    var totalPontos = 0;
-    var pontosPreenchidos = 0;
+    var userLocationMarker = null;
+    var userLocationCircle = null;
+    var isFirstLocation = true;
     
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
@@ -323,11 +325,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     pontos.forEach(function(ponto) {
         if (ponto.status === true) {
-            totalPontos++;
-            if (ponto.formulario_preenchido) {
-                pontosPreenchidos++;
-            }
-            
             var markerColor = ponto.formulario_preenchido ? 'green' : 'blue';
             var markerIcon = L.icon({
                 iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-' + markerColor + '.png',
@@ -356,34 +353,121 @@ document.addEventListener('DOMContentLoaded', function() {
         map.fitBounds(bounds, {padding: [50, 50]});
     }
 
+    // Função para atualizar a posição do usuário
+    function updateUserLocation(position) {
+        const latlng = [position.coords.latitude, position.coords.longitude];
+        
+        if (userLocationMarker) {
+            userLocationMarker.setLatLng(latlng);
+            userLocationCircle.setLatLng(latlng);
+            userLocationCircle.setRadius(position.coords.accuracy);
+        } else {
+            userLocationMarker = L.circleMarker(latlng, {
+                radius: 8,
+                fillColor: '#ff3333',
+                color: '#ffffff',
+                weight: 2,
+                opacity: 1,
+                fillOpacity: 0.8
+            }).addTo(map);
+
+            userLocationCircle = L.circle(latlng, {
+                radius: position.coords.accuracy,
+                color: '#136AEC',
+                fillColor: '#136AEC',
+                fillOpacity: 0.15,
+                weight: 2
+            }).addTo(map);
+            
+            userLocationMarker.bindTooltip('Sua localização atual', {
+                permanent: false,
+                direction: 'top'
+            });
+        }
+
+        // Centraliza o mapa na primeira localização
+        if (isFirstLocation) {
+            map.setView(latlng, 15);
+            isFirstLocation = false;
+        }
+    }
+
+    // Função para tratar erros de geolocalização
+    function handleLocationError(error) {
+        console.error('Erro ao obter localização:', error.message);
+    }
+
+    // Configura o watch position
+    if ('geolocation' in navigator) {
+        const watchOptions = {
+            enableHighAccuracy: true,
+            maximumAge: 5000,        // Cache de 5 segundos
+            timeout: 10000           // Timeout de 10 segundos
+        };
+
+        // Inicia o monitoramento da posição
+        navigator.geolocation.watchPosition(
+            updateUserLocation,
+            handleLocationError,
+            watchOptions
+        );
+
+        // Adiciona botão de centralizar na localização
+        L.Control.Locate = L.Control.extend({
+            onAdd: function(map) {
+                var container = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
+                var button = L.DomUtil.create('a', 'leaflet-control-button', container);
+                button.innerHTML = '<i class="bi bi-geo-alt"></i>';
+                button.title = 'Centralizar em minha localização';
+                button.style.width = '30px';
+                button.style.height = '30px';
+                button.style.fontSize = '18px';
+                button.style.display = 'flex';
+                button.style.alignItems = 'center';
+                button.style.justifyContent = 'center';
+                button.style.cursor = 'pointer';
+
+                L.DomEvent.on(button, 'click', function() {
+                    if (userLocationMarker) {
+                        map.setView(userLocationMarker.getLatLng(), 15);
+                    }
+                });
+
+                return container;
+            }
+        });
+
+        new L.Control.Locate({ position: 'topleft' }).addTo(map);
+    }
+
     // Calcula a porcentagem de formulários preenchidos
     var percentualPreenchido = totalPontos > 0 ? (pontosPreenchidos / totalPontos * 100) : 0;
 
-    // Atualiza a barra de progresso e o texto
-    document.addEventListener('DOMContentLoaded', function() {
-        // Seleciona as barras de progresso especificamente
-        const progressBarChecklist = document.querySelector('.status-item:nth-child(2) .progress-bar');
-        const progressBarFormularios = document.querySelector('.status-item:nth-child(3) .progress-bar');
-        
-        // Atualiza o texto do progresso dos formulários
-        const badgeFormularios = document.querySelector('.status-item:nth-child(3) .badge');
-        const textoFormularios = document.querySelector('.status-item:nth-child(3) .text-muted');
-        
-        if (badgeFormularios && textoFormularios) {
-            badgeFormularios.textContent = percentualPreenchido.toFixed(1) + '%';
-            textoFormularios.textContent = `${pontosPreenchidos} de ${totalPontos} estações amostrais preenchidas`;
+    // Atualiza barras de progresso - Remova o evento DOMContentLoaded aninhado
+    const progressBarChecklist = document.querySelector('.status-item:nth-child(2) .progress-bar');
+    const progressBarFormularios = document.querySelector('.status-item:nth-child(3) .progress-bar');
+    
+    // Atualiza o texto do progresso dos formulários
+    const badgeFormularios = document.querySelector('.status-item:nth-child(3) .badge');
+    const textoFormularios = document.querySelector('.status-item:nth-child(3) .text-muted');
+    
+    if (badgeFormularios && textoFormularios) {
+        badgeFormularios.textContent = percentualPreenchido.toFixed(1) + '%';
+        textoFormularios.textContent = `${pontosPreenchidos} de ${totalPontos} estações amostrais preenchidas`;
+    }
+    
+    // Atualiza as barras de progresso com um pequeno delay
+    setTimeout(() => {
+        if (progressBarChecklist) {
+            // Força a conversão para número e define a largura
+            const checklistValue = parseFloat('{{ percentual_checklist }}');
+            progressBarChecklist.style.width = `${checklistValue}%`;
         }
-        
-        // Aguarda um momento para iniciar a animação
-        setTimeout(() => {
-            if (progressBarChecklist) {
-                progressBarChecklist.style.width = parseFloat({{ percentual_checklist }}).toFixed(1) + '%';
-            }
-            if (progressBarFormularios) {
-                progressBarFormularios.style.width = percentualPreenchido.toFixed(1) + '%';
-            }
-        }, 300);
-    });
+        if (progressBarFormularios) {
+            progressBarFormularios.style.width = `${percentualPreenchido}%`;
+        }
+    }, 300);
 });
 </script>
+
 {% endblock %}
