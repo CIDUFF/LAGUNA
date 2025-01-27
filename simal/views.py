@@ -2064,23 +2064,28 @@ def input_fisico_quimico(request, coleta_id, ponto_id):
     coleta = get_object_or_404(TabColeta, id=coleta_id)
     ponto = get_object_or_404(TabPonto, id=ponto_id, status=True)
 
-    # Busca anexo existente 
-    anexo_existente = None
-    anexo_query = TabAnexoAmostra.objects.filter(
+    # Busca todos os anexos existentes
+    anexos_existentes = TabAnexoAmostra.objects.filter(
         id_envio__id_amostra__id_coleta=coleta_id,
         id_envio__id_amostra__id_ponto=ponto_id,
         id_envio__id_amostra__id_frasco=1,
-    ).first()
+    ).order_by('ordem')
 
-    # Se encontrou um anexo, verifica se tem arquivo ou observação
-    if anexo_query:
-        anexo_existente = anexo_query
-        # Se não tem arquivo nem observação, deleta o registro
-        if not anexo_existente.anexo and not anexo_existente.observacao:
-            anexo_existente.delete()
-            anexo_existente = None
+    # Processa os anexos para exibição
+    for anexo in anexos_existentes:
+        if anexo.anexo:
+            anexo.nome_arquivo = os.path.basename(anexo.anexo.name)
 
     if request.method == "POST":
+        # Processa a exclusão do anexo se solicitado
+        if 'excluir_anexo' in request.POST:
+            anexo_id = request.POST.get('excluir_anexo')
+            if anexo_id:
+                anexo = get_object_or_404(TabAnexoAmostra, id=anexo_id)
+                anexo.delete()
+                messages.success(request, "Anexo excluído com sucesso.")
+            return redirect('input_fisico_quimico', coleta_id=coleta_id, ponto_id=ponto_id)
+
         formset = MedidaFormSet(
             request.POST,
             request.FILES,
@@ -2092,40 +2097,62 @@ def input_fisico_quimico(request, coleta_id, ponto_id):
         )
 
         if formset.is_valid():
-            instances = formset.save()
+            try:
+                instances = formset.save()
+                
+                # Busca o primeiro envio válido
+                amostra = TabAmostra.objects.filter(
+                    id_coleta=coleta_id,
+                    id_ponto=ponto_id,
+                    id_frasco=1
+                ).first()
+                
+                envio = TabEnvio.objects.filter(id_amostra=amostra).first()
+                
+                if envio:
+                    # Processa múltiplos anexos e observações
+                    anexos = request.FILES.getlist('anexo[]')
+                    observacoes = request.POST.getlist('observacao_anexo[]')
+                    
+                    anexos_count = len(anexos_existentes)
+                    
+                    # Processa cada anexo e observação independentemente
+                    for i in range(max(len(anexos), len(observacoes))):
+                        if anexos_count >= 5:
+                            messages.error(request, "Limite máximo de 5 anexos excedido!")
+                            break
+                            
+                        anexo = anexos[i] if i < len(anexos) else None
+                        observacao = observacoes[i] if i < len(observacoes) else ''
+                        
+                        # Cria um novo registro se houver anexo ou observação
+                        if anexo is not None or observacao.strip():
+                            TabAnexoAmostra.objects.create(
+                                id_envio=envio,
+                                anexo=anexo,
+                                observacao=observacao,
+                                ordem=len(anexos_existentes) + anexos_count
+                            )
+                            anexos_count += 1
+                    
+                    messages.success(request, "Dados salvos com sucesso!")
 
-            # Processa o anexo se houver arquivo ou observação
-            if request.FILES.get("anexo") or request.POST.get("observacao_anexo"):
-                primeiro_envio = instances[0].id_envio if instances else None
-                if primeiro_envio:
-                    # Se já existe um anexo, atualiza
-                    if anexo_existente:
-                        if request.FILES.get("anexo"):
-                            anexo_existente.anexo = request.FILES["anexo"]
-                        anexo_existente.observacao = request.POST.get(
-                            "observacao_anexo"
-                        )
-                        anexo_existente.save()
-                    # Se não existe, cria novo
-                    else:
-                        TabAnexoAmostra.objects.create(
-                            id_envio=primeiro_envio,
-                            anexo=request.FILES.get("anexo"),
-                            observacao=request.POST.get("observacao_anexo"),
-                        )
+                # Redireciona para o próximo ponto ou volta para info_coleta
+                proximo_ponto = TabPonto.objects.filter(
+                    id_setor=coleta.id_setor, 
+                    status=True, 
+                    id__gt=ponto.id
+                ).first()
 
-            proximo_ponto = TabPonto.objects.filter(
-                id_setor=coleta.id_setor, status=True, id__gt=ponto.id
-            ).first()
-
-            if proximo_ponto:
-                return redirect(
-                    "input_fisico_quimico",
-                    coleta_id=coleta_id,
-                    ponto_id=proximo_ponto.id,
-                )
-            else:
+                if proximo_ponto:
+                    return redirect("input_fisico_quimico", coleta_id=coleta_id, ponto_id=proximo_ponto.id)
                 return redirect("info_coleta", coleta_id=coleta_id)
+
+            except Exception as e:
+                messages.error(request, f"Erro ao salvar os dados: {str(e)}")
+                
+        else:
+            messages.error(request, "Por favor, corrija os erros no formulário.")
 
     else:
         formset = MedidaFormSet(
@@ -2143,7 +2170,7 @@ def input_fisico_quimico(request, coleta_id, ponto_id):
             "formset": formset,
             "coleta": coleta,
             "ponto": ponto,
-            "anexo_existente": anexo_existente,
+            "anexos_existentes": anexos_existentes,
         },
     )
 

@@ -886,16 +886,18 @@ class TabAnexoAmostra(models.Model):
     id_envio = models.ForeignKey(
         TabEnvio, on_delete=models.CASCADE, db_column="id_envio", blank=True, null=True
     )
-    anexo = models.FileField(upload_to="anexos_amostras/", null=True, blank=True)  # Adicione blank=True
+    anexo = models.FileField(upload_to="anexos_amostras/", null=True, blank=True)
+    ordem = models.IntegerField(default=0)  # Novo campo para ordenar anexos
     observacao = models.TextField(blank=True, null=True)
     atualizado_em = models.DateTimeField(auto_now=True, blank=True, null=True)
     criado_em = models.DateTimeField(auto_now_add=True, blank=True, null=True)
 
-    def __str__(self):
-        return f"Anexo da amostra {self.id_amostra}"
-
     class Meta:
         db_table = "tab_anexo_amostra"
+        ordering = ['ordem']  # Ordena por ordem
+
+    def __str__(self):
+        return f"Anexo da amostra {self.id_amostra}"
 
     def save(self, *args, **kwargs):
         # Se não houver anexo e não houver observação, não salva

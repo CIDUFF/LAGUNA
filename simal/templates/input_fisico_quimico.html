@@ -105,24 +105,59 @@
                             <div class="card-body p-3">
                                 <h6 class="mb-3">
                                     <i class="bi bi-paperclip me-2"></i>Anexos e Observações
+                                    <button type="button" class="btn btn-sm btn-primary float-end" id="addAnexoBtn">
+                                        <i class="bi bi-plus-circle"></i> Adicionar Anexo 
+                                        <span id="anexoCount" class="badge bg-light text-dark ms-1">
+                                            {{ anexos_existentes|length }}/5
+                                        </span>
+                                    </button>
                                 </h6>
-                                <div class="mb-3">
-                                    <label for="anexo" class="form-label">Arquivo Anexo</label>
-                                    {% if anexo_existente and anexo_existente.anexo %}
-                                        <div class="alert alert-info d-flex align-items-center">
-                                            <i class="bi bi-file-earmark me-2"></i>
-                                            <a href="{{ anexo_existente.anexo.url }}" target="_blank" class="text-decoration-none">
-                                                {{ anexo_existente.anexo.name }}
-                                            </a>
-                                        </div>
-                                    {% endif %}
-                                    <input type="file" name="anexo" id="anexo" class="form-control">
-                                </div>
                                 
-                                <div class="mb-3">
-                                    <label for="observacao_anexo" class="form-label">Observações</label>
-                                    <textarea name="observacao_anexo" id="observacao_anexo" 
-                                              class="form-control" rows="3">{% if anexo_existente %}{{ anexo_existente.observacao }}{% endif %}</textarea>
+                                <div id="anexosContainer">
+                                    {% for anexo in anexos_existentes %}
+                                    <div class="anexo-item mb-3 p-3 border rounded">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <div>
+                                                {% if anexo.anexo %}
+                                                <a href="{{ anexo.anexo.url }}" target="_blank" class="text-decoration-none">
+                                                    <i class="bi bi-file-earmark me-2"></i>{{ anexo.nome_arquivo }}
+                                                </a>
+                                                {% else %}
+                                                <span class="text-muted">
+                                                    <i class="bi bi-chat-text me-2"></i>Apenas observação
+                                                </span>
+                                                {% endif %}
+                                            </div>
+                                            <form method="post" class="d-inline" onsubmit="return confirm('Tem certeza que deseja excluir este anexo?');">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="excluir_anexo" value="{{ anexo.id }}">
+                                                <button type="submit" class="btn btn-danger btn-sm">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                        <div class="mb-2">
+                                            <textarea class="form-control" rows="2" readonly>{{ anexo.observacao }}</textarea>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+
+                                    <!-- Template oculto para novos anexos -->
+                                    <div class="d-none" id="anexo-template">
+                                        <div class="anexo-item mb-3 p-3 border rounded">
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <input type="file" name="anexo[]" class="form-control mb-2">
+                                                <button type="button" class="btn btn-danger btn-sm ms-2 remove-anexo">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </div>
+                                            <textarea name="observacao_anexo[]" class="form-control" rows="2" 
+                                                      placeholder="Observações sobre o anexo ou ponto de coleta"></textarea>
+                                        </div>
+                                    </div>
+
+                                    <!-- Área para anexos ativos -->
+                                    <div id="anexos-ativos"></div>
                                 </div>
                             </div>
                         </div>
@@ -243,6 +278,75 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+
+    // Função para contar anexos
+    function countAnexos() {
+        const totalAnexos = document.querySelectorAll('#anexos-ativos .anexo-item').length + 
+                           document.querySelectorAll('#anexosContainer > .anexo-item').length;
+        const contador = document.getElementById('anexoCount');
+        if (contador) {
+            contador.textContent = `${totalAnexos}/5`;
+        }
+        const addButton = document.getElementById('addAnexoBtn');
+        if (addButton) {
+            addButton.disabled = totalAnexos >= 5;
+        }
+        return totalAnexos;
+    }
+
+    // Atualiza contador inicial
+    countAnexos();
+
+    // Função para adicionar novo campo de anexo
+    document.getElementById('addAnexoBtn')?.addEventListener('click', function() {
+        if (countAnexos() >= 5) {
+            alert('Limite máximo de 5 anexos atingido!');
+            return;
+        }
+
+        const template = document.getElementById('anexo-template');
+        const container = document.getElementById('anexos-ativos');
+        const newItem = template.querySelector('.anexo-item').cloneNode(true);
+        
+        // Gera um ID único para o novo item
+        newItem.id = 'anexo-' + Date.now();
+        
+        // Configura o botão de remoção
+        newItem.querySelector('.remove-anexo').addEventListener('click', function() {
+            newItem.remove();
+            countAnexos();
+        });
+
+        container.appendChild(newItem);
+        countAnexos();
+    });
+
+    // Adiciona event listener para os botões de remoção existentes
+    document.querySelectorAll('.remove-anexo').forEach(button => {
+        button.addEventListener('click', function() {
+            this.closest('.anexo-item').remove();
+            countAnexos();
+        });
+    });
+
+    // Substitui por uma nova validação simplificada que apenas checa o limite de anexos
+    document.querySelector('form').addEventListener('submit', function(e) {
+        // Apenas verifica o limite de anexos
+        const anexosCount = document.querySelectorAll('#anexosContainer > .anexo-item').length + 
+                          document.querySelectorAll('#anexos-ativos .anexo-item').length;
+        
+        if (anexosCount >= 5) {
+            e.preventDefault();
+            alert('Limite máximo de 5 anexos atingido!');
+            return false;
+        }
+        
+        return true;
+    });
+
+    // Remove a validação antiga que exigia observações
+    // Inicializa o contador
+    countAnexos();
 });
 </script>
 
