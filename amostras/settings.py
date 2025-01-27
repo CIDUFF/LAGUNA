@@ -220,7 +220,7 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'verbose': {
-            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'format': '{levelname} {asctime} {module} {message}',
             'style': '{',
         },
         'simple': {
@@ -229,15 +229,6 @@ LOGGING = {
         },
     },
     'handlers': {
-        'file': {
-            'level': 'INFO',
-            'class': 'logging.handlers.RotatingFileHandler',  # Usar RotatingFileHandler em vez de FileHandler
-            'filename': '/var/log/django/amostras.log',  # Caminho absoluto no sistema
-            'maxBytes': 1024*1024*5,  # 5 MB
-            'backupCount': 5,
-            'formatter': 'verbose',
-            'encoding': 'utf-8',
-        },
         'console': {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
@@ -246,12 +237,12 @@ LOGGING = {
     },
     'loggers': {
         'django': {
-            'handlers': ['file', 'console'] if DEBUG else ['file'],
+            'handlers': ['console'],
             'level': 'INFO',
             'propagate': True,
         },
         'simal': {
-            'handlers': ['file', 'console'] if DEBUG else ['file'],
+            'handlers': ['console'],
             'level': 'DEBUG' if DEBUG else 'INFO',
             'propagate': True,
         },
