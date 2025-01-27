@@ -223,16 +223,23 @@ document.addEventListener('DOMContentLoaded', function() {
         // Validação em tempo real
         input.addEventListener('input', function(e) {
             let value = e.target.value;
-            if (value !== '') {
-                // Remove zeros à direita após o decimal
-                value = Number(value).toString();
+            // Permite o sinal de menos e valores vazios
+            if (value !== '' && value !== '-') {
+                // Remove qualquer caractere inválido exceto números, ponto decimal e sinal de menos
+                value = value.replace(/[^\d.-]/g, '');
+                // Garante apenas um sinal de menos no início
+                value = value.replace(/--+/g, '-');
+                if (value.lastIndexOf('-') > 0) {
+                    value = value.replace(/-/g, '');
+                    value = '-' + value;
+                }
                 // Limita a 5 casas decimais
                 const parts = value.split('.');
                 if (parts.length > 1 && parts[1].length > 5) {
                     parts[1] = parts[1].substring(0, 5);
                     value = parts.join('.');
-                    e.target.value = value;
                 }
+                e.target.value = value;
             }
         });
     });
