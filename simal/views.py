@@ -818,108 +818,114 @@ def iniciar_campanha(request, ordem_servico=None):
 
 @login_required
 def checklist_campanha(request, ordem_servico=None):
-    ordem_servico_selecionada = request.GET.get("ordem_servico", ordem_servico)
-    campanha = get_object_or_404(
-        ProgramaColeta, ordem_servico=ordem_servico_selecionada
-    )
-    if campanha.status_coleta == "Cancelada":
-        messages.warning(request, "Não é possível iniciar uma campanha cancelada")
-        return redirect("coletas_agendas")
     try:
-        checklist_campanha = ChecklistCampo.objects.get(ordem_servico=campanha)
-    except ChecklistCampo.DoesNotExist:
-        checklist_campanha = None
-
-    form = ChecklistCampoForm(
-        request.POST or None,
-        instance=checklist_campanha,
-        ordem_servico_selecionada=ordem_servico_selecionada,
-    )
-    if request.method == "POST" and form.is_valid():
-        checklist_campanha, created = ChecklistCampo.objects.get_or_create(
-            ordem_servico=campanha,
-            defaults={
-                campo: form.cleaned_data[campo]
-                for campo in (
-                    (
-                        "previsao_tempo",
-                        "data_previsao_tempo",
-                        "observacao_previsao_tempo",
-                        "avisar_labs",
-                        "data_avisar_labs",
-                        "observacao_avisar_labs",
-                        "reservar_carro",
-                        "observacao_reservar_carro",
-                        "data_reservar_carro",
-                        "reservar_barco",
-                        "observacao_reservar_barco",
-                        "data_reservar_barco",
-                        "separar_equipamentos",
-                        "data_separar_equipamentos",
-                        "observacao_separar_equipamentos",
-                        "conferir_equipamentos",
-                        "data_conferir_equipamentos",
-                        "observacao_conferir_equipamentos",
-                        "comprar_gelo",
-                        "data_comprar_gelo",
-                        "observacao_comprar_gelo",
-                        "etiquetar_frascos",
-                        "data_etiquetar_frascos",
-                        "observacao_etiquetar_frascos",
-                    )
-                )
-            },
+        ordem_servico_selecionada = request.GET.get("ordem_servico", ordem_servico)
+        campanha = get_object_or_404(
+            ProgramaColeta, ordem_servico=ordem_servico_selecionada
         )
-        if not created:
-            for campo in (
-                "previsao_tempo",
-                "data_previsao_tempo",
-                "observacao_previsao_tempo",
-                "avisar_labs",
-                "data_avisar_labs",
-                "observacao_avisar_labs",
-                "reservar_carro",
-                "observacao_reservar_carro",
-                "data_reservar_carro",
-                "reservar_barco",
-                "observacao_reservar_barco",
-                "data_reservar_barco",
-                "separar_equipamentos",
-                "data_separar_equipamentos",
-                "observacao_separar_equipamentos",
-                "conferir_equipamentos",
-                "data_conferir_equipamentos",
-                "observacao_conferir_equipamentos",
-                "comprar_gelo",
-                "data_comprar_gelo",
-                "observacao_comprar_gelo",
-                "etiquetar_frascos",
-                "data_etiquetar_frascos",
-                "observacao_etiquetar_frascos",
-            ):
-                setattr(checklist_campanha, campo, form.cleaned_data[campo])
-            checklist_campanha.save(usuario=request.user)
-        if campanha.rota:
-            return redirect("lista_coleta", ordem_servico=campanha.id)
-        else:
-            return redirect("checklist_campanha", ordem_servico=campanha.ordem_servico)
+        if campanha.status_coleta == "Cancelada":
+            messages.warning(request, "Não é possível iniciar uma campanha cancelada")
+            return redirect("coletas_agendas")
+        try:
+            checklist_campanha = ChecklistCampo.objects.get(ordem_servico=campanha)
+        except ChecklistCampo.DoesNotExist:
+            checklist_campanha = None
 
-    if campanha.status_coleta == "Programada":
-        campanha.status_coleta = "Iniciada"
+        form = ChecklistCampoForm(
+            request.POST or None,
+            instance=checklist_campanha,
+            ordem_servico_selecionada=ordem_servico_selecionada,
+        )
+        if request.method == "POST" and form.is_valid():
+            checklist_campanha, created = ChecklistCampo.objects.get_or_create(
+                ordem_servico=campanha,
+                defaults={
+                    campo: form.cleaned_data[campo]
+                    for campo in (
+                        (
+                            "previsao_tempo",
+                            "data_previsao_tempo",
+                            "observacao_previsao_tempo",
+                            "avisar_labs",
+                            "data_avisar_labs",
+                            "observacao_avisar_labs",
+                            "reservar_carro",
+                            "observacao_reservar_carro",
+                            "data_reservar_carro",
+                            "reservar_barco",
+                            "observacao_reservar_barco",
+                            "data_reservar_barco",
+                            "separar_equipamentos",
+                            "data_separar_equipamentos",
+                            "observacao_separar_equipamentos",
+                            "conferir_equipamentos",
+                            "data_conferir_equipamentos",
+                            "observacao_conferir_equipamentos",
+                            "comprar_gelo",
+                            "data_comprar_gelo",
+                            "observacao_comprar_gelo",
+                            "etiquetar_frascos",
+                            "data_etiquetar_frascos",
+                            "observacao_etiquetar_frascos",
+                        )
+                    )
+                },
+            )
+            if not created:
+                for campo in (
+                    "previsao_tempo",
+                    "data_previsao_tempo",
+                    "observacao_previsao_tempo",
+                    "avisar_labs",
+                    "data_avisar_labs",
+                    "observacao_avisar_labs",
+                    "reservar_carro",
+                    "observacao_reservar_carro",
+                    "data_reservar_carro",
+                    "reservar_barco",
+                    "observacao_reservar_barco",
+                    "data_reservar_barco",
+                    "separar_equipamentos",
+                    "data_separar_equipamentos",
+                    "observacao_separar_equipamentos",
+                    "conferir_equipamentos",
+                    "data_conferir_equipamentos",
+                    "observacao_conferir_equipamentos",
+                    "comprar_gelo",
+                    "data_comprar_gelo",
+                    "observacao_comprar_gelo",
+                    "etiquetar_frascos",
+                    "data_etiquetar_frascos",
+                    "observacao_etiquetar_frascos",
+                ):
+                    setattr(checklist_campanha, campo, form.cleaned_data[campo])
+                checklist_campanha.save(usuario=request.user)
+            if campanha.rota:
+                return redirect("lista_coleta", ordem_servico=campanha.id)
+            else:
+                return redirect(
+                    "checklist_campanha", ordem_servico=campanha.ordem_servico
+                )
 
-    campanha.save()
+        if campanha.status_coleta == "Programada":
+            campanha.status_coleta = "Iniciada"
+            campanha.save()
+            logger.info(f"Campanha {ordem_servico} iniciada por {request.user}")
 
-    data = campanha.data_coleta_campo
-    previsao_tempo = get_weather_description("Maricá", data.strftime("%Y-%m-%d"))
+        data = campanha.data_coleta_campo
+        previsao_tempo = get_weather_description("Maricá", data.strftime("%Y-%m-%d"))
 
-    context = {
-        "form": form,
-        "checklist_campanha": checklist_campanha,
-        "ordem_servico": campanha.ordem_servico,
-        "previsao_tempo": previsao_tempo,
-        "campanha": campanha,
-    }
-    return render(request, "coleta/checklist_campanha.html", context)
+        context = {
+            "form": form,
+            "checklist_campanha": checklist_campanha,
+            "ordem_servico": campanha.ordem_servico,
+            "previsao_tempo": previsao_tempo,
+            "campanha": campanha,
+        }
+        return render(request, "coleta/checklist_campanha.html", context)
+    except Exception as e:
+        logger.error(f"Erro ao processar checklist_campanha: {str(e)}", exc_info=True)
+        raise
 
 
 @login_required
@@ -1834,54 +1840,45 @@ def checklist_coleta(request, coleta_id):
 
 @login_required
 def fill_amostra(request, coleta_id):
-    """
-    Preenche as amostras e envios para uma coleta específica.
-
-    Esta função obtém a coleta com base no ID fornecido, recupera todos os frascos e pontos de coleta
-    associados ao setor da coleta, e cria instâncias de TabAmostra e TabEnvio para cada combinação
-    de frasco e ponto de coleta. As instâncias são salvas no banco de dados.
-
-    Parâmetros:
-    request (HttpRequest): O objeto de solicitação HTTP.
-    coleta_id (int): O ID da coleta para a qual as amostras e envios serão preenchidos.
-
-    Retorna:
-    HttpResponseRedirect: Redireciona para a página inicial após a conclusão do preenchimento das amostras e envios.
-    """
-    coleta = get_object_or_404(TabColeta, id=coleta_id)
-    frascos = TabFrasco.objects.all()
-    # Adiciona o filtro status=True na query dos pontos
-    pontos_coleta = TabPonto.objects.filter(
-        id_setor=coleta.id_setor,
-        status=True,  # Apenas pontos ativos
-    )
-
-    amostras = []
-    for frasco in frascos:
-        # Verifica se a análise de bentos está desativada e pula os frascos 5, 6 e 7
-        if not coleta.analise_bentos and frasco.id in [5, 6, 7]:
-            continue
-        for ponto in pontos_coleta:
-            amostra = TabAmostra(
-                id_coleta=coleta,
-                id_frasco=frasco,
-                id_ponto=ponto,
-                etiqueta=f"{coleta.ordem_servico}{str(ponto.id).zfill(3)}{str(frasco.id).zfill(2)}",
-            )
-            amostras.append(amostra)
-
-    TabAmostra.objects.bulk_create(amostras)
-
-    envios = []
-    for amostra in amostras:
-        envio = TabEnvio(
-            id_amostra=amostra,
+    try:
+        coleta = get_object_or_404(TabColeta, id=coleta_id)
+        frascos = TabFrasco.objects.all()
+        # Adiciona o filtro status=True na query dos pontos
+        pontos_coleta = TabPonto.objects.filter(
+            id_setor=coleta.id_setor,
+            status=True,  # Apenas pontos ativos
         )
-        envios.append(envio)
 
-    TabEnvio.objects.bulk_create(envios)
+        amostras = []
+        for frasco in frascos:
+            # Verifica se a análise de bentos está desativada e pula os frascos 5, 6 e 7
+            if not coleta.analise_bentos and frasco.id in [5, 6, 7]:
+                continue
+            for ponto in pontos_coleta:
+                amostra = TabAmostra(
+                    id_coleta=coleta,
+                    id_frasco=frasco,
+                    id_ponto=ponto,
+                    etiqueta=f"{coleta.ordem_servico}{str(ponto.id).zfill(3)}{str(frasco.id).zfill(2)}",
+                )
+                amostras.append(amostra)
 
-    return redirect("fill_campo_medida", coleta_id=coleta_id)
+        TabAmostra.objects.bulk_create(amostras)
+
+        envios = []
+        for amostra in amostras:
+            envio = TabEnvio(
+                id_amostra=amostra,
+            )
+            envios.append(envio)
+
+        TabEnvio.objects.bulk_create(envios)
+        logger.info(f"Amostras geradas para coleta {coleta_id} por {request.user}")
+
+        return redirect("fill_campo_medida", coleta_id=coleta_id)
+    except Exception as e:
+        logger.error(f"Erro ao gerar amostras: {str(e)}", exc_info=True)
+        raise
 
 
 @login_required
@@ -2057,95 +2054,106 @@ def info_coleta(request, coleta_id):
 
 @login_required
 def input_fisico_quimico(request, coleta_id, ponto_id):
-    MedidaFormSet = modelformset_factory(
-        TabMedida, form=InputFisicoQuimicoForm, extra=0, fields="__all__"
-    )
-
-    coleta = get_object_or_404(TabColeta, id=coleta_id)
-    ponto = get_object_or_404(TabPonto, id=ponto_id, status=True)
-
-    # Busca anexo existente 
-    anexo_existente = None
-    anexo_query = TabAnexoAmostra.objects.filter(
-        id_envio__id_amostra__id_coleta=coleta_id,
-        id_envio__id_amostra__id_ponto=ponto_id,
-        id_envio__id_amostra__id_frasco=1,
-    ).first()
-
-    # Se encontrou um anexo, verifica se tem arquivo ou observação
-    if anexo_query:
-        anexo_existente = anexo_query
-        # Se não tem arquivo nem observação, deleta o registro
-        if not anexo_existente.anexo and not anexo_existente.observacao:
-            anexo_existente.delete()
-            anexo_existente = None
-
-    if request.method == "POST":
-        formset = MedidaFormSet(
-            request.POST,
-            request.FILES,
-            queryset=TabMedida.objects.filter(
-                id_envio__id_amostra__id_coleta=coleta_id,
-                id_envio__id_amostra__id_ponto=ponto_id,
-                id_envio__id_amostra__id_frasco=1,
-            ),
+    try:
+        MedidaFormSet = modelformset_factory(
+            TabMedida, form=InputFisicoQuimicoForm, extra=0, fields="__all__"
         )
 
-        if formset.is_valid():
-            instances = formset.save()
+        coleta = get_object_or_404(TabColeta, id=coleta_id)
+        ponto = get_object_or_404(TabPonto, id=ponto_id, status=True)
 
-            # Processa o anexo se houver arquivo ou observação
-            if request.FILES.get("anexo") or request.POST.get("observacao_anexo"):
-                primeiro_envio = instances[0].id_envio if instances else None
-                if primeiro_envio:
-                    # Se já existe um anexo, atualiza
-                    if anexo_existente:
-                        if request.FILES.get("anexo"):
-                            anexo_existente.anexo = request.FILES["anexo"]
-                        anexo_existente.observacao = request.POST.get(
-                            "observacao_anexo"
-                        )
-                        anexo_existente.save()
-                    # Se não existe, cria novo
-                    else:
-                        TabAnexoAmostra.objects.create(
-                            id_envio=primeiro_envio,
-                            anexo=request.FILES.get("anexo"),
-                            observacao=request.POST.get("observacao_anexo"),
-                        )
+        # Busca anexo existente 
+        anexo_existente = None
+        anexo_query = TabAnexoAmostra.objects.filter(
+            id_envio__id_amostra__id_coleta=coleta_id,
+            id_envio__id_amostra__id_ponto=ponto_id,
+            id_envio__id_amostra__id_frasco=1,
+        ).first()
 
-            proximo_ponto = TabPonto.objects.filter(
-                id_setor=coleta.id_setor, status=True, id__gt=ponto.id
-            ).first()
+        # Se encontrou um anexo, verifica se tem arquivo ou observação
+        if anexo_query:
+            anexo_existente = anexo_query
+            # Se não tem arquivo nem observação, deleta o registro
+            if not anexo_existente.anexo and not anexo_existente.observacao:
+                anexo_existente.delete()
+                anexo_existente = None
 
-            if proximo_ponto:
-                return redirect(
-                    "input_fisico_quimico",
-                    coleta_id=coleta_id,
-                    ponto_id=proximo_ponto.id,
-                )
-            else:
-                return redirect("info_coleta", coleta_id=coleta_id)
-
-    else:
-        formset = MedidaFormSet(
-            queryset=TabMedida.objects.filter(
-                id_envio__id_amostra__id_coleta=coleta_id,
-                id_envio__id_amostra__id_ponto=ponto_id,
-                id_envio__id_amostra__id_frasco=1,
+        if request.method == "POST":
+            formset = MedidaFormSet(
+                request.POST,
+                request.FILES,
+                queryset=TabMedida.objects.filter(
+                    id_envio__id_amostra__id_coleta=coleta_id,
+                    id_envio__id_amostra__id_ponto=ponto_id,
+                    id_envio__id_amostra__id_frasco=1,
+                ),
             )
-        )
 
-    return render(
-        request,
-        "input_fisico_quimico.html",
-        {
-            "formset": formset,
-            "coleta": coleta,
-            "ponto": ponto,
-            "anexo_existente": anexo_existente,
-        },
-    )
+            if formset.is_valid():
+                instances = formset.save()
+                logger.info(
+                    f"Usuário {request.user} salvou medidas físico-químicas - Coleta: {coleta_id}, Ponto: {ponto_id}"
+                )
+
+                # Processa o anexo se houver arquivo ou observação
+                if request.FILES.get("anexo") or request.POST.get("observacao_anexo"):
+                    primeiro_envio = instances[0].id_envio if instances else None
+                    if primeiro_envio:
+                        # Se já existe um anexo, atualiza
+                        if anexo_existente:
+                            if request.FILES.get("anexo"):
+                                anexo_existente.anexo = request.FILES["anexo"]
+                            anexo_existente.observacao = request.POST.get(
+                                "observacao_anexo"
+                            )
+                            anexo_existente.save()
+                        # Se não existe, cria novo
+                        else:
+                            TabAnexoAmostra.objects.create(
+                                id_envio=primeiro_envio,
+                                anexo=request.FILES.get("anexo"),
+                                observacao=request.POST.get("observacao_anexo"),
+                            )
+
+                proximo_ponto = TabPonto.objects.filter(
+                    id_setor=coleta.id_setor, status=True, id__gt=ponto.id
+                ).first()
+
+                if proximo_ponto:
+                    return redirect(
+                        "input_fisico_quimico",
+                        coleta_id=coleta_id,
+                        ponto_id=proximo_ponto.id,
+                    )
+                else:
+                    return redirect("info_coleta", coleta_id=coleta_id)
+            else:
+                logger.warning(
+                    f"Erro de validação no formulário - Usuário: {request.user}, Coleta: {coleta_id}, Ponto: {ponto_id}"
+                )
+
+        else:
+            formset = MedidaFormSet(
+                queryset=TabMedida.objects.filter(
+                    id_envio__id_amostra__id_coleta=coleta_id,
+                    id_envio__id_amostra__id_ponto=ponto_id,
+                    id_envio__id_amostra__id_frasco=1,
+                )
+            )
+
+        return render(
+            request,
+            "input_fisico_quimico.html",
+            {
+                "formset": formset,
+                "coleta": coleta,
+                "ponto": ponto,
+                "anexo_existente": anexo_existente,
+            },
+        )
+    except Exception as e:
+        logger.error(f"Erro ao processar input_fisico_quimico: {str(e)}", exc_info=True)
+        raise
 
 
 
