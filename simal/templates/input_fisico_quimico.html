@@ -14,12 +14,39 @@
 {% block content %}
 {% if user.is_authenticated %}
 <div class="container mt-4">
+    <!-- Cabeçalho modernizado -->
     <div class="row mb-3 mb-md-4">
-        <div class="col">
-            <div class="d-flex align-items-center">
-                <h1 class="display-6 display-md-5 mb-0">
-                    <i class="bi bi-clipboard-data text-primary"></i> Formulário Físico-Químico
-                </h1>
+        <div class="col-12">
+            <div class="card border-0 rounded-4 shadow-sm bg-gradient" style="background-color:rgb(6, 60, 122);">
+                <div class="card-body p-4">
+                    <div class="row align-items-center">
+                        <!-- Informações Principais -->
+                        <div class="col-md-6">
+                            <h1 class="display-6 mb-0 text-white d-flex align-items-center">
+                                <i class="bi bi-input-cursor-text me-3"></i>
+                                Formulário - Sonda 
+                            </h1>
+                            <div class="text-white-50 mt-2">
+                                <p class="mb-0">
+                                    <i class="bi bi-geo-alt me-2"></i>Ponto: {{ ponto }}
+                                </p>
+                                <p class="mb-0">
+                                    <i class="bi bi-hash me-2"></i>OS: {{ coleta.ordem_servico }}
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Data e Hora -->
+                        <div class="col-md-6">
+                            <div class="d-flex justify-content-md-end align-items-center mt-3 mt-md-0">
+                                <div class="text-white">
+                                    <div class="h6 mb-0">{{ coleta.data|date:"d/m/Y" }}</div>
+                                    <small class="text-white-50">{{ coleta.criado_por }}</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -29,7 +56,7 @@
         <div class="col-12 col-md-4">
             <!-- Card de Informações -->
             <div class="card border-0 rounded-4 shadow-sm hover-shadow">
-                <div class="card-header bg-gradient border-0 rounded-top-4 cursor-pointer" style="background-color: #4361ee;" data-bs-toggle="collapse" data-bs-target="#infoCollapseCard" aria-expanded="true" aria-controls="infoCollapseCard">
+                <div class="card-header bg-gradient border-0 rounded-top-4 cursor-pointer" style="background-color: #68a7f1;" data-bs-toggle="collapse" data-bs-target="#infoCollapseCard" aria-expanded="true" aria-controls="infoCollapseCard">
                     <div class="d-flex justify-content-between align-items-center">
                         <h5 class="card-title mb-0 text-white">
                             <i class="bi bi-info-circle-fill me-2"></i>Informações da Coleta
@@ -100,7 +127,7 @@
             
             <!-- Novo card do minimapa -->
             <div class="card border-0 rounded-4 shadow-sm hover-shadow mt-3">
-                <div class="card-header bg-gradient border-0 rounded-top-4" style="background-color: #38b000;">
+                <div class="card-header bg-gradient border-0 rounded-top-4" style="background-color: #63a355;">
                     <div class="d-flex justify-content-between align-items-center">
                         <h5 class="card-title mb-0 text-white">
                             <i class="bi bi-geo-alt-fill me-2"></i>Localização
@@ -116,7 +143,7 @@
         <!-- Card do Formulário -->
         <div class="col-12 col-md-8">
             <div class="card border-0 rounded-4 shadow-sm hover-shadow">
-                <div class="card-header bg-gradient border-0 rounded-top-4" style="background-color: #4895ef;">
+                <div class="card-header bg-gradient border-0 rounded-top-4" style="background-color: #68a7f1;">
                     <h5 class="card-title mb-0 text-white">
                         <i class="bi bi-input-cursor-text me-2"></i>Dados da Análise
                     </h5>
