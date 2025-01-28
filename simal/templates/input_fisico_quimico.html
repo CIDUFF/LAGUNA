@@ -1,5 +1,15 @@
 {% extends 'base/base_site.html' %}
 {% load crispy_forms_tags %}
+
+{% block head %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin="anonymous"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin="anonymous"></script>
+{% endblock %}
+
 {% block title %}Formulário Físico-Químico{% endblock %}
 {% block content %}
 {% if user.is_authenticated %}
@@ -15,68 +25,98 @@
     </div>
 
     <div class="row g-3 g-md-4">
-        <!-- Card de Informações -->
+        <!-- Card de Informações e Minimapa -->
         <div class="col-12 col-md-4">
+            <!-- Card de Informações -->
             <div class="card border-0 rounded-4 shadow-sm hover-shadow">
-                <div class="card-header bg-gradient border-0 rounded-top-4" style="background-color: #4361ee;">
-                    <h5 class="card-title mb-0 text-white">
-                        <i class="bi bi-info-circle-fill me-2"></i>Informações da Coleta
-                    </h5>
+                <div class="card-header bg-gradient border-0 rounded-top-4 cursor-pointer" style="background-color: #4361ee;" data-bs-toggle="collapse" data-bs-target="#infoCollapseCard" aria-expanded="true" aria-controls="infoCollapseCard">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0 text-white">
+                            <i class="bi bi-info-circle-fill me-2"></i>Informações da Coleta
+                        </h5>
+                        <button class="btn btn-link text-white p-0 border-0" type="button">
+                            <i class="bi bi-chevron-up" id="infoCollapseIcon"></i>
+                        </button>
+                    </div>
                 </div>
-                <div class="card-body p-3 p-md-4">
-                    <div class="d-flex flex-column gap-3">
-                        <div class="d-flex align-items-center">
-                            <div class="rounded-circle bg-light p-2 me-3">
-                                <i class="bi bi-map text-primary"></i>
+                <div class="collapse show" id="infoCollapseCard">
+                    <div class="card-body p-3 p-md-4">
+                        <div class="d-flex flex-column gap-3">
+                            <div class="d-flex align-items-center">
+                                <div class="rounded-circle bg-light p-2 me-3">
+                                    <i class="bi bi-map text-primary"></i>
+                                </div>
+                                <div>
+                                    <small class="text-muted">Setor</small>
+                                    <p class="mb-0 fw-bold">{{ coleta.id_setor }}</p>
+                                </div>
                             </div>
-                            <div>
-                                <small class="text-muted">Setor</small>
-                                <p class="mb-0 fw-bold">{{ coleta.id_setor }}</p>
+                            <div class="d-flex align-items-center">
+                                <div class="rounded-circle bg-light p-2 me-3">
+                                    <i class="bi bi-geo-alt text-primary"></i>
+                                </div>
+                                <div>
+                                    <small class="text-muted">Ponto</small>
+                                    <p class="mb-0 fw-bold">{{ ponto }}</p>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <div class="rounded-circle bg-light p-2 me-3">
+                                    <i class="bi bi-hash text-primary"></i>
+                                </div>
+                                <div>
+                                    <small class="text-muted">Ordem de Serviço</small>
+                                    <p class="mb-0 fw-bold">{{ coleta.ordem_servico }}</p>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <div class="rounded-circle bg-light p-2 me-3">
+                                    <i class="bi bi-calendar-event text-primary"></i>
+                                </div>
+                                <div>
+                                    <small class="text-muted">Data da Coleta</small>
+                                    <p class="mb-0 fw-bold">{{ coleta.data|date:"d/m/Y" }}</p>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <div class="rounded-circle bg-light p-2 me-3">
+                                    <i class="bi bi-person text-primary"></i>
+                                </div>
+                                <div>
+                                    <small class="text-muted">Responsável</small>
+                                    <p class="mb-0 fw-bold">{{ coleta.criado_por }}</p>
+                                </div>
                             </div>
                         </div>
-                        <div class="d-flex align-items-center">
-                            <div class="rounded-circle bg-light p-2 me-3">
-                                <i class="bi bi-geo-alt text-primary"></i>
-                            </div>
-                            <div>
-                                <small class="text-muted">Ponto</small>
-                                <p class="mb-0 fw-bold">{{ ponto }}</p>
-                            </div>
-                        </div>
-                        <div class="d-flex align-items-center">
-                            <div class="rounded-circle bg-light p-2 me-3">
-                                <i class="bi bi-hash text-primary"></i>
-                            </div>
-                            <div>
-                                <small class="text-muted">Ordem de Serviço</small>
-                                <p class="mb-0 fw-bold">{{ coleta.ordem_servico }}</p>
-                            </div>
-                        </div>
-                        <div class="d-flex align-items-center">
-                            <div class="rounded-circle bg-light p-2 me-3">
-                                <i class="bi bi-calendar-event text-primary"></i>
-                            </div>
-                            <div>
-                                <small class="text-muted">Data da Coleta</small>
-                                <p class="mb-0 fw-bold">{{ coleta.data|date:"d/m/Y" }}</p>
-                            </div>
-                        </div>
-                        <div class="d-flex align-items-center">
-                            <div class="rounded-circle bg-light p-2 me-3">
-                                <i class="bi bi-person text-primary"></i>
-                            </div>
-                            <div>
-                                <small class="text-muted">Responsável</small>
-                                <p class="mb-0 fw-bold">{{ coleta.criado_por }}</p>
-                            </div>
+                        <!-- Botão Voltar -->
+                        <div class="mt-4">
+                            <a href="{% url 'info_coleta' coleta.id %}" class="btn btn-secondary w-100 rounded-pill">
+                                <i class="bi bi-arrow-left me-2"></i>Voltar
+                            </a>
                         </div>
                     </div>
-                    <!-- Botão Voltar -->
-                    <div class="mt-4">
-                        <a href="{% url 'info_coleta' coleta.id %}" class="btn btn-secondary w-100 rounded-pill">
-                            <i class="bi bi-arrow-left me-2"></i>Voltar
-                        </a>
+                </div>
+            </div>
+            
+            <!-- Novo card do minimapa -->
+            <div class="card border-0 rounded-4 shadow-sm hover-shadow mt-3">
+                <div class="card-header bg-gradient border-0 rounded-top-4" style="background-color: #38b000;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0 text-white">
+                            <i class="bi bi-geo-alt-fill me-2"></i>Localização
+                        </h5>
+                        <div>
+                            <button class="btn btn-light btn-sm me-2" id="toggleLocationMini">
+                                <i class="bi bi-geo-alt"></i>
+                            </button>
+                            <button class="btn btn-light btn-sm" onclick="openFullscreenMap()">
+                                <i class="bi bi-arrows-fullscreen"></i>
+                            </button>
+                        </div>
                     </div>
+                </div>
+                <div class="card-body p-0">
+                    <div id="minimapa" class="rounded-bottom-4" style="height: 200px;"></div>
                 </div>
             </div>
         </div>
@@ -174,7 +214,7 @@
                             {% else %}
                                 <a href="{% url 'lista_campo' coleta.id %}" 
                                    class="btn btn-secondary btn-lg rounded-pill w-100 w-md-auto">
-                                    <i class="bi bi-list-check me-2"></i>Lista de Campo
+                                    <i class="bi bi-list-check"></i>Lista de Campo
                                 </a>
                             {% endif %}
                         </div>
@@ -230,6 +270,50 @@
         padding-top: 0.75rem;
         padding-bottom: 0.75rem;
     }
+}
+
+.current-point-marker {
+    background: transparent;
+}
+
+.pulse {
+    width: 22px;
+    height: 22px;
+    background: #4361ee;
+    border: 3px solid white;
+    border-radius: 50%;
+    box-shadow: 0 0 0 rgba(67, 97, 238, 0.4);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(67, 97, 238, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 20px rgba(67, 97, 238, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(67, 97, 238, 0);
+    }
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+/* Estilos para a seta de colapso */
+.card-header .bi-chevron-up {
+    transition: transform 0.35s ease;
+    display: inline-block;
+}
+
+.card-header[aria-expanded="false"] .bi-chevron-up {
+    transform: rotate(180deg);
+}
+
+.card-header[aria-expanded="true"] .bi-chevron-up {
+    transform: rotate(0deg);
 }
 </style>
 
@@ -347,6 +431,198 @@ document.addEventListener('DOMContentLoaded', function() {
     // Remove a validação antiga que exigia observações
     // Inicializa o contador
     countAnexos();
+    
+    // Função para contar anexos ativos
+    function countAnexos() {
+        const totalAnexos = document.querySelectorAll('#anexos-ativos .anexo-item').length + 
+                           document.querySelectorAll('#anexosContainer > div.anexo-item').length;
+        const contador = document.getElementById('anexoCount');
+        if (contador) {
+            contador.textContent = `${totalAnexos}/5`;
+        }
+        const addButton = document.getElementById('addAnexoBtn');
+        if (addButton) {
+            addButton.disabled = totalAnexos >= 5;
+        }
+        return totalAnexos;
+    }
+
+    // Substitui a validação do formulário
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const anexosCount = countAnexos();
+        
+        if (anexosCount > 5) {
+            e.preventDefault();
+            alert('Limite máximo de 5 anexos atingido!');
+            return false;
+        }
+
+        // Verifica se há novos anexos ou observações
+        const novosAnexos = document.querySelectorAll('#anexos-ativos .anexo-item input[type="file"]');
+        const novasObservacoes = document.querySelectorAll('#anexos-ativos .anexo-item textarea');
+        
+        let temNovosAnexosOuObs = false;
+        
+        novosAnexos.forEach(input => {
+            if (input.files.length > 0) temNovosAnexosOuObs = true;
+        });
+        
+        novasObservacoes.forEach(textarea => {
+            if (textarea.value.trim()) temNovosAnexosOuObs = true;
+        });
+
+        // Se não houver novos dados, permite o envio normal do formulário
+        return true;
+    });
+
+    // Adiciona o código do mapa
+    // Inicializa o minimapa
+    var minimapa = L.map('minimapa', {
+        zoomControl: true, // Habilita controles de zoom
+        dragging: true, // Habilita arrastar o mapa
+        scrollWheelZoom: true, // Habilita zoom com scroll do mouse
+        touchZoom: true, // Habilita zoom com toque
+        doubleClickZoom: true, // Habilita zoom com duplo clique
+        boxZoom: true, // Habilita zoom com box
+        keyboard: true // Habilita controles do teclado
+    });
+    
+    // Camada OpenStreetMap
+    var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        crossOrigin: 'anonymous',
+        subdomains: ['a', 'b', 'c'],
+        maxZoom: 19
+    }).addTo(minimapa);
+
+    // Camada de Satélite ESRI
+    var satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+        maxZoom: 19
+    });
+
+    // Array para armazenar bounds
+    var bounds = L.latLngBounds();
+    
+    // Ponto atual
+    var pontoAtual = parseInt('{{ ponto.id }}');
+    
+    // Todos os pontos do setor com coordenadas como números e status de preenchimento
+    var pontos = [
+        {% for p in pontos %}
+            {
+                id: parseInt('{{ p.id }}'),
+                nome: '{{ p.nome }}',
+                lat: parseFloat('{{ p.lat|stringformat:".6f" }}'),
+                lon: parseFloat('{{ p.lon|stringformat:".6f" }}'),
+                status: {% if p.status %}true{% else %}false{% endif %},
+                formulario_preenchido: {% if p.formulario_preenchido %}true{% else %}false{% endif %},
+                parcialmente_preenchido: {% if p.parcialmente_preenchido %}true{% else %}false{% endif %}
+            }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ];
+
+    console.log('Pontos carregados:', pontos); // Debug
+
+    // Adiciona os marcadores ao minimapa
+    pontos.forEach(function(p) {
+        if (p.status && !isNaN(p.lat) && !isNaN(p.lon)) {
+            console.log('Processando ponto:', p); // Debug
+            
+            let markerIcon;
+            if (p.id === pontoAtual) {
+                markerIcon = L.divIcon({
+                    className: 'current-point-marker',
+                    iconSize: [30, 30],
+                    iconAnchor: [15, 15],
+                    html: '<div class="pulse"></div>'
+                });
+            } else {
+                // Define a cor do marcador baseado no estado do formulário
+                let markerColor = 'blue'; // cor padrão
+                if (p.formulario_preenchido) {
+                    markerColor = 'green';
+                } else if (p.parcialmente_preenchido) {
+                    markerColor = 'orange';
+                }
+
+                markerIcon = L.icon({
+                    iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${markerColor}.png`,
+                    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+                    iconSize: [20, 32],
+                    iconAnchor: [10, 32],
+                    popupAnchor: [1, -34],
+                    shadowSize: [32, 32]
+                });
+            }
+
+            let tooltipText = p.nome;
+            if (p.formulario_preenchido) {
+                tooltipText += ' (Preenchido)';
+            } else if (p.parcialmente_preenchido) {
+                tooltipText += ' (Parcialmente preenchido)';
+            } else {
+                tooltipText += ' (Pendente)';
+            }
+
+            var marker = L.marker([p.lat, p.lon], {icon: markerIcon})
+                .addTo(minimapa)
+                .bindTooltip(tooltipText);
+
+            // Adiciona evento de clique para todos os marcadores
+            marker.on('click', function() {
+                // Redireciona usando a URL completa com os IDs da coleta e do ponto
+                window.location.href = `{% url 'input_fisico_quimico' coleta.id '0' %}`.replace('0', p.id.toString());
+            });
+
+            bounds.extend([p.lat, p.lon]);
+        }
+    });
+
+    // Ajusta a visualização do minimapa após um pequeno atraso
+    setTimeout(() => {
+        minimapa.invalidateSize();
+        if (bounds.isValid()) {
+            minimapa.fitBounds(bounds, {padding: [20, 20]});
+            console.log('Bounds aplicados ao mapa'); // Debug
+        } else {
+            console.log('Bounds inválidos'); // Debug
+            // Fallback para coordenadas padrão se os bounds forem inválidos
+            minimapa.setView([-22.91, -43.20], 12);
+        }
+    }, 300); // Aumentado o delay para 300ms
+
+    // Botão de localização para o minimapa
+    document.getElementById('toggleLocationMini')?.addEventListener('click', function() {
+        geolocationControl.toggleTracking(this, minimapa);
+    });
+
+    // Adiciona comportamento para o ícone de collapse
+    const infoCollapseCard = document.getElementById('infoCollapseCard');
+    const infoCollapseIcon = document.getElementById('infoCollapseIcon');
+    
+    infoCollapseCard.addEventListener('show.bs.collapse', function () {
+        infoCollapseIcon.style.transform = 'rotate(0deg)';
+    });
+    
+    infoCollapseCard.addEventListener('hide.bs.collapse', function () {
+        infoCollapseIcon.style.transform = 'rotate(180deg)';
+    });
+
+    // Atualiza o estado inicial da seta com base no estado do card
+    const cardHeader = document.querySelector('.card-header[data-bs-toggle="collapse"]');
+    
+    // Atualiza o aria-expanded inicialmente
+    cardHeader.setAttribute('aria-expanded', !infoCollapseCard.classList.contains('collapsed'));
+    
+    // Atualiza o estado da seta quando o card é aberto/fechado
+    infoCollapseCard.addEventListener('show.bs.collapse', function () {
+        cardHeader.setAttribute('aria-expanded', 'true');
+    });
+    
+    infoCollapseCard.addEventListener('hide.bs.collapse', function () {
+        cardHeader.setAttribute('aria-expanded', 'false');
+    });
 });
 </script>
 

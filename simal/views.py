@@ -2163,6 +2163,42 @@ def input_fisico_quimico(request, coleta_id, ponto_id):
             )
         )
 
+    # Obter pontos de coleta e verificar preenchimento do formulário
+    pontos_info = []
+    pontos = TabPonto.objects.filter(id_setor=coleta.id_setor)
+    
+    for ponto_item in pontos:
+        # Verifica se existe uma amostra para este ponto e coleta
+        amostra = TabAmostra.objects.filter(
+            id_coleta=coleta,
+            id_ponto=ponto_item,
+            id_frasco=1
+        ).first()
+        
+        formulario_preenchido = False
+        parcialmente_preenchido = False
+        if amostra:
+            # Busca todas as medidas para esta amostra
+            medidas = TabMedida.objects.filter(id_envio__id_amostra=amostra)
+            total_medidas = medidas.count()
+            medidas_preenchidas = medidas.exclude(input_valor__isnull=True).exclude(input_valor__exact='').count()
+            
+            if total_medidas > 0:
+                if medidas_preenchidas == total_medidas:
+                    formulario_preenchido = True
+                elif medidas_preenchidas > 0:
+                    parcialmente_preenchido = True
+
+        pontos_info.append({
+            'id': ponto_item.id,
+            'nome': ponto_item.nome,
+            'lat': ponto_item.lat,
+            'lon': ponto_item.lon,
+            'status': ponto_item.status,
+            'formulario_preenchido': formulario_preenchido,
+            'parcialmente_preenchido': parcialmente_preenchido
+        })
+
     return render(
         request,
         "input_fisico_quimico.html",
@@ -2171,6 +2207,7 @@ def input_fisico_quimico(request, coleta_id, ponto_id):
             "coleta": coleta,
             "ponto": ponto,
             "anexos_existentes": anexos_existentes,
+            "pontos": pontos_info,  # Adiciona os pontos com informação de preenchimento
         },
     )
 
