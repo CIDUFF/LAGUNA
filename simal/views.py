@@ -2077,15 +2077,6 @@ def input_fisico_quimico(request, coleta_id, ponto_id):
             anexo.nome_arquivo = os.path.basename(anexo.anexo.name)
 
     if request.method == "POST":
-        # Processa a exclusão do anexo se solicitado
-        if 'excluir_anexo' in request.POST:
-            anexo_id = request.POST.get('excluir_anexo')
-            if anexo_id:
-                anexo = get_object_or_404(TabAnexoAmostra, id=anexo_id)
-                anexo.delete()
-                messages.success(request, "Anexo excluído com sucesso.")
-            return redirect('input_fisico_quimico', coleta_id=coleta_id, ponto_id=ponto_id)
-
         formset = MedidaFormSet(
             request.POST,
             request.FILES,

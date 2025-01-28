@@ -105,14 +105,6 @@
                         <h5 class="card-title mb-0 text-white">
                             <i class="bi bi-geo-alt-fill me-2"></i>Localização
                         </h5>
-                        <div>
-                            <button class="btn btn-light btn-sm me-2" id="toggleLocationMini">
-                                <i class="bi bi-geo-alt"></i>
-                            </button>
-                            <button class="btn btn-light btn-sm" onclick="openFullscreenMap()">
-                                <i class="bi bi-arrows-fullscreen"></i>
-                            </button>
-                        </div>
                     </div>
                 </div>
                 <div class="card-body p-0">
@@ -156,25 +148,16 @@
                                 <div id="anexosContainer">
                                     {% for anexo in anexos_existentes %}
                                     <div class="anexo-item mb-3 p-3 border rounded">
-                                        <div class="d-flex justify-content-between align-items-start mb-2">
-                                            <div>
-                                                {% if anexo.anexo %}
-                                                <a href="{{ anexo.anexo.url }}" target="_blank" class="text-decoration-none">
-                                                    <i class="bi bi-file-earmark me-2"></i>{{ anexo.nome_arquivo }}
-                                                </a>
-                                                {% else %}
-                                                <span class="text-muted">
-                                                    <i class="bi bi-chat-text me-2"></i>Apenas observação
-                                                </span>
-                                                {% endif %}
-                                            </div>
-                                            <form method="post" class="d-inline" onsubmit="return confirm('Tem certeza que deseja excluir este anexo?');">
-                                                {% csrf_token %}
-                                                <input type="hidden" name="excluir_anexo" value="{{ anexo.id }}">
-                                                <button type="submit" class="btn btn-danger btn-sm">
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
-                                            </form>
+                                        <div class="d-flex align-items-start mb-2">
+                                            {% if anexo.anexo %}
+                                            <a href="{{ anexo.anexo.url }}" target="_blank" class="text-decoration-none">
+                                                <i class="bi bi-file-earmark me-2"></i>{{ anexo.nome_arquivo }}
+                                            </a>
+                                            {% else %}
+                                            <span class="text-muted">
+                                                <i class="bi bi-chat-text me-2"></i>Apenas observação
+                                            </span>
+                                            {% endif %}
                                         </div>
                                         <div class="mb-2">
                                             <textarea class="form-control" rows="2" readonly>{{ anexo.observacao }}</textarea>
@@ -478,13 +461,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Adiciona o código do mapa
     // Inicializa o minimapa
     var minimapa = L.map('minimapa', {
-        zoomControl: true, // Habilita controles de zoom
-        dragging: true, // Habilita arrastar o mapa
-        scrollWheelZoom: true, // Habilita zoom com scroll do mouse
-        touchZoom: true, // Habilita zoom com toque
-        doubleClickZoom: true, // Habilita zoom com duplo clique
-        boxZoom: true, // Habilita zoom com box
-        keyboard: true // Habilita controles do teclado
+        zoomControl: true, // Mantém apenas o controle de zoom
+        dragging: true,
+        scrollWheelZoom: true,
+        touchZoom: true,
+        doubleClickZoom: true,
+        boxZoom: true,
+        keyboard: true
     });
     
     // Camada OpenStreetMap
@@ -591,11 +574,6 @@ document.addEventListener('DOMContentLoaded', function() {
             minimapa.setView([-22.91, -43.20], 12);
         }
     }, 300); // Aumentado o delay para 300ms
-
-    // Botão de localização para o minimapa
-    document.getElementById('toggleLocationMini')?.addEventListener('click', function() {
-        geolocationControl.toggleTracking(this, minimapa);
-    });
 
     // Adiciona comportamento para o ícone de collapse
     const infoCollapseCard = document.getElementById('infoCollapseCard');
