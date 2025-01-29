@@ -19,32 +19,52 @@
     <!-- Cabeçalho moderno -->
     <div class="row g-3">
         <div class="col-12">
-            <div class="card border-0 rounded-4 shadow-sm bg-gradient" style="background-color:rgb(6, 60, 122);">
+            <div class="card border-0 rounded-4 shadow-sm bg-gradient hover-shadow" style="background-color:rgb(6, 60, 122);">
                 <div class="card-body p-4">
                     <div class="row align-items-center">
                         <!-- Informações Principais -->
-                        <div class="col-md-6">
-                            <h1 class="display-6 mb-0 text-white d-flex align-items-center">
+                        <div class="col-md-8">
+                            <h1 class="display-6 mb-3 text-white d-flex align-items-center">
                                 <i class="bi bi-clipboard-data me-3"></i>
                                 <span>{{ coleta_os }}</span>
                             </h1>
-                            <div class="text-white-50 mt-2">
-                                <p class="mb-0">
-                                    <i class="bi bi-person-circle me-2"></i>Responsável: {{ usuario_responsavel }}
-                                </p>
-                                <p class="mb-0">
-                                    <i class="bi bi-calendar-event me-2"></i>Data da Coleta: {{ data_coleta|date:"d/m/Y" }}
-                                </p>
+                            <div class="text-white-50">
+                                <div class="d-flex gap-4"> <!-- Alterado para layout em duas colunas -->
+                                    <div class="d-flex flex-column gap-2">
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-geo-alt me-2"></i>
+                                            <span>Setor: {{ setor }}</span>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-calendar-event me-2"></i>
+                                            <span>Data da Coleta: {{ data_coleta|date:"d/m/Y" }}</span>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-person-circle me-2"></i>
+                                            <span>Responsável: {{ usuario_responsavel }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-column gap-2">
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-calendar-plus me-2"></i>
+                                            <span>Criado em: {{ data_criacao|date:"d/m/Y H:i" }}</span>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-clock-history me-2"></i>
+                                            <span>Atualizada em: {{ atualizado|date:"d/m/Y H:i" }}</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Status e Progresso -->
-                        <div class="col-md-6">
-                            <div class="d-flex justify-content-md-end align-items-center mt-3 mt-md-0">
+                        <!-- Status e Ações -->
+                        <div class="col-md-4">
+                            <div class="d-flex flex-column align-items-md-end gap-2 mt-3 mt-md-0">
                                 <!-- Link do WhatsApp -->
-                                <a href="{{ link }}" target="_blank" class="btn btn-light rounded-pill me-3">
-                                    <i class="bi bi-share me-2"></i>Compartilhar
-                                </a>                               
+                                <a href="{{ link }}" target="_blank" class="btn rounded-pill" style="background-color: #25D366; color: white;">
+                                    <i class="bi bi-whatsapp me-2"></i>Compartilhar no WhatsApp
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -56,48 +76,16 @@
     <div class="row g-4">
         <!-- Coluna da esquerda -->
         <div class="col-md-6">
-            <div class="card mb-4 border-0 rounded-4 shadow-sm hover-shadow">
-                <div class="card-header bg-gradient border-0 rounded-top-4" style="background-color: #68a7f1;">
-                    <h5 class="card-title mb-0 text-white"><i class="bi bi-info-circle-fill me-2"></i>Dados Principais</h5>
-                </div>
-                <div class="card-body p-4">
-                    <div class="d-flex flex-column gap-3">
-                        <div class="d-flex align-items-center">
-                            <div class="rounded-circle bg-light p-2 me-3">
-                                <i class="bi bi-hash text-primary"></i>
-                            </div>
-                            <div>
-                                <small class="text-muted">Ordem de serviço</small>
-                                <p class="mb-0 fw-bold">{{ coleta_os }}</p>
-                            </div>
-                        </div>
-                        <div class="d-flex align-items-center">
-                            <div class="rounded-circle bg-light p-2 me-3">
-                                <i class="bi bi-person text-primary"></i>
-                            </div>
-                            <div>
-                                <small class="text-muted">Usuário Responsável</small>
-                                <p class="mb-0 fw-bold">{{ usuario_responsavel }}</p>
-                            </div>
-                        </div>
-                        <div class="d-flex align-items-center">
-                            <div class="rounded-circle bg-light p-2 me-3">
-                                <i class="bi bi-calendar-event text-primary"></i>
-                            </div>
-                            <div>
-                                <small class="text-muted">Data da Coleta</small>
-                                <p class="mb-0 fw-bold">{{ data_coleta|date:"d/m/Y" }}</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <div class="card border-0 rounded-4 shadow-sm hover-shadow">
                 <div class="card-header bg-gradient border-0 rounded-top-4" style="background-color: #68a7f1;">
-                    <h5 class="card-title mb-0 text-white"><i class="bi bi-check2-circle me-2"></i>Status</h5>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0 text-white"><i class="bi bi-check2-circle me-2"></i>Status</h5>
+                        <button class="btn btn-light btn-sm d-md-none toggle-status" type="button">
+                            <i class="bi bi-chevron-up"></i>
+                        </button>
+                    </div>
                 </div>
-                <div class="card-body p-4">
+                <div class="card-body p-4 status-content">
                     <div class="status-item mb-4">
                         <div class="d-flex align-items-center mb-2">
                             <i class="bi bi-file-text me-2 text-primary"></i>
@@ -178,12 +166,12 @@
 
         <!-- Coluna da direita -->
         <div class="col-md-6">
-            <div class="card border-0 rounded-4 shadow-sm hover-shadow h-100"> <!-- Adicione h-100 aqui -->
+            <div class="card border-0 rounded-4 shadow-sm hover-shadow h-100">
                 <div class="card-header bg-gradient border-0 rounded-top-4" style="background-color:#63a355;">
                     <div class="d-flex justify-content-between align-items-center">
                         <h5 class="card-title mb-0 text-white"><i class="bi bi-geo-alt-fill me-2"></i>Mapa das estações amostrais</h5>
-                        <div>
-                            <button class="btn btn-light btn-sm me-2" id="toggleLocation">
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-light btn-sm" id="toggleLocation">
                                 <i class="bi bi-geo-alt"></i>
                             </button>
                             <button class="btn btn-light btn-sm" onclick="openFullscreenMap()">
@@ -192,8 +180,8 @@
                         </div>
                     </div>
                 </div>
-                <div class="card-body p-0 flex-grow-1"> <!-- Adicione flex-grow-1 aqui -->
-                    <div id="map" class="rounded-bottom-4" style="height: 100%; min-height: 500px;"></div> <!-- Ajuste para height: 100% -->
+                <div class="card-body p-0">
+                    <div id="map" class="rounded-bottom-4"></div> <!-- Removida altura fixa -->
                 </div>
             </div>
         </div>
@@ -211,7 +199,7 @@
                             </a>
                         {% endif %}
                         <a href="{% url 'checklist_coleta' coleta %}" class="btn btn-success btn-lg rounded-pill">
-                            <i class="bi bi-arrow-left me-2"></i>Voltar ao Checklist
+                            <i class="bi bi-arrow-left me-2"></i>Checklist
                         </a>
                         <div class="dropdown">
                             <button class="btn btn-success btn-lg rounded-pill dropdown-toggle" type="button" data-bs-toggle="dropdown">
@@ -225,15 +213,11 @@
                                 </li>
                                 <li>
                                     <a class="dropdown-item py-2" href="#" data-option="laboratorio">
-                                        <i class="bi bi-flask me-2"></i>Laboratório
+                                        <i class="bi bi-tags me-2"></i>Laboratório
                                     </a>
                                 </li>
                             </ul>
                         </div>
-                        <a href="{{ link }}" target="_blank" class="btn btn-lg rounded-pill" 
-                           style="background-color: #25D366; color: white;">
-                            <i class="bi bi-whatsapp me-2"></i>Compartilhar
-                        </a>
                     </div>
                 </div>
             </div>
@@ -285,11 +269,8 @@
 }
 
 #map {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    width: 100%;
+    height: 100%; /* Altura será controlada pelo JavaScript */
 }
 
 #fullscreenMap {
@@ -299,7 +280,7 @@
 
 @media (max-width: 768px) {
     #map {
-        height: 400px; /* Altura menor em telas pequenas */
+        height: 400px !important; /* Altura menor em telas pequenas */
         margin-bottom: 1rem; /* Espaçamento extra no mobile */
     }
     
@@ -367,6 +348,14 @@
     .dropdown-toggle {
         width: 100%;
         text-align: center;
+    }
+
+    .card-header .d-flex.gap-2 {
+        gap: 0.75rem !important; /* Aumenta o gap em dispositivos móveis */
+    }
+    
+    .card-header .btn-sm {
+        padding: 0.5rem 0.75rem; /* Aumenta um pouco o padding dos botões */
     }
 }
 
@@ -455,6 +444,71 @@
     left: 50%;
     transform: translate(-50%, -50%);
 }
+
+/* Ajuste dos botões de controle do mapa */
+.card-header .btn-sm,
+.leaflet-control .btn {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    font-size: 18px;
+}
+
+.card-header .btn-sm i,
+.leaflet-control .btn i {
+    font-size: 18px;
+    line-height: 1;
+}
+
+/* Ajuste específico para o botão de localização no mapa em tela cheia */
+#fullscreenLocation {
+    width: 40px !important;
+    height: 40px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 !important;
+    margin: 10px !important;
+    font-size: 18px !important;
+}
+
+#fullscreenLocation i {
+    font-size: 18px;
+    line-height: 1;
+}
+
+@media (max-width: 768px) {
+    // ...existing code...
+    
+    .card-header .d-flex.gap-2 {
+        gap: 0.5rem !important;
+    }
+    
+    .card-header .btn-sm,
+    .leaflet-control .btn,
+    #fullscreenLocation {
+        width: 40px !important;
+        height: 40px !important;
+    }
+}
+
+/* Estilos para o card minimizável */
+@media (max-width: 768px) {
+    .status-content.collapsed {
+        display: none;
+    }
+    
+    .toggle-status i {
+        transition: transform 0.3s ease;
+    }
+    
+    .toggle-status.collapsed i {
+        transform: rotate(180deg);
+    }
+}
 </style>
 
 <script>
@@ -537,6 +591,22 @@ const geolocationControl = {
 };
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Adicione no início do DOMContentLoaded
+    function adjustMapHeight() {
+        const statusCard = document.querySelector('.col-md-6:first-child .card');
+        const mapContainer = document.getElementById('map');
+        if (statusCard && mapContainer && window.innerWidth >= 768) {
+            const statusHeight = statusCard.offsetHeight;
+            const mapCardHeader = mapContainer.closest('.card').querySelector('.card-header');
+            const headerHeight = mapCardHeader.offsetHeight;
+            mapContainer.style.height = `${statusHeight - headerHeight}px`;
+        }
+    }
+
+    // Chama a função inicialmente e adiciona listener para redimensionamento
+    adjustMapHeight();
+    window.addEventListener('resize', adjustMapHeight);
+    
     // Mantém os pontos acessíveis globalmente
     window.pontosColeta = {{ pontos_coleta|safe }};
     var map = L.map('map');
@@ -742,6 +812,42 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
         });
     }
+
+    // Função para pegar o estado salvo do cookie
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+    }
+
+    // Função para salvar o estado no cookie
+    function setCookie(name, value) {
+        const date = new Date();
+        date.setTime(date.getTime() + (7 * 24 * 60 * 60 * 1000)); // Cookie válido por 7 dias
+        document.cookie = `${name}=${value};expires=${date.toUTCString()};path=/`;
+    }
+
+    const toggleBtn = document.querySelector('.toggle-status');
+    const statusContent = document.querySelector('.status-content');
+    
+    if (toggleBtn && statusContent) {
+        // Recupera o estado salvo
+        const isCollapsed = getCookie('statusCardCollapsed') === 'true';
+        
+        // Aplica o estado inicial
+        if (isCollapsed) {
+            statusContent.classList.add('collapsed');
+            toggleBtn.classList.add('collapsed');
+        }
+
+        toggleBtn.addEventListener('click', function() {
+            statusContent.classList.toggle('collapsed');
+            this.classList.toggle('collapsed');
+            
+            // Salva o novo estado
+            setCookie('statusCardCollapsed', statusContent.classList.contains('collapsed'));
+        });
+    }
 });
 
 let fullscreenMap = null;
@@ -840,8 +946,6 @@ function initFullscreenMap() {
     fullscreenLocationButton.onAdd = function(map) {
         const button = L.DomUtil.create('button', 'btn btn-light');
         button.innerHTML = '<i class="bi bi-geo-alt"></i>';
-        button.style.margin = '10px';
-        button.style.padding = '6px 10px';
         button.id = 'fullscreenLocation';
         
         L.DomEvent.on(button, 'click', function() {

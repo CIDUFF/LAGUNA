@@ -2119,6 +2119,7 @@ def info_coleta(request, coleta_id):
 
         context = {
             "coleta": coleta.id,
+            "setor": coleta.id_setor,
             "coleta_os": coleta.ordem_servico,  # Usando ordem_servico ao invés do id
             "usuario_responsavel": usuario_responsavel,
             "data_coleta": data_coleta,
@@ -2128,6 +2129,7 @@ def info_coleta(request, coleta_id):
             "percentual_checklist": percentual_checklist,
             "link": link,
             "pontos_coleta": pontos_coleta_json,
+            "atualizado" :coleta.atualizado_em
         }
 
         return render(request, "info_coleta.html", context)

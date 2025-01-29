@@ -1,23 +1,133 @@
-<div class="modal-header">
-    <h5 class="modal-title">Selecione o Frasco</h5>
-    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+<div class="modal-header bg-gradient border-0" style="background-color: #4361ee;">
+    <h5 class="modal-title text-white">
+        <i class="bi bi-flask me-2"></i>Selecione o Frasco
+    </h5>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
 </div>
-<div class="modal-body">
+<div class="modal-body p-4" style="max-height: 75vh; overflow-y: auto;">
     <div class="list-group">
         {% for frasco in frascos %}
             <a href="{% url 'fill_frasco_medida' coleta.id frasco.id %}" 
-               class="list-group-item list-group-item-{{ frasco.status }} d-flex justify-content-between align-items-center">
-                {{ frasco.nome }}
+               class="list-group-item list-group-item-action d-flex justify-content-between align-items-center rounded-3 mb-2 border-0 shadow-sm hover-item">
+                <div class="d-flex align-items-center">
+                    <div class="rounded-circle bg-light p-2 me-3">
+                        <i class="bi bi-flask text-primary"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-0">{{ frasco.nome }}</h6>
+                        <small class="text-muted">Frasco #{{ frasco.id }}</small>
+                    </div>
+                </div>
                 {% if frasco.tem_formularios %}
-                    <span class="badge bg-success">
-                        <i class="bi bi-check-circle"></i> Formulários Gerados
+                    <span class="badge bg-success rounded-pill">
+                        <i class="bi bi-check-circle me-1"></i>
+                        Formulários Gerados
                     </span>
                 {% else %}
-                    <span class="badge bg-warning text-dark">
-                        <i class="bi bi-exclamation-triangle"></i> Pendente
+                    <span class="badge bg-warning text-dark rounded-pill">
+                        <i class="bi bi-exclamation-triangle me-1"></i>
+                        Pendente
                     </span>
                 {% endif %}
             </a>
         {% endfor %}
     </div>
 </div>
+
+<style>
+.hover-item {
+    transition: all 0.3s ease;
+}
+
+.hover-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+.modal-header {
+    border-radius: 0.5rem 0.5rem 0 0;
+}
+
+.badge {
+    font-size: 0.8rem;
+    padding: 0.5em 0.8em;
+}
+
+@media (max-width: 768px) {
+    .modal-body {
+        padding: 1rem !important;
+    }
+    
+    .list-group-item {
+        padding: 0.75rem !important;
+    }
+    
+    h6 {
+        font-size: 0.9rem;
+    }
+    
+    small {
+        font-size: 0.75rem;
+    }
+    
+    .badge {
+        font-size: 0.7rem;
+        padding: 0.4em 0.6em;
+    }
+}
+
+/* Melhoria no touch target para dispositivos móveis */
+@media (hover: none) {
+    .list-group-item {
+        min-height: 60px;
+    }
+    
+    .badge {
+        min-height: 24px;
+        display: flex;
+        align-items: center;
+    }
+}
+
+.modal-dialog {
+    display: flex;
+    align-items: center;
+    min-height: calc(100vh - 60px);
+    margin: 30px auto;
+}
+
+.modal-content {
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-body {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0,0,0,0.2) transparent;
+}
+
+.modal-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+    background-color: rgba(0,0,0,0.2);
+    border-radius: 3px;
+}
+
+@media (max-width: 768px) {
+    .modal-dialog {
+        margin: 10px;
+        min-height: calc(100vh - 20px);
+    }
+    
+    .modal-content {
+        max-height: calc(100vh - 20px);
+    }
+}
+</style>
