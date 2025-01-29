@@ -15,9 +15,9 @@
 
 {% block title %}Informações da Coleta{% endblock %}
 {% block content %}
-<div class="container-fluid p-4">
+<div class="container-fluid px-4 py-3 mb-4"> <!-- Adicionado mb-4 -->
     <!-- Cabeçalho moderno -->
-    <div class="row g-3">
+    <div class="row g-3 mb-4"> <!-- Adicionado margin-bottom -->
         <div class="col-12">
             <div class="card border-0 rounded-4 shadow-sm bg-gradient hover-shadow" style="background-color:rgb(6, 60, 122);">
                 <div class="card-body p-4">
@@ -61,9 +61,40 @@
                         <!-- Status e Ações -->
                         <div class="col-md-4">
                             <div class="d-flex flex-column align-items-md-end gap-2 mt-3 mt-md-0">
+                                <!-- Botão de Checklist -->
+                                <a href="{% url 'checklist_coleta' coleta %}" class="btn btn-light rounded-pill header-btn">
+                                    <i class="bi bi-arrow-left me-2"></i>Checklist
+                                </a>
+                                
+                                <!-- Botão Gerar Formulários (movido para cá) -->
+                                {% if not fill_amostra_gerado %}
+                                    <a href="{% url 'fill_amostra' coleta %}" class="btn btn-light rounded-pill header-btn">
+                                        <i class="bi bi-file-earmark-plus me-2"></i>Gerar Formulários
+                                    </a>
+                                {% endif %}
+
+                                <!-- Dropdown de Resultados -->
+                                <div class="dropdown">
+                                    <button class="btn btn-light rounded-pill header-btn dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                        <i class="bi bi-pencil-square me-2"></i>Inserir resultados
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li>
+                                            <a class="dropdown-item py-2" href="{% url 'lista_campo' coleta %}">
+                                                <i class="bi bi-thermometer me-2"></i>Campo
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item py-2" href="#" data-option="laboratorio">
+                                                <i class="bi bi-tags me-2"></i>Laboratório
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                                
                                 <!-- Link do WhatsApp -->
-                                <a href="{{ link }}" target="_blank" class="btn rounded-pill" style="background-color: #25D366; color: white;">
-                                    <i class="bi bi-whatsapp me-2"></i>Compartilhar no WhatsApp
+                                <a href="{{ link }}" target="_blank" class="btn header-btn rounded-pill" style="background-color: #25D366; color: white;">
+                                    <i class="bi bi-whatsapp me-2"></i>WhatsApp
                                 </a>
                             </div>
                         </div>
@@ -73,10 +104,10 @@
         </div>
     </div>
 
-    <div class="row g-4">
+    <div class="row g-4 h-100"> <!-- Adicionado h-100 -->
         <!-- Coluna da esquerda -->
-        <div class="col-md-6">
-            <div class="card border-0 rounded-4 shadow-sm hover-shadow">
+        <div class="col-md-6 d-flex"> <!-- Adicionado d-flex -->
+            <div class="card border-0 rounded-4 shadow-sm hover-shadow flex-fill"> <!-- Adicionado flex-fill -->
                 <div class="card-header bg-gradient border-0 rounded-top-4" style="background-color: #68a7f1;">
                     <div class="d-flex justify-content-between align-items-center">
                         <h5 class="card-title mb-0 text-white"><i class="bi bi-check2-circle me-2"></i>Status</h5>
@@ -165,8 +196,8 @@
         </div>
 
         <!-- Coluna da direita -->
-        <div class="col-md-6">
-            <div class="card border-0 rounded-4 shadow-sm hover-shadow h-100">
+        <div class="col-md-6 d-flex"> <!-- Adicionado d-flex -->
+            <div class="card border-0 rounded-4 shadow-sm hover-shadow flex-fill"> <!-- Adicionado flex-fill -->
                 <div class="card-header bg-gradient border-0 rounded-top-4" style="background-color:#63a355;">
                     <div class="d-flex justify-content-between align-items-center">
                         <h5 class="card-title mb-0 text-white"><i class="bi bi-geo-alt-fill me-2"></i>Mapa das estações amostrais</h5>
@@ -187,42 +218,6 @@
         </div>
     </div> <!-- Fechamento da row anterior -->
 
-    <!-- Barra de ações em uma nova row -->
-    <div class="row mt-4">
-        <div class="col-12">
-            <div class="card border-0 rounded-4 shadow-sm hover-shadow">
-                <div class="card-body p-4">
-                    <div class="d-flex gap-3 flex-wrap justify-content-start">
-                        {% if not fill_amostra_gerado %}
-                            <a href="{% url 'fill_amostra' coleta %}" class="btn btn-primary btn-lg rounded-pill">
-                                <i class="bi bi-file-earmark-plus me-2"></i>Gerar Formulários
-                            </a>
-                        {% endif %}
-                        <a href="{% url 'checklist_coleta' coleta %}" class="btn btn-success btn-lg rounded-pill">
-                            <i class="bi bi-arrow-left me-2"></i>Checklist
-                        </a>
-                        <div class="dropdown">
-                            <button class="btn btn-success btn-lg rounded-pill dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                <i class="bi bi-pencil-square me-2"></i>Inserir Resultados
-                            </button>
-                            <ul class="dropdown-menu">
-                                <li>
-                                    <a class="dropdown-item py-2" href="{% url 'lista_campo' coleta %}">
-                                        <i class="bi bi-thermometer me-2"></i>Campo
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item py-2" href="#" data-option="laboratorio">
-                                        <i class="bi bi-tags me-2"></i>Laboratório
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
 
 <!-- Modal do Mapa -->
@@ -507,6 +502,117 @@
     
     .toggle-status.collapsed i {
         transform: rotate(180deg);
+    }
+}
+
+/* Adicione estes estilos para ajustar os botões no cabeçalho */
+@media (min-width: 768px) {
+    .col-md-4 .btn {
+        min-width: 200px;
+    }
+    
+    .col-md-4 .dropdown {
+        width: auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .col-md-4 .btn,
+    .col-md-4 .dropdown-toggle {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+}
+
+/* Ajustes para os botões do cabeçalho */
+@media (min-width: 768px) {
+    .col-md-4 .btn,
+    .col-md-4 .dropdown-toggle {
+        min-width: 220px; /* Largura mínima fixa para todos os botões */
+        white-space: nowrap; /* Evita quebra de texto */
+        overflow: hidden;
+        text-overflow: ellipsis; /* Adiciona ... se o texto for muito longo */
+    }
+    
+    .col-md-4 .dropdown {
+        width: auto;
+    }
+
+    .col-md-4 .d-flex {
+        width: 100%;
+        justify-content: flex-end;
+    }
+}
+
+@media (max-width: 767px) {
+    .col-md-4 .btn,
+    .col-md-4 .dropdown,
+    .col-md-4 .dropdown-toggle {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+}
+
+/* Estilos para os botões do cabeçalho */
+.header-btn {
+    width: 140px !important; /* Força todos os botões a terem a mesma largura */
+    text-align: center;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+}
+
+@media (max-width: 767px) {
+    .header-btn {
+        width: 100% !important;
+    }
+    
+    .dropdown {
+        width: 100%;
+    }
+    
+    .dropdown .header-btn {
+        width: 100% !important;
+    }
+}
+
+/* Adicione estes estilos para melhor utilização do espaço */
+@media (min-width: 1200px) {
+    .container-fluid {
+        min-height: calc(100vh - 56px); /* Mudado de height para min-height */
+        padding: 1.5rem 2rem;
+    }
+
+    .row.h-100 {
+        height: calc(100% - 180px); /* Ajuste baseado na altura do cabeçalho */
+        margin-bottom: 2rem; /* Adiciona espaço após os cards */
+    }
+
+    .card {
+        margin-bottom: 0;
+    }
+
+    #map {
+        min-height: 500px; /* Altura mínima para o mapa */
+    }
+}
+
+/* Ajuste para garantir espaço no final da página */
+.container-fluid {
+    margin-bottom: 2rem; /* Espaço no final da página */
+}
+
+/* Ajustes para telas muito grandes */
+@media (min-width: 1600px) {
+    .container-fluid {
+        padding: 2rem 3rem;
+    }
+}
+
+/* Ajuste para o card de status em telas grandes */
+@media (min-width: 1200px) {
+    .status-content {
+        max-height: calc(100vh - 300px);
+        overflow-y: auto;
     }
 }
 </style>
