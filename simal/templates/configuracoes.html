@@ -37,6 +37,10 @@ Configurações
   <li class="nav-item">
     <button class="nav-link text-dark" id="tab_email-tab" data-bs-toggle="tab" data-bs-target="#tab_email" type="button" role="tab" aria-controls="tab_email" aria-selected="false">Templates de e-mail</button>
   </li>
+  <li class="nav-item">
+    <button class="nav-link text-dark" id="tab_status_coleta-tab" data-bs-toggle="tab" data-bs-target="#tab_status_coleta" type="button" role="tab" aria-controls="tab_status_coleta" aria-selected="false">Status de Coleta</button>
+  </li>
+
 </ul>
 <div class="tab-content" id="configTabContent">
   <div class="tab-pane fade show active" id="tab_param" role="tabpanel" aria-labelledby="tab_param-tab">
@@ -145,6 +149,18 @@ Configurações
             <button type="submit" class="btn btn-primary">Salvar</button>
         </form>
         {% render_table table_email %}
+    </div>
+  </div>
+  <div class="tab-pane fade" id="tab_status_coleta" role="tabpanel" aria-labelledby="tab_status_coleta-tab">
+    <div class="card checklist mt-4">
+        <h3>Templates de e-mail</h3>
+        <form method="post" class="form">
+            {% csrf_token %}
+            <input type="hidden" name="status_coleta_submit" value="1">
+            {% bootstrap_form status_coleta_form layout='floating' %}
+            <button type="submit" class="btn btn-primary">Salvar</button>
+        </form>
+        {% render_table table_status_coleta %}
     </div>
   </div>
 </div>

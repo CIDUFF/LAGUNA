@@ -29,6 +29,7 @@ from .models import (
     TabLocal,
     TabPonto,
     TabParam,
+    TabStatusColeta,
     UnidadesMedida,
     TipoParametro,
     TabFrasco,
@@ -740,6 +741,25 @@ class TipoParametroForm(forms.ModelForm):
         fields = "__all__"
 
 
+class StatusColetaForm(forms.ModelForm):
+    class Meta:
+        model = TabStatusColeta
+        fields = ["status", "descricao"]
+        labels = {
+            "status": "Status",
+            "descricao": "Descrição"
+        }
+        widgets = {
+            "status": forms.TextInput(attrs={"class": "form-control"}),
+            "descricao": forms.Textarea(attrs={"class": "form-control", "rows": 3})
+        }
+        
+        
+class TabStatusColetaForm(forms.ModelForm):
+    class Meta:
+        model = TabStatusColeta
+        fields = "__all__"
+
 class TabFrascoForm(forms.ModelForm):
     class Meta:
         model = TabFrasco
@@ -774,6 +794,7 @@ class TabSerieClassificacaoForm(forms.ModelForm):
     class Meta:
         model = TabSerieClassificacao
         fields = "__all__"
+
 
 
 class CadastroCampanhaForm(forms.ModelForm):
