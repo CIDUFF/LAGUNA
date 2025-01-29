@@ -1,6 +1,5 @@
 from django.urls import path
 from simal.views import (
-    cancelar_coleta,
     home,
     coleta,
     ajuda,
@@ -208,5 +207,4 @@ urlpatterns = [
     path('input_laboratorio/<int:coleta_id>/<int:ponto_id>/<int:frasco_id>/', 
          input_laboratorio, 
          name='input_laboratorio'),
-    path("cancelar_coleta/<int:id>/", cancelar_coleta, name="cancelar_coleta"),
 ]

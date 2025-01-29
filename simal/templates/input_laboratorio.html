@@ -1,4 +1,7 @@
 {% extends 'base/base_site.html' %}
+
+
+<!-- ... resto do código existente ... -->
 {% load crispy_forms_tags %}
 {% block title %}Formulário Físico-Químico{% endblock %}
 {% block content %}
@@ -77,10 +80,46 @@
                             <i class="bi bi-arrow-left me-2"></i>Voltar
                         </a>
                     </div>
+                    
+                </div>
+                
+            </div>
+            <!-- ... código existente ... -->
+
+<!-- Adicione após o cabeçalho principal -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="btn-group" role="group">
+                {% if ponto_anterior %}
+                    <a href="{% url 'input_laboratorio' coleta_id=coleta.id ponto_id=ponto_anterior.id frasco_id=frasco.id %}" 
+                       class="btn btn-outline-primary">
+                        <i class="bi bi-arrow-left"></i> Ponto anterior
+                    </a>
+                {% endif %}
+                
+                {% if ponto_proximo %}
+                    <a href="{% url 'input_laboratorio' coleta_id=coleta.id ponto_id=ponto_proximo.id frasco_id=frasco.id %}"
+                       class="btn btn-outline-primary">
+                        Próximo ponto <i class="bi bi-arrow-right"></i>
+                    </a>
+                {% endif %}
+            </div>
+            
+            <div class="text-center flex-grow-1 px-3">
+                <h6 class="mb-1">Progresso: {{ ponto_atual }} de {{ total_pontos }} pontos</h6>
+                <div class="progress">
+                    <div class="progress-bar" role="progressbar" style="width: {{ progresso }}%"
+                         aria-valuenow="{{ progresso }}" aria-valuemin="0" aria-valuemax="100">
+                        {{ progresso|floatformat:1 }}%
+                    </div>
                 </div>
             </div>
         </div>
-
+    </div>
+</div>
+        </div>
+        
         <!-- Card do Formulário -->
         <div class="col-12 col-md-8">
             <div class="card border-0 rounded-4 shadow-sm hover-shadow">

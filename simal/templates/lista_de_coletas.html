@@ -22,7 +22,7 @@
             </h5>
         </div>
         <div class="card-body p-4">
-            <form method="post" action="{% url 'aplicar_acao' %}">
+            <form method="post" action="{% url 'aplicar_acao' %}" id="coletaForm">
                 {% csrf_token %}
                 {% render_table table %}
                 
@@ -33,14 +33,35 @@
                     <button type="submit" name="acao" value="detalhes" class="btn btn-secondary btn-lg rounded-pill">
                         <i class="bi bi-info-circle me-2"></i>Detalhes
                     </button>
+                    <button type="button" id="btnCancelar" class="btn btn-danger btn-lg rounded-pill">
+                        <i class="bi bi-x-circle me-2"></i>Cancelar
+                    </button>
                     <a href="{% url 'direcionamento_campanha' %}" class="btn btn-success btn-lg rounded-pill">
                         <i class="bi bi-plus-circle me-2"></i>Nova Campanha
                     </a>
-                    <button type="submit" name="acao" value="cancelar" class="btn btn-danger btn-lg rounded-pill">
-                        <i class="bi bi-x-circle me-2"></i>Cancelar
-                    </button>
                 </div>
+                <input type="hidden" name="acao" id="acaoInput" value="">
             </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Confirmação -->
+<div class="modal fade" id="confirmarCancelamentoModal" tabindex="-1" aria-labelledby="confirmarCancelamentoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmarCancelamentoModalLabel">Confirmar Cancelamento</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Você tem certeza que deseja cancelar a(s) coleta(s) selecionada(s)?</p>
+                <p class="text-danger"><small>Esta ação não pode ser desfeita.</small></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Não, voltar</button>
+                <button type="button" class="btn btn-danger" id="confirmarCancelamento">Sim, cancelar</button>
+            </div>
         </div>
     </div>
 </div>
@@ -217,6 +238,54 @@ table td {
                     });
                 }
             });
+        });
+
+        // Adiciona manipuladores para o cancelamento
+        const btnCancelar = document.getElementById('btnCancelar');
+        const form = document.getElementById('coletaForm');
+        const acaoInput = document.getElementById('acaoInput');
+        const modal = new bootstrap.Modal(document.getElementById('confirmarCancelamentoModal'));
+        const btnConfirmarCancelamento = document.getElementById('confirmarCancelamento');
+
+        btnCancelar.addEventListener('click', function() {
+            const selecionados = document.querySelectorAll('.single-select:checked');
+            if (selecionados.length === 0) {
+                alert('Por favor, selecione pelo menos uma coleta para cancelar.');
+                return;
+            }
+
+            // Verifica se alguma coleta selecionada já está cancelada
+            let temColetaCancelada = false;
+            selecionados.forEach(radio => {
+                const row = radio.closest('tr');
+                const statusCell = row.querySelector('td[data-status]');
+                if (statusCell && statusCell.dataset.status === "2") { // 2 = status cancelada
+                    temColetaCancelada = true;
+                }
+            });
+
+            if (temColetaCancelada) {
+                alert('Não é possível cancelar uma coleta que já está cancelada.');
+                return;
+            }
+
+            modal.show();
+        });
+
+        btnConfirmarCancelamento.addEventListener('click', function() {
+            acaoInput.value = 'cancelar';
+            form.submit();
+        });
+
+        // Atualiza o form para outros botões
+        document.querySelectorAll('button[type="submit"]').forEach(button => {
+            if (button.name === 'acao') {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    acaoInput.value = this.value;
+                    form.submit();
+                });
+            }
         });
     });
 </script>

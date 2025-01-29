@@ -2290,9 +2290,15 @@ def lista_de_coletas(request):
     return render(request, "lista_de_coletas.html", {"table": table})
 
 
-@login_required
+@login_required 
 def update_coleta(request, id):
     coleta = get_object_or_404(TabColeta, id=id)
+    
+    # Verificar se a coleta está cancelada
+    if coleta.status.id == 2:  # status 2 = cancelada 
+        messages.error(request, "Não é possível editar uma coleta que já está cancelada.")
+        return redirect("lista_de_coletas")
+        
     if request.method == "POST":
         form = CadastroColetaForm(request.POST, instance=coleta)
         if form.is_valid():
@@ -2303,19 +2309,32 @@ def update_coleta(request, id):
         form = CadastroColetaForm(instance=coleta)
     return render(request, "cadastro_coleta.html", {"form": form})
 
-
 @login_required
 def aplicar_acao(request):
     if request.method == "POST":
         acao = request.POST.get("acao")
         selecionados = request.POST.getlist("selecionar")
 
-        if acao and selecionados:  # Corrigido de 'e' para 'and'
+        if acao and selecionados:
+            # Obter a primeira coleta selecionada
+            coleta = get_object_or_404(TabColeta, id=selecionados[0])
+            
+            # Verificar se a coleta está cancelada antes de qualquer ação
+            if coleta.status.id == 2:  # status 2 = cancelada
+                messages.error(request, "Não é possível editar uma coleta que já está cancelada.")
+                return redirect("lista_de_coletas")
+
             if acao == "editar":
                 return redirect("update_coleta", id=selecionados[0])
             elif acao == "detalhes":
-                return redirect("info_coleta", coleta_id=selecionados[0])
-            # Adicione outras ações conforme necessário
+                return redirect("info_coleta", coleta_id=selecionados[0]) 
+            elif acao == "cancelar":
+                coletas = TabColeta.objects.filter(id__in=selecionados)
+                if coletas.filter(status=2).exists():
+                    messages.error(request, "Não é possível cancelar coletas que já estão canceladas.")
+                else:
+                    coletas.update(status=2)
+                    messages.success(request, "Coletas canceladas com sucesso.")
 
     return redirect("lista_de_coletas")
 
@@ -2352,10 +2371,7 @@ def input_laboratorio(request, coleta_id, ponto_id, frasco_id):
     View para entrada de dados laboratoriais
     """
     MedidaFormSet = modelformset_factory(
-        TabMedida, 
-        form=InputFisicoQuimicoForm,
-        extra=0, 
-        fields=['input_valor', 'id_envio', 'id_pp']
+        TabMedida, form=InputFisicoQuimicoForm, extra=0, fields="__all__"
     )
 
     coleta = get_object_or_404(TabColeta, id=coleta_id)
@@ -2438,6 +2454,25 @@ def input_laboratorio(request, coleta_id, ponto_id, frasco_id):
         id_envio=envio
     ).order_by('ordem') if envio else []
 
+    # Obter todos os pontos desta coleta para navegação
+    todos_pontos = TabPonto.objects.filter(
+        id_setor=coleta.id_setor,
+        status=True
+    ).order_by('id')
+    
+    # Encontrar índice do ponto atual
+    try:
+        ponto_atual_index = list(todos_pontos.values_list('id', flat=True)).index(ponto.id)
+        ponto_anterior = todos_pontos[ponto_atual_index - 1] if ponto_atual_index > 0 else None
+        ponto_proximo = todos_pontos[ponto_atual_index + 1] if ponto_atual_index < len(todos_pontos) - 1 else None
+    except (ValueError, IndexError):
+        ponto_anterior = None
+        ponto_proximo = None
+
+    # Calcular progresso
+    total_pontos = todos_pontos.count()
+    progresso = ((ponto_atual_index + 1) / total_pontos * 100) if total_pontos > 0 else 0
+
     return render(
         request,
         "input_laboratorio.html",
@@ -2448,7 +2483,13 @@ def input_laboratorio(request, coleta_id, ponto_id, frasco_id):
             "frasco": frasco,
             "anexo_existente": anexo_existente,
             "envio": envio,
-            "has_anexos": bool(anexos_existentes), # Adicionado para verificar no template
+            "has_anexos": bool(anexos_existentes),
+            # Novos contextos para navegação
+            "ponto_anterior": ponto_anterior,
+            "ponto_proximo": ponto_proximo, 
+            "total_pontos": total_pontos,
+            "ponto_atual": ponto_atual_index + 1,
+            "progresso": progresso,
         },
     )
 
@@ -2520,122 +2561,6 @@ def selecionar_frasco(request, coleta_id):
         'coleta': coleta,
         'frascos': frascos_info
     })
-
-@login_required
-def cancelar_coleta(request, id):
-    coleta = get_object_or_404(ColetaCampo, id=id)
-    status_cancelado = get_object_or_404(TabStatusColeta, id=2)
-    coleta.status_coleta = status_cancelado
-    coleta.save()
-    messages.success(request, "Coleta cancelada com sucesso!")
-    return redirect("lista_coleta")
-
-@login_required
-def info_coleta(request, coleta_id):
-    try:
-        coleta = get_object_or_404(TabColeta, id=coleta_id)
-
-        # Usuário responsável
-        usuario_responsavel = coleta.criado_por
-
-        # Data da coleta
-        data_coleta = coleta.data
-
-        # Data de criação da coleta
-        data_criacao = coleta.criado_em
-
-        link_sistema = f"{settings.SITE_URL}/info_coleta/{coleta_id}"
-
-        hoje = datetime.today()
-        if (data_coleta < hoje):
-            mensagem = f"Foi criada uma coleta para a data de {data_coleta.strftime('%d/%m/%Y')} em {coleta.id_setor}, com a ordem de serviço {coleta.ordem_servico}, Observação: {coleta.observacao}.\n\nLink para acesso: {link_sistema}"
-        else:
-            mensagem = f"Será realizada uma nova coleta para a data de {data_coleta.strftime('%d/%m/%Y')} em {coleta.id_setor}, com a ordem de serviço {coleta.ordem_servico}. \n\nObservação: {coleta.observacao}.\n\nLink para acesso: {link_sistema}"
-
-        encoded_message = urllib.parse.quote(mensagem)
-        link = f"https://wa.me/?text={encoded_message}"
-
-        # Verificar se o fill amostra foi gerado para o frasco 1
-        fill_amostra_gerado = TabMedida.objects.filter(
-            id_envio__id_amostra__id_coleta=coleta.id, id_envio__id_amostra__id_frasco=1
-        ).exists()
-
-        # Previsão do tempo para o dia da coleta
-        previsao_tempo = get_weather_description(
-            "Maricá", data_coleta.strftime("%Y-%m-%d")
-        )
-
-        # Cálculo do percentual do checklist
-        total_items = TabChecklistColeta.objects.filter(
-            id_coleta=coleta).count()
-        items_preenchidos = TabChecklistColeta.objects.filter(
-            id_coleta=coleta, status=True
-        ).count()
-        percentual_checklist = float((items_preenchidos / total_items) * 100) if total_items > 0 else 0.0
-
-        # Obter pontos de coleta e verificar preenchimento do formulário
-        pontos_coleta = []
-        pontos = TabPonto.objects.filter(id_setor=coleta.id_setor)
-        
-        for ponto in pontos:
-            # Verifica se existe uma amostra para este ponto e coleta
-            amostra = TabAmostra.objects.filter(
-                id_coleta=coleta,
-                id_ponto=ponto,
-                id_frasco=1  # Apenas frasco 1
-            ).first()
-            
-            formulario_preenchido = False
-            parcialmente_preenchido = False
-            if amostra:
-                # Busca todas as medidas para esta amostra
-                medidas = TabMedida.objects.filter(id_envio__id_amostra=amostra)
-                total_medidas = medidas.count()
-                medidas_preenchidas = medidas.exclude(input_valor__isnull=True).exclude(input_valor__exact='').count()
-                
-                if total_medidas > 0:
-                    if medidas_preenchidas == total_medidas:
-                        formulario_preenchido = True
-                    elif medidas_preenchidas > 0:
-                        parcialmente_preenchido = True
-
-            pontos_coleta.append({
-                'id': ponto.id,
-                'nome': ponto.nome,
-                'lat': ponto.lat,
-                'lon': ponto.lon,
-                'status': ponto.status,
-                'formulario_preenchido': formulario_preenchido,
-                'parcialmente_preenchido': parcialmente_preenchido
-                
-            })
-
-        pontos_coleta_json = json.dumps(pontos_coleta, cls=DjangoJSONEncoder)
-
-        context = {
-            "coleta": coleta.id,
-            "setor": coleta.id_setor,
-            "coleta_os": coleta.ordem_servico,  # Usando ordem_servico ao invés do id
-            "usuario_responsavel": usuario_responsavel,
-            "data_coleta": data_coleta,
-            "data_criacao": data_criacao,
-            "fill_amostra_gerado": fill_amostra_gerado,
-            "previsao_tempo": previsao_tempo,
-            "percentual_checklist": percentual_checklist,
-            "link": link,
-            "pontos_coleta": pontos_coleta_json,
-            "atualizado" :coleta.atualizado_em,
-            "status_coleta": coleta.status,
-        }
-
-        return render(request, "info_coleta.html", context)
-
-    except TabColeta.DoesNotExist:
-        return HttpResponse("Coleta não encontrada.", status=404)
-    except Exception as e:
-        return HttpResponse(
-            f"Erro ao buscar informações da coleta: {str(e)}", status=400
-        )
 
 
 
