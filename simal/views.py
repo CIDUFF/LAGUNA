@@ -101,6 +101,7 @@ from .models import (
     EmailTemplate,
     MetadadosPonto,
     TabAnexoAmostra,
+    TabStatusColeta,
     TipoParametro,
     User,
     ProgramaColeta,
@@ -1832,25 +1833,13 @@ def checklist_coleta(request, coleta_id):
     )
 
 
-@login_required
+@login_required 
 def fill_amostra(request, coleta_id):
     """
     Preenche as amostras e envios para uma coleta específica.
-
-    Esta função obtém a coleta com base no ID fornecido, recupera todos os frascos e pontos de coleta
-    associados ao setor da coleta, e cria instâncias de TabAmostra e TabEnvio para cada combinação
-    de frasco e ponto de coleta. As instâncias são salvas no banco de dados.
-
-    Parâmetros:
-    request (HttpRequest): O objeto de solicitação HTTP.
-    coleta_id (int): O ID da coleta para a qual as amostras e envios serão preenchidos.
-
-    Retorna:
-    HttpResponseRedirect: Redireciona para a página inicial após a conclusão do preenchimento das amostras e envios.
     """
     coleta = get_object_or_404(TabColeta, id=coleta_id)
     frascos = TabFrasco.objects.all()
-    # Adiciona o filtro status=True na query dos pontos
     pontos_coleta = TabPonto.objects.filter(
         id_setor=coleta.id_setor,
         status=True,  # Apenas pontos ativos
@@ -1858,14 +1847,13 @@ def fill_amostra(request, coleta_id):
 
     amostras = []
     for frasco in frascos:
-        # Verifica se a análise de bentos está desativada e pula os frascos 5, 6 e 7
         if not coleta.analise_bentos and frasco.id in [5, 6, 7]:
             continue
         for ponto in pontos_coleta:
             amostra = TabAmostra(
                 id_coleta=coleta,
                 id_frasco=frasco,
-                id_ponto=ponto,
+                id_ponto=ponto, 
                 etiqueta=f"{coleta.ordem_servico}{str(ponto.id).zfill(3)}{str(frasco.id).zfill(2)}",
             )
             amostras.append(amostra)
@@ -1880,6 +1868,9 @@ def fill_amostra(request, coleta_id):
         envios.append(envio)
 
     TabEnvio.objects.bulk_create(envios)
+
+    # Atualiza o status da coleta para 6
+    TabColeta.objects.filter(id=coleta_id).update(status=6)
 
     return redirect("fill_campo_medida", coleta_id=coleta_id)
 
@@ -2113,6 +2104,7 @@ def info_coleta(request, coleta_id):
                 'status': ponto.status,
                 'formulario_preenchido': formulario_preenchido,
                 'parcialmente_preenchido': parcialmente_preenchido
+                
             })
 
         pontos_coleta_json = json.dumps(pontos_coleta, cls=DjangoJSONEncoder)
@@ -2129,7 +2121,8 @@ def info_coleta(request, coleta_id):
             "percentual_checklist": percentual_checklist,
             "link": link,
             "pontos_coleta": pontos_coleta_json,
-            "atualizado" :coleta.atualizado_em
+            "atualizado" :coleta.atualizado_em,
+            "status_coleta": coleta.status,
         }
 
         return render(request, "info_coleta.html", context)
@@ -2527,6 +2520,122 @@ def selecionar_frasco(request, coleta_id):
         'coleta': coleta,
         'frascos': frascos_info
     })
+
+@login_required
+def cancelar_coleta(request, id):
+    coleta = get_object_or_404(ColetaCampo, id=id)
+    status_cancelado = get_object_or_404(TabStatusColeta, id=2)
+    coleta.status_coleta = status_cancelado
+    coleta.save()
+    messages.success(request, "Coleta cancelada com sucesso!")
+    return redirect("lista_coleta")
+
+@login_required
+def info_coleta(request, coleta_id):
+    try:
+        coleta = get_object_or_404(TabColeta, id=coleta_id)
+
+        # Usuário responsável
+        usuario_responsavel = coleta.criado_por
+
+        # Data da coleta
+        data_coleta = coleta.data
+
+        # Data de criação da coleta
+        data_criacao = coleta.criado_em
+
+        link_sistema = f"{settings.SITE_URL}/info_coleta/{coleta_id}"
+
+        hoje = datetime.today()
+        if (data_coleta < hoje):
+            mensagem = f"Foi criada uma coleta para a data de {data_coleta.strftime('%d/%m/%Y')} em {coleta.id_setor}, com a ordem de serviço {coleta.ordem_servico}, Observação: {coleta.observacao}.\n\nLink para acesso: {link_sistema}"
+        else:
+            mensagem = f"Será realizada uma nova coleta para a data de {data_coleta.strftime('%d/%m/%Y')} em {coleta.id_setor}, com a ordem de serviço {coleta.ordem_servico}. \n\nObservação: {coleta.observacao}.\n\nLink para acesso: {link_sistema}"
+
+        encoded_message = urllib.parse.quote(mensagem)
+        link = f"https://wa.me/?text={encoded_message}"
+
+        # Verificar se o fill amostra foi gerado para o frasco 1
+        fill_amostra_gerado = TabMedida.objects.filter(
+            id_envio__id_amostra__id_coleta=coleta.id, id_envio__id_amostra__id_frasco=1
+        ).exists()
+
+        # Previsão do tempo para o dia da coleta
+        previsao_tempo = get_weather_description(
+            "Maricá", data_coleta.strftime("%Y-%m-%d")
+        )
+
+        # Cálculo do percentual do checklist
+        total_items = TabChecklistColeta.objects.filter(
+            id_coleta=coleta).count()
+        items_preenchidos = TabChecklistColeta.objects.filter(
+            id_coleta=coleta, status=True
+        ).count()
+        percentual_checklist = float((items_preenchidos / total_items) * 100) if total_items > 0 else 0.0
+
+        # Obter pontos de coleta e verificar preenchimento do formulário
+        pontos_coleta = []
+        pontos = TabPonto.objects.filter(id_setor=coleta.id_setor)
+        
+        for ponto in pontos:
+            # Verifica se existe uma amostra para este ponto e coleta
+            amostra = TabAmostra.objects.filter(
+                id_coleta=coleta,
+                id_ponto=ponto,
+                id_frasco=1  # Apenas frasco 1
+            ).first()
+            
+            formulario_preenchido = False
+            parcialmente_preenchido = False
+            if amostra:
+                # Busca todas as medidas para esta amostra
+                medidas = TabMedida.objects.filter(id_envio__id_amostra=amostra)
+                total_medidas = medidas.count()
+                medidas_preenchidas = medidas.exclude(input_valor__isnull=True).exclude(input_valor__exact='').count()
+                
+                if total_medidas > 0:
+                    if medidas_preenchidas == total_medidas:
+                        formulario_preenchido = True
+                    elif medidas_preenchidas > 0:
+                        parcialmente_preenchido = True
+
+            pontos_coleta.append({
+                'id': ponto.id,
+                'nome': ponto.nome,
+                'lat': ponto.lat,
+                'lon': ponto.lon,
+                'status': ponto.status,
+                'formulario_preenchido': formulario_preenchido,
+                'parcialmente_preenchido': parcialmente_preenchido
+                
+            })
+
+        pontos_coleta_json = json.dumps(pontos_coleta, cls=DjangoJSONEncoder)
+
+        context = {
+            "coleta": coleta.id,
+            "setor": coleta.id_setor,
+            "coleta_os": coleta.ordem_servico,  # Usando ordem_servico ao invés do id
+            "usuario_responsavel": usuario_responsavel,
+            "data_coleta": data_coleta,
+            "data_criacao": data_criacao,
+            "fill_amostra_gerado": fill_amostra_gerado,
+            "previsao_tempo": previsao_tempo,
+            "percentual_checklist": percentual_checklist,
+            "link": link,
+            "pontos_coleta": pontos_coleta_json,
+            "atualizado" :coleta.atualizado_em,
+            "status_coleta": coleta.status,
+        }
+
+        return render(request, "info_coleta.html", context)
+
+    except TabColeta.DoesNotExist:
+        return HttpResponse("Coleta não encontrada.", status=404)
+    except Exception as e:
+        return HttpResponse(
+            f"Erro ao buscar informações da coleta: {str(e)}", status=400
+        )
 
 
 

@@ -869,8 +869,8 @@ class InputFisicoQuimicoForm(forms.ModelForm):
     input_valor = forms.DecimalField(
         label="Valor",
         required=False,
-        max_digits=10,
-        decimal_places=5,
+        max_digits=None,  # Remove o limite de dígitos
+        decimal_places=10,  # Mantém a precisão decimal
         widget=forms.NumberInput(
             attrs={
                 "step": "0.00001",
