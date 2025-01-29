@@ -1,0 +1,23 @@
+<div class="modal-header">
+    <h5 class="modal-title">Selecione o Frasco</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+<div class="modal-body">
+    <div class="list-group">
+        {% for frasco in frascos %}
+            <a href="{% url 'fill_frasco_medida' coleta.id frasco.id %}" 
+               class="list-group-item list-group-item-{{ frasco.status }} d-flex justify-content-between align-items-center">
+                {{ frasco.nome }}
+                {% if frasco.tem_formularios %}
+                    <span class="badge bg-success">
+                        <i class="bi bi-check-circle"></i> Formulários Gerados
+                    </span>
+                {% else %}
+                    <span class="badge bg-warning text-dark">
+                        <i class="bi bi-exclamation-triangle"></i> Pendente
+                    </span>
+                {% endif %}
+            </a>
+        {% endfor %}
+    </div>
+</div>

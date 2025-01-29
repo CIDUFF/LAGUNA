@@ -76,6 +76,24 @@
                 <div class="card-body p-0">
                     <div class="table-responsive">
                         {% render_table table %}
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function() {
+                                const preencherBtns = document.querySelectorAll('.btn-preencher');
+                                preencherBtns.forEach(btn => {
+                                    btn.addEventListener('click', function(e) {
+                                        e.preventDefault();
+                                        const coletaId = {{ coleta.id }};
+                                        const pontoId = this.getAttribute('data-ponto-id');
+                                        
+                                        {% if frasco %}
+                                            window.location.href = `/input_laboratorio/${coletaId}/${pontoId}/{{ frasco.id }}/`;
+                                        {% else %}
+                                            window.location.href = `/input_fisico_quimico/${coletaId}/${pontoId}/`;
+                                        {% endif %}
+                                    });
+                                });
+                            });
+                        </script>
                     </div>
                 </div>
             </div>

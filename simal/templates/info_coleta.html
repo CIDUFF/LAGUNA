@@ -218,12 +218,16 @@
                                 <i class="bi bi-pencil-square me-2"></i>Inserir Resultados
                             </button>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item py-2" href="{% url 'lista_campo' coleta %}">
-                                    <i class="bi bi-thermometer me-2"></i>Campo
-                                </a></li>
-                                <li><a class="dropdown-item py-2" href="{% url 'lista_campo' coleta %}">
-                                    <i class="bi bi-flask me-2"></i>Laboratório
-                                </a></li>
+                                <li>
+                                    <a class="dropdown-item py-2" href="{% url 'lista_campo' coleta %}">
+                                        <i class="bi bi-thermometer me-2"></i>Campo
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item py-2" href="#" data-option="laboratorio">
+                                        <i class="bi bi-flask me-2"></i>Laboratório
+                                    </a>
+                                </li>
                             </ul>
                         </div>
                         <a href="{{ link }}" target="_blank" class="btn btn-lg rounded-pill" 
@@ -696,6 +700,48 @@ document.addEventListener('DOMContentLoaded', function() {
         geolocationControl.toggleTracking(this, map);
     });
 
+    // Adicione manipulador para o botão "Laboratório"
+    const labButton = document.querySelector('[data-option="laboratorio"]');
+    if (labButton) {
+        labButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Inicializa o modal
+            const modalElement = document.getElementById('modalSelecaoFrasco');
+            if (!modalElement) {
+                // Se o modal não existir no DOM, cria ele
+                const modalHTML = `
+                    <div class="modal fade" id="modalSelecaoFrasco" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <!-- O conteúdo será carregado via AJAX -->
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.body.insertAdjacentHTML('beforeend', modalHTML);
+            }
+
+            const modal = new bootstrap.Modal(document.getElementById('modalSelecaoFrasco'));
+            
+            // Carrega o conteúdo do modal via AJAX
+            fetch(`/selecionar_frasco/{{ coleta }}/`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erro na rede');
+                    }
+                    return response.text();
+                })
+                .then(html => {
+                    document.querySelector('#modalSelecaoFrasco .modal-content').innerHTML = html;
+                    modal.show();
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    alert('Erro ao carregar os frascos. Por favor, tente novamente.');
+                });
+        });
+    }
 });
 
 let fullscreenMap = null;
@@ -815,5 +861,14 @@ document.getElementById('mapModal').addEventListener('hidden.bs.modal', function
     }
 });
 </script>
+
+<!-- Adiciona o modal ao final do template -->
+<div class="modal fade" id="modalSelecaoFrasco" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <!-- O conteúdo será carregado via AJAX -->
+        </div>
+    </div>
+</div>
 
 {% endblock %}
