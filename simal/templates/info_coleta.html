@@ -53,6 +53,11 @@
                                             <i class="bi bi-clock-history me-2"></i>
                                             <span>Atualizada em: {{ atualizado|date:"d/m/Y H:i" }}</span>
                                         </div>
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-check me-2"></i>
+                                            <span>Status: </span>
+                                        </div>
+                                        
                                     </div>
                                 </div>
                             </div>
@@ -613,6 +618,74 @@
     .status-content {
         max-height: calc(100vh - 300px);
         overflow-y: auto;
+    }
+}
+
+/* Consolide todas as media queries para mobile */
+@media (max-width: 768px) {
+    /* Estilos gerais mobile */
+    .container {
+        padding-bottom: 70px;
+    }
+
+    /* Estilos do mapa */
+    #map {
+        height: 300px !important;
+        width: 100%;
+        position: relative !important;
+        margin-bottom: 1rem;
+    }
+
+    /* Estilos dos botões */
+    .btn,
+    .dropdown-toggle,
+    .header-btn {
+        width: 100% !important;
+        margin-bottom: 0.5rem;
+        text-align: center;
+    }
+
+    /* Exceções para botões específicos */
+    #toggleLocation,
+    #fullscreenLocation,
+    .card-header .btn-sm {
+        width: 40px !important;
+        height: 40px !important;
+        margin-bottom: 0 !important;
+    }
+
+    /* Layout */
+    .d-flex.gap-3 {
+        flex-direction: column;
+    }
+
+    .card {
+        margin-bottom: 1.5rem;
+    }
+
+    .card-header .d-flex.gap-2 {
+        gap: 0.75rem !important;
+    }
+}
+
+/* Consolide as media queries para desktop */
+@media (min-width: 768px) {
+    .header-btn,
+    .col-md-4 .btn,
+    .col-md-4 .dropdown-toggle {
+        min-width: 220px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .col-md-4 .dropdown {
+        width: auto;
+    }
+
+    .col-md-4 .d-flex {
+        width: 100%;
+        justify-content: flex-end;
     }
 }
 </style>
