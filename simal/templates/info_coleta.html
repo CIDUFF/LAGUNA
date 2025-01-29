@@ -624,7 +624,20 @@ const geolocationControl = {
     watchId: null,
     tracking: false,
 
-    // Função para atualizar a localização do usuário
+    checkPermissions: async function() {
+        try {
+            const result = await navigator.permissions.query({ name: 'geolocation' });
+            if (result.state === 'denied') {
+                alert('Permissão de localização negada. Por favor, permita o acesso à localização nas configurações do seu navegador.');
+                return false;
+            }
+            return true;
+        } catch (error) {
+            console.error('Erro ao verificar permissões:', error);
+            return true; // Continue mesmo se não puder verificar permissões
+        }
+    },
+
     updateLocation: function(position, mapInstance) {
         const lat = position.coords.latitude;
         const lon = position.coords.longitude;
@@ -632,16 +645,15 @@ const geolocationControl = {
         if (this.locationMarker) {
             this.locationMarker.setLatLng([lat, lon]);
         } else {
-            // Criando um ícone personalizado usando divIcon
             const personIcon = L.divIcon({
                 className: 'person-marker',
-                iconSize: [40, 40], // Aumentado de [20, 20] para [40, 40]
-                iconAnchor: [20, 20], // Ajustado para metade do tamanho do ícone
+                iconSize: [40, 40],
+                iconAnchor: [20, 20],
             });
 
             this.locationMarker = L.marker([lat, lon], {
                 icon: personIcon,
-                zIndexOffset: 1000 // Garantir que fique acima dos outros marcadores
+                zIndexOffset: 1000
             })
                 .addTo(mapInstance)
                 .bindTooltip('Sua localização atual', {
@@ -653,18 +665,57 @@ const geolocationControl = {
         mapInstance.setView([lat, lon], mapInstance.getZoom() || 15);
     },
 
-    // Função para lidar com erros
     handleLocationError: function(error) {
         console.error('Erro ao obter localização:', error);
-        alert('Não foi possível obter sua localização. Verifique se permitiu o acesso à localização.');
+        let message = 'Não foi possível obter sua localização. ';
+        
+        switch(error.code) {
+            case error.PERMISSION_DENIED:
+                message += 'Permissão negada. Verifique as configurações do seu navegador.';
+                break;
+            case error.POSITION_UNAVAILABLE:
+                message += 'Informação de localização indisponível.';
+                break;
+            case error.TIMEOUT:
+                message += 'Tempo de espera esgotado.';
+                break;
+            default:
+                message += 'Erro desconhecido.';
+                break;
+        }
+        
+        alert(message);
     },
 
-    // Função para iniciar/parar rastreamento
-    toggleTracking: function(button, mapInstance) {
+    toggleTracking: async function(button, mapInstance) {
         if (!this.tracking) {
-            if ("geolocation" in navigator) {
-                this.watchId = navigator.geolocation.watchPosition(
-                    (position) => this.updateLocation(position, mapInstance),
+            if (!("geolocation" in navigator)) {
+                alert("Seu navegador não suporta geolocalização");
+                return;
+            }
+
+            const permissionGranted = await this.checkPermissions();
+            if (!permissionGranted) return;
+
+            try {
+                // Primeiro tenta obter uma posição única para verificar se está funcionando
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        this.watchId = navigator.geolocation.watchPosition(
+                            (pos) => this.updateLocation(pos, mapInstance),
+                            this.handleLocationError,
+                            {
+                                enableHighAccuracy: true,
+                                timeout: 5000,
+                                maximumAge: 0
+                            }
+                        );
+                        this.tracking = true;
+                        button.classList.add('active');
+                        button.querySelector('i').classList.remove('bi-geo-alt');
+                        button.querySelector('i').classList.add('bi-geo-alt-fill');
+                        this.updateLocation(position, mapInstance);
+                    },
                     this.handleLocationError,
                     {
                         enableHighAccuracy: true,
@@ -672,12 +723,9 @@ const geolocationControl = {
                         maximumAge: 0
                     }
                 );
-                this.tracking = true;
-                button.classList.add('active');
-                button.querySelector('i').classList.remove('bi-geo-alt');
-                button.querySelector('i').classList.add('bi-geo-alt-fill');
-            } else {
-                alert("Seu navegador não suporta geolocalização");
+            } catch (error) {
+                console.error('Erro ao iniciar rastreamento:', error);
+                this.handleLocationError(error);
             }
         } else {
             if (this.watchId) {
@@ -836,42 +884,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }, 300);
 
-    let locationMarker = null;
-    let watchId = null;
-    let tracking = false;
-
-    // Função para atualizar a localização do usuário
-    function updateLocation(position) {
-        const lat = position.coords.latitude;
-        const lon = position.coords.longitude;
-        
-        if (locationMarker) {
-            locationMarker.setLatLng([lat, lon]);
-        } else {
-            const locationIcon = L.icon({
-                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
-                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
-                iconSize: [25, 41],
-                iconAnchor: [12, 41],
-                popupAnchor: [1, -34],
-                shadowSize: [41, 41]
-            });
-
-            locationMarker = L.marker([lat, lon], {icon: locationIcon})
-                .addTo(map)
-                .bindPopup('Sua localização atual');
-        }
-        
-        map.setView([lat, lon], map.getZoom());
-    }
-
-    // Função para lidar com erros de geolocalização
-    function handleLocationError(error) {
-        console.error('Erro ao obter localização:', error);
-        alert('Não foi possível obter sua localização. Verifique se permitiu o acesso à localização.');
-    }
-
-    // Botão para alternar rastreamento de localização
+    // Manter apenas o event listener do botão
     document.getElementById('toggleLocation').addEventListener('click', function() {
         geolocationControl.toggleTracking(this, map);
     });
