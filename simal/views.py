@@ -5,6 +5,7 @@ import json
 import logging
 import os
 from datetime import datetime, timedelta
+from itertools import zip_longest
 
 import pandas as pd
 import plotly.express as px
@@ -27,7 +28,6 @@ from django.urls import reverse
 from django.utils import timezone
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
-from django.http import JsonResponse
 from django.core.serializers.json import DjangoJSONEncoder
 
 
@@ -72,7 +72,7 @@ from .forms import (
     DetalhesUsuarioForm,
     InputFisicoQuimicoForm,
 )
-from .services import generate_whatsapp_link, gerar_etiquetas, get_weather_description
+from .services import gerar_etiquetas, get_weather_description
 
 from .tables import (
     EmailTable,
@@ -2180,24 +2180,9 @@ def input_fisico_quimico(request, coleta_id, ponto_id):
             instances = formset.save()
 
             # Processa o anexo se houver arquivo ou observação
-            if request.FILES.get("anexo") or request.POST.get("observacao_anexo"):
-                primeiro_envio = instances[0].id_envio if instances else None
-                if primeiro_envio:
-                    # Se já existe um anexo, atualiza
-                    if anexo_existente:
-                        if request.FILES.get("anexo"):
-                            anexo_existente.anexo = request.FILES["anexo"]
-                        anexo_existente.observacao = request.POST.get(
-                            "observacao_anexo"
-                        )
-                        anexo_existente.save()
-                    # Se não existe, cria novo
-                    else:
-                        TabAnexoAmostra.objects.create(
-                            id_envio=primeiro_envio,
-                            anexo=request.FILES.get("anexo"),
-                            observacao=request.POST.get("observacao_anexo"),
-                        )
+            primeiro_envio = instances[0].id_envio if instances else None
+            if primeiro_envio:
+                handle_anexo(request, primeiro_envio)
 
             proximo_ponto = TabPonto.objects.filter(
                 id_setor=coleta.id_setor, status=True, id__gt=ponto.id
@@ -2374,29 +2359,58 @@ def input_laboratorio(request, coleta_id, ponto_id, frasco_id):
     MedidaFormSet = modelformset_factory(
         TabMedida, 
         form=InputFisicoQuimicoForm,
-        extra=0,
-        fields=['input_valor', 'id_envio', 'id_pp']  # Include required fields
+        extra=0, 
+        fields=['input_valor', 'id_envio', 'id_pp']
     )
 
     coleta = get_object_or_404(TabColeta, id=coleta_id)
     ponto = get_object_or_404(TabPonto, id=ponto_id, status=True)
     frasco = get_object_or_404(TabFrasco, id=frasco_id)
 
-    # Get all medidas for this specific combination
+    # Get amostra and envio for this specific combination
+    amostra = TabAmostra.objects.filter(
+        id_coleta=coleta,
+        id_ponto=ponto,
+        id_frasco=frasco
+    ).first()
+    
+    envio = TabEnvio.objects.filter(id_amostra=amostra).first() if amostra else None
+
+    # Get medidas for this envio
     medidas = TabMedida.objects.filter(
+        id_envio=envio
+    ).select_related('id_envio', 'id_pp', 'id_pp__id_param') if envio else TabMedida.objects.none()
+
+    # Busca anexo existente
+    anexo_existente = None
+    anexo_query = TabAnexoAmostra.objects.filter(
         id_envio__id_amostra__id_coleta=coleta_id,
         id_envio__id_amostra__id_ponto=ponto_id,
-        id_envio__id_amostra__id_frasco=frasco_id
-    ).select_related(
-        'id_envio',
-        'id_pp',
-        'id_pp__id_param'
-    )
+        id_envio__id_amostra__id_frasco=frasco_id,
+    ).first()
+
+    # Se encontrou um anexo, verifica se tem arquivo ou observação
+    if anexo_query:
+        anexo_existente = anexo_query
+        # Se não tem arquivo nem observação, deleta o registro
+        if not anexo_existente.anexo and not anexo_existente.observacao:
+            anexo_existente.delete()
+            anexo_existente = None
 
     if request.method == "POST":
-        formset = MedidaFormSet(request.POST, queryset=medidas)
+        formset = MedidaFormSet(
+            request.POST,
+            request.FILES,
+            queryset=medidas
+        )
         if formset.is_valid():
-            formset.save()
+            instances = formset.save()
+
+            # Processa o anexo se houver arquivo ou observação
+            primeiro_envio = instances[0].id_envio if instances else None
+            if primeiro_envio:
+                handle_anexo(request, primeiro_envio)
+
             messages.success(request, "Dados salvos com sucesso!")
             
             # Find next point
@@ -2424,12 +2438,10 @@ def input_laboratorio(request, coleta_id, ponto_id, frasco_id):
             form.parametro = medida.id_pp.id_param.nome
             form.unidade = medida.id_pp.unidade
 
-    # Get existing attachments
+    # Get existing attachments with proper ordering
     anexos_existentes = TabAnexoAmostra.objects.filter(
-        id_envio__id_amostra__id_coleta=coleta_id,
-        id_envio__id_amostra__id_ponto=ponto_id,
-        id_envio__id_amostra__id_frasco=frasco_id
-    ).order_by('ordem')
+        id_envio=envio
+    ).order_by('ordem') if envio else []
 
     return render(
         request,
@@ -2439,9 +2451,42 @@ def input_laboratorio(request, coleta_id, ponto_id, frasco_id):
             "coleta": coleta,
             "ponto": ponto,
             "frasco": frasco,
-            "anexos_existentes": anexos_existentes,
+            "anexo_existente": anexo_existente,
+            "envio": envio,
+            "has_anexos": bool(anexos_existentes), # Adicionado para verificar no template
         },
     )
+
+def handle_anexo(request, envio):
+    """
+    Função auxiliar para processar anexos de amostras.
+    
+    Args:
+        request: O objeto HttpRequest
+        envio: O objeto TabEnvio associado ao anexo
+        
+    Returns:
+        TabAnexoAmostra: O objeto de anexo criado/atualizado ou None
+    """
+    anexo_existente = TabAnexoAmostra.objects.filter(id_envio=envio).first()
+
+    if request.FILES.get("anexo") or request.POST.get("observacao_anexo"):
+        if anexo_existente:
+            if request.FILES.get("anexo"):
+                anexo_existente.anexo = request.FILES["anexo"]
+            anexo_existente.observacao = request.POST.get("observacao_anexo")
+            anexo_existente.save()
+        else:
+            anexo_existente = TabAnexoAmostra.objects.create(
+                id_envio=envio,
+                anexo=request.FILES.get("anexo"),
+                observacao=request.POST.get("observacao_anexo"),
+            )
+    elif anexo_existente and not anexo_existente.anexo and not anexo_existente.observacao:
+        anexo_existente.delete()
+        anexo_existente = None
+        
+    return anexo_existente
 
 @login_required
 def selecionar_frasco(request, coleta_id):
