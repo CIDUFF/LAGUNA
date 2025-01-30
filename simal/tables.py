@@ -8,6 +8,7 @@ from .models import (
     TabSetor,
     TabPonto,
     TabLocal,
+    TabStatusColeta,
     TipoParametro,
     TabParam,
     TabFrasco,
@@ -418,7 +419,8 @@ class ParametroTable(tables.Table):
         args=["param", A("pk")],
         orderable=False,
         empty_values=[],
-        text="EDITAR",
+        text=lambda record: format_html('<i class="bi bi-pencil-square me-1"></i>Editar'),
+        attrs={'a': {'class': 'btn btn-sm btn-outline-primary rounded-pill'}}
     )
 
     class Meta:
@@ -433,7 +435,8 @@ class EmailTable(tables.Table):
         args=["email", A("pk")],
         orderable=False,
         empty_values=[],
-        text="EDITAR",
+        text=lambda record: format_html('<i class="bi bi-pencil-square me-1"></i>Editar'),
+        attrs={'a': {'class': 'btn btn-sm btn-outline-primary rounded-pill'}}
     )
 
     class Meta:
@@ -457,7 +460,8 @@ class FrascoTable(tables.Table):
         args=["frasco", A("pk")],
         orderable=False,
         empty_values=[],
-        text="EDITAR",
+        text=lambda record: format_html('<i class="bi bi-pencil-square me-1"></i>Editar'),
+        attrs={'a': {'class': 'btn btn-sm btn-outline-primary rounded-pill'}}
     )
 
     class Meta:
@@ -479,7 +483,8 @@ class EquipeTable(tables.Table):
         args=["equipe", A("pk")],
         orderable=False,
         empty_values=[],
-        text="EDITAR",
+        text=lambda record: format_html('<i class="bi bi-pencil-square me-1"></i>Editar'),
+        attrs={'a': {'class': 'btn btn-sm btn-outline-primary rounded-pill'}}
     )
 
     class Meta:
@@ -494,7 +499,8 @@ class LaboratorioTable(tables.Table):
         args=["laboratorio", A("pk")],
         orderable=False,
         empty_values=[],
-        text="EDITAR",
+        text=lambda record: format_html('<i class="bi bi-pencil-square me-1"></i>Editar'),
+        attrs={'a': {'class': 'btn btn-sm btn-outline-primary rounded-pill'}}
     )
 
     class Meta:
@@ -509,7 +515,8 @@ class ProdutoTable(tables.Table):
         args=["produto", A("pk")],
         orderable=False,
         empty_values=[],
-        text="EDITAR",
+        text=lambda record: format_html('<i class="bi bi-pencil-square me-1"></i>Editar'),
+        attrs={'a': {'class': 'btn btn-sm btn-outline-primary rounded-pill'}}
     )
 
     class Meta:
@@ -524,7 +531,8 @@ class ProdxparamTable(tables.Table):
         args=["prodxparam", A("pk")],
         orderable=False,
         empty_values=[],
-        text="EDITAR",
+        text=lambda record: format_html('<i class="bi bi-pencil-square me-1"></i>Editar'),
+        attrs={'a': {'class': 'btn btn-sm btn-outline-primary rounded-pill'}}
     )
 
     class Meta:
@@ -539,7 +547,8 @@ class SerieClassificacaoTable(tables.Table):
         args=["serie_classificacao", A("pk")],
         orderable=False,
         empty_values=[],
-        text="EDITAR",
+        text=lambda record: format_html('<i class="bi bi-pencil-square me-1"></i>Editar'),
+        attrs={'a': {'class': 'btn btn-sm btn-outline-primary rounded-pill'}}
     )
 
     class Meta:
@@ -554,7 +563,8 @@ class TipoItemChecklistColetaTable(tables.Table):
         args=["item_checklist", A("pk")],
         orderable=False,
         empty_values=[],
-        text="EDITAR",
+        text=lambda record: format_html('<i class="bi bi-pencil-square me-1"></i>Editar'),
+        attrs={'a': {'class': 'btn btn-sm btn-outline-primary rounded-pill'}}
     )
 
     class Meta:
@@ -569,6 +579,22 @@ class TipoItemChecklistColetaTable(tables.Table):
         # table_pagination = True
 
 
+class StatusColetaTable(tables.Table):
+    update = tables.LinkColumn(
+        "editar_registro",
+        args=["status_coleta", A("pk")],
+        orderable=False,
+        empty_values=[],
+        text=lambda record: format_html('<i class="bi bi-pencil-square me-1"></i>Editar'),
+        attrs={'a': {'class': 'btn btn-sm btn-outline-primary rounded-pill'}}
+    )
+
+    class Meta:
+        model = TabStatusColeta
+        template_name = "tables/bootstrap5.html"
+        fields = ("status", "descricao")
+        
+        
 class ListaCampoTable(tables.Table):
     acoes = tables.TemplateColumn(
         template_code='''

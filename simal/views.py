@@ -71,11 +71,13 @@ from .forms import (
     CadastroColetaForm,
     DetalhesUsuarioForm,
     InputFisicoQuimicoForm,
+    StatusColetaForm,
 )
 from .services import gerar_etiquetas, get_weather_description
 
 from .tables import (
     EmailTable,
+    StatusColetaTable,
     TabColetaTable,
     TopCampanhas,
     ColetaCampoTable,
@@ -1480,6 +1482,14 @@ def configuracoes_view(request):
                 messages.success(
                     request, "Novo template de e-mail cadastrado com sucesso."
                 )
+        elif "status_coleta_submit" in request.POST:
+            status_coleta_form = StatusColetaForm(request.POST)
+            if status_coleta_form.is_valid():
+                status_coleta_form.save()
+                messages.success(
+                    request, "Novo status cadastrado com sucesso."
+                )
+        
 
         return redirect("configuracoes")
     else:
@@ -1492,6 +1502,7 @@ def configuracoes_view(request):
         serie_classificacao_form = TabSerieClassificacaoForm()
         item_checklist_form = CadastroItemChecklistColetaForm()
         email_form = EmailForm()
+        status_coleta_form = StatusColetaForm()
 
     # Instanciar as tabelas
     table_parametro = ParametroTable(TabParam.objects.all())
@@ -1507,6 +1518,7 @@ def configuracoes_view(request):
         TabItemChecklistColeta.objects.all()
     )
     table_email = EmailTable(EmailTemplate.objects.all())
+    table_status_coleta = StatusColetaTable(TabStatusColeta.objects.all())
 
     # Configurar a paginação das tabelas
     RequestConfig(request, paginate={"per_page": 25}).configure(table_parametro)
@@ -1520,6 +1532,8 @@ def configuracoes_view(request):
     )
     RequestConfig(request).configure(table_item_checklist)
     RequestConfig(request).configure(table_email)
+    RequestConfig(request).configure(table_status_coleta)
+    
 
     # Renderizar o template com os formulários e tabelas
     return render(
@@ -1535,6 +1549,7 @@ def configuracoes_view(request):
             "serie_classificacao_form": serie_classificacao_form,
             "item_checklist_form": item_checklist_form,
             "email_form": email_form,
+            "status_coleta_form": status_coleta_form,
             "table_parametro": table_parametro,
             "table_frasco": table_frasco,
             "table_equipe": table_equipe,
@@ -1544,6 +1559,7 @@ def configuracoes_view(request):
             "table_serie_classificacao": table_serie_classificacao,
             "table_item_checklist": table_item_checklist,
             "table_email": table_email,
+            "table_status_coleta": table_status_coleta,
         },
     )
 
@@ -1560,6 +1576,7 @@ def editar_registro(request, tabela, pk):
         "serie_classificacao": (TabSerieClassificacao, TabSerieClassificacaoForm),
         "item_checklist": (TabItemChecklistColeta, CadastroItemChecklistColetaForm),
         "email": (EmailTemplate, EmailForm),
+        "status_coleta": (TabStatusColeta, StatusColetaForm),  # Adicionar esta linha
     }
 
     if tabela not in model_map:
