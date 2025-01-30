@@ -1694,6 +1694,12 @@ def cadastro_coleta_view(request):
         if form.is_valid():
             coleta = form.save(commit=False)  # Não salva ainda no banco
             coleta.criado_por = request.user  # Atribui o usuário logado
+            
+            # Converter a data da string para datetime
+            data_str = request.POST.get('data')
+            if data_str:
+                coleta.data = datetime.strptime(data_str, '%Y-%m-%d')
+                
             coleta.save()  # Agora salva no banco
             # Criar entradas na tabela TabChecklistColeta para cada item de checklist
             itens_checklist = TabItemChecklistColeta.objects.all()
@@ -2319,12 +2325,26 @@ def update_coleta(request, id):
     if request.method == "POST":
         form = CadastroColetaForm(request.POST, instance=coleta)
         if form.is_valid():
-            form.save()
+            coleta = form.save(commit=False)
+            
+            # Converter a data da string para datetime
+            data_str = request.POST.get('data')
+            if data_str:
+                coleta.data = datetime.strptime(data_str, '%Y-%m-%d')
+                
+            coleta.save()
             messages.success(request, "Coleta atualizada com sucesso.")
             return redirect("lista_de_coletas")
     else:
-        form = CadastroColetaForm(instance=coleta)
-    return render(request, "cadastro_coleta.html", {"form": form})
+        initial_data = {
+            'data': coleta.data.strftime('%Y-%m-%d') if coleta.data else None
+        }
+        form = CadastroColetaForm(instance=coleta, initial=initial_data)
+        
+    return render(request, "cadastro_coleta.html", {
+        "form": form,
+        "coleta": coleta
+    })
 
 @login_required
 def aplicar_acao(request):
