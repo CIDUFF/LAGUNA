@@ -68,6 +68,11 @@ Em tabelas que foram populadas com dump de dados de excel e outros sistemas, é 
 SELECT setval('nomedatabela_id_seq', (SELECT MAX(id) FROM nomedatabela)+1);
 ```
 
+
+<!-- sudo /etc/init.d/apache2 reload -->
+
+<!-- /var/log/django/amostras.log -->
+
 # comandos do django
 
 Comandos Django Padrão

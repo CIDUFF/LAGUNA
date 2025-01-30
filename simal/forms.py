@@ -798,17 +798,23 @@ class TabSerieClassificacaoForm(forms.ModelForm):
 
 
 class CadastroCampanhaForm(forms.ModelForm):
-    # data_criacao = forms.DateField(widget=forms.DateInput(attrs={"type": "date"}))
-
     class Meta:
         model = TabCampanha
         exclude = ["id", "data_criacao"]
         labels = {
             "id_local": "Local",
+            "nome": "Nome da Campanha",
+            "descricao": "Descrição",
         }
 
     def __init__(self, *args, **kwargs):
         super(CadastroCampanhaForm, self).__init__(*args, **kwargs)
+        # Torna todos os campos obrigatórios
+        for field in self.fields:
+            self.fields[field].required = True
+            if not self.fields[field].label:
+                self.fields[field].label = field.replace('_', ' ').title()
+
         self.helper = FormHelper()
         self.helper.add_input(Submit("submit", "Salvar"))
 
@@ -819,20 +825,33 @@ class CadastroCampanhaForm(forms.ModelForm):
 class CadastroColetaForm(forms.ModelForm):
     data = forms.DateField(
         widget=forms.DateInput(attrs={"type": "date"}),
-        required=False,
         label="Data programada",
+        required=True
     )
 
     class Meta:
         model = TabColeta
-        exclude = ["id", "ordem_servico", "criado_por", "atualizado_por", "status"]
+        exclude = ["id", "ordem_servico", "criado_por", "atualizado_por", "status", "atualizado_em", "criado_em"]
         labels = {
             "id_campanha": "Campanha",
             "id_setor": "Setor",
+            "nome": "Nome da Coleta",
+            "analise_bentos": "Análise de Bentos",
+            "observacao": "Observação"
         }
 
     def __init__(self, *args, **kwargs):
         super(CadastroColetaForm, self).__init__(*args, **kwargs)
+        # Torna todos os campos obrigatórios
+        for field in self.fields:
+            self.fields[field].required = True
+            if not self.fields[field].label:
+                self.fields[field].label = field.replace('_', ' ').title()
+
+        # Campos booleanos não precisam ser required
+        if 'analise_bentos' in self.fields:
+            self.fields['analise_bentos'].required = False
+
         self.helper = FormHelper()
         self.helper.add_input(Submit("submit", "Salvar"))
 
