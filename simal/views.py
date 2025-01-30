@@ -5,6 +5,7 @@ import json
 import logging
 import os
 from datetime import datetime, timedelta
+from itertools import zip_longest
 
 import pandas as pd
 import plotly.express as px
@@ -27,7 +28,6 @@ from django.urls import reverse
 from django.utils import timezone
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
-from django.http import JsonResponse
 from django.core.serializers.json import DjangoJSONEncoder
 
 
@@ -73,7 +73,7 @@ from .forms import (
     InputFisicoQuimicoForm,
     StatusColetaForm,
 )
-from .services import generate_whatsapp_link, gerar_etiquetas, get_weather_description
+from .services import gerar_etiquetas, get_weather_description
 
 from .tables import (
     EmailTable,
@@ -1850,25 +1850,13 @@ def checklist_coleta(request, coleta_id):
     )
 
 
-@login_required
+@login_required 
 def fill_amostra(request, coleta_id):
     """
     Preenche as amostras e envios para uma coleta específica.
-
-    Esta função obtém a coleta com base no ID fornecido, recupera todos os frascos e pontos de coleta
-    associados ao setor da coleta, e cria instâncias de TabAmostra e TabEnvio para cada combinação
-    de frasco e ponto de coleta. As instâncias são salvas no banco de dados.
-
-    Parâmetros:
-    request (HttpRequest): O objeto de solicitação HTTP.
-    coleta_id (int): O ID da coleta para a qual as amostras e envios serão preenchidos.
-
-    Retorna:
-    HttpResponseRedirect: Redireciona para a página inicial após a conclusão do preenchimento das amostras e envios.
     """
     coleta = get_object_or_404(TabColeta, id=coleta_id)
     frascos = TabFrasco.objects.all()
-    # Adiciona o filtro status=True na query dos pontos
     pontos_coleta = TabPonto.objects.filter(
         id_setor=coleta.id_setor,
         status=True,  # Apenas pontos ativos
@@ -1876,14 +1864,13 @@ def fill_amostra(request, coleta_id):
 
     amostras = []
     for frasco in frascos:
-        # Verifica se a análise de bentos está desativada e pula os frascos 5, 6 e 7
         if not coleta.analise_bentos and frasco.id in [5, 6, 7]:
             continue
         for ponto in pontos_coleta:
             amostra = TabAmostra(
                 id_coleta=coleta,
                 id_frasco=frasco,
-                id_ponto=ponto,
+                id_ponto=ponto, 
                 etiqueta=f"{coleta.ordem_servico}{str(ponto.id).zfill(3)}{str(frasco.id).zfill(2)}",
             )
             amostras.append(amostra)
@@ -1898,6 +1885,9 @@ def fill_amostra(request, coleta_id):
         envios.append(envio)
 
     TabEnvio.objects.bulk_create(envios)
+
+    # Atualiza o status da coleta para 6
+    TabColeta.objects.filter(id=coleta_id).update(status=6)
 
     return redirect("fill_campo_medida", coleta_id=coleta_id)
 
@@ -1938,35 +1928,120 @@ def fill_campo_medida(request, coleta_id):
 @login_required
 def fill_frasco_medida(request, coleta_id, frasco_id):
     """
-    Preenche o campo de medida para uma coleta específica.
-
-    Esta função filtra os envios e parâmetros com base no ID da coleta e no ID do frasco,
-    cria instâncias de TabMedida para cada combinação de envio e parâmetro, e as salva no banco de dados.
-
-    Parâmetros:
-    request (HttpRequest): O objeto de solicitação HTTP.
-    coleta_id (int): O ID da coleta para a qual os campos de medida serão preenchidos.
-
-    Retorna:
-    HttpResponseRedirect: Redireciona para a página inicial após a conclusão do preenchimento dos campos de medida.
+    Preenche os campos de medida para um frasco específico da coleta.
     """
-    envios = TabEnvio.objects.filter(
-        id_amostra__id_coleta=coleta_id, id_amostra__id_frasco=frasco_id
-    )
-    parametros = TabProdxparam.objects.filter(id_frasco=frasco_id)
+    coleta = get_object_or_404(TabColeta, id=coleta_id)
+    frasco = get_object_or_404(TabFrasco, id=frasco_id)
+    
+    # Verifica se já existem medidas para este frasco nesta coleta
+    medidas_existentes = TabMedida.objects.filter(
+        id_envio__id_amostra__id_coleta=coleta_id,
+        id_envio__id_amostra__id_frasco=frasco_id
+    ).exists()
 
-    campos = []
-    for envio in envios:
-        for parametro in parametros:
-            campo = TabMedida(
-                id_envio=envio,
-                id_pp=parametro,
+    if not medidas_existentes:
+        try:
+            # Obtém todas as amostras para este frasco
+            amostras = TabAmostra.objects.filter(
+                id_coleta=coleta,
+                id_frasco=frasco
             )
-            campos.append(campo)
+            
+            # Para cada amostra, verifica/cria o envio e as medidas
+            for amostra in amostras:
+                # Cria ou obtém o envio
+                envio, created = TabEnvio.objects.get_or_create(
+                    id_amostra=amostra
+                )
+                
+                # Obtém os parâmetros ativos para este frasco
+                parametros = TabProdxparam.objects.filter(
+                    id_frasco=frasco,
+                    status=True
+                )
+                
+                # Cria as medidas para cada parâmetro
+                medidas = []
+                for parametro in parametros:
+                    medida = TabMedida(
+                        id_envio=envio,
+                        id_pp=parametro
+                    )
+                    medidas.append(medida)
+                
+                # Cria todas as medidas de uma vez
+                if medidas:
+                    TabMedida.objects.bulk_create(medidas)
+            
+            messages.success(request, f'Formulários gerados com sucesso para o frasco {frasco.nome}')
+            
+        except Exception as e:
+            messages.error(request, f'Erro ao gerar formulários: {str(e)}')
+            return redirect('info_coleta', coleta_id=coleta_id)
 
-    TabMedida.objects.bulk_create(campos)
+    return redirect('lista_campo_frasco', coleta_id=coleta_id, frasco_id=frasco_id)
 
-    return redirect("info_coleta", coleta_id=coleta_id)
+@login_required 
+def lista_campo_frasco(request, coleta_id, frasco_id):
+    """
+    Lista os campos de medida para um frasco específico.
+    """
+    coleta = get_object_or_404(TabColeta, id=coleta_id)
+    frasco = get_object_or_404(TabFrasco, id=frasco_id)
+    
+    # Filtra as amostras da coleta atual para o frasco específico
+    amostras = TabAmostra.objects.filter(
+        id_coleta=coleta,
+        id_frasco=frasco
+    ).order_by('id_ponto')
+    
+    table = ListaCampoTable(amostras)
+    RequestConfig(request, paginate={"per_page": 40}).configure(table)
+
+    return render(request, 'lista_campo.html', {
+        "coleta": coleta,
+        "frasco": frasco, 
+        "table": table,
+        "amostras": amostras
+    })
+
+@login_required
+def selecionar_frasco(request, coleta_id):
+    coleta = get_object_or_404(TabColeta, id=coleta_id)
+    
+    # Obtém os frascos disponíveis para esta coleta
+    frascos_disponiveis = TabFrasco.objects.filter(
+        id__in=TabAmostra.objects.filter(
+            id_coleta=coleta
+        ).values_list('id_frasco', flat=True).distinct()
+    )
+    
+    # Para cada frasco, verifica se tem envios E medidas
+    frascos_info = []
+    for frasco in frascos_disponiveis:
+        envios_existentes = TabEnvio.objects.filter(
+            id_amostra__id_coleta=coleta_id,
+            id_amostra__id_frasco=frasco.id
+        ).exists()
+        
+        medidas_existentes = TabMedida.objects.filter(
+            id_envio__id_amostra__id_coleta=coleta_id,
+            id_envio__id_amostra__id_frasco=frasco.id
+        ).exists()
+        
+        tem_formularios = envios_existentes and medidas_existentes
+        
+        frascos_info.append({
+            'id': frasco.id,
+            'nome': frasco.nome,
+            'tem_formularios': tem_formularios,
+            'status': 'success' if tem_formularios else 'warning'
+        })
+
+    return render(request, 'modal_selecao_frasco.html', {
+        'coleta': coleta,
+        'frascos': frascos_info
+    })
 
 
 @login_required
@@ -2046,12 +2121,14 @@ def info_coleta(request, coleta_id):
                 'status': ponto.status,
                 'formulario_preenchido': formulario_preenchido,
                 'parcialmente_preenchido': parcialmente_preenchido
+                
             })
 
         pontos_coleta_json = json.dumps(pontos_coleta, cls=DjangoJSONEncoder)
 
         context = {
             "coleta": coleta.id,
+            "setor": coleta.id_setor,
             "coleta_os": coleta.ordem_servico,  # Usando ordem_servico ao invés do id
             "usuario_responsavel": usuario_responsavel,
             "data_coleta": data_coleta,
@@ -2061,6 +2138,8 @@ def info_coleta(request, coleta_id):
             "percentual_checklist": percentual_checklist,
             "link": link,
             "pontos_coleta": pontos_coleta_json,
+            "atualizado" :coleta.atualizado_em,
+            "status_coleta": coleta.status,
         }
 
         return render(request, "info_coleta.html", context)
@@ -2082,7 +2161,7 @@ def input_fisico_quimico(request, coleta_id, ponto_id):
     coleta = get_object_or_404(TabColeta, id=coleta_id)
     ponto = get_object_or_404(TabPonto, id=ponto_id, status=True)
 
-    # Busca anexo existente 
+    # Busca anexo existente
     anexo_existente = None
     anexo_query = TabAnexoAmostra.objects.filter(
         id_envio__id_amostra__id_coleta=coleta_id,
@@ -2113,24 +2192,9 @@ def input_fisico_quimico(request, coleta_id, ponto_id):
             instances = formset.save()
 
             # Processa o anexo se houver arquivo ou observação
-            if request.FILES.get("anexo") or request.POST.get("observacao_anexo"):
-                primeiro_envio = instances[0].id_envio if instances else None
-                if primeiro_envio:
-                    # Se já existe um anexo, atualiza
-                    if anexo_existente:
-                        if request.FILES.get("anexo"):
-                            anexo_existente.anexo = request.FILES["anexo"]
-                        anexo_existente.observacao = request.POST.get(
-                            "observacao_anexo"
-                        )
-                        anexo_existente.save()
-                    # Se não existe, cria novo
-                    else:
-                        TabAnexoAmostra.objects.create(
-                            id_envio=primeiro_envio,
-                            anexo=request.FILES.get("anexo"),
-                            observacao=request.POST.get("observacao_anexo"),
-                        )
+            primeiro_envio = instances[0].id_envio if instances else None
+            if primeiro_envio:
+                handle_anexo(request, primeiro_envio)
 
             proximo_ponto = TabPonto.objects.filter(
                 id_setor=coleta.id_setor, status=True, id__gt=ponto.id
@@ -2164,6 +2228,8 @@ def input_fisico_quimico(request, coleta_id, ponto_id):
             "anexo_existente": anexo_existente,
         },
     )
+
+
 
 
 
@@ -2241,9 +2307,15 @@ def lista_de_coletas(request):
     return render(request, "lista_de_coletas.html", {"table": table})
 
 
-@login_required
+@login_required 
 def update_coleta(request, id):
     coleta = get_object_or_404(TabColeta, id=id)
+    
+    # Verificar se a coleta está cancelada
+    if coleta.status.id == 2:  # status 2 = cancelada 
+        messages.error(request, "Não é possível editar uma coleta que já está cancelada.")
+        return redirect("lista_de_coletas")
+        
     if request.method == "POST":
         form = CadastroColetaForm(request.POST, instance=coleta)
         if form.is_valid():
@@ -2254,19 +2326,32 @@ def update_coleta(request, id):
         form = CadastroColetaForm(instance=coleta)
     return render(request, "cadastro_coleta.html", {"form": form})
 
-
 @login_required
 def aplicar_acao(request):
     if request.method == "POST":
         acao = request.POST.get("acao")
         selecionados = request.POST.getlist("selecionar")
 
-        if acao and selecionados:  # Corrigido de 'e' para 'and'
+        if acao and selecionados:
+            # Obter a primeira coleta selecionada
+            coleta = get_object_or_404(TabColeta, id=selecionados[0])
+            
+            # Verificar se a coleta está cancelada antes de qualquer ação
+            if coleta.status.id == 2:  # status 2 = cancelada
+                messages.error(request, "Não é possível editar uma coleta que já está cancelada.")
+                return redirect("lista_de_coletas")
+
             if acao == "editar":
                 return redirect("update_coleta", id=selecionados[0])
             elif acao == "detalhes":
-                return redirect("info_coleta", coleta_id=selecionados[0])
-            # Adicione outras ações conforme necessário
+                return redirect("info_coleta", coleta_id=selecionados[0]) 
+            elif acao == "cancelar":
+                coletas = TabColeta.objects.filter(id__in=selecionados)
+                if coletas.filter(status=2).exists():
+                    messages.error(request, "Não é possível cancelar coletas que já estão canceladas.")
+                else:
+                    coletas.update(status=2)
+                    messages.success(request, "Coletas canceladas com sucesso.")
 
     return redirect("lista_de_coletas")
 
@@ -2295,6 +2380,204 @@ def cadastro_email(request):
         form = EmailForm()
 
     return render(request, "cadastro_email.html", {"form": form})
+
+
+@login_required
+def input_laboratorio(request, coleta_id, ponto_id, frasco_id):
+    """
+    View para entrada de dados laboratoriais
+    """
+    MedidaFormSet = modelformset_factory(
+        TabMedida, form=InputFisicoQuimicoForm, extra=0, fields="__all__"
+    )
+
+    coleta = get_object_or_404(TabColeta, id=coleta_id)
+    ponto = get_object_or_404(TabPonto, id=ponto_id, status=True)
+    frasco = get_object_or_404(TabFrasco, id=frasco_id)
+
+    # Get amostra and envio for this specific combination
+    amostra = TabAmostra.objects.filter(
+        id_coleta=coleta,
+        id_ponto=ponto,
+        id_frasco=frasco
+    ).first()
+    
+    envio = TabEnvio.objects.filter(id_amostra=amostra).first() if amostra else None
+
+    # Get medidas for this envio
+    medidas = TabMedida.objects.filter(
+        id_envio=envio
+    ).select_related('id_envio', 'id_pp', 'id_pp__id_param') if envio else TabMedida.objects.none()
+
+    # Busca anexo existente
+    anexo_existente = None
+    anexo_query = TabAnexoAmostra.objects.filter(
+        id_envio__id_amostra__id_coleta=coleta_id,
+        id_envio__id_amostra__id_ponto=ponto_id,
+        id_envio__id_amostra__id_frasco=frasco_id,
+    ).first()
+
+    # Se encontrou um anexo, verifica se tem arquivo ou observação
+    if anexo_query:
+        anexo_existente = anexo_query
+        # Se não tem arquivo nem observação, deleta o registro
+        if not anexo_existente.anexo and not anexo_existente.observacao:
+            anexo_existente.delete()
+            anexo_existente = None
+
+    if request.method == "POST":
+        formset = MedidaFormSet(
+            request.POST,
+            request.FILES,
+            queryset=medidas
+        )
+        if formset.is_valid():
+            instances = formset.save()
+
+            # Processa o anexo se houver arquivo ou observação
+            primeiro_envio = instances[0].id_envio if instances else None
+            if primeiro_envio:
+                handle_anexo(request, primeiro_envio)
+
+            messages.success(request, "Dados salvos com sucesso!")
+            
+            # Find next point
+            proximo_ponto = TabPonto.objects.filter(
+                id_setor=coleta.id_setor, 
+                status=True,
+                id__gt=ponto.id
+            ).first()
+
+            if proximo_ponto:
+                return redirect('input_laboratorio', 
+                             coleta_id=coleta_id,
+                             ponto_id=proximo_ponto.id,
+                             frasco_id=frasco_id)
+            return redirect('lista_campo_frasco', 
+                          coleta_id=coleta_id,
+                          frasco_id=frasco_id)
+    else:
+        formset = MedidaFormSet(queryset=medidas)
+
+    # Add parameter info to each form
+    for form in formset:
+        medida = form.instance
+        if medida.id_pp:
+            form.parametro = medida.id_pp.id_param.nome
+            form.unidade = medida.id_pp.unidade
+
+    # Get existing attachments with proper ordering
+    anexos_existentes = TabAnexoAmostra.objects.filter(
+        id_envio=envio
+    ).order_by('ordem') if envio else []
+
+    # Obter todos os pontos desta coleta para navegação
+    todos_pontos = TabPonto.objects.filter(
+        id_setor=coleta.id_setor,
+        status=True
+    ).order_by('id')
+    
+    # Encontrar índice do ponto atual
+    try:
+        ponto_atual_index = list(todos_pontos.values_list('id', flat=True)).index(ponto.id)
+        ponto_anterior = todos_pontos[ponto_atual_index - 1] if ponto_atual_index > 0 else None
+        ponto_proximo = todos_pontos[ponto_atual_index + 1] if ponto_atual_index < len(todos_pontos) - 1 else None
+    except (ValueError, IndexError):
+        ponto_anterior = None
+        ponto_proximo = None
+
+    # Calcular progresso
+    total_pontos = todos_pontos.count()
+    progresso = ((ponto_atual_index + 1) / total_pontos * 100) if total_pontos > 0 else 0
+
+    return render(
+        request,
+        "input_laboratorio.html",
+        {
+            "formset": formset,
+            "coleta": coleta,
+            "ponto": ponto,
+            "frasco": frasco,
+            "anexo_existente": anexo_existente,
+            "envio": envio,
+            "has_anexos": bool(anexos_existentes),
+            # Novos contextos para navegação
+            "ponto_anterior": ponto_anterior,
+            "ponto_proximo": ponto_proximo, 
+            "total_pontos": total_pontos,
+            "ponto_atual": ponto_atual_index + 1,
+            "progresso": progresso,
+        },
+    )
+
+def handle_anexo(request, envio):
+    """
+    Função auxiliar para processar anexos de amostras.
+    
+    Args:
+        request: O objeto HttpRequest
+        envio: O objeto TabEnvio associado ao anexo
+        
+    Returns:
+        TabAnexoAmostra: O objeto de anexo criado/atualizado ou None
+    """
+    anexo_existente = TabAnexoAmostra.objects.filter(id_envio=envio).first()
+
+    if request.FILES.get("anexo") or request.POST.get("observacao_anexo"):
+        if anexo_existente:
+            if request.FILES.get("anexo"):
+                anexo_existente.anexo = request.FILES["anexo"]
+            anexo_existente.observacao = request.POST.get("observacao_anexo")
+            anexo_existente.save()
+        else:
+            anexo_existente = TabAnexoAmostra.objects.create(
+                id_envio=envio,
+                anexo=request.FILES.get("anexo"),
+                observacao=request.POST.get("observacao_anexo"),
+            )
+    elif anexo_existente and not anexo_existente.anexo and not anexo_existente.observacao:
+        anexo_existente.delete()
+        anexo_existente = None
+        
+    return anexo_existente
+
+@login_required
+def selecionar_frasco(request, coleta_id):
+    coleta = get_object_or_404(TabColeta, id=coleta_id)
+    
+    # Obtém os frascos disponíveis para esta coleta
+    frascos_disponiveis = TabFrasco.objects.filter(
+        id__in=TabAmostra.objects.filter(
+            id_coleta=coleta
+        ).values_list('id_frasco', flat=True).distinct()
+    )
+    
+    # Para cada frasco, verifica se tem envios E medidas
+    frascos_info = []
+    for frasco in frascos_disponiveis:
+        envios_existentes = TabEnvio.objects.filter(
+            id_amostra__id_coleta=coleta_id,
+            id_amostra__id_frasco=frasco.id
+        ).exists()
+        
+        medidas_existentes = TabMedida.objects.filter(
+            id_envio__id_amostra__id_coleta=coleta_id,
+            id_envio__id_amostra__id_frasco=frasco.id
+        ).exists()
+        
+        tem_formularios = envios_existentes and medidas_existentes
+        
+        frascos_info.append({
+            'id': frasco.id,
+            'nome': frasco.nome,
+            'tem_formularios': tem_formularios,
+            'status': 'success' if tem_formularios else 'warning'
+        })
+
+    return render(request, 'modal_selecao_frasco.html', {
+        'coleta': coleta,
+        'frascos': frascos_info
+    })
 
 
 

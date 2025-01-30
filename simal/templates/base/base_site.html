@@ -20,6 +20,13 @@
 
 </head>
 <body>
+  <!-- Botão flutuante para mobile -->
+  <button id="mobile-toggle" class="mobile-toggle-btn">
+    <i class="bi bi-list"></i>
+  </button>
+
+  <!-- Adicione este elemento logo após a abertura do body -->
+  <div class="sidebar-overlay"></div>
 
   <div class="sidebar">
     <div class="wrapper">
@@ -399,6 +406,122 @@ document.addEventListener("DOMContentLoaded", function() {
     });
   });
 </script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+      const sidebar = document.getElementById('sidebar');
+      const mobileToggle = document.getElementById('mobile-toggle');
+      const toggleBtn = document.querySelector('.toggle-btn');
+      const mainContent = document.querySelector('.main-content');
+      const sidebarOverlay = document.querySelector('.sidebar-overlay');
+
+      function isMobile() {
+        return window.innerWidth <= 768;
+      }
+
+      function closeSidebar() {
+        if (isMobile()) {
+          sidebar.classList.remove('show-mobile');
+        }
+      }
+
+      function toggleSidebar() {
+        sidebar.classList.toggle('show-mobile');
+      }
+
+      function handleResize() {
+        if (isMobile()) {
+          sidebar.classList.remove('expand');
+          sidebar.classList.remove('show-mobile');
+        }
+      }
+
+      // Fecha o menu ao clicar no conteúdo principal
+      mainContent.addEventListener('click', closeSidebar);
+      
+      // Fecha o menu ao clicar no overlay
+      sidebarOverlay.addEventListener('click', closeSidebar);
+
+      mobileToggle.addEventListener('click', toggleSidebar);
+      toggleBtn.addEventListener('click', toggleSidebar);
+      window.addEventListener('resize', handleResize);
+      handleResize();
+    });
+</script>
+
+<style>
+    @media (max-width: 768px) {
+      #sidebar {
+        transform: translateX(-100%);
+        position: fixed;
+        z-index: 1002; /* Aumentado para ficar acima do botão quando aberto */
+        transition: transform 0.3s ease-in-out;
+        top: 0;
+        left: 0;
+        height: 100vh;
+      }
+
+      #sidebar.show-mobile {
+        transform: translateX(0);
+      }
+
+      .mobile-toggle-btn {
+        display: flex;
+        position: fixed;
+        top: 70px; /* Aumentado para não sobrepor o botão home */
+        left: 20px;
+        width: 45px;
+        height: 45px;
+        border-radius: 8px;
+        background-color: #f2f4f7;
+        color: #000;
+        border: 1px solid #e4e6e8;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        z-index: 1001;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        opacity: 0.3;
+      }
+
+      .mobile-toggle-btn:hover,
+      #sidebar.show-mobile ~ .mobile-toggle-btn {
+        opacity: 1;
+        background-color: #666666;
+        color: #f2f4f7;
+      }
+
+      .toggle-btn {
+        display: none;
+      }
+      
+      /* Adicione um overlay escuro quando a sidebar estiver aberta */
+      .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1001;
+      }
+
+      #sidebar.show-mobile + .sidebar-overlay {
+        display: block;
+      }
+    }
+
+    @media (min-width: 769px) {
+      .mobile-toggle-btn {
+        display: none;
+      }
+      .sidebar-overlay {
+        display: none;
+      }
+    }
+  </style>
 
 {% comment %} <script type="text/javascript">
 

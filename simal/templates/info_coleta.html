@@ -1,71 +1,127 @@
 {% extends 'base/base_site.html' %}
-{% load django_bootstrap5 %}
+{% load static %}
 
 {% block head %}
+<!-- Leaflet CSS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-    crossorigin="anonymous"/>
+    crossorigin=""/>
+    
+<!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-    crossorigin="anonymous"></script>
+    crossorigin=""></script>
 {% endblock %}
 
 {% block title %}Informações da Coleta{% endblock %}
 {% block content %}
-<div class="container mt-4">
-    <div class="row mb-4">
-        <div class="col">
-            <div class="d-flex align-items-center">
-                <h1 class="display-5 mb-0"><i class="bi bi-clipboard-data text-primary"></i> Informações da Coleta</h1>
-            </div>
-        </div>
-    </div>
-
-    <div class="row g-4">
-        <!-- Coluna da esquerda -->
-        <div class="col-md-6">
-            <div class="card mb-4 border-0 rounded-4 shadow-sm hover-shadow">
-                <div class="card-header bg-gradient border-0 rounded-top-4" style="background-color: #4361ee;">
-                    <h5 class="card-title mb-0 text-white"><i class="bi bi-info-circle-fill me-2"></i>Dados Principais</h5>
-                </div>
+<div class="container-fluid px-4 py-3 mb-4"> <!-- Adicionado mb-4 -->
+    <!-- Cabeçalho moderno -->
+    <div class="row g-3 mb-4"> <!-- Adicionado margin-bottom -->
+        <div class="col-12">
+            <div class="card border-0 rounded-4 shadow-sm bg-gradient hover-shadow" style="background-color:rgb(6, 60, 122);">
                 <div class="card-body p-4">
-                    <div class="d-flex flex-column gap-3">
-                        <div class="d-flex align-items-center">
-                            <div class="rounded-circle bg-light p-2 me-3">
-                                <i class="bi bi-hash text-primary"></i>
-                            </div>
-                            <div>
-                                <small class="text-muted">Ordem de serviço</small>
-                                <p class="mb-0 fw-bold">{{ coleta_os }}</p>
+                    <div class="row align-items-center">
+                        <!-- Informações Principais -->
+                        <div class="col-md-8">
+                            <h1 class="display-6 mb-3 text-white d-flex align-items-center">
+                                <i class="bi bi-clipboard-data me-3"></i>
+                                <span>{{ coleta_os }}</span>
+                            </h1>
+                            <div class="text-white-50">
+                                <div class="d-flex gap-4"> <!-- Alterado para layout em duas colunas -->
+                                    <div class="d-flex flex-column gap-2">
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-geo-alt me-2"></i>
+                                            <span>Setor: {{ setor }}</span>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-calendar-event me-2"></i>
+                                            <span>Data da Coleta: {{ data_coleta|date:"d/m/Y" }}</span>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-person-circle me-2"></i>
+                                            <span>Responsável: {{ usuario_responsavel }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex flex-column gap-2">
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-calendar-plus me-2"></i>
+                                            <span>Criado em: {{ data_criacao|date:"d/m/Y H:i" }}</span>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-clock-history me-2"></i>
+                                            <span>Atualizada em: {{ atualizado|date:"d/m/Y H:i" }}</span>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <i class="bi bi-check me-2"></i>
+                                            <span>Status: {{ status_coleta }} </span>
+                                        </div>
+                                        
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div class="d-flex align-items-center">
-                            <div class="rounded-circle bg-light p-2 me-3">
-                                <i class="bi bi-person text-primary"></i>
-                            </div>
-                            <div>
-                                <small class="text-muted">Usuário Responsável</small>
-                                <p class="mb-0 fw-bold">{{ usuario_responsavel }}</p>
-                            </div>
-                        </div>
-                        <div class="d-flex align-items-center">
-                            <div class="rounded-circle bg-light p-2 me-3">
-                                <i class="bi bi-calendar-event text-primary"></i>
-                            </div>
-                            <div>
-                                <small class="text-muted">Data da Coleta</small>
-                                <p class="mb-0 fw-bold">{{ data_coleta|date:"d/m/Y" }}</p>
+
+                        <!-- Status e Ações -->
+                        <div class="col-md-4">
+                            <div class="d-flex flex-column align-items-md-end gap-2 mt-3 mt-md-0">
+                                <!-- Botão de Checklist -->
+                                <a href="{% url 'checklist_coleta' coleta %}" class="btn btn-light rounded-pill header-btn">
+                                    <i class="bi bi-arrow-left me-2"></i>Checklist
+                                </a>
+                                
+                                <!-- Botão Gerar Formulários (movido para cá) -->
+                                {% if not fill_amostra_gerado %}
+                                    <a href="{% url 'fill_amostra' coleta %}" class="btn btn-light rounded-pill header-btn">
+                                        <i class="bi bi-file-earmark-plus me-2"></i>Gerar Formulários
+                                    </a>
+                                {% endif %}
+
+                                <!-- Dropdown de Resultados -->
+                                <div class="dropdown">
+                                    <button class="btn btn-light rounded-pill header-btn dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                        <i class="bi bi-pencil-square me-2"></i>Inserir resultados
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li>
+                                            <a class="dropdown-item py-2" href="{% url 'lista_campo' coleta %}">
+                                                <i class="bi bi-thermometer me-2"></i>Campo
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item py-2" href="#" data-option="laboratorio">
+                                                <i class="bi bi-tags me-2"></i>Laboratório
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                                
+                                <!-- Link do WhatsApp -->
+                                <a href="{{ link }}" target="_blank" class="btn header-btn rounded-pill" style="background-color: #25D366; color: white;">
+                                    <i class="bi bi-whatsapp me-2"></i>WhatsApp
+                                </a>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
 
-            <div class="card border-0 rounded-4 shadow-sm hover-shadow">
-                <div class="card-header bg-gradient border-0 rounded-top-4" style="background-color: #4895ef;">
-                    <h5 class="card-title mb-0 text-white"><i class="bi bi-check2-circle me-2"></i>Status</h5>
+    <div class="row g-4 h-100"> <!-- Adicionado h-100 -->
+        <!-- Coluna da esquerda -->
+        <div class="col-md-6 d-flex"> <!-- Adicionado d-flex -->
+            <div class="card border-0 rounded-4 shadow-sm hover-shadow flex-fill"> <!-- Adicionado flex-fill -->
+                <div class="card-header bg-gradient border-0 rounded-top-4" style="background-color: #68a7f1;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0 text-white"><i class="bi bi-check2-circle me-2"></i>Status</h5>
+                        <button class="btn btn-light btn-sm d-md-none toggle-status" type="button">
+                            <i class="bi bi-chevron-up"></i>
+                        </button>
+                    </div>
                 </div>
-                <div class="card-body p-4">
+                <div class="card-body p-4 status-content">
                     <div class="status-item mb-4">
                         <div class="d-flex align-items-center mb-2">
                             <i class="bi bi-file-text me-2 text-primary"></i>
@@ -145,13 +201,13 @@
         </div>
 
         <!-- Coluna da direita -->
-        <div class="col-md-6">
-            <div class="card border-0 rounded-4 shadow-sm hover-shadow h-100"> <!-- Adicione h-100 aqui -->
-                <div class="card-header bg-gradient border-0 rounded-top-4" style="background-color: #38b000;">
+        <div class="col-md-6 d-flex"> <!-- Adicionado d-flex -->
+            <div class="card border-0 rounded-4 shadow-sm hover-shadow flex-fill"> <!-- Adicionado flex-fill -->
+                <div class="card-header bg-gradient border-0 rounded-top-4" style="background-color:#63a355;">
                     <div class="d-flex justify-content-between align-items-center">
                         <h5 class="card-title mb-0 text-white"><i class="bi bi-geo-alt-fill me-2"></i>Mapa das estações amostrais</h5>
-                        <div>
-                            <button class="btn btn-light btn-sm me-2" id="toggleLocation">
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-light btn-sm" id="toggleLocation">
                                 <i class="bi bi-geo-alt"></i>
                             </button>
                             <button class="btn btn-light btn-sm" onclick="openFullscreenMap()">
@@ -160,49 +216,13 @@
                         </div>
                     </div>
                 </div>
-                <div class="card-body p-0 flex-grow-1"> <!-- Adicione flex-grow-1 aqui -->
-                    <div id="map" class="rounded-bottom-4" style="height: 100%; min-height: 500px;"></div> <!-- Ajuste para height: 100% -->
+                <div class="card-body p-0">
+                    <div id="map" class="rounded-bottom-4"></div> <!-- Removida altura fixa -->
                 </div>
             </div>
         </div>
     </div> <!-- Fechamento da row anterior -->
 
-    <!-- Barra de ações em uma nova row -->
-    <div class="row mt-4">
-        <div class="col-12">
-            <div class="card border-0 rounded-4 shadow-sm hover-shadow">
-                <div class="card-body p-4">
-                    <div class="d-flex gap-3 flex-wrap justify-content-start">
-                        {% if not fill_amostra_gerado %}
-                            <a href="{% url 'fill_amostra' coleta %}" class="btn btn-primary btn-lg rounded-pill">
-                                <i class="bi bi-file-earmark-plus me-2"></i>Gerar Formulários
-                            </a>
-                        {% endif %}
-                        <a href="{% url 'checklist_coleta' coleta %}" class="btn btn-success btn-lg rounded-pill">
-                            <i class="bi bi-arrow-left me-2"></i>Voltar ao Checklist
-                        </a>
-                        <div class="dropdown">
-                            <button class="btn btn-success btn-lg rounded-pill dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                <i class="bi bi-pencil-square me-2"></i>Inserir Resultados
-                            </button>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item py-2" href="{% url 'lista_campo' coleta %}">
-                                    <i class="bi bi-thermometer me-2"></i>Campo
-                                </a></li>
-                                <li><a class="dropdown-item py-2" href="{% url 'lista_campo' coleta %}">
-                                    <i class="bi bi-flask me-2"></i>Laboratório
-                                </a></li>
-                            </ul>
-                        </div>
-                        <a href="{{ link }}" target="_blank" class="btn btn-lg rounded-pill" 
-                           style="background-color: #25D366; color: white;">
-                            <i class="bi bi-whatsapp me-2"></i>Compartilhar
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
 
 <!-- Modal do Mapa -->
@@ -249,11 +269,8 @@
 }
 
 #map {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    width: 100%;
+    height: 100%; /* Altura será controlada pelo JavaScript */
 }
 
 #fullscreenMap {
@@ -263,7 +280,7 @@
 
 @media (max-width: 768px) {
     #map {
-        height: 400px; /* Altura menor em telas pequenas */
+        height: 400px !important; /* Altura menor em telas pequenas */
         margin-bottom: 1rem; /* Espaçamento extra no mobile */
     }
     
@@ -331,6 +348,14 @@
     .dropdown-toggle {
         width: 100%;
         text-align: center;
+    }
+
+    .card-header .d-flex.gap-2 {
+        gap: 0.75rem !important; /* Aumenta o gap em dispositivos móveis */
+    }
+    
+    .card-header .btn-sm {
+        padding: 0.5rem 0.75rem; /* Aumenta um pouco o padding dos botões */
     }
 }
 
@@ -419,6 +444,250 @@
     left: 50%;
     transform: translate(-50%, -50%);
 }
+
+/* Ajuste dos botões de controle do mapa */
+.card-header .btn-sm,
+.leaflet-control .btn {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    font-size: 18px;
+}
+
+.card-header .btn-sm i,
+.leaflet-control .btn i {
+    font-size: 18px;
+    line-height: 1;
+}
+
+/* Ajuste específico para o botão de localização no mapa em tela cheia */
+#fullscreenLocation {
+    width: 40px !important;
+    height: 40px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 !important;
+    margin: 10px !important;
+    font-size: 18px !important;
+}
+
+#fullscreenLocation i {
+    font-size: 18px;
+    line-height: 1;
+}
+
+@media (max-width: 768px) {
+    // ...existing code...
+    
+    .card-header .d-flex.gap-2 {
+        gap: 0.5rem !important;
+    }
+    
+    .card-header .btn-sm,
+    .leaflet-control .btn,
+    #fullscreenLocation {
+        width: 40px !important;
+        height: 40px !important;
+    }
+}
+
+/* Estilos para o card minimizável */
+@media (max-width: 768px) {
+    .status-content.collapsed {
+        display: none;
+    }
+    
+    .toggle-status i {
+        transition: transform 0.3s ease;
+    }
+    
+    .toggle-status.collapsed i {
+        transform: rotate(180deg);
+    }
+}
+
+/* Adicione estes estilos para ajustar os botões no cabeçalho */
+@media (min-width: 768px) {
+    .col-md-4 .btn {
+        min-width: 200px;
+    }
+    
+    .col-md-4 .dropdown {
+        width: auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .col-md-4 .btn,
+    .col-md-4 .dropdown-toggle {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+}
+
+/* Ajustes para os botões do cabeçalho */
+@media (min-width: 768px) {
+    .col-md-4 .btn,
+    .col-md-4 .dropdown-toggle {
+        min-width: 220px; /* Largura mínima fixa para todos os botões */
+        white-space: nowrap; /* Evita quebra de texto */
+        overflow: hidden;
+        text-overflow: ellipsis; /* Adiciona ... se o texto for muito longo */
+    }
+    
+    .col-md-4 .dropdown {
+        width: auto;
+    }
+
+    .col-md-4 .d-flex {
+        width: 100%;
+        justify-content: flex-end;
+    }
+}
+
+@media (max-width: 767px) {
+    .col-md-4 .btn,
+    .col-md-4 .dropdown,
+    .col-md-4 .dropdown-toggle {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+}
+
+/* Estilos para os botões do cabeçalho */
+.header-btn {
+    width: 140px !important; /* Força todos os botões a terem a mesma largura */
+    text-align: center;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+}
+
+@media (max-width: 767px) {
+    .header-btn {
+        width: 100% !important;
+    }
+    
+    .dropdown {
+        width: 100%;
+    }
+    
+    .dropdown .header-btn {
+        width: 100% !important;
+    }
+}
+
+/* Adicione estes estilos para melhor utilização do espaço */
+@media (min-width: 1200px) {
+    .container-fluid {
+        min-height: calc(100vh - 56px); /* Mudado de height para min-height */
+        padding: 1.5rem 2rem;
+    }
+
+    .row.h-100 {
+        height: calc(100% - 180px); /* Ajuste baseado na altura do cabeçalho */
+        margin-bottom: 2rem; /* Adiciona espaço após os cards */
+    }
+
+    .card {
+        margin-bottom: 0;
+    }
+
+    #map {
+        min-height: 500px; /* Altura mínima para o mapa */
+    }
+}
+
+/* Ajuste para garantir espaço no final da página */
+.container-fluid {
+    margin-bottom: 2rem; /* Espaço no final da página */
+}
+
+/* Ajustes para telas muito grandes */
+@media (min-width: 1600px) {
+    .container-fluid {
+        padding: 2rem 3rem;
+    }
+}
+
+/* Ajuste para o card de status em telas grandes */
+@media (min-width: 1200px) {
+    .status-content {
+        max-height: calc(100vh - 300px);
+        overflow-y: auto;
+    }
+}
+
+/* Consolide todas as media queries para mobile */
+@media (max-width: 768px) {
+    /* Estilos gerais mobile */
+    .container {
+        padding-bottom: 70px;
+    }
+
+    /* Estilos do mapa */
+    #map {
+        height: 300px !important;
+        width: 100%;
+        position: relative !important;
+        margin-bottom: 1rem;
+    }
+
+    /* Estilos dos botões */
+    .btn,
+    .dropdown-toggle,
+    .header-btn {
+        width: 100% !important;
+        margin-bottom: 0.5rem;
+        text-align: center;
+    }
+
+    /* Exceções para botões específicos */
+    #toggleLocation,
+    #fullscreenLocation,
+    .card-header .btn-sm {
+        width: 40px !important;
+        height: 40px !important;
+        margin-bottom: 0 !important;
+    }
+
+    /* Layout */
+    .d-flex.gap-3 {
+        flex-direction: column;
+    }
+
+    .card {
+        margin-bottom: 1.5rem;
+    }
+
+    .card-header .d-flex.gap-2 {
+        gap: 0.75rem !important;
+    }
+}
+
+/* Consolide as media queries para desktop */
+@media (min-width: 768px) {
+    .header-btn,
+    .col-md-4 .btn,
+    .col-md-4 .dropdown-toggle {
+        min-width: 220px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .col-md-4 .dropdown {
+        width: auto;
+    }
+
+    .col-md-4 .d-flex {
+        width: 100%;
+        justify-content: flex-end;
+    }
+}
 </style>
 
 <script>
@@ -428,7 +697,20 @@ const geolocationControl = {
     watchId: null,
     tracking: false,
 
-    // Função para atualizar a localização do usuário
+    checkPermissions: async function() {
+        try {
+            const result = await navigator.permissions.query({ name: 'geolocation' });
+            if (result.state === 'denied') {
+                alert('Permissão de localização negada. Por favor, permita o acesso à localização nas configurações do seu navegador.');
+                return false;
+            }
+            return true;
+        } catch (error) {
+            console.error('Erro ao verificar permissões:', error);
+            return true; // Continue mesmo se não puder verificar permissões
+        }
+    },
+
     updateLocation: function(position, mapInstance) {
         const lat = position.coords.latitude;
         const lon = position.coords.longitude;
@@ -436,16 +718,15 @@ const geolocationControl = {
         if (this.locationMarker) {
             this.locationMarker.setLatLng([lat, lon]);
         } else {
-            // Criando um ícone personalizado usando divIcon
             const personIcon = L.divIcon({
                 className: 'person-marker',
-                iconSize: [40, 40], // Aumentado de [20, 20] para [40, 40]
-                iconAnchor: [20, 20], // Ajustado para metade do tamanho do ícone
+                iconSize: [40, 40],
+                iconAnchor: [20, 20],
             });
 
             this.locationMarker = L.marker([lat, lon], {
                 icon: personIcon,
-                zIndexOffset: 1000 // Garantir que fique acima dos outros marcadores
+                zIndexOffset: 1000
             })
                 .addTo(mapInstance)
                 .bindTooltip('Sua localização atual', {
@@ -457,18 +738,57 @@ const geolocationControl = {
         mapInstance.setView([lat, lon], mapInstance.getZoom() || 15);
     },
 
-    // Função para lidar com erros
     handleLocationError: function(error) {
         console.error('Erro ao obter localização:', error);
-        alert('Não foi possível obter sua localização. Verifique se permitiu o acesso à localização.');
+        let message = 'Não foi possível obter sua localização. ';
+        
+        switch(error.code) {
+            case error.PERMISSION_DENIED:
+                message += 'Permissão negada. Verifique as configurações do seu navegador.';
+                break;
+            case error.POSITION_UNAVAILABLE:
+                message += 'Informação de localização indisponível.';
+                break;
+            case error.TIMEOUT:
+                message += 'Tempo de espera esgotado.';
+                break;
+            default:
+                message += 'Erro desconhecido.';
+                break;
+        }
+        
+        alert(message);
     },
 
-    // Função para iniciar/parar rastreamento
-    toggleTracking: function(button, mapInstance) {
+    toggleTracking: async function(button, mapInstance) {
         if (!this.tracking) {
-            if ("geolocation" in navigator) {
-                this.watchId = navigator.geolocation.watchPosition(
-                    (position) => this.updateLocation(position, mapInstance),
+            if (!("geolocation" in navigator)) {
+                alert("Seu navegador não suporta geolocalização");
+                return;
+            }
+
+            const permissionGranted = await this.checkPermissions();
+            if (!permissionGranted) return;
+
+            try {
+                // Primeiro tenta obter uma posição única para verificar se está funcionando
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        this.watchId = navigator.geolocation.watchPosition(
+                            (pos) => this.updateLocation(pos, mapInstance),
+                            this.handleLocationError,
+                            {
+                                enableHighAccuracy: true,
+                                timeout: 5000,
+                                maximumAge: 0
+                            }
+                        );
+                        this.tracking = true;
+                        button.classList.add('active');
+                        button.querySelector('i').classList.remove('bi-geo-alt');
+                        button.querySelector('i').classList.add('bi-geo-alt-fill');
+                        this.updateLocation(position, mapInstance);
+                    },
                     this.handleLocationError,
                     {
                         enableHighAccuracy: true,
@@ -476,12 +796,9 @@ const geolocationControl = {
                         maximumAge: 0
                     }
                 );
-                this.tracking = true;
-                button.classList.add('active');
-                button.querySelector('i').classList.remove('bi-geo-alt');
-                button.querySelector('i').classList.add('bi-geo-alt-fill');
-            } else {
-                alert("Seu navegador não suporta geolocalização");
+            } catch (error) {
+                console.error('Erro ao iniciar rastreamento:', error);
+                this.handleLocationError(error);
             }
         } else {
             if (this.watchId) {
@@ -501,6 +818,22 @@ const geolocationControl = {
 };
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Adicione no início do DOMContentLoaded
+    function adjustMapHeight() {
+        const statusCard = document.querySelector('.col-md-6:first-child .card');
+        const mapContainer = document.getElementById('map');
+        if (statusCard && mapContainer && window.innerWidth >= 768) {
+            const statusHeight = statusCard.offsetHeight;
+            const mapCardHeader = mapContainer.closest('.card').querySelector('.card-header');
+            const headerHeight = mapCardHeader.offsetHeight;
+            mapContainer.style.height = `${statusHeight - headerHeight}px`;
+        }
+    }
+
+    // Chama a função inicialmente e adiciona listener para redimensionamento
+    adjustMapHeight();
+    window.addEventListener('resize', adjustMapHeight);
+    
     // Mantém os pontos acessíveis globalmente
     window.pontosColeta = {{ pontos_coleta|safe }};
     var map = L.map('map');
@@ -624,46 +957,89 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }, 300);
 
-    let locationMarker = null;
-    let watchId = null;
-    let tracking = false;
-
-    // Função para atualizar a localização do usuário
-    function updateLocation(position) {
-        const lat = position.coords.latitude;
-        const lon = position.coords.longitude;
-        
-        if (locationMarker) {
-            locationMarker.setLatLng([lat, lon]);
-        } else {
-            const locationIcon = L.icon({
-                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
-                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
-                iconSize: [25, 41],
-                iconAnchor: [12, 41],
-                popupAnchor: [1, -34],
-                shadowSize: [41, 41]
-            });
-
-            locationMarker = L.marker([lat, lon], {icon: locationIcon})
-                .addTo(map)
-                .bindPopup('Sua localização atual');
-        }
-        
-        map.setView([lat, lon], map.getZoom());
-    }
-
-    // Função para lidar com erros de geolocalização
-    function handleLocationError(error) {
-        console.error('Erro ao obter localização:', error);
-        alert('Não foi possível obter sua localização. Verifique se permitiu o acesso à localização.');
-    }
-
-    // Botão para alternar rastreamento de localização
+    // Manter apenas o event listener do botão
     document.getElementById('toggleLocation').addEventListener('click', function() {
         geolocationControl.toggleTracking(this, map);
     });
 
+    // Adicione manipulador para o botão "Laboratório"
+    const labButton = document.querySelector('[data-option="laboratorio"]');
+    if (labButton) {
+        labButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Inicializa o modal
+            const modalElement = document.getElementById('modalSelecaoFrasco');
+            if (!modalElement) {
+                // Se o modal não existir no DOM, cria ele
+                const modalHTML = `
+                    <div class="modal fade" id="modalSelecaoFrasco" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <!-- O conteúdo será carregado via AJAX -->
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.body.insertAdjacentHTML('beforeend', modalHTML);
+            }
+
+            const modal = new bootstrap.Modal(document.getElementById('modalSelecaoFrasco'));
+            
+            // Carrega o conteúdo do modal via AJAX
+            fetch(`/selecionar_frasco/{{ coleta }}/`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erro na rede');
+                    }
+                    return response.text();
+                })
+                .then(html => {
+                    document.querySelector('#modalSelecaoFrasco .modal-content').innerHTML = html;
+                    modal.show();
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    alert('Erro ao carregar os frascos. Por favor, tente novamente.');
+                });
+        });
+    }
+
+    // Função para pegar o estado salvo do cookie
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+    }
+
+    // Função para salvar o estado no cookie
+    function setCookie(name, value) {
+        const date = new Date();
+        date.setTime(date.getTime() + (7 * 24 * 60 * 60 * 1000)); // Cookie válido por 7 dias
+        document.cookie = `${name}=${value};expires=${date.toUTCString()};path=/`;
+    }
+
+    const toggleBtn = document.querySelector('.toggle-status');
+    const statusContent = document.querySelector('.status-content');
+    
+    if (toggleBtn && statusContent) {
+        // Recupera o estado salvo
+        const isCollapsed = getCookie('statusCardCollapsed') === 'true';
+        
+        // Aplica o estado inicial
+        if (isCollapsed) {
+            statusContent.classList.add('collapsed');
+            toggleBtn.classList.add('collapsed');
+        }
+
+        toggleBtn.addEventListener('click', function() {
+            statusContent.classList.toggle('collapsed');
+            this.classList.toggle('collapsed');
+            
+            // Salva o novo estado
+            setCookie('statusCardCollapsed', statusContent.classList.contains('collapsed'));
+        });
+    }
 });
 
 let fullscreenMap = null;
@@ -762,8 +1138,6 @@ function initFullscreenMap() {
     fullscreenLocationButton.onAdd = function(map) {
         const button = L.DomUtil.create('button', 'btn btn-light');
         button.innerHTML = '<i class="bi bi-geo-alt"></i>';
-        button.style.margin = '10px';
-        button.style.padding = '6px 10px';
         button.id = 'fullscreenLocation';
         
         L.DomEvent.on(button, 'click', function() {
@@ -783,5 +1157,14 @@ document.getElementById('mapModal').addEventListener('hidden.bs.modal', function
     }
 });
 </script>
+
+<!-- Adiciona o modal ao final do template -->
+<div class="modal fade" id="modalSelecaoFrasco" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <!-- O conteúdo será carregado via AJAX -->
+        </div>
+    </div>
+</div>
 
 {% endblock %}

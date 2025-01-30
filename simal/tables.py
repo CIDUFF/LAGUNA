@@ -596,40 +596,19 @@ class StatusColetaTable(tables.Table):
         
         
 class ListaCampoTable(tables.Table):
-    status = tables.Column(empty_values=[], verbose_name="Status", orderable=False)
-
-    update = tables.LinkColumn(
-        "input_fisico_quimico",
-        args=[A("id_coleta.id"), A("id_ponto.id")],
-        orderable=False,
-        empty_values=[],
-        text="Preencher dados",
-        attrs={"a": {"class": "btn btn-success btn-sm"}},
+    acoes = tables.TemplateColumn(
+        template_code='''
+        <button type="button" class="btn btn-primary btn-sm btn-preencher" data-ponto-id="{{ record.id_ponto.id }}">
+            <i class="bi bi-pencil-square"></i> Preencher dados
+        </button>
+        ''',
+        verbose_name="Ações"
     )
-
-    def render_status(self, record):
-        medida = TabMedida.objects.filter(
-            id_envio__id_amostra=record,
-            id_envio__id_amostra__id_frasco=1,  # Filtro para frasco_id=1
-        ).first()
-
-        if medida and medida.input_valor is not None:
-            return format_html('<span class="badge bg-success">Preenchido</span>')
-        return format_html(
-            '<span class="badge bg-warning text-dark">Não preenchido</span>'
-        )
-
+    
     class Meta:
         model = TabAmostra
-        template_name = "tables/bootstrap5.html"
-        fields = ["id_ponto", "etiqueta", "status", "update"]
-        empty_text = "Não há dados para exibir"
-        orderable = True
-        exclude = ("id", "created_at", "updated_at", "campo")
-        sequence = ("id_ponto", "etiqueta", "status", "update")
-        per_page = 40
-        paginator_class = tables.LazyPaginator
-        table_pagination = True
+        fields = ["id_ponto", "etiqueta"]
+        attrs = {"class": "table table-hover"}
 
 
 class TabColetaTable(tables.Table):

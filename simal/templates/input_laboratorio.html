@@ -1,0 +1,302 @@
+{% extends 'base/base_site.html' %}
+
+
+<!-- ... resto do código existente ... -->
+{% load crispy_forms_tags %}
+{% block title %}Formulário Físico-Químico{% endblock %}
+{% block content %}
+{% if user.is_authenticated %}
+<div class="container mt-4">
+    <div class="row mb-3 mb-md-4">
+        <div class="col">
+            <div class="d-flex align-items-center">
+                <h1 class="display-6 display-md-5 mb-0">
+                    <i class="bi bi-clipboard-data text-primary"></i> Formulário {{ frasco.nome }}
+                </h1>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 g-md-4">
+        <!-- Card de Informações -->
+        <div class="col-12 col-md-4">
+            <div class="card border-0 rounded-4 shadow-sm hover-shadow">
+                <div class="card-header bg-gradient border-0 rounded-top-4" style="background-color: #4361ee;">
+                    <h5 class="card-title mb-0 text-white">
+                        <i class="bi bi-info-circle-fill me-2"></i>Informações da Coleta
+                    </h5>
+                </div>
+                <div class="card-body p-3 p-md-4">
+                    <div class="d-flex flex-column gap-3">
+                        <div class="d-flex align-items-center">
+                            <div class="rounded-circle bg-light p-2 me-3">
+                                <i class="bi bi-map text-primary"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted">Setor</small>
+                                <p class="mb-0 fw-bold">{{ coleta.id_setor }}</p>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <div class="rounded-circle bg-light p-2 me-3">
+                                <i class="bi bi-geo-alt text-primary"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted">Ponto</small>
+                                <p class="mb-0 fw-bold">{{ ponto }}</p>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <div class="rounded-circle bg-light p-2 me-3">
+                                <i class="bi bi-hash text-primary"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted">Ordem de Serviço</small>
+                                <p class="mb-0 fw-bold">{{ coleta.ordem_servico }}</p>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <div class="rounded-circle bg-light p-2 me-3">
+                                <i class="bi bi-calendar-event text-primary"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted">Data da Coleta</small>
+                                <p class="mb-0 fw-bold">{{ coleta.data|date:"d/m/Y" }}</p>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <div class="rounded-circle bg-light p-2 me-3">
+                                <i class="bi bi-person text-primary"></i>
+                            </div>
+                            <div>
+                                <small class="text-muted">Responsável</small>
+                                <p class="mb-0 fw-bold">{{ coleta.criado_por }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Botão Voltar -->
+                    <div class="mt-4">
+                        <a href="{% url 'info_coleta' coleta.id %}" class="btn btn-secondary w-100 rounded-pill">
+                            <i class="bi bi-arrow-left me-2"></i>Voltar
+                        </a>
+                    </div>
+                    
+                </div>
+                
+            </div>
+            <!-- ... código existente ... -->
+
+<!-- Adicione após o cabeçalho principal -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="btn-group" role="group">
+                {% if ponto_anterior %}
+                    <a href="{% url 'input_laboratorio' coleta_id=coleta.id ponto_id=ponto_anterior.id frasco_id=frasco.id %}" 
+                       class="btn btn-outline-primary">
+                        <i class="bi bi-arrow-left"></i> Ponto anterior
+                    </a>
+                {% endif %}
+                
+                {% if ponto_proximo %}
+                    <a href="{% url 'input_laboratorio' coleta_id=coleta.id ponto_id=ponto_proximo.id frasco_id=frasco.id %}"
+                       class="btn btn-outline-primary">
+                        Próximo ponto <i class="bi bi-arrow-right"></i>
+                    </a>
+                {% endif %}
+            </div>
+            
+            <div class="text-center flex-grow-1 px-3">
+                <h6 class="mb-1">Progresso: {{ ponto_atual }} de {{ total_pontos }} pontos</h6>
+                <div class="progress">
+                    <div class="progress-bar" role="progressbar" style="width: {{ progresso }}%"
+                         aria-valuenow="{{ progresso }}" aria-valuemin="0" aria-valuemax="100">
+                        {{ progresso|floatformat:1 }}%
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+        </div>
+        
+        <!-- Card do Formulário -->
+        <div class="col-12 col-md-8">
+            <div class="card border-0 rounded-4 shadow-sm hover-shadow">
+                <div class="card-header bg-gradient border-0 rounded-top-4" style="background-color: #4895ef;">
+                    <h5 class="card-title mb-0 text-white">
+                        <i class="bi bi-input-cursor-text me-2"></i>Dados da Análise
+                    </h5>
+                </div>
+                <div class="card-body p-3 p-md-4">
+                    <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        {{ formset.management_form|crispy }}
+                        {% for form in formset %}
+                            {% if forloop.first %}
+                                <div class="inlineform">
+                                    {% crispy form %}
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+
+                        <div class="card mt-3 mt-md-4 border-0 bg-light rounded-4">
+                            <div class="card-body p-3">
+                                <h6 class="mb-3">
+                                    <i class="bi bi-paperclip me-2"></i>Anexos e Observações
+                                </h6>
+                                <div class="mb-3">
+                                    <label for="anexo" class="form-label">Arquivo Anexo</label>
+                                    {% if anexo_existente and anexo_existente.anexo %}
+                                        <div class="alert alert-info d-flex align-items-center">
+                                            <i class="bi bi-file-earmark me-2"></i>
+                                            <a href="{{ anexo_existente.anexo.url }}" target="_blank" class="text-decoration-none">
+                                                {{ anexo_existente.anexo.name }}
+                                            </a>
+                                        </div>
+                                    {% endif %}
+                                    <input type="file" name="anexo" id="anexo" class="form-control">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="observacao_anexo" class="form-label">Observações</label>
+                                    <textarea name="observacao_anexo" id="observacao_anexo" 
+                                              class="form-control" rows="3">{% if anexo_existente %}{{ anexo_existente.observacao }}{% endif %}</textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex flex-column flex-md-row gap-3 mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg rounded-pill w-100 w-md-auto">
+                                <i class="bi bi-check-circle me-2"></i>Salvar
+                            </button>
+                            {% if proximo_ponto %}
+                                <a href="{% url 'input_fisico_quimico' coleta.id proximo_ponto.id %}" 
+                                   class="btn btn-secondary btn-lg rounded-pill w-100 w-md-auto">
+                                    <i class="bi bi-arrow-left me-2"></i>Ponto Anterior
+                                </a>
+                            {% else %}
+                                <a href="{% url 'lista_campo_frasco' coleta.id frasco %}" 
+                                   class="btn btn-secondary btn-lg rounded-pill w-100 w-md-auto">
+                                    <i class="bi bi-list-check me-2"></i>Lista de amostras
+                                </a>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.hover-shadow {
+    transition: all 0.3s ease;
+}
+.hover-shadow:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+@media (max-width: 768px) {
+    .card {
+        margin-bottom: 1rem;
+    }
+    
+    .form-control, .form-select {
+        font-size: 16px; /* Evita zoom em inputs no iOS */
+    }
+    
+    .btn {
+        padding: 0.8rem 1.5rem;
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    
+    .display-6 {
+        font-size: 1.5rem;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+}
+
+/* Melhoria no touch target para dispositivos móveis */
+@media (hover: none) {
+    .btn, 
+    .form-control,
+    .form-select {
+        min-height: 44px;
+    }
+    
+    .dropdown-item {
+        padding-top: 0.75rem;
+        padding-bottom: 0.75rem;
+    }
+}
+</style>
+
+<script>
+// Adicionar validação de formulário
+document.addEventListener('DOMContentLoaded', function() {
+    const forms = document.querySelectorAll('.needs-validation');
+    
+    Array.from(forms).forEach(form => {
+        form.addEventListener('submit', event => {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        }, false);
+    });
+
+    // Adiciona formatação e validação para inputs numéricos
+    const numericInputs = document.querySelectorAll('input[type="number"]');
+    numericInputs.forEach(input => {
+        // Define atributos para aceitar até 5 casas decimais
+        input.setAttribute('step', '0.00001');
+        input.setAttribute('pattern', '^-?\\d*\\.?\\d{0,5}$');
+        
+        // Validação em tempo real
+        input.addEventListener('input', function(e) {
+            let value = e.target.value;
+            // Permite o sinal de menos e valores vazios
+            if (value !== '' && value !== '-') {
+                // Remove qualquer caractere inválido exceto números, ponto decimal e sinal de menos
+                value = value.replace(/[^\d.-]/g, '');
+                // Garante apenas um sinal de menos no início
+                value = value.replace(/--+/g, '-');
+                if (value.lastIndexOf('-') > 0) {
+                    value = value.replace(/-/g, '');
+                    value = '-' + value;
+                }
+                // Limita a 5 casas decimais
+                const parts = value.split('.');
+                if (parts.length > 1 && parts[1].length > 5) {
+                    parts[1] = parts[1].substring(0, 5);
+                    value = parts.join('.');
+                }
+                e.target.value = value;
+            }
+        });
+    });
+});
+</script>
+
+{% else %}
+<div class="container mt-5">
+    <div class="card border-0 rounded-4 shadow-sm p-5 text-center">
+        <i class="bi bi-person-lock display-1 text-primary mb-3"></i>
+        <h1>Olá, visitante</h1>
+        <p class="lead mb-4">Faça login para acessar o sistema</p>
+        <div>
+            <a href="{% url 'account_login' %}" class="btn btn-primary btn-lg rounded-pill">
+                <i class="bi bi-box-arrow-in-right me-2"></i>Entrar no Sistema
+            </a>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

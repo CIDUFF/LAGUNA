@@ -56,6 +56,10 @@ from simal.views import (
     update_coleta,
     aplicar_acao,
     detalhes_coleta_popup,
+    selecionar_frasco,
+    fill_frasco_medida,
+    lista_campo_frasco,
+    input_laboratorio,
 )
 
 urlpatterns = [
@@ -197,4 +201,10 @@ urlpatterns = [
         detalhes_coleta_popup,
         name="detalhes_coleta_popup",
     ),
+    path('selecionar_frasco/<int:coleta_id>/', selecionar_frasco, name='selecionar_frasco'),
+    path('fill_frasco_medida/<int:coleta_id>/<int:frasco_id>/', fill_frasco_medida, name='fill_frasco_medida'),
+    path('lista_campo_frasco/<int:coleta_id>/<int:frasco_id>/', lista_campo_frasco, name='lista_campo_frasco'),
+    path('input_laboratorio/<int:coleta_id>/<int:ponto_id>/<int:frasco_id>/', 
+         input_laboratorio, 
+         name='input_laboratorio'),
 ]

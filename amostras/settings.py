@@ -214,7 +214,7 @@ ACCOUNT_USERNAME_REQUIRED = True
 ACCOUNT_AUTHENTICATION_METHOD = "username_email"
 LOGIN_REDIRECT_URL = "/"
 
-# Logging Configuration
+
 # LOGGING = {
 #     'version': 1,
 #     'disable_existing_loggers': False,
