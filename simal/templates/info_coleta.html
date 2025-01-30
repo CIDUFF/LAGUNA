@@ -67,30 +67,53 @@
                         <div class="col-md-4">
                             <div class="d-flex flex-column align-items-md-end gap-2 mt-3 mt-md-0">
                                 <!-- Botão de Checklist -->
-                                <a href="{% url 'checklist_coleta' coleta %}" class="btn btn-light rounded-pill header-btn">
+                                <a href="{% url 'checklist_coleta' coleta %}" 
+                                   class="btn btn-light rounded-pill header-btn"
+                                   data-bs-toggle="tooltip" 
+                                   data-bs-placement="left"
+                                   title="Voltar para a lista de verificação da coleta">
                                     <i class="bi bi-arrow-left me-2"></i>Checklist
                                 </a>
                                 
                                 <!-- Botão Gerar Formulários (movido para cá) -->
                                 {% if not fill_amostra_gerado %}
-                                    <a href="{% url 'fill_amostra' coleta %}" class="btn btn-light rounded-pill header-btn">
+                                    <a href="{% url 'fill_amostra' coleta %}" 
+                                       class="btn btn-light rounded-pill header-btn btn-highlight"
+                                       id="btnGerarFormularios"
+                                       data-bs-toggle="tooltip" 
+                                       data-bs-placement="left"
+                                       title="Clique aqui para criar os formulários necessários para inserir os dados da coleta">
                                         <i class="bi bi-file-earmark-plus me-2"></i>Gerar Formulários
                                     </a>
                                 {% endif %}
 
                                 <!-- Dropdown de Resultados -->
                                 <div class="dropdown">
-                                    <button class="btn btn-light rounded-pill header-btn dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                    <button class="btn btn-light rounded-pill header-btn dropdown-toggle" 
+                                            type="button" 
+                                            data-bs-toggle="dropdown"
+                                            data-bs-toggle="tooltip"
+                                            data-bs-placement="left" 
+                                            title="Escolha onde deseja inserir os resultados da coleta">
                                         <i class="bi bi-pencil-square me-2"></i>Inserir resultados
                                     </button>
                                     <ul class="dropdown-menu dropdown-menu-end">
                                         <li>
-                                            <a class="dropdown-item py-2" href="{% url 'lista_campo' coleta %}">
+                                            <a class="dropdown-item py-2" 
+                                               href="{% url 'lista_campo' coleta %}"
+                                               data-bs-toggle="tooltip" 
+                                               data-bs-placement="left"
+                                               title="Inserir resultados coletados em campo">
                                                 <i class="bi bi-thermometer me-2"></i>Campo
                                             </a>
                                         </li>
                                         <li>
-                                            <a class="dropdown-item py-2" href="#" data-option="laboratorio">
+                                            <a class="dropdown-item py-2" 
+                                               href="#" 
+                                               data-option="laboratorio"
+                                               data-bs-toggle="tooltip" 
+                                               data-bs-placement="left"
+                                               title="Inserir resultados das análises laboratoriais">
                                                 <i class="bi bi-tags me-2"></i>Laboratório
                                             </a>
                                         </li>
@@ -98,7 +121,13 @@
                                 </div>
                                 
                                 <!-- Link do WhatsApp -->
-                                <a href="{{ link }}" target="_blank" class="btn header-btn rounded-pill" style="background-color: #25D366; color: white;">
+                                <a href="{{ link }}" 
+                                   target="_blank" 
+                                   class="btn header-btn rounded-pill"
+                                   style="background-color: #25D366; color: white;"
+                                   data-bs-toggle="tooltip" 
+                                   data-bs-placement="left"
+                                   title="Compartilhar informações da coleta via WhatsApp">
                                     <i class="bi bi-whatsapp me-2"></i>WhatsApp
                                 </a>
                             </div>
@@ -207,10 +236,18 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <h5 class="card-title mb-0 text-white"><i class="bi bi-geo-alt-fill me-2"></i>Mapa das estações amostrais</h5>
                         <div class="d-flex gap-2">
-                            <button class="btn btn-light btn-sm" id="toggleLocation">
+                            <button class="btn btn-light btn-sm" 
+                                    id="toggleLocation"
+                                    data-bs-toggle="tooltip" 
+                                    data-bs-placement="left"
+                                    title="Ativar/desativar rastreamento da sua localização atual">
                                 <i class="bi bi-geo-alt"></i>
                             </button>
-                            <button class="btn btn-light btn-sm" onclick="openFullscreenMap()">
+                            <button class="btn btn-light btn-sm" 
+                                    onclick="openFullscreenMap()"
+                                    data-bs-toggle="tooltip" 
+                                    data-bs-placement="left"
+                                    title="Abrir mapa em tela cheia">
                                 <i class="bi bi-arrows-fullscreen"></i>
                             </button>
                         </div>
@@ -688,6 +725,32 @@
         justify-content: flex-end;
     }
 }
+
+@keyframes pulse-border {
+    0% {
+        box-shadow: 0 0 0 0 rgba(67, 97, 238, 0.4);
+        transform: scale(1);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(67, 97, 238, 0);
+        transform: scale(1.05);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(67, 97, 238, 0);
+        transform: scale(1);
+    }
+}
+
+.btn-highlight {
+    animation: pulse-border 2s infinite;
+    background-color: #4361ee !important;
+    color: white !important;
+}
+
+.btn-highlight:hover {
+    animation: none;
+    background-color: #3151e8 !important;
+}
 </style>
 
 <script>
@@ -1040,6 +1103,35 @@ document.addEventListener('DOMContentLoaded', function() {
             setCookie('statusCardCollapsed', statusContent.classList.contains('collapsed'));
         });
     }
+
+    // Inicializa os tooltips do Bootstrap
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    });
+
+    // Verifica se é a primeira visita à página
+    if (!localStorage.getItem('visitedInfoColeta')) {
+        const btnGerarFormularios = document.getElementById('btnGerarFormularios');
+        if (btnGerarFormularios) {
+            // Rola suavemente até o botão
+            btnGerarFormularios.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'center' 
+            });
+            
+            // Marca que o usuário já visitou a página
+            localStorage.setItem('visitedInfoColeta', 'true');
+        }
+    }
+
+    // Inicializa todos os tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    tooltipTriggerList.forEach(function(tooltipTriggerEl) {
+        new bootstrap.Tooltip(tooltipTriggerEl, {
+            trigger: 'hover'
+        });
+    });
 });
 
 let fullscreenMap = null;
