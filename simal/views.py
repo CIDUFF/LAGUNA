@@ -1694,6 +1694,12 @@ def cadastro_coleta_view(request):
         if form.is_valid():
             coleta = form.save(commit=False)  # Não salva ainda no banco
             coleta.criado_por = request.user  # Atribui o usuário logado
+            
+            # Converter a data da string para datetime
+            data_str = request.POST.get('data')
+            if data_str:
+                coleta.data = datetime.strptime(data_str, '%Y-%m-%d')
+                
             coleta.save()  # Agora salva no banco
             # Criar entradas na tabela TabChecklistColeta para cada item de checklist
             itens_checklist = TabItemChecklistColeta.objects.all()
@@ -2319,12 +2325,26 @@ def update_coleta(request, id):
     if request.method == "POST":
         form = CadastroColetaForm(request.POST, instance=coleta)
         if form.is_valid():
-            form.save()
+            coleta = form.save(commit=False)
+            
+            # Converter a data da string para datetime
+            data_str = request.POST.get('data')
+            if data_str:
+                coleta.data = datetime.strptime(data_str, '%Y-%m-%d')
+                
+            coleta.save()
             messages.success(request, "Coleta atualizada com sucesso.")
             return redirect("lista_de_coletas")
     else:
-        form = CadastroColetaForm(instance=coleta)
-    return render(request, "cadastro_coleta.html", {"form": form})
+        initial_data = {
+            'data': coleta.data.strftime('%Y-%m-%d') if coleta.data else None
+        }
+        form = CadastroColetaForm(instance=coleta, initial=initial_data)
+        
+    return render(request, "cadastro_coleta.html", {
+        "form": form,
+        "coleta": coleta
+    })
 
 @login_required
 def aplicar_acao(request):
@@ -2578,6 +2598,121 @@ def selecionar_frasco(request, coleta_id):
         'coleta': coleta,
         'frascos': frascos_info
     })
+@login_required
+def resultados_todas_medidas(request):
+    """
+    View otimizada para exibir todas as medidas do sistema com paginação eficiente.
+    """
+    try:
+        # Cache key para os filtros
+        cache_key = f"medidas_filtros_{request.GET.get('campanha', '')}_{request.GET.get('setor', '')}_{request.GET.get('ponto', '')}"
+        
+        # Tenta obter resultados do cache
+        cached_results = cache.get(cache_key)
+        if cached_results:
+            return render(request, 'resultados_todas_medidas.html', cached_results)
+
+        # Query base otimizada com values() para selecionar apenas os campos necessários
+        query = TabMedida.objects.select_related(
+            'id_envio__id_amostra__id_coleta',
+            'id_envio__id_amostra__id_ponto',
+            'id_envio__id_amostra__id_coleta__id_setor',
+            'id_envio__id_amostra__id_coleta__id_campanha',
+            'id_pp__id_param'
+        ).only(
+            'id_envio__id_amostra__id_coleta__id_campanha__nome',
+            'id_envio__id_amostra__id_coleta__nome',
+            'id_envio__id_amostra__id_coleta__ordem_servico',
+            'id_envio__id_amostra__id_coleta__id_setor__nome',
+            'id_envio__id_amostra__id_ponto__nome',
+            'id_envio__id_amostra__etiqueta',
+            'id_pp__id_param__nome',
+            'id_pp__unidade',
+            'input_valor'
+        )
+
+        # Aplicar filtros
+        filters = {}
+        if request.GET.get('campanha'):
+            filters['id_envio__id_amostra__id_coleta__id_campanha__nome__icontains'] = request.GET['campanha']
+        if request.GET.get('setor'):
+            filters['id_envio__id_amostra__id_coleta__id_setor__nome__icontains'] = request.GET['setor']
+        if request.GET.get('ponto'):
+            filters['id_envio__id_amostra__id_ponto__nome__icontains'] = request.GET['ponto']
+        
+        if filters:
+            query = query.filter(**filters)
+
+        # Otimizar contagem total
+        total_resultados = query.count()
+
+        # Paginação
+        paginator = Paginator(query, 50)
+        page_number = request.GET.get('page', 1)
+        page_obj = paginator.get_page(page_number)
+
+        # Processar resultados de forma otimizada
+        resultados = []
+        for medida in page_obj:
+            try:
+                amostra = medida.id_envio.id_amostra
+                coleta = amostra.id_coleta
+                
+                resultado = {
+                    'campanha_nome': coleta.id_campanha.nome if coleta.id_campanha else 'N/A',
+                    'coleta_nome': coleta.nome if coleta.nome else 'N/A',
+                    'ordem_servico': coleta.ordem_servico,
+                    'setor': coleta.id_setor.nome if coleta.id_setor else 'N/A',
+                    'ponto': amostra.id_ponto.nome if amostra.id_ponto else 'N/A',
+                    'etiqueta': amostra.etiqueta,
+                    'parametro': medida.id_pp.id_param.nome if medida.id_pp and medida.id_pp.id_param else 'N/A',
+                    'valor': medida.input_valor if medida.input_valor else 'Não medido',
+                    'unidade': medida.id_pp.unidade if medida.id_pp else '',
+                }
+                resultados.append(resultado)
+            except Exception as e:
+                logger.error(f"Erro ao processar medida {medida.id}: {str(e)}")
+                continue
+
+        # Obter valores únicos para os filtros de forma otimizada usando distinct()
+        campanhas = query.values_list(
+            'id_envio__id_amostra__id_coleta__id_campanha__nome', 
+            flat=True
+        ).distinct().order_by('id_envio__id_amostra__id_coleta__id_campanha__nome')
+        
+        setores = query.values_list(
+            'id_envio__id_amostra__id_coleta__id_setor__nome', 
+            flat=True
+        ).distinct().order_by('id_envio__id_amostra__id_coleta__id_setor__nome')
+        
+        pontos = query.values_list(
+            'id_envio__id_amostra__id_ponto__nome', 
+            flat=True
+        ).distinct().order_by('id_envio__id_amostra__id_ponto__nome')
+
+        context = {
+            'page_obj': resultados,
+            'total_resultados': total_resultados,
+            'campanhas': list(campanhas),
+            'setores': list(setores),
+            'pontos': list(pontos),
+            'filtros': {
+                'campanha': request.GET.get('campanha', ''),
+                'setor': request.GET.get('setor', ''),
+                'ponto': request.GET.get('ponto', ''),
+            },
+            'has_filters': has_filters  # Adiciona flag de filtros ativos
+        }
+
+        # Armazena em cache por 10 minutos
+        cache.set(cache_key, context, 600)
+
+        return render(request, 'resultados_todas_medidas.html', context)
+        
+    except Exception as e:
+        logger.error(f"Erro ao carregar resultados: {str(e)}")
+        messages.error(request, "Erro ao carregar os resultados. Por favor, tente novamente.")
+        return redirect('home')
 
 
 

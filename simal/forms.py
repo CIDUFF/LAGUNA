@@ -842,6 +842,12 @@ class CadastroColetaForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(CadastroColetaForm, self).__init__(*args, **kwargs)
+        
+        # Se houver uma instância e ela tiver uma data, preenche o campo
+        if self.instance and hasattr(self.instance, 'data') and self.instance.data:
+            # Ajusta o formato da data para YYYY-MM-DD que é o formato esperado pelo input type="date"
+            self.fields['data'].initial = self.instance.data.strftime('%Y-%m-%d')
+
         # Torna todos os campos obrigatórios
         for field in self.fields:
             self.fields[field].required = True

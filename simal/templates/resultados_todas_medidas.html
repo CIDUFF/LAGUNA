@@ -1,0 +1,192 @@
+{% extends 'base/base_site.html' %}
+{% block content %}
+
+<div class="container-fluid px-4 py-4">
+    <!-- Filtros -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Campanha</label>
+                    <select name="campanha" class="form-select">
+                        <option value="">Todas</option>
+                        {% for c in campanhas %}
+                            <option value="{{ c }}" {% if filtros.campanha == c %}selected{% endif %}>{{ c }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Setor</label>
+                    <select name="setor" class="form-select">
+                        <option value="">Todos</option>
+                        {% for s in setores %}
+                            <option value="{{ s }}" {% if filtros.setor == s %}selected{% endif %}>{{ s }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Ponto</label>
+                    <select name="ponto" class="form-select">
+                        <option value="">Todos</option>
+                        {% for p in pontos %}
+                            <option value="{{ p }}" {% if filtros.ponto == p %}selected{% endif %}>{{ p }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary">Filtrar</button>
+                    <a href="{% url 'resultados_todas_medidas' %}" class="btn btn-outline-secondary">Limpar Filtros</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Cabeçalho -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">
+            <i class="bi bi-table me-2"></i>Resultados das Medições
+        </h1>
+        <div class="btn-group">
+            <button class="btn btn-outline-primary" onclick="exportToCSV()">
+                <i class="bi bi-file-earmark-spreadsheet me-2"></i>Exportar CSV
+            </button>
+        </div>
+    </div>
+
+    <!-- Card da Tabela -->
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-0">
+            <!-- Tabela Responsiva -->
+            <div class="table-responsive">
+                <table class="table table-hover mb-0" id="resultsTable">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>Campanha</th>
+                            <th>Coleta</th>
+                            <th>Ordem Serviço</th>
+                            <th>Setor</th>
+                            <th>Ponto</th>
+                            <th>Etiqueta</th>
+                            <th>Parâmetro</th>
+                            <th>Valor</th>
+                            <th>Unidade</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for resultado in page_obj %}
+                        <tr>
+                            <td>{{ resultado.campanha_nome }}</td>
+                            <td>{{ resultado.coleta_nome }}</td>
+                            <td>{{ resultado.ordem_servico }}</td>
+                            <td>{{ resultado.setor }}</td>
+                            <td>{{ resultado.ponto }}</td>
+                            <td>{{ resultado.etiqueta }}</td>
+                            <td>{{ resultado.parametro }}</td>
+                            <td>{{ resultado.valor }}</td>
+                            <td>{{ resultado.unidade }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="9" class="text-center py-4">
+                                Nenhum resultado encontrado
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Paginação -->
+            {% if page_obj.has_other_pages %}
+            <div class="d-flex justify-content-between align-items-center p-3 border-top">
+                <span class="text-muted">
+                    Mostrando {{ page_obj.start_index }} a {{ page_obj.end_index }} 
+                    de {{ total_resultados }} resultados
+                </span>
+                <nav>
+                    <ul class="pagination mb-0">
+                        {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1">&laquo; Primeira</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a>
+                        </li>
+                        {% endif %}
+
+                        {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Próxima</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Última &raquo;</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+function exportToCSV() {
+    // Se não houver filtros, faz requisição para exportar todos os dados
+    if (!{{ has_filters|yesno:"true,false" }}) {
+        window.location.href = "{% url 'export_csv' %}";
+        return;
+    }
+    
+    // Se houver filtros, exporta dados filtrados da tabela atual
+    const table = document.getElementById('resultsTable');
+    let csv = [];
+    
+    // Get headers
+    const headers = [];
+    const headerCells = table.querySelectorAll('thead th');
+    headerCells.forEach(cell => headers.push(cell.textContent.trim()));
+    csv.push(headers.join(';'));
+    
+    // Get data
+    const rows = table.querySelectorAll('tbody tr');
+    rows.forEach(row => {
+        const data = [];
+        const cells = row.querySelectorAll('td');
+        cells.forEach(cell => {
+            let text = cell.textContent.trim().replace(/"/g, '""');
+            if (text.includes(';')) {
+                text = `"${text}"`;
+            }
+            data.push(text);
+        });
+        csv.push(data.join(';'));
+    });
+    
+    // Download CSV
+    const csvContent = '\uFEFF' + csv.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    const date = new Date().toISOString().slice(0,10);
+    const filename = `resultados_medidas_${date}.csv`;
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+}
+
+// Adiciona tecla de atalho Ctrl+E para exportar
+document.addEventListener('keydown', function(e) {
+    if (e.ctrlKey && e.key === 'e') {
+        e.preventDefault();
+        exportToCSV();
+    }
+});
+</script>
+
+{% endblock %}
