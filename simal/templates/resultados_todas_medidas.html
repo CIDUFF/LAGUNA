@@ -132,13 +132,6 @@
 
 <script>
 function exportToCSV() {
-    // Se não houver filtros, faz requisição para exportar todos os dados
-    if (!{{ has_filters|yesno:"true,false" }}) {
-        window.location.href = "{% url 'export_csv' %}";
-        return;
-    }
-    
-    // Se houver filtros, exporta dados filtrados da tabela atual
     const table = document.getElementById('resultsTable');
     let csv = [];
     
@@ -146,7 +139,7 @@ function exportToCSV() {
     const headers = [];
     const headerCells = table.querySelectorAll('thead th');
     headerCells.forEach(cell => headers.push(cell.textContent.trim()));
-    csv.push(headers.join(';'));
+    csv.push(headers.join(';')); // Mudado para ; para melhor compatibilidade
     
     // Get data
     const rows = table.querySelectorAll('tbody tr');
@@ -154,7 +147,9 @@ function exportToCSV() {
         const data = [];
         const cells = row.querySelectorAll('td');
         cells.forEach(cell => {
+            // Limpa e formata o texto
             let text = cell.textContent.trim().replace(/"/g, '""');
+            // Adiciona aspas se tiver ponto e vírgula
             if (text.includes(';')) {
                 text = `"${text}"`;
             }
@@ -164,11 +159,12 @@ function exportToCSV() {
     });
     
     // Download CSV
-    const csvContent = '\uFEFF' + csv.join('\n');
+    const csvContent = '\uFEFF' + csv.join('\n'); // Adiciona BOM para suporte a caracteres especiais
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
     
+    // Nome do arquivo com data
     const date = new Date().toISOString().slice(0,10);
     const filename = `resultados_medidas_${date}.csv`;
     
@@ -177,7 +173,7 @@ function exportToCSV() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    URL.revokeObjectURL(url); // Libera o objeto URL
 }
 
 // Adiciona tecla de atalho Ctrl+E para exportar

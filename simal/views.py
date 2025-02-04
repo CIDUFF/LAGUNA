@@ -2700,8 +2700,7 @@ def resultados_todas_medidas(request):
                 'campanha': request.GET.get('campanha', ''),
                 'setor': request.GET.get('setor', ''),
                 'ponto': request.GET.get('ponto', ''),
-            },
-            'has_filters': has_filters  # Adiciona flag de filtros ativos
+            }
         }
 
         # Armazena em cache por 10 minutos
