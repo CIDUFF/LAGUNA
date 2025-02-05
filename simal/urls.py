@@ -1,5 +1,6 @@
 from django.urls import path
 from simal.views import (
+    export_resultados_medidas_csv,
     home,
     coleta,
     ajuda,
@@ -61,6 +62,7 @@ from simal.views import (
     fill_frasco_medida,
     lista_campo_frasco,
     input_laboratorio,
+    export_resultados_medidas_xlsx,
 )
 
 urlpatterns = [
@@ -209,4 +211,8 @@ urlpatterns = [
          input_laboratorio, 
          name='input_laboratorio'),
     path('resultados/todas-medidas/', resultados_todas_medidas, name='resultados_todas_medidas'),
+    path('export-resultados-medidas-csv/', export_resultados_medidas_csv, name='export_resultados_medidas_csv'),
+    path('export-resultados-medidas-xlsx/', 
+         export_resultados_medidas_xlsx, 
+         name='export_resultados_medidas_xlsx'),
 ]
