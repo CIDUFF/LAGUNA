@@ -5,7 +5,7 @@ import json
 import logging
 import os
 from datetime import datetime, timedelta
-from itertools import zip_longest
+from threading import Thread
 
 import pandas as pd
 import plotly.express as px
@@ -29,6 +29,7 @@ from django.utils import timezone
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
 from django.core.serializers.json import DjangoJSONEncoder
+from openpyxl.styles import Font, PatternFill
 
 
 from django_tables2 import RequestConfig
@@ -36,8 +37,8 @@ import urllib.parse
 
 from .filters import (
     CampoFilter,
-    ResultadosColetaFilter,
     ProgramaColetaFilter,
+    ResultadosColetaFilter,
     SetorFilter,
     PontoFilter,
     LocalFilter,
@@ -1678,7 +1679,7 @@ def cadastro_campanha(request):
     return render(request, "cadastro_campanha.html", {"form": form})
 
 
-from threading import Thread
+
 
 def enviar_email_async(subject, message, from_email, recipient_list):
     """Função auxiliar para enviar email de forma assíncrona"""
@@ -2561,107 +2562,135 @@ def handle_anexo(request, envio):
         
     return anexo_existente
 
-@login_required
-def selecionar_frasco(request, coleta_id):
-    coleta = get_object_or_404(TabColeta, id=coleta_id)
+# @login_required
+# def selecionar_frasco(request, coleta_id):
+#     coleta = get_object_or_404(TabColeta, id=coleta_id)
     
-    # Obtém os frascos disponíveis para esta coleta
-    frascos_disponiveis = TabFrasco.objects.filter(
-        id__in=TabAmostra.objects.filter(
-            id_coleta=coleta
-        ).values_list('id_frasco', flat=True).distinct()
-    )
+#     # Obtém os frascos disponíveis para esta coleta
+#     frascos_disponiveis = TabFrasco.objects.filter(
+#         id__in=TabAmostra.objects.filter(
+#             id_coleta=coleta
+#         ).values_list('id_frasco', flat=True).distinct()
+#     )
     
-    # Para cada frasco, verifica se tem envios E medidas
-    frascos_info = []
-    for frasco in frascos_disponiveis:
-        envios_existentes = TabEnvio.objects.filter(
-            id_amostra__id_coleta=coleta_id,
-            id_amostra__id_frasco=frasco.id
-        ).exists()
+#     # Para cada frasco, verifica se tem envios E medidas
+#     frascos_info = []
+#     for frasco in frascos_disponiveis:
+#         envios_existentes = TabEnvio.objects.filter(
+#             id_amostra__id_coleta=coleta_id,
+#             id_amostra__id_frasco=frasco.id
+#         ).exists()
         
-        medidas_existentes = TabMedida.objects.filter(
-            id_envio__id_amostra__id_coleta=coleta_id,
-            id_envio__id_amostra__id_frasco=frasco.id
-        ).exists()
+#         medidas_existentes = TabMedida.objects.filter(
+#             id_envio__id_amostra__id_coleta=coleta_id,
+#             id_envio__id_amostra__id_frasco=frasco.id
+#         ).exists()
         
-        tem_formularios = envios_existentes and medidas_existentes
+#         tem_formularios = envios_existentes and medidas_existentes
         
-        frascos_info.append({
-            'id': frasco.id,
-            'nome': frasco.nome,
-            'tem_formularios': tem_formularios,
-            'status': 'success' if tem_formularios else 'warning'
-        })
+#         frascos_info.append({
+#             'id': frasco.id,
+#             'nome': frasco.nome,
+#             'tem_formularios': tem_formularios,
+#             'status': 'success' if tem_formularios else 'warning'
+#         })
 
-    return render(request, 'modal_selecao_frasco.html', {
-        'coleta': coleta,
-        'frascos': frascos_info
-    })
+#     return render(request, 'modal_selecao_frasco.html', {
+#         'coleta': coleta,
+#         'frascos': frascos_info
+#     })
 @login_required
 def resultados_todas_medidas(request):
-    """
-    View otimizada para exibir todas as medidas do sistema com paginação eficiente.
-    """
     try:
-        # Cache key para os filtros
-        cache_key = f"medidas_filtros_{request.GET.get('campanha', '')}_{request.GET.get('setor', '')}_{request.GET.get('ponto', '')}"
+        # Sanitiza os parâmetros
+        def sanitize_param(param):
+            if param:
+                return param.strip()
+            return ''
+            
+        campanha = sanitize_param(request.GET.get('campanha', ''))
+        setor = sanitize_param(request.GET.get('setor', ''))
+        ponto = sanitize_param(request.GET.get('ponto', ''))
+        coleta = sanitize_param(request.GET.get('coleta', ''))
         
-        # Tenta obter resultados do cache
-        cached_results = cache.get(cache_key)
-        if cached_results:
-            return render(request, 'resultados_todas_medidas.html', cached_results)
-
-        # Query base otimizada com values() para selecionar apenas os campos necessários
+        # Adicionar filtros de data junto com os outros
+        data_inicio = request.GET.get('data_inicio', '')
+        data_fim = request.GET.get('data_fim', '')
+        
+        # Query base otimizada
         query = TabMedida.objects.select_related(
             'id_envio__id_amostra__id_coleta',
             'id_envio__id_amostra__id_ponto',
-            'id_envio__id_amostra__id_coleta__id_setor',
+            'id_envio__id_amostra__id_coleta__id_setor', 
             'id_envio__id_amostra__id_coleta__id_campanha',
             'id_pp__id_param'
-        ).only(
-            'id_envio__id_amostra__id_coleta__id_campanha__nome',
-            'id_envio__id_amostra__id_coleta__nome',
-            'id_envio__id_amostra__id_coleta__ordem_servico',
-            'id_envio__id_amostra__id_coleta__id_setor__nome',
-            'id_envio__id_amostra__id_ponto__nome',
-            'id_envio__id_amostra__etiqueta',
-            'id_pp__id_param__nome',
-            'id_pp__unidade',
-            'input_valor'
         )
 
-        # Aplicar filtros
-        filters = {}
-        if request.GET.get('campanha'):
-            filters['id_envio__id_amostra__id_coleta__id_campanha__nome__icontains'] = request.GET['campanha']
-        if request.GET.get('setor'):
-            filters['id_envio__id_amostra__id_coleta__id_setor__nome__icontains'] = request.GET['setor']
-        if request.GET.get('ponto'):
-            filters['id_envio__id_amostra__id_ponto__nome__icontains'] = request.GET['ponto']
+        # Aplicar filtros de data
+        if data_inicio:
+            query = query.filter(id_envio__id_amostra__id_coleta__data__gte=data_inicio)
+        if data_fim:
+            query = query.filter(id_envio__id_amostra__id_coleta__data__lte=data_fim)
+
+        # Aplicar os mesmos filtros
+        if campanha:
+            query = query.filter(id_envio__id_amostra__id_coleta__id_campanha__nome__icontains=campanha)
+        if setor:
+            query = query.filter(id_envio__id_amostra__id_coleta__id_setor__nome__icontains=setor)
+        if ponto:
+            query = query.filter(id_envio__id_amostra__id_ponto__nome__icontains=ponto)
+        if coleta:
+            query = query.filter(id_envio__id_amostra__id_coleta__nome__icontains=coleta)
+
+        # Buscar valores únicos para filtros de forma mais eficiente
+        campanhas = TabMedida.objects.values_list(
+            'id_envio__id_amostra__id_coleta__id_campanha__nome', 
+            flat=True
+        ).distinct().order_by('id_envio__id_amostra__id_coleta__id_campanha__nome')
         
-        if filters:
-            query = query.filter(**filters)
+        setores = TabMedida.objects.values_list(
+            'id_envio__id_amostra__id_coleta__id_setor__nome', 
+            flat=True
+        ).distinct().order_by('id_envio__id_amostra__id_coleta__id_setor__nome')
+        
+        pontos = TabMedida.objects.values_list(
+            'id_envio__id_amostra__id_ponto__nome', 
+            flat=True
+        ).distinct().order_by('id_envio__id_amostra__id_ponto__nome')
+        
+        coletas = TabColeta.objects.values_list(
+            'nome', flat=True
+        ).distinct().order_by('nome')
 
-        # Otimizar contagem total
-        total_resultados = query.count()
+        # Paginação com validação melhorada
+        PER_PAGE_CHOICES = [10, 20, 40, 80, 100]
+        per_page = request.GET.get('per_page')
+        
+        try:
+            per_page = int(per_page) if per_page else 10
+            if per_page not in PER_PAGE_CHOICES:
+                per_page = 10
+        except ValueError:
+            per_page = 10
+            
+        paginator = Paginator(query, per_page)
+        page = request.GET.get('page', 1)
+        try:
+            medidas = paginator.page(page)
+        except:
+            medidas = paginator.page(1)
 
-        # Paginação
-        paginator = Paginator(query, 50)
-        page_number = request.GET.get('page', 1)
-        page_obj = paginator.get_page(page_number)
-
-        # Processar resultados de forma otimizada
+        # Processar resultados de forma mais eficiente
         resultados = []
-        for medida in page_obj:
+        for medida in medidas:
             try:
                 amostra = medida.id_envio.id_amostra
                 coleta = amostra.id_coleta
-                
                 resultado = {
                     'campanha_nome': coleta.id_campanha.nome if coleta.id_campanha else 'N/A',
                     'coleta_nome': coleta.nome if coleta.nome else 'N/A',
                     'ordem_servico': coleta.ordem_servico,
+                    'data_coleta': coleta.data.strftime('%d/%m/%Y') if coleta.data else 'N/A',  # Corrigido aqui
                     'setor': coleta.id_setor.nome if coleta.id_setor else 'N/A',
                     'ponto': amostra.id_ponto.nome if amostra.id_ponto else 'N/A',
                     'etiqueta': amostra.etiqueta,
@@ -2674,38 +2703,34 @@ def resultados_todas_medidas(request):
                 logger.error(f"Erro ao processar medida {medida.id}: {str(e)}")
                 continue
 
-        # Obter valores únicos para os filtros de forma otimizada usando distinct()
-        campanhas = query.values_list(
-            'id_envio__id_amostra__id_coleta__id_campanha__nome', 
-            flat=True
-        ).distinct().order_by('id_envio__id_amostra__id_coleta__id_campanha__nome')
-        
-        setores = query.values_list(
-            'id_envio__id_amostra__id_coleta__id_setor__nome', 
-            flat=True
-        ).distinct().order_by('id_envio__id_amostra__id_coleta__id_setor__nome')
-        
-        pontos = query.values_list(
-            'id_envio__id_amostra__id_ponto__nome', 
-            flat=True
-        ).distinct().order_by('id_envio__id_amostra__id_ponto__nome')
-
         context = {
-            'page_obj': resultados,
-            'total_resultados': total_resultados,
-            'campanhas': list(campanhas),
-            'setores': list(setores),
-            'pontos': list(pontos),
-            'filtros': {
-                'campanha': request.GET.get('campanha', ''),
-                'setor': request.GET.get('setor', ''),
-                'ponto': request.GET.get('ponto', ''),
+            'page_obj': {
+                'object_list': resultados,
+                'number': medidas.number,
+                'paginator': medidas.paginator,
+                'has_previous': medidas.has_previous(),
+                'has_next': medidas.has_next(),
+                'previous_page_number': medidas.previous_page_number if medidas.has_previous() else None,
+                'next_page_number': medidas.next_page_number if medidas.has_next() else None,
+                'start_index': medidas.start_index(),
+                'end_index': medidas.end_index(),
             },
-            'has_filters': has_filters  # Adiciona flag de filtros ativos
+            'total_resultados': paginator.count,
+            'campanhas': campanhas,
+            'setores': setores, 
+            'pontos': pontos,
+            'coletas': coletas,	
+            'filtros': {
+                'campanha': campanha,
+                'setor': setor,
+                'ponto': ponto,
+                'coleta': coleta,	
+                'data_inicio': data_inicio,  # Adicionar data_inicio ao contexto
+                'data_fim': data_fim,        # Adicionar data_fim ao contexto
+            },
+            'per_page_choices': PER_PAGE_CHOICES,  # Adiciona as opções ao contexto
+            'current_per_page': per_page,          # Adiciona o valor atual
         }
-
-        # Armazena em cache por 10 minutos
-        cache.set(cache_key, context, 600)
 
         return render(request, 'resultados_todas_medidas.html', context)
         
@@ -2713,6 +2738,220 @@ def resultados_todas_medidas(request):
         logger.error(f"Erro ao carregar resultados: {str(e)}")
         messages.error(request, "Erro ao carregar os resultados. Por favor, tente novamente.")
         return redirect('home')
+
+@login_required
+def export_resultados_medidas_csv(request):
+    try:
+        # Reutilizar a mesma lógica de filtros da view principal
+        def sanitize_param(param):
+            if param:
+                return param.strip()
+            return ''
+            
+        campanha = sanitize_param(request.GET.get('campanha', ''))
+        setor = sanitize_param(request.GET.get('setor', ''))
+        ponto = sanitize_param(request.GET.get('ponto', ''))
+        coleta = sanitize_param(request.GET.get('coleta', '')) # Adicionar esta linha
+        
+        # Query base otimizada
+        query = TabMedida.objects.select_related(
+            'id_envio__id_amostra__id_coleta',
+            'id_envio__id_amostra__id_ponto',
+            'id_envio__id_amostra__id_coleta__id_setor', 
+            'id_envio__id_amostra__id_coleta__id_campanha',
+            'id_pp__id_param'
+        )
+
+        # Aplicar os mesmos filtros
+        if campanha:
+            query = query.filter(id_envio__id_amostra__id_coleta__id_campanha__nome__icontains=campanha)
+        if setor:
+            query = query.filter(id_envio__id_amostra__id_coleta__id_setor__nome__icontains=setor)
+        if ponto:
+            query = query.filter(id_envio__id_amostra__id_ponto__nome__icontains = ponto)
+        if coleta:
+            query = query.filter(id_envio__id_amostra__id_coleta__nome__icontains=coleta) # Adicionar esta linha
+
+        # Adicionar filtros de data
+        data_inicio = request.GET.get('data_inicio')
+        data_fim = request.GET.get('data_fim')
+        
+        if data_inicio:
+            query = query.filter(id_envio__id_amostra__id_coleta__data__gte=data_inicio)
+        if data_fim:
+            query = query.filter(id_envio__id_amostra__id_coleta__data__lte=data_fim)
+
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename="resultados_medidas_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv"'
+        
+        # Adicionar BOM para identificar arquivo como UTF-8
+        response.write('\ufeff'.encode('utf-8'))
+        
+        writer = csv.writer(response, delimiter=';', dialect='excel')
+        writer.writerow([
+            'Campanha',
+            'Coleta',
+            'Ordem Serviço',
+            'Data',
+            'Setor',
+            'Ponto',
+            'Etiqueta',
+            'Parâmetro',
+            'Valor',
+            'Unidade'
+        ])
+
+        # Processar resultados de forma otimizada
+        batch_size = 1000
+        for medida in query.iterator(chunk_size=batch_size):
+            try:
+                amostra = medida.id_envio.id_amostra
+                coleta = amostra.id_coleta
+                row = [
+                    str(coleta.id_campanha.nome if coleta.id_campanha else 'N/A'),
+                    str(coleta.nome if coleta.nome else 'N/A'),
+                    str(coleta.ordem_servico),
+                    coleta.data.strftime('%d/%m/%Y') if coleta.data else 'N/A',
+                    str(coleta.id_setor.nome if coleta.id_setor else 'N/A'),
+                    str(amostra.id_ponto.nome if amostra.id_ponto else 'N/A'),
+                    str(amostra.etiqueta),
+                    str(medida.id_pp.id_param.nome if medida.id_pp and medida.id_pp.id_param else 'N/A'),
+                    str(medida.input_valor if medida.input_valor else 'Não medido'),
+                    str(medida.id_pp.unidade if medida.id_pp else '')
+                ]
+                writer.writerow(row)
+            except Exception as e:
+                logger.error(f"Erro ao processar medida {medida.id}: {str(e)}")
+                continue
+
+        return response
+
+    except Exception as e:
+        logger.error(f"Erro ao exportar resultados: {str(e)}")
+        messages.error(request, "Erro ao exportar os resultados. Por favor, tente novamente.")
+        return redirect('resultados_todas_medidas')
+
+@login_required
+def export_resultados_medidas_xlsx(request):
+    try:
+        def sanitize_param(param):
+            if param:
+                return param.strip()
+            return ''
+            
+        campanha = sanitize_param(request.GET.get('campanha', ''))
+        setor = sanitize_param(request.GET.get('setor', ''))
+        ponto = sanitize_param(request.GET.get('ponto', ''))
+        coleta = sanitize_param(request.GET.get('coleta', '')) # Adicionar esta linha
+        
+        # Query base otimizada
+        query = TabMedida.objects.select_related(
+            'id_envio__id_amostra__id_coleta',
+            'id_envio__id_amostra__id_ponto',
+            'id_envio__id_amostra__id_coleta__id_setor', 
+            'id_envio__id_amostra__id_coleta__id_campanha',
+            'id_pp__id_param'
+        )
+
+        # Aplicar filtros
+        if campanha:
+            query = query.filter(id_envio__id_amostra__id_coleta__id_campanha__nome__icontains=campanha)
+        if setor:
+            query = query.filter(id_envio__id_amostra__id_coleta__id_setor__nome__icontains=setor)
+        if ponto:
+            query = query.filter(id_envio__id_amostra__id_ponto__nome__icontains=ponto)
+        if coleta:
+            query = query.filter(id_envio__id_amostra__id_coleta__nome__icontains=coleta) # Adicionar esta linha
+
+        # Adicionar filtros de data
+        data_inicio = request.GET.get('data_inicio')
+        data_fim = request.GET.get('data_fim')
+        
+        if data_inicio:
+            query = query.filter(id_envio__id_amostra__id_coleta__data__gte=data_inicio)
+        if data_fim:
+            query = query.filter(id_envio__id_amostra__id_coleta__data__lte=data_fim)
+
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Resultados Medidas"
+
+        # Definir cabeçalhos
+        headers = [
+            'Campanha',
+            'Coleta',
+            'Ordem Serviço',
+            'Data',
+            'Setor',
+            'Ponto',
+            'Etiqueta',
+            'Parâmetro',
+            'Valor',
+            'Unidade'
+        ]
+
+        # Estilo para cabeçalho
+        header_font = Font(bold=True)
+        header_fill = PatternFill(start_color='CCCCCC', end_color='CCCCCC', fill_type='solid')
+
+        # Aplicar cabeçalhos
+        for col, header in enumerate(headers, 1):
+            cell = ws.cell(row=1, column=col, value=header)
+            cell.font = header_font
+            cell.fill = header_fill
+
+        # Preencher dados
+        row = 2
+        batch_size = 1000
+        for medida in query.iterator(chunk_size=batch_size):
+            try:
+                amostra = medida.id_envio.id_amostra
+                coleta = amostra.id_coleta
+                
+                ws.cell(row=row, column=1, value=str(coleta.id_campanha.nome if coleta.id_campanha else 'N/A'))
+                ws.cell(row=row, column=2, value=str(coleta.nome if coleta.nome else 'N/A'))
+                ws.cell(row=row, column=3, value=str(coleta.ordem_servico))
+                ws.cell(row=row, column=4, value=coleta.data.strftime('%d/%m/%Y') if coleta.data else 'N/A')
+                ws.cell(row=row, column=5, value=str(coleta.id_setor.nome if coleta.id_setor else 'N/A'))
+                ws.cell(row=row, column=6, value=str(amostra.id_ponto.nome if amostra.id_ponto else 'N/A'))
+                ws.cell(row=row, column=7, value=str(amostra.etiqueta))
+                ws.cell(row=row, column=8, value=str(medida.id_pp.id_param.nome if medida.id_pp and medida.id_pp.id_param else 'N/A'))
+                ws.cell(row=row, column=9, value=str(medida.input_valor if medida.input_valor else 'Não medido'))
+                ws.cell(row=row, column=10, value=str(medida.id_pp.unidade if medida.id_pp else ''))
+                
+                row += 1
+            except Exception as e:
+                logger.error(f"Erro ao processar medida {medida.id}: {str(e)}")
+                continue
+
+        # Ajustar largura das colunas
+        for column in ws.columns:
+            max_length = 0
+            column_letter = get_column_letter(column[0].column)
+            for cell in column:
+                try:
+                    if len(str(cell.value)) > max_length:
+                        max_length = len(str(cell.value))
+                except:
+                    pass
+            adjusted_width = (max_length + 2)
+            ws.column_dimensions[column_letter].width = adjusted_width
+
+        response = HttpResponse(
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = f'attachment; filename="resultados_medidas_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx"'
+
+        wb.save(response)
+        return response
+
+    except Exception as e:
+        logger.error(f"Erro ao exportar resultados: {str(e)}")
+        messages.error(request, "Erro ao exportar os resultados. Por favor, tente novamente.")
+        return redirect('resultados_todas_medidas')
+
+
+
 
 
 
