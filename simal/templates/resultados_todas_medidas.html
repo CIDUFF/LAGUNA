@@ -40,67 +40,74 @@
         <div class="col-12">
             <div class="card border-0 rounded-4 shadow-sm">
                 <div class="card-header bg-gradient border-0 rounded-top-4" style="background-color: #68a7f1;">
-                    <h5 class="card-title mb-0 text-white">
-                        <i class="bi bi-funnel me-2"></i>Filtros
-                    </h5>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0 text-white">
+                            <i class="bi bi-funnel me-2"></i>Filtros
+                        </h5>
+                        <button class="btn btn-link text-white p-0 toggle-filtros" type="button" data-bs-toggle="collapse" data-bs-target="#filtrosCollapse" aria-expanded="true" aria-controls="filtrosCollapse">
+                            <i class="bi bi-chevron-up"></i>
+                        </button>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <form method="get" class="row g-3">
-                        <div class="col-md-4">
-                            <label class="form-label">Campanha</label>
-                            <select name="campanha" class="form-select">
-                                <option value="">Todas</option>
-                                {% for c in campanhas %}
-                                    <option value="{{ c }}" {% if filtros.campanha == c %}selected{% endif %}>{{ c }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Coleta</label>
-                            <select name="coleta" class="form-select">
-                                <option value="">Todas</option>
-                                {% for c in coletas %}
-                                    {% if c %}  <!-- Verificar se o valor não é nulo -->
-                                        <option value="{{ c }}" {% if filtros.coleta == c %}selected{% endif %}>{{ c }}</option>
-                                    {% endif %}
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Setor</label>
-                            <select name="setor" class="form-select">
-                                <option value="">Todos</option>
-                                {% for s in setores %}
-                                    <option value="{{ s }}" {% if filtros.setor == s %}selected{% endif %}>{{ s }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Ponto</label>
-                            <select name="ponto" class="form-select">
-                                <option value="">Todos</option>
-                                {% for p in pontos %}
-                                    <option value="{{ p }}" {% if filtros.ponto == p %}selected{% endif %}>{{ p }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Data Inicial</label>
-                            <input type="date" name="data_inicio" class="form-control" value="{{ filtros.data_inicio|default:'' }}">
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Data Final</label>
-                            <input type="date" name="data_fim" class="form-control" value="{{ filtros.data_fim|default:'' }}">
-                        </div>
-                        <div class="col-12">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-search me-2"></i>Filtrar
-                            </button>
-                            <a href="{% url 'resultados_todas_medidas' %}" class="btn btn-outline-secondary">
-                                <i class="bi bi-x-circle me-2"></i>Limpar Filtros
-                            </a>
-                        </div>
-                    </form>
+                <div class="collapse show" id="filtrosCollapse">
+                    <div class="card-body">
+                        <form method="get" class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Campanha</label>
+                                <select name="campanha" class="form-select">
+                                    <option value="">Todas</option>
+                                    {% for c in campanhas %}
+                                        <option value="{{ c }}" {% if filtros.campanha == c %}selected{% endif %}>{{ c }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Coleta</label>
+                                <select name="coleta" class="form-select">
+                                    <option value="">Todas</option>
+                                    {% for c in coletas %}
+                                        {% if c %}  <!-- Verificar se o valor não é nulo -->
+                                            <option value="{{ c }}" {% if filtros.coleta == c %}selected{% endif %}>{{ c }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Setor</label>
+                                <select name="setor" class="form-select">
+                                    <option value="">Todos</option>
+                                    {% for s in setores %}
+                                        <option value="{{ s }}" {% if filtros.setor == s %}selected{% endif %}>{{ s }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Ponto</label>
+                                <select name="ponto" class="form-select">
+                                    <option value="">Todos</option>
+                                    {% for p in pontos %}
+                                        <option value="{{ p }}" {% if filtros.ponto == p %}selected{% endif %}>{{ p }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Data Inicial</label>
+                                <input type="date" name="data_inicio" class="form-control" value="{{ filtros.data_inicio|default:'' }}">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Data Final</label>
+                                <input type="date" name="data_fim" class="form-control" value="{{ filtros.data_fim|default:'' }}">
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary btn-animated">
+                                    <i class="bi bi-search me-2"></i>Filtrar
+                                </button>
+                                <a href="{% url 'resultados_todas_medidas' %}" class="btn btn-outline-secondary btn-animated" style="color: #6c757d; border-color: #6c757d; background-color: transparent;">
+                                    <i class="bi bi-x-circle me-2"></i>Limpar Filtros
+                                </a>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
@@ -289,6 +296,60 @@
 .pagination .page-link i {
     font-size: 0.75rem;
 }
+
+/* Animação dos botões */
+.btn-animated {
+    position: relative;
+    overflow: hidden;
+    transform: translateY(0);
+    transition: all 0.2s ease;
+}
+
+.btn-animated:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.btn-animated:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.btn-animated::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.3s ease, height 0.3s ease;
+}
+
+.btn-animated:hover::after {
+    width: 110%;
+    height: 110%;
+}
+
+/* Estilo para o botão toggle */
+.toggle-filtros i {
+    transition: transform 0.1s ease;
+    display: inline-block;
+}
+
+.toggle-filtros.collapsed i {
+    transform: rotate(180deg);
+}
+
+.toggle-filtros:hover {
+    opacity: 0.8;
+}
+
+.toggle-filtros:focus {
+    box-shadow: none;
+}
 </style>
 
 <script>
@@ -306,6 +367,44 @@ function changeRowsPerPage(select) {
     
     window.location.search = urlParams.toString();
 }
+
+// Adicionar listener para mudança do ícone
+document.addEventListener('DOMContentLoaded', function() {
+    const toggleBtn = document.querySelector('.toggle-filtros');
+    
+    // Função para atualizar o ícone baseado no estado
+    function updateIcon(isCollapsed) {
+        toggleBtn.classList.toggle('collapsed', isCollapsed);
+    }
+    
+    // Listener para o clique do botão
+    toggleBtn.addEventListener('click', function() {
+        const willCollapse = !this.classList.contains('collapsed');
+        updateIcon(willCollapse);
+    });
+
+    // Salvar e restaurar estado do collapse
+    const filtrosCollapse = document.getElementById('filtrosCollapse');
+    
+    filtrosCollapse.addEventListener('hidden.bs.collapse', function () {
+        localStorage.setItem('filtrosCollapsed', 'true');
+        updateIcon(true);
+    });
+    
+    filtrosCollapse.addEventListener('shown.bs.collapse', function () {
+        localStorage.setItem('filtrosCollapsed', 'false');
+        updateIcon(false);
+    });
+
+    // Restaurar estado do collapse ao carregar a página
+    const wasCollapsed = localStorage.getItem('filtrosCollapsed') === 'true';
+    if (wasCollapsed) {
+        filtrosCollapse.classList.remove('show');
+        updateIcon(true);
+    } else {
+        updateIcon(false);
+    }
+});
 </script>
 
 {% endblock %}
