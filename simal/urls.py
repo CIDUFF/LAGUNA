@@ -63,6 +63,7 @@ from simal.views import (
     input_laboratorio,
     export_resultados_medidas_xlsx,
 )
+from .apis import get_filtered_options
 
 urlpatterns = [
     path("", home, name="home"),
@@ -209,4 +210,5 @@ urlpatterns = [
     path('export-resultados-medidas-xlsx/', 
          export_resultados_medidas_xlsx, 
          name='export_resultados_medidas_xlsx'),
+    path('api/get-filtered-options/', get_filtered_options, name='get_filtered_options'),
 ]
