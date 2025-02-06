@@ -2493,14 +2493,32 @@ def input_laboratorio(request, coleta_id, ponto_id, frasco_id):
     ).order_by('ordem') if envio else []
 
     # Obter todos os pontos desta coleta para navegação
-    todos_pontos = TabPonto.objects.filter(
+    todos_pontos = list(TabPonto.objects.filter(
         id_setor=coleta.id_setor,
         status=True
-    ).order_by('id')
-    
-    # Encontrar índice do ponto atual
+    ).order_by('id'))
+
+    # Para cada ponto, verificar se já tem dados preenchidos
+    for p in todos_pontos:
+        amostra = TabAmostra.objects.filter(
+            id_coleta=coleta,
+            id_ponto=p,
+            id_frasco=frasco
+        ).first()
+        
+        if amostra:
+            envio = TabEnvio.objects.filter(id_amostra=amostra).first()
+            if envio:
+                medidas = TabMedida.objects.filter(id_envio=envio)
+                p.tem_dados = any(m.input_valor for m in medidas)
+            else:
+                p.tem_dados = False
+        else:
+            p.tem_dados = False
+
+    # Encontrar índice do ponto atual e pontos anterior/próximo
     try:
-        ponto_atual_index = list(todos_pontos.values_list('id', flat=True)).index(ponto.id)
+        ponto_atual_index = [p.id for p in todos_pontos].index(ponto.id)
         ponto_anterior = todos_pontos[ponto_atual_index - 1] if ponto_atual_index > 0 else None
         ponto_proximo = todos_pontos[ponto_atual_index + 1] if ponto_atual_index < len(todos_pontos) - 1 else None
     except (ValueError, IndexError):
@@ -2508,7 +2526,7 @@ def input_laboratorio(request, coleta_id, ponto_id, frasco_id):
         ponto_proximo = None
 
     # Calcular progresso
-    total_pontos = todos_pontos.count()
+    total_pontos = len(todos_pontos)
     progresso = ((ponto_atual_index + 1) / total_pontos * 100) if total_pontos > 0 else 0
 
     return render(
@@ -2523,11 +2541,7 @@ def input_laboratorio(request, coleta_id, ponto_id, frasco_id):
             "envio": envio,
             "has_anexos": bool(anexos_existentes),
             # Novos contextos para navegação
-            "ponto_anterior": ponto_anterior,
-            "ponto_proximo": ponto_proximo, 
-            "total_pontos": total_pontos,
-            "ponto_atual": ponto_atual_index + 1,
-            "progresso": progresso,
+            "todos_pontos": todos_pontos,
         },
     )
 

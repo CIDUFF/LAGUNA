@@ -88,37 +88,26 @@
                                 {% endif %}
 
                                 <!-- Dropdown de Resultados -->
-                                <div class="dropdown">
-                                    <button class="btn btn-light rounded-pill header-btn dropdown-toggle" 
-                                            type="button" 
-                                            data-bs-toggle="dropdown"
-                                            data-bs-toggle="tooltip"
-                                            data-bs-placement="left" 
-                                            title="Escolha onde deseja inserir os resultados da coleta">
-                                        <i class="bi bi-pencil-square me-2"></i>Inserir resultados
-                                    </button>
-                                    <ul class="dropdown-menu dropdown-menu-end">
-                                        <li>
-                                            <a class="dropdown-item py-2" 
-                                               href="{% url 'lista_campo' coleta %}"
-                                               data-bs-toggle="tooltip" 
-                                               data-bs-placement="left"
-                                               title="Inserir resultados coletados em campo">
-                                                <i class="bi bi-thermometer me-2"></i>Campo
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a class="dropdown-item py-2" 
-                                               href="#" 
-                                               data-option="laboratorio"
-                                               data-bs-toggle="tooltip" 
-                                               data-bs-placement="left"
-                                               title="Inserir resultados das análises laboratoriais">
-                                                <i class="bi bi-tags me-2"></i>Laboratório
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </div>
+
+                                {% if fill_amostra_gerado %}
+                                <a class="btn btn-light rounded-pill header-btn" 
+                                   href="#"
+                                   data-option="laboratorio"
+                                   data-bs-toggle="tooltip"
+                                   data-bs-placement="left"
+                                   title="Inserir resultados das análises laboratoriais">
+                                    <i class="bi bi-pencil-square me-2"></i>Inserir resultados
+                                </a>
+                                {% else %}
+                                <button class="btn btn-light rounded-pill header-btn" 
+                                        disabled
+                                        data-bs-toggle="tooltip"
+                                        data-bs-placement="left"
+                                        title="Gere os formulários primeiro para inserir resultados">
+                                    <i class="bi bi-pencil-square me-2"></i>Inserir resultados
+                                </button>
+                                {% endif %}
+
                                 
                                 <!-- Link do WhatsApp -->
                                 <a href="{{ link }}" 
@@ -978,9 +967,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 .addTo(map)
                 .bindTooltip(tooltipText);
             
+            {% if fill_amostra_gerado %}
             marker.on('click', function() {
-                window.location.href = '/input_fisico_quimico/' + {{ coleta }} + '/' + ponto.id + '/';
+                window.location.href = '/input_laboratorio/' + {{ coleta }} + '/' + ponto.id + '/' + 1;
             });
+            {% else %}
+            marker.on('click', function() {
+                alert('É necessário gerar os formulários primeiro. Clique no botão "Gerar Formulários".');
+            });
+            {% endif %}
 
             bounds.extend([ponto.lat, ponto.lon]);
         }
