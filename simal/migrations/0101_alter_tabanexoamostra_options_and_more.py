@@ -5,29 +5,34 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('simal', '0100_alter_tabanexoamostra_options_and_more'),
+        ("simal", "0100_alter_tabanexoamostra_options_and_more"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='tabanexoamostra',
+            name="tabanexoamostra",
             options={},
         ),
         migrations.AlterField(
-            model_name='tabanexoamostra',
-            name='anexo',
-            field=models.FileField(null=True, upload_to='anexos_amostras/'),
+            model_name="tabanexoamostra",
+            name="anexo",
+            field=models.FileField(null=True, upload_to="anexos_amostras/"),
         ),
         migrations.AlterField(
-            model_name='tabanexoamostra',
-            name='id_envio',
-            field=models.ForeignKey(blank=True, db_column='id_envio', null=True, on_delete=django.db.models.deletion.CASCADE, to='simal.tabenvio'),
+            model_name="tabanexoamostra",
+            name="id_envio",
+            field=models.ForeignKey(
+                blank=True,
+                db_column="id_envio",
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="simal.tabenvio",
+            ),
         ),
         migrations.AlterField(
-            model_name='tabanexoamostra',
-            name='observacao',
+            model_name="tabanexoamostra",
+            name="observacao",
             field=models.TextField(blank=True, null=True),
         ),
     ]

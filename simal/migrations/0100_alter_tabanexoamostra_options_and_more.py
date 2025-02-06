@@ -5,29 +5,40 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('simal', '0099_alter_emailtemplate_assunto_and_more'),
+        ("simal", "0099_alter_emailtemplate_assunto_and_more"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='tabanexoamostra',
-            options={'verbose_name': 'Anexo', 'verbose_name_plural': 'Anexos'},
+            name="tabanexoamostra",
+            options={"verbose_name": "Anexo", "verbose_name_plural": "Anexos"},
         ),
         migrations.AlterField(
-            model_name='tabanexoamostra',
-            name='anexo',
-            field=models.FileField(blank=True, null=True, upload_to='anexos_amostras/', verbose_name='Anexo'),
+            model_name="tabanexoamostra",
+            name="anexo",
+            field=models.FileField(
+                blank=True,
+                null=True,
+                upload_to="anexos_amostras/",
+                verbose_name="Anexo",
+            ),
         ),
         migrations.AlterField(
-            model_name='tabanexoamostra',
-            name='id_envio',
-            field=models.ForeignKey(blank=True, db_column='id_envio', null=True, on_delete=django.db.models.deletion.CASCADE, related_name='anexos', to='simal.tabenvio'),
+            model_name="tabanexoamostra",
+            name="id_envio",
+            field=models.ForeignKey(
+                blank=True,
+                db_column="id_envio",
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="anexos",
+                to="simal.tabenvio",
+            ),
         ),
         migrations.AlterField(
-            model_name='tabanexoamostra',
-            name='observacao',
-            field=models.TextField(blank=True, null=True, verbose_name='Observação'),
+            model_name="tabanexoamostra",
+            name="observacao",
+            field=models.TextField(blank=True, null=True, verbose_name="Observação"),
         ),
     ]

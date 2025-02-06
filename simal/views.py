@@ -2129,6 +2129,7 @@ def info_coleta(request, coleta_id):
             "pontos_coleta": pontos_coleta_json,
             "atualizado" :coleta.atualizado_em,
             "status_coleta": coleta.status,
+            "status_disponiveis": TabStatusColeta.objects.all().order_by('status'),  # Mudou de 'nome' para 'status'
         }
 
         return render(request, "info_coleta.html", context)
@@ -2552,7 +2553,7 @@ def handle_anexo(request, envio):
                 anexo=request.FILES.get("anexo"),
                 observacao=request.POST.get("observacao_anexo"),
             )
-    elif anexo_existente and not anexo_existente.anexo and not anexo_existente.observacao:
+    elif anexo_existente or not anexo_existente.anexo or not anexo_existente.observacao:
         anexo_existente.delete()
         anexo_existente = None
         
@@ -2664,7 +2665,7 @@ def resultados_todas_medidas(request):
         
         try:
             per_page = int(per_page) if per_page else 10
-            if per_page not in PER_PAGE_CHOICES:
+            if (per_page not in PER_PAGE_CHOICES):
                 per_page = 10
         except ValueError:
             per_page = 10
@@ -2831,9 +2832,7 @@ def export_resultados_medidas_csv(request):
 def export_resultados_medidas_xlsx(request):
     try:
         def sanitize_param(param):
-            if param:
-                return param.strip()
-            return ''
+            return param.strip() if param else ''
             
         campanha = sanitize_param(request.GET.get('campanha', ''))
         setor = sanitize_param(request.GET.get('setor', ''))
@@ -2925,13 +2924,9 @@ def export_resultados_medidas_xlsx(request):
             max_length = 0
             column_letter = get_column_letter(column[0].column)
             for cell in column:
-                try:
-                    if len(str(cell.value)) > max_length:
-                        max_length = len(str(cell.value))
-                except:
-                    pass
-            adjusted_width = (max_length + 2)
-            ws.column_dimensions[column_letter].width = adjusted_width
+                if len(str(cell.value)) > max_length:
+                    adjusted_width = (max_length + 2)
+                    ws.column_dimensions[column_letter].width = adjusted_width
 
         response = HttpResponse(
             content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
@@ -2945,6 +2940,50 @@ def export_resultados_medidas_xlsx(request):
         logger.error(f"Erro ao exportar resultados: {str(e)}")
         messages.error(request, "Erro ao exportar os resultados. Por favor, tente novamente.")
         return redirect('resultados_todas_medidas')
+
+@login_required
+def atualizar_status_coleta(request, coleta_id):
+    if request.method == 'POST':
+        try:
+            coleta = get_object_or_404(TabColeta, id=coleta_id)
+            novo_status_id = request.POST.get('status')
+            
+            print(f"[LOG] Status atual da coleta {coleta_id}: {coleta.status}")
+            print(f"[LOG] Novo status ID recebido: {novo_status_id}")
+            
+            if novo_status_id:
+                try:
+                    status = TabStatusColeta.objects.get(id=novo_status_id)
+                    print(f"[LOG] Novo status encontrado: {status.status}")
+                    
+                    # Atualiza diretamente usando update() para garantir que a mudança seja salva
+                    TabColeta.objects.filter(id=coleta_id).update(
+                        status=status,
+                        atualizado_por=request.user,
+                        atualizado_em=timezone.now()
+                    )
+                    
+                    # Recarrega o objeto para verificar a atualização
+                    coleta.refresh_from_db()
+                    print(f"[LOG] Status após atualização: {coleta.status.status}")
+                    
+                    messages.success(request, f'Status da coleta atualizado para {status.status}')
+                    
+                except TabStatusColeta.DoesNotExist:
+                    print(f"[LOG] Status ID {novo_status_id} não encontrado")
+                    messages.error(request, 'Status inválido')
+                except Exception as e:
+                    print(f"[LOG] Erro ao salvar status: {str(e)}")
+                    messages.error(request, f'Erro ao salvar status: {str(e)}')
+            else:
+                print("[LOG] Nenhum status recebido")
+                messages.error(request, 'Nenhum status selecionado')
+                
+        except Exception as e:
+            print(f"[LOG] Erro geral: {str(e)}")
+            messages.error(request, f'Erro ao processar requisição: {str(e)}')
+            
+    return redirect('info_coleta', coleta_id=coleta_id)
 
 
 

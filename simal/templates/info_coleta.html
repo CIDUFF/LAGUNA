@@ -55,7 +55,7 @@
                                         </div>
                                         <div class="d-flex align-items-center">
                                             <i class="bi bi-check me-2"></i>
-                                            <span>Status: {{ status_coleta }} </span>
+                                            <span>Status: {{ status_coleta }}</span>
                                         </div>
                                         
                                     </div>
@@ -203,6 +203,34 @@
                         <div class="mt-2 small text-muted text-center">
                             {{ formularios_preenchidos }} de {{ total_formularios }} formulários preenchidos
                         </div>
+                    </div>
+
+                    <div class="status-item mb-4">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="bi bi-toggles me-2 text-primary"></i>
+                            <h6 class="mb-0">Alterar Status</h6>
+                        </div>
+                        <form action="{% url 'atualizar_status_coleta' coleta %}" 
+                              method="POST" 
+                              class="d-flex align-items-center gap-2" 
+                              id="formStatus">
+                            {% csrf_token %}
+                            <select name="status" class="form-select" style="flex: 1;">
+                                {% for status in status_disponiveis %}
+                                    <option value="{{ status.id }}" 
+                                            {% if status_coleta == status %}selected{% endif %}>
+                                        {{ status.status }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <button type="submit" 
+                                    class="btn btn-primary"
+                                    data-bs-toggle="tooltip" 
+                                    data-bs-placement="top"
+                                    title="Atualizar status da coleta">
+                                <i class="bi bi-check2"></i>
+                            </button>
+                        </form>
                     </div>
 
                     <div class="status-item">
@@ -1241,6 +1269,15 @@ document.getElementById('mapModal').addEventListener('hidden.bs.modal', function
     if (fullscreenMap) {
         fullscreenMap.remove();
         fullscreenMap = null;
+    }
+});
+
+// Adicionar confirmação ao mudar status
+document.getElementById('formStatus').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const novoStatus = this.querySelector('select').options[this.querySelector('select').selectedIndex].text;
+    if (confirm(`Deseja realmente alterar o status da coleta para "${novoStatus}"?`)) {
+        this.submit();
     }
 });
 </script>

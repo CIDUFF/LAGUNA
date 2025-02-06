@@ -537,9 +537,10 @@ class TabColeta(models.Model):
     status = models.ForeignKey(
         "TabStatusColeta",
         on_delete=models.CASCADE,
-        db_column="status",
+        db_column="status", 
         blank=True,
         null=True,
+        related_name="coletas"  # Adicionando related_name
     )
     observacao = models.TextField(blank=True, null=True)
 
@@ -776,7 +777,7 @@ class TabProdxparam(models.Model):
         null=True,
     )
     id_ppativacao = models.BigIntegerField(blank=True, null=True)
-    status = models.BooleanField("Status",default=True,blank=True, null=True)
+    status = models.BooleanField("Status", default=True, blank=True, null=True)
 
     def __str__(self):
         return f'{self.nome} - {self.unidade or ""}'
@@ -894,7 +895,7 @@ class TabAnexoAmostra(models.Model):
 
     class Meta:
         db_table = "tab_anexo_amostra"
-        ordering = ['ordem']  # Ordena por ordem
+        ordering = ["ordem"]  # Ordena por ordem
 
     def __str__(self):
         return f"Anexo da amostra {self.id_amostra}"
@@ -950,9 +951,13 @@ class MetadadosPonto(models.Model):
 
 
 class EmailTemplate(models.Model):
-    nome_email = models.CharField("Nome do e-mail",max_length=50, blank=True, null=True)
-    assunto = models.CharField("Assunto do e-mail",max_length=50, blank=True, null=True)
-    texto = models.TextField("Texto do e-mail",blank=True, null=True)
+    nome_email = models.CharField(
+        "Nome do e-mail", max_length=50, blank=True, null=True
+    )
+    assunto = models.CharField(
+        "Assunto do e-mail", max_length=50, blank=True, null=True
+    )
+    texto = models.TextField("Texto do e-mail", blank=True, null=True)
 
     def __str__(self):
         return f"{self.nome}"

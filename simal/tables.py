@@ -322,12 +322,14 @@ class TopCampanhas(tables.Table):
 
 class SetorTable(tables.Table):
     update = tables.LinkColumn(
-        'atualizar_setor',
-        args=[A('pk')],
+        "atualizar_setor",
+        args=[A("pk")],
         orderable=False,
         empty_values=[],
-        text=lambda record: format_html('<i class="bi bi-pencil-square me-1"></i>Editar'),
-        attrs={'a': {'class': 'btn btn-sm btn-outline-primary rounded-pill'}}
+        text=lambda record: format_html(
+            '<i class="bi bi-pencil-square me-1"></i>Editar'
+        ),
+        attrs={"a": {"class": "btn btn-sm btn-outline-primary rounded-pill"}},
     )
 
     class Meta:
@@ -345,12 +347,14 @@ class SetorTable(tables.Table):
 
 class PontoTable(tables.Table):
     update = tables.LinkColumn(
-        'atualizar_ponto',
-        args=[A('pk')],
+        "atualizar_ponto",
+        args=[A("pk")],
         orderable=False,
         empty_values=[],
-        text=lambda record: format_html('<i class="bi bi-pencil-square me-1"></i>Editar'),
-        attrs={'a': {'class': 'btn btn-sm btn-outline-primary rounded-pill'}}
+        text=lambda record: format_html(
+            '<i class="bi bi-pencil-square me-1"></i>Editar'
+        ),
+        attrs={"a": {"class": "btn btn-sm btn-outline-primary rounded-pill"}},
     )
 
     class Meta:
@@ -376,12 +380,14 @@ class PontoTable(tables.Table):
 
 class LocalTable(tables.Table):
     update = tables.LinkColumn(
-        'atualizar_local',
-        args=[A('pk')],
+        "atualizar_local",
+        args=[A("pk")],
         orderable=False,
         empty_values=[],
-        text=lambda record: format_html('<i class="bi bi-pencil-square me-1"></i>Editar'),
-        attrs={'a': {'class': 'btn btn-sm btn-outline-primary rounded-pill'}}
+        text=lambda record: format_html(
+            '<i class="bi bi-pencil-square me-1"></i>Editar'
+        ),
+        attrs={"a": {"class": "btn btn-sm btn-outline-primary rounded-pill"}},
     )
 
     class Meta:
@@ -419,8 +425,10 @@ class ParametroTable(tables.Table):
         args=["param", A("pk")],
         orderable=False,
         empty_values=[],
-        text=lambda record: format_html('<i class="bi bi-pencil-square me-1"></i>Editar'),
-        attrs={'a': {'class': 'btn btn-sm btn-outline-primary rounded-pill'}}
+        text=lambda record: format_html(
+            '<i class="bi bi-pencil-square me-1"></i>Editar'
+        ),
+        attrs={"a": {"class": "btn btn-sm btn-outline-primary rounded-pill"}},
     )
 
     class Meta:
@@ -435,8 +443,10 @@ class EmailTable(tables.Table):
         args=["email", A("pk")],
         orderable=False,
         empty_values=[],
-        text=lambda record: format_html('<i class="bi bi-pencil-square me-1"></i>Editar'),
-        attrs={'a': {'class': 'btn btn-sm btn-outline-primary rounded-pill'}}
+        text=lambda record: format_html(
+            '<i class="bi bi-pencil-square me-1"></i>Editar'
+        ),
+        attrs={"a": {"class": "btn btn-sm btn-outline-primary rounded-pill"}},
     )
 
     class Meta:
@@ -460,8 +470,10 @@ class FrascoTable(tables.Table):
         args=["frasco", A("pk")],
         orderable=False,
         empty_values=[],
-        text=lambda record: format_html('<i class="bi bi-pencil-square me-1"></i>Editar'),
-        attrs={'a': {'class': 'btn btn-sm btn-outline-primary rounded-pill'}}
+        text=lambda record: format_html(
+            '<i class="bi bi-pencil-square me-1"></i>Editar'
+        ),
+        attrs={"a": {"class": "btn btn-sm btn-outline-primary rounded-pill"}},
     )
 
     class Meta:
@@ -483,8 +495,10 @@ class EquipeTable(tables.Table):
         args=["equipe", A("pk")],
         orderable=False,
         empty_values=[],
-        text=lambda record: format_html('<i class="bi bi-pencil-square me-1"></i>Editar'),
-        attrs={'a': {'class': 'btn btn-sm btn-outline-primary rounded-pill'}}
+        text=lambda record: format_html(
+            '<i class="bi bi-pencil-square me-1"></i>Editar'
+        ),
+        attrs={"a": {"class": "btn btn-sm btn-outline-primary rounded-pill"}},
     )
 
     class Meta:
@@ -499,8 +513,10 @@ class LaboratorioTable(tables.Table):
         args=["laboratorio", A("pk")],
         orderable=False,
         empty_values=[],
-        text=lambda record: format_html('<i class="bi bi-pencil-square me-1"></i>Editar'),
-        attrs={'a': {'class': 'btn btn-sm btn-outline-primary rounded-pill'}}
+        text=lambda record: format_html(
+            '<i class="bi bi-pencil-square me-1"></i>Editar'
+        ),
+        attrs={"a": {"class": "btn btn-sm btn-outline-primary rounded-pill"}},
     )
 
     class Meta:
@@ -515,8 +531,10 @@ class ProdutoTable(tables.Table):
         args=["produto", A("pk")],
         orderable=False,
         empty_values=[],
-        text=lambda record: format_html('<i class="bi bi-pencil-square me-1"></i>Editar'),
-        attrs={'a': {'class': 'btn btn-sm btn-outline-primary rounded-pill'}}
+        text=lambda record: format_html(
+            '<i class="bi bi-pencil-square me-1"></i>Editar'
+        ),
+        attrs={"a": {"class": "btn btn-sm btn-outline-primary rounded-pill"}},
     )
 
     class Meta:
@@ -531,8 +549,10 @@ class ProdxparamTable(tables.Table):
         args=["prodxparam", A("pk")],
         orderable=False,
         empty_values=[],
-        text=lambda record: format_html('<i class="bi bi-pencil-square me-1"></i>Editar'),
-        attrs={'a': {'class': 'btn btn-sm btn-outline-primary rounded-pill'}}
+        text=lambda record: format_html(
+            '<i class="bi bi-pencil-square me-1"></i>Editar'
+        ),
+        attrs={"a": {"class": "btn btn-sm btn-outline-primary rounded-pill"}},
     )
 
     class Meta:
@@ -547,8 +567,10 @@ class SerieClassificacaoTable(tables.Table):
         args=["serie_classificacao", A("pk")],
         orderable=False,
         empty_values=[],
-        text=lambda record: format_html('<i class="bi bi-pencil-square me-1"></i>Editar'),
-        attrs={'a': {'class': 'btn btn-sm btn-outline-primary rounded-pill'}}
+        text=lambda record: format_html(
+            '<i class="bi bi-pencil-square me-1"></i>Editar'
+        ),
+        attrs={"a": {"class": "btn btn-sm btn-outline-primary rounded-pill"}},
     )
 
     class Meta:
@@ -563,8 +585,10 @@ class TipoItemChecklistColetaTable(tables.Table):
         args=["item_checklist", A("pk")],
         orderable=False,
         empty_values=[],
-        text=lambda record: format_html('<i class="bi bi-pencil-square me-1"></i>Editar'),
-        attrs={'a': {'class': 'btn btn-sm btn-outline-primary rounded-pill'}}
+        text=lambda record: format_html(
+            '<i class="bi bi-pencil-square me-1"></i>Editar'
+        ),
+        attrs={"a": {"class": "btn btn-sm btn-outline-primary rounded-pill"}},
     )
 
     class Meta:
@@ -585,26 +609,28 @@ class StatusColetaTable(tables.Table):
         args=["status_coleta", A("pk")],
         orderable=False,
         empty_values=[],
-        text=lambda record: format_html('<i class="bi bi-pencil-square me-1"></i>Editar'),
-        attrs={'a': {'class': 'btn btn-sm btn-outline-primary rounded-pill'}}
+        text=lambda record: format_html(
+            '<i class="bi bi-pencil-square me-1"></i>Editar'
+        ),
+        attrs={"a": {"class": "btn btn-sm btn-outline-primary rounded-pill"}},
     )
 
     class Meta:
         model = TabStatusColeta
         template_name = "tables/bootstrap5.html"
         fields = ("status", "descricao")
-        
-        
+
+
 class ListaCampoTable(tables.Table):
     acoes = tables.TemplateColumn(
-        template_code='''
+        template_code="""
         <button type="button" class="btn btn-primary btn-sm btn-preencher" data-ponto-id="{{ record.id_ponto.id }}">
             <i class="bi bi-pencil-square"></i> Preencher dados
         </button>
-        ''',
-        verbose_name="Ações"
+        """,
+        verbose_name="Ações",
     )
-    
+
     class Meta:
         model = TabAmostra
         fields = ["id_ponto", "etiqueta"]

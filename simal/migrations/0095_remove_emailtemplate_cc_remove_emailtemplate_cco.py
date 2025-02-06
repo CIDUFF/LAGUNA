@@ -4,18 +4,17 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('simal', '0094_tablaboratorio_telefone'),
+        ("simal", "0094_tablaboratorio_telefone"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='emailtemplate',
-            name='cc',
+            model_name="emailtemplate",
+            name="cc",
         ),
         migrations.RemoveField(
-            model_name='emailtemplate',
-            name='cco',
+            model_name="emailtemplate",
+            name="cco",
         ),
     ]

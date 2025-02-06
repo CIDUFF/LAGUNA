@@ -745,20 +745,18 @@ class StatusColetaForm(forms.ModelForm):
     class Meta:
         model = TabStatusColeta
         fields = ["status", "descricao"]
-        labels = {
-            "status": "Status",
-            "descricao": "Descrição"
-        }
+        labels = {"status": "Status", "descricao": "Descrição"}
         widgets = {
             "status": forms.TextInput(attrs={"class": "form-control"}),
-            "descricao": forms.Textarea(attrs={"class": "form-control", "rows": 3})
+            "descricao": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
         }
-        
-        
+
+
 class TabStatusColetaForm(forms.ModelForm):
     class Meta:
         model = TabStatusColeta
         fields = "__all__"
+
 
 class TabFrascoForm(forms.ModelForm):
     class Meta:
@@ -796,7 +794,6 @@ class TabSerieClassificacaoForm(forms.ModelForm):
         fields = "__all__"
 
 
-
 class CadastroCampanhaForm(forms.ModelForm):
     class Meta:
         model = TabCampanha
@@ -813,7 +810,7 @@ class CadastroCampanhaForm(forms.ModelForm):
         for field in self.fields:
             self.fields[field].required = True
             if not self.fields[field].label:
-                self.fields[field].label = field.replace('_', ' ').title()
+                self.fields[field].label = field.replace("_", " ").title()
 
         self.helper = FormHelper()
         self.helper.add_input(Submit("submit", "Salvar"))
@@ -826,37 +823,45 @@ class CadastroColetaForm(forms.ModelForm):
     data = forms.DateField(
         widget=forms.DateInput(attrs={"type": "date"}),
         label="Data programada",
-        required=True
+        required=True,
     )
 
     class Meta:
         model = TabColeta
-        exclude = ["id", "ordem_servico", "criado_por", "atualizado_por", "status", "atualizado_em", "criado_em"]
+        exclude = [
+            "id",
+            "ordem_servico",
+            "criado_por",
+            "atualizado_por",
+            "status",
+            "atualizado_em",
+            "criado_em",
+        ]
         labels = {
             "id_campanha": "Campanha",
             "id_setor": "Setor",
             "nome": "Nome da Coleta",
             "analise_bentos": "Análise de Bentos",
-            "observacao": "Observação"
+            "observacao": "Observação",
         }
 
     def __init__(self, *args, **kwargs):
         super(CadastroColetaForm, self).__init__(*args, **kwargs)
-        
+
         # Se houver uma instância e ela tiver uma data, preenche o campo
-        if self.instance and hasattr(self.instance, 'data') and self.instance.data:
+        if self.instance and hasattr(self.instance, "data") and self.instance.data:
             # Ajusta o formato da data para YYYY-MM-DD que é o formato esperado pelo input type="date"
-            self.fields['data'].initial = self.instance.data.strftime('%Y-%m-%d')
+            self.fields["data"].initial = self.instance.data.strftime("%Y-%m-%d")
 
         # Torna todos os campos obrigatórios
         for field in self.fields:
             self.fields[field].required = True
             if not self.fields[field].label:
-                self.fields[field].label = field.replace('_', ' ').title()
+                self.fields[field].label = field.replace("_", " ").title()
 
         # Campos booleanos não precisam ser required
-        if 'analise_bentos' in self.fields:
-            self.fields['analise_bentos'].required = False
+        if "analise_bentos" in self.fields:
+            self.fields["analise_bentos"].required = False
 
         self.helper = FormHelper()
         self.helper.add_input(Submit("submit", "Salvar"))
@@ -921,8 +926,8 @@ class InputFisicoQuimicoForm(forms.ModelForm):
             attrs={
                 "step": "0.00001",
                 "class": "form-control",
-                'pattern': '^-?\d*\.?\d{0,5}$',
-                'placeholder': 'Digite o valor...'
+                "pattern": "^-?\d*\.?\d{0,5}$",
+                "placeholder": "Digite o valor...",
             }
         ),
     )
@@ -962,7 +967,6 @@ class InputFisicoQuimicoForm(forms.ModelForm):
                 css_class="form-row",
             )
         )
-
 
 
 class AnexoAmostraForm(forms.ModelForm):

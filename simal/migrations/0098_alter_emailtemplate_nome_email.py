@@ -4,15 +4,16 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('simal', '0097_rename_nome_emailtemplate_nome_email'),
+        ("simal", "0097_rename_nome_emailtemplate_nome_email"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='emailtemplate',
-            name='nome_email',
-            field=models.CharField(blank=True, max_length=50, null=True, verbose_name='Nome do e-mail'),
+            model_name="emailtemplate",
+            name="nome_email",
+            field=models.CharField(
+                blank=True, max_length=50, null=True, verbose_name="Nome do e-mail"
+            ),
         ),
     ]

@@ -4,15 +4,14 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('simal', '0095_remove_emailtemplate_cc_remove_emailtemplate_cco'),
+        ("simal", "0095_remove_emailtemplate_cc_remove_emailtemplate_cco"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='emailtemplate',
-            old_name='corpo',
-            new_name='texto',
+            model_name="emailtemplate",
+            old_name="corpo",
+            new_name="texto",
         ),
     ]
