@@ -48,7 +48,6 @@ from simal.views import (
     view_tab_medida_pivotada,
     export_csv,
     fill_amostra,
-    fill_campo_medida,
     input_fisico_quimico,
     perfil_usuario,
     cadastro_usuarios_adm,
@@ -182,11 +181,6 @@ urlpatterns = [
     ),
     path("export_csv/", export_csv, name="export_csv"),
     path("fill_amostra/<int:coleta_id>/", fill_amostra, name="fill_amostra"),
-    path(
-        "fill_campo_medida/<int:coleta_id>/",
-        fill_campo_medida,
-        name="fill_campo_medida",
-    ),
     path(
         "input_fisico_quimico/<int:coleta_id>/<int:ponto_id>/",
         input_fisico_quimico,

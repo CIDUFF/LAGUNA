@@ -1896,41 +1896,13 @@ def fill_amostra(request, coleta_id):
     # Atualiza o status da coleta para 6
     TabColeta.objects.filter(id=coleta_id).update(status=6)
 
-    return redirect("fill_campo_medida", coleta_id=coleta_id)
+    # Após criar as amostras e envios, gerar medidas para todos os frascos
+    for frasco in frascos:
+        if not coleta.analise_bentos and frasco.id in [5, 6, 7]:
+            continue
+        return redirect('fill_frasco_medida', coleta_id=coleta_id, frasco_id=frasco.id)
 
-
-@login_required
-def fill_campo_medida(request, coleta_id):
-    """
-    Preenche o campo de medida para uma coleta específica.
-
-    Esta função filtra os envios e parâmetros com base no ID da coleta e no ID do frasco,
-    cria instâncias de TabMedida para cada combinação de envio e parâmetro, e as salva no banco de dados.
-
-    Parâmetros:
-    request (HttpRequest): O objeto de solicitação HTTP.
-    coleta_id (int): O ID da coleta para a qual os campos de medida serão preenchidos.
-
-    Retorna:
-    HttpResponseRedirect: Redireciona para a página inicial após a conclusão do preenchimento dos campos de medida.
-    """
-    envios = TabEnvio.objects.filter(
-        id_amostra__id_coleta=coleta_id, id_amostra__id_frasco=1
-    )
-    parametros = TabProdxparam.objects.filter(id_frasco=1, status=True)
-
-    campos = []
-    for envio in envios:
-        for parametro in parametros:
-            campo = TabMedida(
-                id_envio=envio,
-                id_pp=parametro,
-            )
-            campos.append(campo)
-
-    TabMedida.objects.bulk_create(campos)
-
-    return redirect("info_coleta", coleta_id=coleta_id)
+    return redirect('info_coleta', coleta_id=coleta_id)
 
 @login_required
 def fill_frasco_medida(request, coleta_id, frasco_id):
@@ -1979,14 +1951,24 @@ def fill_frasco_medida(request, coleta_id, frasco_id):
                 # Cria todas as medidas de uma vez
                 if medidas:
                     TabMedida.objects.bulk_create(medidas)
-            
-            messages.success(request, f'Formulários gerados com sucesso para o frasco {frasco.nome}')
+
+            # Procura próximo frasco que precise de medidas
+            proximo_frasco = TabFrasco.objects.filter(
+                id__gt=frasco_id,
+                tabamostra__id_coleta=coleta
+            ).first()
+
+            if proximo_frasco:
+                return redirect('fill_frasco_medida', coleta_id=coleta_id, frasco_id=proximo_frasco.id)
+            else:
+                # Só mostra a mensagem de sucesso quando terminar todos os frascos
+                messages.success(request, 'Formulários gerados com sucesso para todos os frascos')
             
         except Exception as e:
             messages.error(request, f'Erro ao gerar formulários: {str(e)}')
             return redirect('info_coleta', coleta_id=coleta_id)
 
-    return redirect('lista_campo_frasco', coleta_id=coleta_id, frasco_id=frasco_id)
+    return redirect('info_coleta', coleta_id=coleta_id)
 
 @login_required 
 def lista_campo_frasco(request, coleta_id, frasco_id):
@@ -2856,7 +2838,7 @@ def export_resultados_medidas_xlsx(request):
         campanha = sanitize_param(request.GET.get('campanha', ''))
         setor = sanitize_param(request.GET.get('setor', ''))
         ponto = sanitize_param(request.GET.get('ponto', ''))
-        coleta = sanitize_param(request.GET.get('coleta', '')) # Adicionar esta linha
+        coleta = sanitize_param(request.GET.get('coleta', ''))
         
         # Query base otimizada
         query = TabMedida.objects.select_related(
@@ -2875,7 +2857,7 @@ def export_resultados_medidas_xlsx(request):
         if ponto:
             query = query.filter(id_envio__id_amostra__id_ponto__nome__icontains=ponto)
         if coleta:
-            query = query.filter(id_envio__id_amostra__id_coleta__nome__icontains=coleta) # Adicionar esta linha
+            query = query.filter(id_envio__id_amostra__id_coleta__nome__icontains=coleta)
 
         # Adicionar filtros de data
         data_inicio = request.GET.get('data_inicio')
@@ -2893,7 +2875,7 @@ def export_resultados_medidas_xlsx(request):
         # Definir cabeçalhos
         headers = [
             'Campanha',
-            'Coleta',
+            'Coleta', 
             'Ordem Serviço',
             'Data',
             'Setor',
