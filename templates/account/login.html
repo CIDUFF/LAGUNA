@@ -15,6 +15,9 @@
                             {% url 'account_login' as login_url %}
                             <form method="post" action="{{ login_url }}" class="form">
                                 {% csrf_token %}
+                                {% if redirect_field_value %}
+                                    <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+                                {% endif %}
                                 {% for field in form %}
                                     <div class="form-group lead">
                                         {{ field.label_tag }}
