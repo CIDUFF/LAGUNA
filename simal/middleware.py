@@ -4,7 +4,7 @@ class ContentSecurityPolicyMiddleware:
 
     def __call__(self, request):
         response = self.get_response(request)
-        
+
         csp = (
             "default-src 'self'; "
             "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://*.openstreetmap.org https://cdnjs.cloudflare.com; "
@@ -15,7 +15,7 @@ class ContentSecurityPolicyMiddleware:
             "frame-src 'self'; "
             "worker-src 'self' blob:;"
         )
-        
+
         # Adiciona headers de segurança adicionais
         response["Content-Security-Policy"] = csp
         response["X-Content-Type-Options"] = "nosniff"

@@ -4,15 +4,16 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('simal', '0102_alter_tabanexoamostra_anexo'),
+        ("simal", "0102_alter_tabanexoamostra_anexo"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='tabprodxparam',
-            name='status',
-            field=models.BooleanField(blank=True, default=True, null=True, verbose_name='Status'),
+            model_name="tabprodxparam",
+            name="status",
+            field=models.BooleanField(
+                blank=True, default=True, null=True, verbose_name="Status"
+            ),
         ),
     ]

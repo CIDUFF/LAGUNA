@@ -51,10 +51,10 @@
                 </div>
                 <div class="collapse show" id="filtrosCollapse">
                     <div class="card-body">
-                        <form method="get" class="row g-3">
+                        <form method="get" class="row g-3" id="filterForm">
                             <div class="col-md-4">
                                 <label class="form-label">Campanha</label>
-                                <select name="campanha" class="form-select">
+                                <select name="campanha" class="form-select auto-submit">
                                     <option value="">Todas</option>
                                     {% for c in campanhas %}
                                         <option value="{{ c }}" {% if filtros.campanha == c %}selected{% endif %}>{{ c }}</option>
@@ -63,7 +63,7 @@
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label">Coleta</label>
-                                <select name="coleta" class="form-select">
+                                <select name="coleta" class="form-select auto-submit">
                                     <option value="">Todas</option>
                                     {% for c in coletas %}
                                         {% if c %}  <!-- Verificar se o valor não é nulo -->
@@ -74,7 +74,7 @@
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label">Setor</label>
-                                <select name="setor" class="form-select">
+                                <select name="setor" class="form-select auto-submit">
                                     <option value="">Todos</option>
                                     {% for s in setores %}
                                         <option value="{{ s }}" {% if filtros.setor == s %}selected{% endif %}>{{ s }}</option>
@@ -83,7 +83,7 @@
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label">Ponto</label>
-                                <select name="ponto" class="form-select">
+                                <select name="ponto" class="form-select auto-submit">
                                     <option value="">Todos</option>
                                     {% for p in pontos %}
                                         <option value="{{ p }}" {% if filtros.ponto == p %}selected{% endif %}>{{ p }}</option>
@@ -92,16 +92,13 @@
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label">Data Inicial</label>
-                                <input type="date" name="data_inicio" class="form-control" value="{{ filtros.data_inicio|default:'' }}">
+                                <input type="date" name="data_inicio" class="form-control auto-submit" value="{{ filtros.data_inicio|default:'' }}">
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label">Data Final</label>
-                                <input type="date" name="data_fim" class="form-control" value="{{ filtros.data_fim|default:'' }}">
+                                <input type="date" name="data_fim" class="form-control auto-submit" value="{{ filtros.data_fim|default:'' }}">
                             </div>
                             <div class="col-12">
-                                <button type="submit" class="btn btn-primary btn-animated">
-                                    <i class="bi bi-search me-2"></i>Filtrar
-                                </button>
                                 <a href="{% url 'resultados_todas_medidas' %}" class="btn btn-outline-secondary btn-animated" style="color: #6c757d; border-color: #6c757d; background-color: transparent;">
                                     <i class="bi bi-x-circle me-2"></i>Limpar Filtros
                                 </a>
@@ -404,6 +401,101 @@ document.addEventListener('DOMContentLoaded', function() {
     } else {
         updateIcon(false);
     }
+
+    // Adicionar auto-submit para os filtros
+    const filterForm = document.getElementById('filterForm');
+    const autoSubmitElements = filterForm.querySelectorAll('.auto-submit');
+
+    autoSubmitElements.forEach(element => {
+        element.addEventListener('change', function() {
+            // Para campos de data, verificar se ambos estão preenchidos ou vazios
+            if (element.type === 'date') {
+                const dataInicio = filterForm.querySelector('[name="data_inicio"]');
+                const dataFim = filterForm.querySelector('[name="data_fim"]');
+                
+                // Se uma data foi preenchida mas a outra está vazia, não submeter
+                if ((dataInicio.value && !dataFim.value) || (!dataInicio.value && dataFim.value)) {
+                    return;
+                }
+            }
+            filterForm.submit();
+        });
+    });
+});
+
+// Adicionar função para atualizar filtros dependentes
+function updateDependentFilters(changedFilter) {
+    console.log('Atualizando filtros dependentes após mudança em:', changedFilter); // Debug
+
+    const filterForm = document.getElementById('filterForm');
+    const formData = new FormData(filterForm);
+    const queryString = new URLSearchParams(formData).toString();
+    
+    fetch(`/api/get-filtered-options/?${queryString}`)
+        .then(response => response.json())
+        .then(data => {
+            console.log('Dados recebidos da API:', data); // Debug
+            
+            // Atualizar todos os selects exceto o que mudou
+            if (changedFilter !== 'campanha') updateSelect('campanha', data.campanhas);
+            if (changedFilter !== 'coleta') updateSelect('coleta', data.coletas);
+            if (changedFilter !== 'setor') updateSelect('setor', data.setores);
+            if (changedFilter !== 'ponto') updateSelect('ponto', data.pontos);
+        })
+        .catch(error => console.error('Erro ao atualizar filtros:', error));
+}
+
+function updateSelect(selectName, options) {
+    const select = document.querySelector(`select[name="${selectName}"]`);
+    if (!select) return;
+    
+    const currentValue = select.value;
+    let defaultText = 'Todas';
+    if (selectName === 'setor') defaultText = 'Todos';
+    if (selectName === 'ponto') defaultText = 'Todos';
+    
+    select.innerHTML = `<option value="">${defaultText}</option>`;
+    
+    if (options && options.length > 0) {
+        options.forEach(option => {
+            const optionElement = document.createElement('option');
+            optionElement.value = option;
+            optionElement.textContent = option;
+            if (option === currentValue) {
+                optionElement.selected = true;
+            }
+            select.appendChild(optionElement);
+        });
+    }
+    
+    console.log(`Atualizado select ${selectName} com ${options ? options.length : 0} opções`); // Debug
+}
+
+// Atualizar os event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    const filterForm = document.getElementById('filterForm');
+    const autoSubmitElements = filterForm.querySelectorAll('.auto-submit');
+
+    autoSubmitElements.forEach(element => {
+        if (element.type !== 'date') {
+            element.addEventListener('change', function() {
+                console.log('Filtro alterado:', this.name); // Debug
+                updateDependentFilters(this.name);
+                // Pequeno delay antes de submeter o form para garantir que os filtros foram atualizados
+                setTimeout(() => filterForm.submit(), 100);
+            });
+        } else {
+            element.addEventListener('change', function() {
+                const dataInicio = filterForm.querySelector('[name="data_inicio"]');
+                const dataFim = filterForm.querySelector('[name="data_fim"]');
+                
+                if ((dataInicio.value && !dataFim.value) || (!dataInicio.value && dataFim.value)) {
+                    return;
+                }
+                filterForm.submit();
+            });
+        }
+    });
 });
 </script>
 

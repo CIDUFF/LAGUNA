@@ -7,7 +7,7 @@
 <div class="modal-body p-4" style="max-height: 75vh; overflow-y: auto;">
     <div class="list-group">
         {% for frasco in frascos %}
-            <a href="{% url 'fill_frasco_medida' coleta.id frasco.id %}" 
+            <a href="{% url 'lista_campo_frasco' coleta.id frasco.id %}" 
                class="list-group-item list-group-item-action d-flex justify-content-between align-items-center rounded-3 mb-2 border-0 shadow-sm hover-item">
                 <div class="d-flex align-items-center">
                     <div class="rounded-circle bg-light p-2 me-3">

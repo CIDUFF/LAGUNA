@@ -4,19 +4,18 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('simal', '0103_tabprodxparam_status'),
+        ("simal", "0103_tabprodxparam_status"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='tabanexoamostra',
-            options={'ordering': ['ordem']},
+            name="tabanexoamostra",
+            options={"ordering": ["ordem"]},
         ),
         migrations.AddField(
-            model_name='tabanexoamostra',
-            name='ordem',
+            model_name="tabanexoamostra",
+            name="ordem",
             field=models.IntegerField(default=0),
         ),
     ]

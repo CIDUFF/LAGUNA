@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('simal', '0101_alter_tabanexoamostra_options_and_more'),
+        ("simal", "0101_alter_tabanexoamostra_options_and_more"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='tabanexoamostra',
-            name='anexo',
-            field=models.FileField(blank=True, null=True, upload_to='anexos_amostras/'),
+            model_name="tabanexoamostra",
+            name="anexo",
+            field=models.FileField(blank=True, null=True, upload_to="anexos_amostras/"),
         ),
     ]

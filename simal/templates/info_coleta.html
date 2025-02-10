@@ -19,7 +19,7 @@
     <!-- Cabeçalho moderno -->
     <div class="row g-3 mb-4"> <!-- Adicionado margin-bottom -->
         <div class="col-12">
-            <div class="card border-0 rounded-4 shadow-sm bg-gradient hover-shadow" style="background-color:rgb(6, 60, 122);">
+            <div class="card border-0 rounded-4 shadow-sm bg-gradient hover-shadow" style="background-color:#063c7a;">
                 <div class="card-body p-4">
                     <div class="row align-items-center">
                         <!-- Informações Principais -->
@@ -28,7 +28,7 @@
                                 <i class="bi bi-clipboard-data me-3"></i>
                                 <span>{{ coleta_os }}</span>
                             </h1>
-                            <div class="text-white-50">
+                            <div class="text-white" style="opacity: 0.8">
                                 <div class="d-flex gap-4"> <!-- Alterado para layout em duas colunas -->
                                     <div class="d-flex flex-column gap-2">
                                         <div class="d-flex align-items-center">
@@ -55,7 +55,7 @@
                                         </div>
                                         <div class="d-flex align-items-center">
                                             <i class="bi bi-check me-2"></i>
-                                            <span>Status: {{ status_coleta }} </span>
+                                            <span>Status: {{ status_coleta }}</span>
                                         </div>
                                         
                                     </div>
@@ -88,37 +88,26 @@
                                 {% endif %}
 
                                 <!-- Dropdown de Resultados -->
-                                <div class="dropdown">
-                                    <button class="btn btn-light rounded-pill header-btn dropdown-toggle" 
-                                            type="button" 
-                                            data-bs-toggle="dropdown"
-                                            data-bs-toggle="tooltip"
-                                            data-bs-placement="left" 
-                                            title="Escolha onde deseja inserir os resultados da coleta">
-                                        <i class="bi bi-pencil-square me-2"></i>Inserir resultados
-                                    </button>
-                                    <ul class="dropdown-menu dropdown-menu-end">
-                                        <li>
-                                            <a class="dropdown-item py-2" 
-                                               href="{% url 'lista_campo' coleta %}"
-                                               data-bs-toggle="tooltip" 
-                                               data-bs-placement="left"
-                                               title="Inserir resultados coletados em campo">
-                                                <i class="bi bi-thermometer me-2"></i>Campo
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <a class="dropdown-item py-2" 
-                                               href="#" 
-                                               data-option="laboratorio"
-                                               data-bs-toggle="tooltip" 
-                                               data-bs-placement="left"
-                                               title="Inserir resultados das análises laboratoriais">
-                                                <i class="bi bi-tags me-2"></i>Laboratório
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </div>
+
+                                {% if fill_amostra_gerado %}
+                                <a class="btn btn-light rounded-pill header-btn" 
+                                   href="#"
+                                   data-option="laboratorio"
+                                   data-bs-toggle="tooltip"
+                                   data-bs-placement="left"
+                                   title="Inserir resultados das análises laboratoriais">
+                                    <i class="bi bi-pencil-square me-2"></i>Inserir resultados
+                                </a>
+                                {% else %}
+                                <button class="btn btn-light rounded-pill header-btn" 
+                                        disabled
+                                        data-bs-toggle="tooltip"
+                                        data-bs-placement="left"
+                                        title="Gere os formulários primeiro para inserir resultados">
+                                    <i class="bi bi-pencil-square me-2"></i>Inserir resultados
+                                </button>
+                                {% endif %}
+
                                 
                                 <!-- Link do WhatsApp -->
                                 <a href="{{ link }}" 
@@ -128,7 +117,11 @@
                                    data-bs-toggle="tooltip" 
                                    data-bs-placement="left"
                                    title="Compartilhar informações da coleta via WhatsApp">
-                                    <i class="bi bi-whatsapp me-2"></i>WhatsApp
+                                    <i class="bi bi-whatsapp me-2"></i>Compartilhar
+                                </a>
+                                <!-- Botão Gerar Etiquetas -->
+                                <a href="{% url 'generate_sample_labels' coleta_id=coleta %}" class="btn btn-primary header-btn">
+                                    <i class="bi bi-tag-fill"></i> Gerar Etiquetas
                                 </a>
                             </div>
                         </div>
@@ -142,7 +135,7 @@
         <!-- Coluna da esquerda -->
         <div class="col-md-6 d-flex"> <!-- Adicionado d-flex -->
             <div class="card border-0 rounded-4 shadow-sm hover-shadow flex-fill"> <!-- Adicionado flex-fill -->
-                <div class="card-header bg-gradient border-0 rounded-top-4" style="background-color: #68a7f1;">
+                <div class="card-header bg-gradient border-0 rounded-top-4" style="background-color:#063c7a;">
                     <div class="d-flex justify-content-between align-items-center">
                         <h5 class="card-title mb-0 text-white"><i class="bi bi-check2-circle me-2"></i>Status</h5>
                         <button class="btn btn-light btn-sm d-md-none toggle-status" type="button">
@@ -214,6 +207,34 @@
                         <div class="mt-2 small text-muted text-center">
                             {{ formularios_preenchidos }} de {{ total_formularios }} formulários preenchidos
                         </div>
+                    </div>
+
+                    <div class="status-item mb-4">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="bi bi-toggles me-2 text-primary"></i>
+                            <h6 class="mb-0">Alterar Status</h6>
+                        </div>
+                        <form action="{% url 'atualizar_status_coleta' coleta %}" 
+                              method="POST" 
+                              class="d-flex align-items-center gap-2" 
+                              id="formStatus">
+                            {% csrf_token %}
+                            <select name="status" class="form-select" style="flex: 1;">
+                                {% for status in status_disponiveis %}
+                                    <option value="{{ status.id }}" 
+                                            {% if status_coleta == status %}selected{% endif %}>
+                                        {{ status.status }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <button type="submit" 
+                                    class="btn btn-primary"
+                                    data-bs-toggle="tooltip" 
+                                    data-bs-placement="top"
+                                    title="Atualizar status da coleta">
+                                <i class="bi bi-check2"></i>
+                            </button>
+                        </form>
                     </div>
 
                     <div class="status-item">
@@ -978,9 +999,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 .addTo(map)
                 .bindTooltip(tooltipText);
             
+            {% if fill_amostra_gerado %}
             marker.on('click', function() {
-                window.location.href = '/input_fisico_quimico/' + {{ coleta }} + '/' + ponto.id + '/';
+                window.location.href = '/input_laboratorio/' + {{ coleta }} + '/' + ponto.id + '/' + 1;
             });
+            {% else %}
+            marker.on('click', function() {
+                alert('É necessário gerar os formulários primeiro. Clique no botão "Gerar Formulários".');
+            });
+            {% endif %}
 
             bounds.extend([ponto.lat, ponto.lon]);
         }
@@ -1246,6 +1273,15 @@ document.getElementById('mapModal').addEventListener('hidden.bs.modal', function
     if (fullscreenMap) {
         fullscreenMap.remove();
         fullscreenMap = null;
+    }
+});
+
+// Adicionar confirmação ao mudar status
+document.getElementById('formStatus').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const novoStatus = this.querySelector('select').options[this.querySelector('select').selectedIndex].text;
+    if (confirm(`Deseja realmente alterar o status da coleta para "${novoStatus}"?`)) {
+        this.submit();
     }
 });
 </script>

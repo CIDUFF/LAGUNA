@@ -83,38 +83,23 @@
             </div>
             <!-- ... código existente ... -->
 
-<!-- Adicione após o cabeçalho principal -->
+<!-- Remova a barra de progresso e navegação e inclua este dropdown -->
 <div class="card mb-4">
     <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center">
-            <div class="btn-group" role="group">
-                {% if ponto_anterior %}
-                    <a href="{% url 'input_laboratorio' coleta_id=coleta.id ponto_id=ponto_anterior.id frasco_id=frasco.id %}" 
-                       class="btn btn-outline-primary">
-                        <i class="bi bi-arrow-left"></i> Ponto anterior
-                    </a>
-                {% endif %}
-                
-                {% if ponto_proximo %}
-                    <a href="{% url 'input_laboratorio' coleta_id=coleta.id ponto_id=ponto_proximo.id frasco_id=frasco.id %}"
-                       class="btn btn-outline-primary">
-                        Próximo ponto <i class="bi bi-arrow-right"></i>
-                    </a>
-                {% endif %}
-            </div>
-            
-            <div class="text-center flex-grow-1 px-3">
-                <h6 class="mb-1">Progresso: {{ ponto_atual }} de {{ total_pontos }} pontos</h6>
-                <div class="progress">
-                    <div class="progress-bar" role="progressbar" style="width: {{ progresso }}%"
-                         aria-valuenow="{{ progresso }}" aria-valuemin="0" aria-valuemax="100">
-                        {{ progresso|floatformat:1 }}%
-                    </div>
-                </div>
-            </div>
-        </div>
+        <form method="get" class="d-flex align-items-center">
+            <label for="pontoDropdown" class="me-2 fw-bold">Selecione um ponto:</label>
+            <select id="pontoDropdown" class="form-select me-2" onchange="location.href=this.value;">
+                {% for p in todos_pontos %}
+                <option value="{% url 'input_laboratorio' coleta_id=coleta.id ponto_id=p.id frasco_id=frasco.id %}"
+                        {% if p.id == ponto.id %}selected{% endif %}>
+                    {{ p.nome }}
+                </option>
+                {% endfor %}
+            </select>
+        </form>
     </div>
 </div>
+
         </div>
         
         <!-- Card do Formulário -->
