@@ -2998,16 +2998,24 @@ def atualizar_status_coleta(request, coleta_id):
 
 def generate_sample_labels(request, coleta_id):
     coleta = TabColeta.objects.get(id=coleta_id)
-    amostras = TabAmostra.objects.filter(id_coleta=coleta)
+    amostras = TabAmostra.objects.filter(id_coleta=coleta).exclude(id_frasco__id=1)
     
     # Create PDF buffer
     buffer = BytesIO()
+    
     # A4 page size: 210mm x 297mm
-    # Label size: 25mm x 50mm (standard label size for lab tubes)
-    label_width = 50 * mm
+    # Label size: 50mm x 25mm (standard label size for lab tubes)
+    # Adding 1cm (10mm) margins on all sides
+    margin = 10 * mm
+    label_spacing = 5 * mm  # Espaço entre as etiquetas
+    
+    usable_width = A4[0] - (2 * margin) - label_spacing  # Width minus margins and spacing
+    usable_height = A4[1] - (2 * margin)
+    
+    label_width = (usable_width / 2)  # Divide usable width by 2 for 2 columns
     label_height = 25 * mm
-    labels_per_row = int(A4[0] // label_width)
-    labels_per_col = int(A4[1] // label_height)
+    labels_per_row = 2
+    labels_per_col = int(usable_height // (label_height + label_spacing))
     
     c = canvas.Canvas(buffer, pagesize=A4)
     
@@ -3015,9 +3023,12 @@ def generate_sample_labels(request, coleta_id):
     current_col = 0
     
     for amostra in amostras:
-        # Calculate position for the current label
-        x = current_col * label_width
-        y = A4[1] - (current_row + 1) * label_height  # Start from top
+        # Calculate position for the current label, adding margins and spacing
+        x = margin + (current_col * (label_width + label_spacing))
+        y = A4[1] - margin - ((current_row + 1) * label_height) - (current_row * label_spacing)
+        
+        # Draw border around label
+        c.rect(x, y, label_width, label_height)
         
         # Generate QR code
         qr = qrcode.QRCode(version=1, box_size=10, border=0)
@@ -3037,14 +3048,14 @@ def generate_sample_labels(request, coleta_id):
         c.drawImage(ImageReader(qr_buffer), x + 2*mm, y + 2*mm, width=20*mm, height=20*mm)
         
         # Draw text information
-        c.setFont("Helvetica", 6)  # Small font size for labels
-        text_x = x + 24*mm  # Position text to the right of QR code
+        c.setFont("Helvetica", 6)
+        text_x = x + 24*mm
         
         # Draw text lines
         c.drawString(text_x, y + 18*mm, f"Ponto: {amostra.id_ponto.nome}")
+        c.drawString(text_x, y + 2*mm, f"Frasco: {amostra.id_frasco.nome}")
         c.drawString(text_x, y + 14*mm, f"Setor: {amostra.id_ponto.id_setor.nome}")
         c.drawString(text_x, y + 10*mm, f"ID: {amostra.etiqueta}")
-        c.drawString(text_x, y + 2*mm, f"Frasco: {amostra.id_frasco.nome}")
         c.drawString(text_x, y + 6*mm, f"Data: {coleta.data.strftime('%d/%m/%Y')}")
         
         # Update position for next label
@@ -3052,7 +3063,7 @@ def generate_sample_labels(request, coleta_id):
         if current_col >= labels_per_row:
             current_col = 0
             current_row += 1
-            
+        
         # New page if needed
         if current_row >= labels_per_col:
             c.showPage()
