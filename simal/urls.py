@@ -63,6 +63,7 @@ from simal.views import (
     input_laboratorio,
     export_resultados_medidas_xlsx,
     atualizar_status_coleta,
+    generate_sample_labels,
 )
 from .apis import get_filtered_options
 
@@ -242,5 +243,10 @@ urlpatterns = [
         "atualizar-status-coleta/<int:coleta_id>/",
         atualizar_status_coleta,
         name="atualizar_status_coleta",
+    ),
+    path(
+        "generate_sample_labels/<int:coleta_id>/",
+        generate_sample_labels,
+        name="generate_sample_labels",
     ),
 ]

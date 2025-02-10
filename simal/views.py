@@ -31,6 +31,15 @@ from openpyxl.utils import get_column_letter
 from django.core.serializers.json import DjangoJSONEncoder
 from openpyxl.styles import Font, PatternFill
 
+import qrcode
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.units import mm
+from reportlab.lib.utils import ImageReader
+from django.conf import settings
+from io import BytesIO
+from PIL import Image
+
 
 from django_tables2 import RequestConfig
 import urllib.parse
@@ -2984,6 +2993,79 @@ def atualizar_status_coleta(request, coleta_id):
             messages.error(request, f'Erro ao processar requisição: {str(e)}')
             
     return redirect('info_coleta', coleta_id=coleta_id)
+
+
+
+def generate_sample_labels(request, coleta_id):
+    coleta = TabColeta.objects.get(id=coleta_id)
+    amostras = TabAmostra.objects.filter(id_coleta=coleta)
+    
+    # Create PDF buffer
+    buffer = BytesIO()
+    # A4 page size: 210mm x 297mm
+    # Label size: 25mm x 50mm (standard label size for lab tubes)
+    label_width = 50 * mm
+    label_height = 25 * mm
+    labels_per_row = int(A4[0] // label_width)
+    labels_per_col = int(A4[1] // label_height)
+    
+    c = canvas.Canvas(buffer, pagesize=A4)
+    
+    current_row = 0
+    current_col = 0
+    
+    for amostra in amostras:
+        # Calculate position for the current label
+        x = current_col * label_width
+        y = A4[1] - (current_row + 1) * label_height  # Start from top
+        
+        # Generate QR code
+        qr = qrcode.QRCode(version=1, box_size=10, border=0)
+        url = request.build_absolute_uri(
+            reverse('input_laboratorio', args=[coleta.id, amostra.id_ponto.id, amostra.id_frasco.id])
+        )
+        qr.add_data(url)
+        qr.make(fit=True)
+        qr_img = qr.make_image(fill_color="black", back_color="white")
+        
+        # Save QR code to buffer
+        qr_buffer = BytesIO()
+        qr_img.save(qr_buffer, format='PNG')
+        qr_buffer.seek(0)
+        
+        # Draw QR code
+        c.drawImage(ImageReader(qr_buffer), x + 2*mm, y + 2*mm, width=20*mm, height=20*mm)
+        
+        # Draw text information
+        c.setFont("Helvetica", 6)  # Small font size for labels
+        text_x = x + 24*mm  # Position text to the right of QR code
+        
+        # Draw text lines
+        c.drawString(text_x, y + 18*mm, f"Ponto: {amostra.id_ponto.nome}")
+        c.drawString(text_x, y + 14*mm, f"Setor: {amostra.id_ponto.id_setor.nome}")
+        c.drawString(text_x, y + 10*mm, f"ID: {amostra.etiqueta}")
+        c.drawString(text_x, y + 2*mm, f"Frasco: {amostra.id_frasco.nome}")
+        c.drawString(text_x, y + 6*mm, f"Data: {coleta.data.strftime('%d/%m/%Y')}")
+        
+        # Update position for next label
+        current_col += 1
+        if current_col >= labels_per_row:
+            current_col = 0
+            current_row += 1
+            
+        # New page if needed
+        if current_row >= labels_per_col:
+            c.showPage()
+            current_row = 0
+            current_col = 0
+    
+    c.save()
+    buffer.seek(0)
+    
+    response = HttpResponse(buffer, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="etiquetas_coleta_{coleta_id}.pdf"'
+    
+    return response
 
 
 
