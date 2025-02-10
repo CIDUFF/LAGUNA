@@ -964,3 +964,18 @@ class EmailTemplate(models.Model):
 
     class Meta:
         db_table = "tab_email_template"
+
+
+class TabLogColeta(models.Model):
+    id_coleta = models.ForeignKey(TabColeta, on_delete=models.CASCADE, related_name='logs')
+    acao = models.CharField(max_length=255)
+    data = models.DateTimeField(auto_now_add=True)
+    motivo = models.TextField(blank=True, null=True)
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.acao} em {self.data.strftime('%d/%m/%Y %H:%M')} por {self.usuario.username}"
+
+    class Meta:
+        managed = True
+        db_table = 'tab_log_coleta'
