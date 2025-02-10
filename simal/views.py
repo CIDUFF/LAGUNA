@@ -3032,10 +3032,15 @@ def generate_sample_labels(request, coleta_id):
         
         # Generate QR code
         qr = qrcode.QRCode(version=1, box_size=10, border=0)
+        
+        # Gerar URL com parâmetro next
         url = request.build_absolute_uri(
             reverse('input_laboratorio', args=[coleta.id, amostra.id_ponto.id, amostra.id_frasco.id])
         )
-        qr.add_data(url)
+        redirect_url = url
+        login_url = f"{request.build_absolute_uri('/accounts/login/')}?next={redirect_url}"
+        
+        qr.add_data(login_url)
         qr.make(fit=True)
         qr_img = qr.make_image(fill_color="black", back_color="white")
         
@@ -3053,9 +3058,9 @@ def generate_sample_labels(request, coleta_id):
         
         # Draw text lines
         c.drawString(text_x, y + 18*mm, f"Ponto: {amostra.id_ponto.nome}")
-        c.drawString(text_x, y + 2*mm, f"Frasco: {amostra.id_frasco.nome}")
         c.drawString(text_x, y + 14*mm, f"Setor: {amostra.id_ponto.id_setor.nome}")
         c.drawString(text_x, y + 10*mm, f"ID: {amostra.etiqueta}")
+        c.drawString(text_x, y + 2*mm, f"Frasco: {amostra.id_frasco.nome}")
         c.drawString(text_x, y + 6*mm, f"Data: {coleta.data.strftime('%d/%m/%Y')}")
         
         # Update position for next label
