@@ -20,12 +20,13 @@ from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.core.mail import send_mail
 from django.core.paginator import Paginator
-from django.db import connection
+from django.db import connection, transaction
 from django.forms import inlineformset_factory, modelformset_factory
-from django.http import FileResponse, HttpResponse
+from django.http import FileResponse, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.html import escapejs
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
 from django.core.serializers.json import DjangoJSONEncoder
@@ -142,6 +143,7 @@ from .models import (
     TabMedida,
     DetalhesUsuario,
 )
+from django.db.models import Count
 
 # Configuração do logger
 logger = logging.getLogger(__name__)
@@ -3036,36 +3038,60 @@ def export_resultados_medidas_xlsx(request):
 def atualizar_status_coleta(request, coleta_id):
     if request.method == 'POST':
         try:
-            coleta = TabColeta.objects.get(id=coleta_id)
+            # Get status ID and motivo from POST data
             novo_status_id = request.POST.get('status')
             motivo = request.POST.get('motivo')
+            
+            if not novo_status_id or not motivo:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Status e motivo são obrigatórios'
+                }, status=400)
 
-            if not motivo:
-                messages.error(
-                    request, 'É necessário informar o motivo da alteração')
-                return redirect('info_coleta', coleta_id=coleta_id)
+            # Update coleta status within transaction
+            with transaction.atomic():
+                coleta = TabColeta.objects.select_for_update().get(id=coleta_id)
+                status_anterior = coleta.status
+                novo_status = TabStatusColeta.objects.get(id=novo_status_id)
+                
+                # Update status and timestamps
+                coleta.status = novo_status 
+                coleta.atualizado_por = request.user
+                coleta.atualizado_em = timezone.now()
+                coleta.save()
 
-            status_antigo = coleta.status
-            novo_status = TabStatusColeta.objects.get(id=novo_status_id)
+                # Create log entry
+                TabLogColeta.objects.create(
+                    id_coleta=coleta,
+                    acao=f'Alteração de status de {status_anterior} para {novo_status}',
+                    motivo=motivo,
+                    usuario=request.user,
+                    data=timezone.now()
+                )
 
-            # Atualiza o status
-            coleta.status = novo_status
-            coleta.save()
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Status atualizado com sucesso',
+                    'new_status': novo_status.status,
+                    'new_status_id': novo_status.id,
+                    'redirect': True # Add flag to force page reload
+                })
 
-            # Registra o log
-            TabLogColeta.objects.create(
-                id_coleta=coleta,
-                acao=f'Alteração de status de {status_antigo} para {novo_status}',
-                motivo=motivo,
-                usuario=request.user
-            )
-
-            messages.success(request, 'Status atualizado com sucesso!')
-
+        except (TabColeta.DoesNotExist, TabStatusColeta.DoesNotExist) as e:
+            return JsonResponse({
+                'success': False, 
+                'error': str(e)
+            }, status=404)
         except Exception as e:
-            messages.error(request, f'Erro ao atualizar status: {str(e)}')
+            return JsonResponse({
+                'success': False,
+                'error': f'Erro ao atualizar status: {str(e)}'
+            }, status=500)
 
-    return redirect('info_coleta', coleta_id=coleta_id)
+    return JsonResponse({
+        'success': False,
+        'error': 'Método não permitido'
+    }, status=405)
 
 
 def generate_sample_labels(request, coleta_id):
@@ -3161,3 +3187,61 @@ def generate_sample_labels(request, coleta_id):
     response['Content-Disposition'] = f'attachment; filename="etiquetas_coleta_{coleta_id}.pdf"'
 
     return response
+
+@login_required 
+def new_home(request):
+    # Obter todas as coletas ordenadas por data
+    coletas = TabColeta.objects.select_related(
+        'id_campanha',
+        'id_setor',
+        'status',
+        'criado_por'
+    ).order_by('-data')
+
+    # Estatísticas gerais
+    total_coletas = coletas.count()
+    coletas_pendentes = coletas.filter(status__id=1).count()
+    coletas_finalizadas = coletas.filter(status__id=5).count()
+    coletas_em_andamento = coletas.filter(status__id__in=[3,4,6]).count()
+    coletas_canceladas = coletas.filter(status__id=2).count()
+
+    # Coletas recentes e próximas
+    coletas_recentes = coletas[:5]
+    proximas_coletas = coletas.filter(data__gte=timezone.now()).order_by('data')[:5]
+    
+    # Dados para o gráfico de setores - enviando direto para o template
+    setores_data = (TabColeta.objects
+        .values('id_setor__nome', 'status__status')
+        .filter(id_setor__nome__isnull=False)
+        .annotate(total=Count('id'))
+        .order_by('id_setor__nome', 'status__status')
+    )
+
+    # Group data by setor with null check for status
+    setores_agregados = {}
+    for item in setores_data:
+        setor = item['id_setor__nome']
+        status = item['status__status']
+        if setor not in setores_agregados:
+            setores_agregados[setor] = {'nome': setor}
+        
+        # Only try to replace spaces if status is not None
+        if status:
+            status_key = status.replace(' ', '_')
+        else:
+            status_key = 'undefined'  # Default key for null status
+            
+        setores_agregados[setor][status_key] = item['total']
+
+    context = {
+        'total_coletas': total_coletas,
+        'coletas_pendentes': coletas_pendentes,
+        'coletas_finalizadas': coletas_finalizadas,
+        'coletas_canceladas': coletas_canceladas,
+        'coletas_em_andamento': coletas_em_andamento,
+        'coletas_recentes': coletas_recentes,
+        'proximas_coletas': proximas_coletas,
+        'setores_data': list(setores_agregados.values()),  # Convert to list for template
+    }
+
+    return render(request, 'new_home.html', context)

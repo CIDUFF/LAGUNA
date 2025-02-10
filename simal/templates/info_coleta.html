@@ -1163,6 +1163,77 @@ document.addEventListener('DOMContentLoaded', function() {
             trigger: 'hover'
         });
     });
+
+    // Replace the form submit handler
+    document.getElementById('formStatus').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Create or get modal
+        let modalJustificativa = document.getElementById('modalJustificativa');
+        if (!modalJustificativa) {
+            const modalHTML = `
+                <div class="modal fade" id="modalJustificativa" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Justificativa da alteração</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <label for="motivo" class="form-label">Motivo da alteração do status</label>
+                                    <textarea class="form-control" id="motivo" rows="3" required></textarea>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                <button type="button" class="btn btn-primary" id="btnConfirmarAlteracao">Confirmar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+            modalJustificativa = document.getElementById('modalJustificativa');
+        }
+
+        const modal = new bootstrap.Modal(modalJustificativa);
+        modal.show();
+
+        document.getElementById('btnConfirmarAlteracao').onclick = function() {
+            const motivo = document.getElementById('motivo').value.trim();
+            if (!motivo) {
+                alert('Por favor, informe o motivo da alteração');
+                return;
+            }
+
+            const formData = new FormData(e.target);
+            formData.append('motivo', motivo);
+
+            fetch(e.target.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    modal.hide();
+                    alert('Status atualizado com sucesso!');
+                    // Force page reload to reflect changes
+                    window.location.reload();
+                } else {
+                    alert(data.error || 'Erro ao atualizar status');
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao atualizar status');
+            });
+        };
+    });
+
 });
 
 let fullscreenMap = null;
