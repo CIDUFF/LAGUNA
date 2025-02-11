@@ -3172,35 +3172,35 @@ def new_home(request):
     coletas = TabColeta.objects.select_related(
         'id_campanha',
         'id_setor',
-        'status',
+        'status_id',
         'criado_por'
     ).order_by('-data')
 
     # Estatísticas gerais
     total_coletas = coletas.count()
-    coletas_pendentes = coletas.filter(status__id=1).count()
-    coletas_finalizadas = coletas.filter(status__id=5).count()
-    coletas_em_andamento = coletas.filter(status__id__in=[3, 4, 6]).count()
-    coletas_canceladas = coletas.filter(status__id=2).count()
+    coletas_pendentes = coletas.filter(status_id__id=1).count()
+    coletas_finalizadas = coletas.filter(status_id__id=5).count()
+    coletas_em_andamento = coletas.filter(status_id__id__in=[3, 4, 6]).count()
+    coletas_canceladas = coletas.filter(status_id__id=2).count()
 
     # Coletas recentes e próximas
     coletas_recentes = coletas[:5]
     proximas_coletas = coletas.filter(
         data__gte=timezone.now()).order_by('data')[:5]
 
-    # Dados para o gráfico de setores - enviando direto para o template
+    # Dados para o gráfico de setores - ajustando a consulta
     setores_data = (TabColeta.objects
-                    .values('id_setor__nome', 'status__status')
+                    .values('id_setor__nome', 'status_id__status')
                     .filter(id_setor__nome__isnull=False)
                     .annotate(total=Count('id'))
-                    .order_by('id_setor__nome', 'status__status')
+                    .order_by('id_setor__nome', 'status_id__status')
                     )
 
     # Group data by setor with null check for status
     setores_agregados = {}
     for item in setores_data:
         setor = item['id_setor__nome']
-        status = item['status__status']
+        status = item['status_id__status']
         if setor not in setores_agregados:
             setores_agregados[setor] = {'nome': setor}
 
