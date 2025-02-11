@@ -3042,20 +3042,23 @@ def atualizar_status_coleta(request, coleta_id):
                 'status_id').get(id=coleta_id)
             novo_status = TabStatusColeta.objects.get(
                 id=request.POST.get('status'))
+            motivo = request.POST.get('motivo')
 
             # Debug
             print(f"Status atual: {coleta.status_id}")
             print(f"Novo status ID: {novo_status.id}")
+            print(f"Motivo: {motivo}")
 
             coleta.status_id = novo_status
             coleta.atualizado_por = request.user
             coleta.atualizado_em = timezone.now()
             coleta.save()
 
-            # Registra o log
+            # Registra o log com o motivo
             TabLogColeta.objects.create(
                 id_coleta=coleta,
                 acao=f'Status alterado para {novo_status.status}',
+                motivo=motivo,
                 usuario=request.user
             )
 

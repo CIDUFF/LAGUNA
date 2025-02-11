@@ -302,6 +302,31 @@
     </div>
 </div>
 
+<!-- Modal de confirmação de alteração de status -->
+<div class="modal fade" id="statusChangeModal" tabindex="-1" aria-labelledby="statusChangeModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="statusChangeModalLabel">Alterar Status da Coleta</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="statusChangeForm">
+          <div class="mb-3">
+            <label for="motivo" class="form-label">Motivo da alteração:</label>
+            <textarea class="form-control" id="motivo" name="motivo" rows="3" required></textarea>
+          </div>
+          <input type="hidden" id="selectedStatus" name="status">
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" id="confirmStatusChange">Confirmar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <style>
 .hover-shadow {
     transition: all 0.3s ease;
@@ -1168,17 +1193,38 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('formStatus').addEventListener('submit', function(e) {
         e.preventDefault();
         
-        // Pega o token CSRF do cookie
-        function getCookie(name) {
-            const value = `; ${document.cookie}`;
-            const parts = value.split(`; ${name}=`);
-            if (parts.length === 2) return parts.pop().split(';').shift();
+        // Pegar o status selecionado
+        const statusSelect = document.querySelector('select[name="status"]');
+        const selectedStatus = statusSelect.value;
+        
+        // Atualizar o input hidden no modal
+        document.getElementById('selectedStatus').value = selectedStatus;
+        
+        // Abrir o modal
+        const modal = new bootstrap.Modal(document.getElementById('statusChangeModal'));
+        modal.show();
+    });
+
+    // Adicionar event listener para o botão de confirmar
+    document.getElementById('confirmStatusChange').addEventListener('click', function() {
+        const form = document.getElementById('statusChangeForm');
+        const formStatus = document.getElementById('formStatus');
+        const motivo = document.getElementById('motivo').value;
+        
+        if (!motivo) {
+            alert('Por favor, informe o motivo da alteração.');
+            return;
         }
         
-        const formData = new FormData(e.target);
+        // Criar FormData com todos os dados
+        const formData = new FormData(formStatus);
+        formData.append('motivo', motivo);
+        
+        // Pegar o token CSRF
         const csrftoken = getCookie('csrftoken');
-    
-        fetch(e.target.action, {
+        
+        // Fazer a requisição
+        fetch(formStatus.action, {
             method: 'POST',
             body: formData,
             headers: {
@@ -1188,15 +1234,18 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                window.location.reload();
+                location.reload();
             } else {
-                alert(data.error || 'Erro ao atualizar status');
+                alert('Erro ao atualizar status: ' + data.error);
             }
         })
         .catch(error => {
-            console.error('Erro:', error);
             alert('Erro ao atualizar status');
         });
+        
+        // Fechar o modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById('statusChangeModal'));
+        modal.hide();
     });
 
 });
