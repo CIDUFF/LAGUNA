@@ -215,48 +215,48 @@ ACCOUNT_AUTHENTICATION_METHOD = "username_email"
 LOGIN_REDIRECT_URL = "/"
 
 
-# LOGGING = {
-#     'version': 1,
-#     'disable_existing_loggers': False,
-#     'formatters': {
-#         'verbose': {
-#             'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
-#             'style': '{',
-#         },
-#         'simple': {
-#             'format': '{levelname} {message}',
-#             'style': '{',
-#         },
-#     },
-#     'handlers': {
-#         'file': {
-#             'level': 'INFO',
-#             'class': 'logging.handlers.RotatingFileHandler',  # Usar RotatingFileHandler em vez de FileHandler
-#             'filename': '/var/log/django/amostras.log',  # Caminho absoluto no sistema
-#             'maxBytes': 1024*1024*5,  # 5 MB
-#             'backupCount': 5,
-#             'formatter': 'verbose',
-#             'encoding': 'utf-8',
-#         },
-#         'console': {
-#             'level': 'DEBUG',
-#             'class': 'logging.StreamHandler',
-#             'formatter': 'simple',
-#         },
-#     },
-#     'loggers': {
-#         'django': {
-#             'handlers': ['file', 'console'] if DEBUG else ['file'],
-#             'level': 'INFO',
-#             'propagate': True,
-#         },
-#         'simal': {
-#             'handlers': ['file', 'console'] if DEBUG else ['file'],
-#             'level': 'DEBUG' if DEBUG else 'INFO',
-#             'propagate': True,
-#         },
-#     },
-# }
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',  # Usar RotatingFileHandler em vez de FileHandler
+            'filename': 'log/amostras.log',  # Caminho absoluto no sistema
+            'maxBytes': 1024*1024*5,  # 5 MB
+            'backupCount': 5,
+            'formatter': 'verbose',
+            'encoding': 'utf-8',
+        },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file', 'console'] if DEBUG else ['file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'simal': {
+            'handlers': ['file', 'console'] if DEBUG else ['file'],
+            'level': 'DEBUG' if DEBUG else 'INFO',
+            'propagate': True,
+        },
+    },
+}
 
 # Remove a criação automática do diretório de logs do Django
 # (será configurado manualmente no servidor)
