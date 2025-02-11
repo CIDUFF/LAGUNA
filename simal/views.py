@@ -1954,7 +1954,7 @@ def fill_amostra(request, coleta_id):
                     for amostra in TabAmostra.objects.filter(id_coleta=coleta)
                     if not TabEnvio.objects.filter(id_amostra=amostra).exists()
                 ]
-                
+
                 if envios:
                     TabEnvio.objects.bulk_create(envios)
 
@@ -1963,7 +1963,8 @@ def fill_amostra(request, coleta_id):
 
                 messages.success(request, "Amostras criadas com sucesso!")
             else:
-                messages.info(request, "Todas as amostras já foram criadas anteriormente.")
+                messages.info(
+                    request, "Todas as amostras já foram criadas anteriormente.")
 
             # Após criar as amostras e envios, gerar medidas para todos os frascos
             for frasco in frascos:
