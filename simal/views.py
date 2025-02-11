@@ -1959,7 +1959,7 @@ def fill_amostra(request, coleta_id):
                     TabEnvio.objects.bulk_create(envios)
 
                 # Atualiza o status da coleta para 6
-                TabColeta.objects.filter(id=coleta_id).update(status=6)
+                TabColeta.objects.filter(id=coleta_id).update(status_id=6)
 
                 messages.success(request, "Amostras criadas com sucesso!")
             else:
