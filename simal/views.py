@@ -2187,7 +2187,7 @@ def info_coleta(request, coleta_id):
             "link": link,
             "pontos_coleta": pontos_coleta_json,
             "atualizado": coleta.atualizado_em,
-            "status_coleta": coleta.status,
+            "status_coleta": coleta.status_id,
             # Mudou de 'nome' para 'status'
             "status_disponiveis": TabStatusColeta.objects.all().order_by('status'),
         }
@@ -3038,60 +3038,34 @@ def export_resultados_medidas_xlsx(request):
 def atualizar_status_coleta(request, coleta_id):
     if request.method == 'POST':
         try:
-            # Get status ID and motivo from POST data
-            novo_status_id = request.POST.get('status')
-            motivo = request.POST.get('motivo')
-            
-            if not novo_status_id or not motivo:
-                return JsonResponse({
-                    'success': False,
-                    'error': 'Status e motivo são obrigatórios'
-                }, status=400)
+            coleta = TabColeta.objects.select_related(
+                'status_id').get(id=coleta_id)
+            novo_status = TabStatusColeta.objects.get(
+                id=request.POST.get('status'))
 
-            # Update coleta status within transaction
-            with transaction.atomic():
-                coleta = TabColeta.objects.select_for_update().get(id=coleta_id)
-                status_anterior = coleta.status
-                novo_status = TabStatusColeta.objects.get(id=novo_status_id)
-                
-                # Update status and timestamps
-                coleta.status = novo_status 
-                coleta.atualizado_por = request.user
-                coleta.atualizado_em = timezone.now()
-                coleta.save()
+            # Debug
+            print(f"Status atual: {coleta.status_id}")
+            print(f"Novo status ID: {novo_status.id}")
 
-                # Create log entry
-                TabLogColeta.objects.create(
-                    id_coleta=coleta,
-                    acao=f'Alteração de status de {status_anterior} para {novo_status}',
-                    motivo=motivo,
-                    usuario=request.user,
-                    data=timezone.now()
-                )
+            coleta.status_id = novo_status
+            coleta.atualizado_por = request.user
+            coleta.atualizado_em = timezone.now()
+            coleta.save()
 
-                return JsonResponse({
-                    'success': True,
-                    'message': 'Status atualizado com sucesso',
-                    'new_status': novo_status.status,
-                    'new_status_id': novo_status.id,
-                    'redirect': True # Add flag to force page reload
-                })
+            # Registra o log
+            TabLogColeta.objects.create(
+                id_coleta=coleta,
+                acao=f'Status alterado para {novo_status.status}',
+                usuario=request.user
+            )
 
-        except (TabColeta.DoesNotExist, TabStatusColeta.DoesNotExist) as e:
-            return JsonResponse({
-                'success': False, 
-                'error': str(e)
-            }, status=404)
+            return JsonResponse({'success': True})
+
         except Exception as e:
-            return JsonResponse({
-                'success': False,
-                'error': f'Erro ao atualizar status: {str(e)}'
-            }, status=500)
+            print(f"Erro ao atualizar status: {str(e)}")  # Debug
+            return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
-    return JsonResponse({
-        'success': False,
-        'error': 'Método não permitido'
-    }, status=405)
+    return JsonResponse({'success': False, 'error': 'Método não permitido'}, status=405)
 
 
 def generate_sample_labels(request, coleta_id):
@@ -3188,7 +3162,8 @@ def generate_sample_labels(request, coleta_id):
 
     return response
 
-@login_required 
+
+@login_required
 def new_home(request):
     # Obter todas as coletas ordenadas por data
     coletas = TabColeta.objects.select_related(
@@ -3202,20 +3177,21 @@ def new_home(request):
     total_coletas = coletas.count()
     coletas_pendentes = coletas.filter(status__id=1).count()
     coletas_finalizadas = coletas.filter(status__id=5).count()
-    coletas_em_andamento = coletas.filter(status__id__in=[3,4,6]).count()
+    coletas_em_andamento = coletas.filter(status__id__in=[3, 4, 6]).count()
     coletas_canceladas = coletas.filter(status__id=2).count()
 
     # Coletas recentes e próximas
     coletas_recentes = coletas[:5]
-    proximas_coletas = coletas.filter(data__gte=timezone.now()).order_by('data')[:5]
-    
+    proximas_coletas = coletas.filter(
+        data__gte=timezone.now()).order_by('data')[:5]
+
     # Dados para o gráfico de setores - enviando direto para o template
     setores_data = (TabColeta.objects
-        .values('id_setor__nome', 'status__status')
-        .filter(id_setor__nome__isnull=False)
-        .annotate(total=Count('id'))
-        .order_by('id_setor__nome', 'status__status')
-    )
+                    .values('id_setor__nome', 'status__status')
+                    .filter(id_setor__nome__isnull=False)
+                    .annotate(total=Count('id'))
+                    .order_by('id_setor__nome', 'status__status')
+                    )
 
     # Group data by setor with null check for status
     setores_agregados = {}
@@ -3224,13 +3200,13 @@ def new_home(request):
         status = item['status__status']
         if setor not in setores_agregados:
             setores_agregados[setor] = {'nome': setor}
-        
+
         # Only try to replace spaces if status is not None
         if status:
             status_key = status.replace(' ', '_')
         else:
             status_key = 'undefined'  # Default key for null status
-            
+
         setores_agregados[setor][status_key] = item['total']
 
     context = {
@@ -3241,7 +3217,8 @@ def new_home(request):
         'coletas_em_andamento': coletas_em_andamento,
         'coletas_recentes': coletas_recentes,
         'proximas_coletas': proximas_coletas,
-        'setores_data': list(setores_agregados.values()),  # Convert to list for template
+        # Convert to list for template
+        'setores_data': list(setores_agregados.values()),
     }
 
     return render(request, 'new_home.html', context)
