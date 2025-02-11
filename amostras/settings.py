@@ -232,7 +232,7 @@ LOGIN_REDIRECT_URL = "/"
 #         'file': {
 #             'level': 'INFO',
 #             'class': 'logging.handlers.RotatingFileHandler',  # Usar RotatingFileHandler em vez de FileHandler
-#             'filename': 'log/amostras.log',  # Caminho absoluto no sistema
+#             'filename': '/var/log/django/amostras.log',  # Caminho absoluto no sistema
 #             'maxBytes': 1024*1024*5,  # 5 MB
 #             'backupCount': 5,
 #             'formatter': 'verbose',

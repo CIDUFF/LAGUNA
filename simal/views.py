@@ -1914,47 +1914,68 @@ def fill_amostra(request, coleta_id):
     """
     Preenche as amostras e envios para uma coleta específica.
     """
-    coleta = get_object_or_404(TabColeta, id=coleta_id)
-    frascos = TabFrasco.objects.all()
-    pontos_coleta = TabPonto.objects.filter(
-        id_setor=coleta.id_setor,
-        status=True,  # Apenas pontos ativos
-    )
-
-    amostras = []
-    for frasco in frascos:
-        if not coleta.analise_bentos and frasco.id in [5, 6, 7]:
-            continue
-        for ponto in pontos_coleta:
-            amostra = TabAmostra(
-                id_coleta=coleta,
-                id_frasco=frasco,
-                id_ponto=ponto,
-                etiqueta=f"{coleta.ordem_servico}{str(ponto.id).zfill(3)}{str(frasco.id).zfill(2)}",
+    try:
+        with transaction.atomic():
+            coleta = get_object_or_404(TabColeta, id=coleta_id)
+            frascos = TabFrasco.objects.all()
+            pontos_coleta = TabPonto.objects.filter(
+                id_setor=coleta.id_setor,
+                status=True,  # Apenas pontos ativos
             )
-            amostras.append(amostra)
 
-    TabAmostra.objects.bulk_create(amostras)
+            # Obter amostras existentes para esta coleta
+            amostras_existentes = set(
+                TabAmostra.objects.filter(id_coleta=coleta)
+                .values_list('id_ponto_id', 'id_coleta_id', 'id_frasco_id')
+            )
 
-    envios = []
-    for amostra in amostras:
-        envio = TabEnvio(
-            id_amostra=amostra,
-        )
-        envios.append(envio)
+            amostras = []
+            for frasco in frascos:
+                if not coleta.analise_bentos and frasco.id in [5, 6, 7]:
+                    continue
+                for ponto in pontos_coleta:
+                    # Verifica se a combinação já existe
+                    if (ponto.id, coleta.id, frasco.id) not in amostras_existentes:
+                        amostra = TabAmostra(
+                            id_coleta=coleta,
+                            id_frasco=frasco,
+                            id_ponto=ponto,
+                            etiqueta=f"{coleta.ordem_servico}{str(ponto.id).zfill(3)}{str(frasco.id).zfill(2)}",
+                        )
+                        amostras.append(amostra)
 
-    TabEnvio.objects.bulk_create(envios)
+            # Só cria amostras se houver novas
+            if amostras:
+                TabAmostra.objects.bulk_create(amostras)
 
-    # Atualiza o status da coleta para 6
-    TabColeta.objects.filter(id=coleta_id).update(status=6)
+                # Criar envios para as novas amostras
+                envios = [
+                    TabEnvio(id_amostra=amostra)
+                    for amostra in TabAmostra.objects.filter(id_coleta=coleta)
+                    if not TabEnvio.objects.filter(id_amostra=amostra).exists()
+                ]
+                
+                if envios:
+                    TabEnvio.objects.bulk_create(envios)
 
-    # Após criar as amostras e envios, gerar medidas para todos os frascos
-    for frasco in frascos:
-        if not coleta.analise_bentos and frasco.id in [5, 6, 7]:
-            continue
-        return redirect('fill_frasco_medida', coleta_id=coleta_id, frasco_id=frasco.id)
+                # Atualiza o status da coleta para 6
+                TabColeta.objects.filter(id=coleta_id).update(status=6)
 
-    return redirect('info_coleta', coleta_id=coleta_id)
+                messages.success(request, "Amostras criadas com sucesso!")
+            else:
+                messages.info(request, "Todas as amostras já foram criadas anteriormente.")
+
+            # Após criar as amostras e envios, gerar medidas para todos os frascos
+            for frasco in frascos:
+                if not coleta.analise_bentos and frasco.id in [5, 6, 7]:
+                    continue
+                return redirect('fill_frasco_medida', coleta_id=coleta_id, frasco_id=frasco.id)
+
+            return redirect('info_coleta', coleta_id=coleta_id)
+
+    except Exception as e:
+        messages.error(request, f"Erro ao criar amostras: {str(e)}")
+        return redirect('info_coleta', coleta_id=coleta_id)
 
 
 @login_required
