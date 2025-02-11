@@ -226,7 +226,7 @@
                             <select name="status" class="form-select" style="flex: 1;">
                                 {% for status in status_disponiveis %}
                                     <option value="{{ status.id }}" 
-                                            {% if status_coleta == status %}selected{% endif %}>
+                                            {% if status_coleta.id == status.id %}selected{% endif %}>
                                         {{ status.status }}
                                     </option>
                                 {% endfor %}
@@ -300,6 +300,31 @@
             </div>
         </div>
     </div>
+</div>
+
+<!-- Modal de confirmação de alteração de status -->
+<div class="modal fade" id="statusChangeModal" tabindex="-1" aria-labelledby="statusChangeModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="statusChangeModalLabel">Alterar Status da Coleta</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="statusChangeForm">
+          <div class="mb-3">
+            <label for="motivo" class="form-label">Motivo da alteração:</label>
+            <textarea class="form-control" id="motivo" name="motivo" rows="3" required></textarea>
+          </div>
+          <input type="hidden" id="selectedStatus" name="status">
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" id="confirmStatusChange">Confirmar</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <style>
@@ -1163,6 +1188,66 @@ document.addEventListener('DOMContentLoaded', function() {
             trigger: 'hover'
         });
     });
+
+    // Replace the form submit handler
+    document.getElementById('formStatus').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Pegar o status selecionado
+        const statusSelect = document.querySelector('select[name="status"]');
+        const selectedStatus = statusSelect.value;
+        
+        // Atualizar o input hidden no modal
+        document.getElementById('selectedStatus').value = selectedStatus;
+        
+        // Abrir o modal
+        const modal = new bootstrap.Modal(document.getElementById('statusChangeModal'));
+        modal.show();
+    });
+
+    // Adicionar event listener para o botão de confirmar
+    document.getElementById('confirmStatusChange').addEventListener('click', function() {
+        const form = document.getElementById('statusChangeForm');
+        const formStatus = document.getElementById('formStatus');
+        const motivo = document.getElementById('motivo').value;
+        
+        if (!motivo) {
+            alert('Por favor, informe o motivo da alteração.');
+            return;
+        }
+        
+        // Criar FormData com todos os dados
+        const formData = new FormData(formStatus);
+        formData.append('motivo', motivo);
+        
+        // Pegar o token CSRF
+        const csrftoken = getCookie('csrftoken');
+        
+        // Fazer a requisição
+        fetch(formStatus.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': csrftoken
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Erro ao atualizar status: ' + data.error);
+            }
+        })
+        .catch(error => {
+            alert('Erro ao atualizar status');
+        });
+        
+        // Fechar o modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById('statusChangeModal'));
+        modal.hide();
+    });
+
 });
 
 let fullscreenMap = null;
@@ -1280,103 +1365,7 @@ document.getElementById('mapModal').addEventListener('hidden.bs.modal', function
     }
 });
 
-// Substitua o event listener existente por este
-document.getElementById('formStatus').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const form = this;
-    const novoStatusSelect = form.querySelector('select');
-    const novoStatus = novoStatusSelect.options[novoStatusSelect.selectedIndex].text;
-    
-    // Cria o modal se não existir
-    let modalJustificativa = document.getElementById('modalJustificativa');
-    if (!modalJustificativa) {
-        const modalHTML = `
-            <div class="modal fade" id="modalJustificativa" tabindex="-1">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">Justificativa da alteração</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body">
-                            <form id="formJustificativa">
-                                <div class="mb-3">
-                                    <label for="motivo" class="form-label">Motivo da alteração do status</label>
-                                    <textarea class="form-control" id="motivo" rows="3" required></textarea>
-                                </div>
-                            </form>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                            <button type="button" class="btn btn-primary" id="btnConfirmarAlteracao">Confirmar</button>
-                        </div>
-                    </div>
-                </div>
-            </div>`;
-        document.body.insertAdjacentHTML('beforeend', modalHTML);
-        modalJustificativa = document.getElementById('modalJustificativa');
-    }
-
-    const modal = new bootstrap.Modal(modalJustificativa);
-    modal.show();
-
-    // Reset anterior binding para evitar múltiplos handlers
-    const btnConfirmar = document.getElementById('btnConfirmarAlteracao');
-    const oldBtn = btnConfirmar.cloneNode(true);
-    btnConfirmar.parentNode.replaceChild(oldBtn, btnConfirmar);
-
-    // Novo binding do evento
-    oldBtn.addEventListener('click', function() {
-        const motivo = document.getElementById('motivo').value.trim();
-        if (!motivo) {
-            alert('Por favor, informe o motivo da alteração');
-            return;
-        }
-
-        // Limpa input anterior se existir
-        const oldInput = form.querySelector('input[name="motivo"]');
-        if (oldInput) oldInput.remove();
-        
-        // Adiciona o motivo como campo hidden
-        const motivoInput = document.createElement('input');
-        motivoInput.type = 'hidden';
-        motivoInput.name = 'motivo';
-        motivoInput.value = motivo;
-        form.appendChild(motivoInput);
-
-        modal.hide();
-        // Pequeno delay para garantir que o modal foi fechado
-        setTimeout(() => {
-            form.submit();
-        }, 100);
-    });
-});
-
 </script>
-
-<!-- Modal de Justificativa -->
-<div class="modal fade" id="modalJustificativa" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Justificativa da alteração</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <form id="formJustificativa">
-                    <div class="mb-3">
-                        <label for="motivo" class="form-label">Motivo da alteração do status</label>
-                        <textarea class="form-control" id="motivo" rows="3" required></textarea>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary" id="btnConfirmarAlteracao">Confirmar</button>
-            </div>
-        </div>
-    </div>
-</div>
 
 <!-- Adiciona o modal ao final do template -->
 <div class="modal fade" id="modalSelecaoFrasco" tabindex="-1">

@@ -534,7 +534,7 @@ class TabColeta(models.Model):
     )
     criado_em = models.DateTimeField(auto_now_add=True, blank=True, null=True)
     atualizado_em = models.DateTimeField(auto_now=True, blank=True, null=True)
-    status = models.ForeignKey(
+    status_id = models.ForeignKey(
         "TabStatusColeta",
         on_delete=models.CASCADE,
         db_column="status", 

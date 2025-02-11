@@ -19,6 +19,7 @@ from simal.views import (
     laboratorios_cadastrados,
     atualizar_laboratorio,
     gerar_rota_campanha,
+    new_home,
     resultados,
     calendario_campanhas,
     exportar_resultados_csv,
@@ -249,4 +250,5 @@ urlpatterns = [
         generate_sample_labels,
         name="generate_sample_labels",
     ),
+    path('new_home/', new_home, name='new_home'),
 ]

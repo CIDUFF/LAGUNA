@@ -1,0 +1,519 @@
+{% extends 'base/base_site.html' %}
+{% load static %}
+
+{% block title %}Nova Home{% endblock %}
+{% block content %}
+<style>
+/* Responsive button styles */
+.action-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    border-radius: 0.375rem;
+    min-width: 120px;
+    white-space: nowrap;
+    transition: all 0.2s ease-in-out;
+}
+
+@media (max-width: 768px) {
+    .action-buttons {
+        flex-direction: column;
+    }
+    
+    .action-btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (min-width: 769px) and (max-width: 1200px) {
+    .action-btn {
+        min-width: 160px;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1201px) {
+    .action-btn {
+        min-width: 180px;
+    }
+}
+
+/* Button hover effects */
+.action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Button colors and variants */
+.btn-primary.action-btn {
+    background-color: #4361ee;
+    border-color: #4361ee;
+}
+
+.btn-success.action-btn {
+    background-color: #2ea44f;
+    border-color: #2ea44f;
+}
+
+.btn-info.action-btn {
+    background-color: #0CA6E9;
+    border-color: #0CA6E9;
+    color: white;
+}
+
+.btn-warning.action-btn {
+    background-color: #F59E0B;
+    border-color: #F59E0B;
+    color: white;
+}
+
+/* Add hover effect for clickable rows */
+.table tr:hover {
+    background-color: rgba(0,0,0,0.05);
+    transition: background-color 0.2s ease;
+}
+</style>
+
+<div class="container-fluid px-4 py-3 mb-4">
+    <!-- Cabeçalho -->
+    <div class="row g-3 mb-4">
+        <div class="col-12">
+            <div class="card border-0 rounded-4 shadow-sm bg-gradient hover-shadow" style="background-color:#063c7a;">
+                <div class="card-body p-4">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+                        <h4 class="mb-3 mb-md-0 text-white">Dashboard Laguna</h4>
+                        <div class="action-buttons">
+                            <a href="{% url 'cadastro_coleta' %}" class="btn btn-primary action-btn">
+                                <i class="bi bi-plus-circle me-2"></i>
+                                Nova Coleta
+                            </a>
+                            <a href="{% url 'lista_de_coletas' %}" class="btn btn-success action-btn">
+                                <i class="bi bi-list-check me-2"></i>
+                                Listar Coletas
+                            </a>
+                            <a href="{% url 'resultados_todas_medidas' %}" class="btn btn-info action-btn">
+                                <i class="bi bi-table me-2"></i>
+                                Resultados
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Row -->
+    <div class="row g-3 mb-4">
+        <!-- Total Coletas -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 rounded-4 shadow-sm bg-gradient hover-shadow" style="background-color:#4CAF50;">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <p class="mb-0 text-white">Total de Coletas</p>
+                            <h3 class="mb-0 text-white">{{ total_coletas }}</h3>
+                        </div>
+                        <div class="ms-3">
+                            <i class="bi bi-clipboard-data fs-1 text-white"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Coletas Pendentes -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 rounded-4 shadow-sm bg-gradient hover-shadow" style="background-color:#FFA726;">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <p class="mb-0 text-white">Coletas Pendentes</p>
+                            <h3 class="mb-0 text-white">{{ coletas_pendentes }}</h3>
+                        </div>
+                        <div class="ms-3">
+                            <i class="bi bi-hourglass-split fs-1 text-white"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Coletas Finalizadas -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 rounded-4 shadow-sm bg-gradient hover-shadow" style="background-color:#42A5F5;">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <p class="mb-0 text-white">Coletas Finalizadas</p>
+                            <h3 class="mb-0 text-white">{{ coletas_finalizadas }}</h3>
+                        </div>
+                        <div class="ms-3">
+                            <i class="bi bi-check-circle fs-1 text-white"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Coletas Canceladas -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 rounded-4 shadow-sm bg-gradient hover-shadow" style="background-color:#EF5350;">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <p class="mb-0 text-white">Coletas Canceladas</p>
+                            <h3 class="mb-0 text-white">{{ coletas_canceladas }}</h3>
+                        </div>
+                        <div class="ms-3">
+                            <i class="bi bi-x-circle fs-1 text-white"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row g-3">
+        <!-- Status Chart -->
+        <div class="col-md-6">
+            <div class="card border-0 rounded-4 shadow-sm hover-shadow">
+                <div class="card-header border-0 bg-transparent">
+                    <h5 class="card-title mb-0">Coletas por Status</h5>
+                </div>
+                <div class="card-body" style="height: 250px;">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Setor Chart (agora como gráfico de barras) -->
+        <div class="col-md-6">
+            <div class="card border-0 rounded-4 shadow-sm hover-shadow">
+                <div class="card-header border-0 bg-transparent">
+                    <h5 class="card-title mb-0">Coletas por Setor</h5>
+                </div>
+                <div class="card-body" style="height: 250px;">
+                    <canvas id="setorChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent and Upcoming Collections -->
+    <div class="row g-3 mt-3">
+        <!-- Recent Collections -->
+        <div class="col-md-6">
+            <div class="card border-0 rounded-4 shadow-sm hover-shadow">
+                <div class="card-header border-0 bg-transparent">
+                    <h5 class="card-title mb-0">Coletas Recentes</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>OS</th>
+                                    <th>Data</th>
+                                    <th>Setor</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for coleta in coletas_recentes %}
+                                <tr onclick="window.location='{% url 'info_coleta' coleta.id %}'" style="cursor: pointer;">
+                                    <td>{{ coleta.ordem_servico }}</td>
+                                    <td>{{ coleta.data|date:"d/m/Y" }}</td>
+                                    <td>{{ coleta.id_setor.nome }}</td>
+                                    <td>
+                                        <span class="badge {% if coleta.status.status == 'Finalizada' %}bg-success
+            {% elif coleta.status.status == 'Iniciada' %}bg-info
+            {% elif coleta.status.status == 'Em análise' %}bg-primary
+            {% elif coleta.status.status == 'Cancelada' %}bg-danger
+            {% elif coleta.status.status == 'Pendente' %}bg-warning
+            {% elif coleta.status.status == 'Em andamento' %}bg-secondary
+            {% else %}bg-light text-dark{% endif %}">
+    {{ coleta.status.status }}
+</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upcoming Collections -->
+        <div class="col-md-6">
+            <div class="card border-0 rounded-4 shadow-sm hover-shadow">
+                <div class="card-header border-0 bg-transparent">
+                    <h5 class="card-title mb-0">Próximas Coletas</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>OS</th>
+                                    <th>Data</th>
+                                    <th>Setor</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for coleta in proximas_coletas %}
+                                <tr onclick="window.location='{% url 'info_coleta' coleta.id %}'" style="cursor: pointer;">
+                                    <td>{{ coleta.ordem_servico }}</td>
+                                    <td>{{ coleta.data|date:"d/m/Y" }}</td>
+                                    <td>{{ coleta.id_setor.nome }}</td>
+                                    <td>
+                                        <span class="badge {% if coleta.status.status == 'Finalizada' %}bg-success
+            {% elif coleta.status.status == 'Iniciada' %}bg-info
+            {% elif coleta.status.status == 'Em análise' %}bg-primary
+            {% elif coleta.status.status == 'Cancelada' %}bg-danger
+            {% elif coleta.status.status == 'Pendente' %}bg-warning
+            {% elif coleta.status.status == 'Em andamento' %}bg-secondary
+            {% else %}bg-light text-dark{% endif %}">
+    {{ coleta.status.status }}
+</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+<script>
+window.onload = function() {
+    // Configuração de cores profissionais
+    const colors = {
+        primary: '#2c7be5',
+        success: '#00d97e',
+        warning: '#f6c343',
+        danger: '#e63757',
+        info: '#39afd1',
+        gray: '#95aac9',
+        dark: '#3b506c'
+    };
+
+    // Status Chart
+    const statusChart = new Chart(
+        document.getElementById('statusChart'),
+        {
+            type: 'bar',
+            data: {
+                labels: ['Pendentes', 'Em Andamento', 'Finalizadas', 'Canceladas'],
+                datasets: [{
+                    data: [
+                        {{ coletas_pendentes }}, 
+                        {{ coletas_em_andamento }},
+                        {{ coletas_finalizadas }},
+                        {{ coletas_canceladas }}
+                    ],
+                    backgroundColor: [colors.warning, colors.info, colors.success, colors.danger],
+                    borderWidth: 0,
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: 'white',
+                        titleColor: '#000',
+                        bodyColor: '#000',
+                        borderColor: '#e9ecef',
+                        borderWidth: 1,
+                        padding: 10,
+                        displayColors: false,
+                        callbacks: {
+                            label: function(context) {
+                                return `Total: ${context.parsed.x}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            display: false,
+                            drawBorder: false
+                        }
+                    },
+                    y: {
+                        grid: {
+                            display: false,
+                            drawBorder: false
+                        }
+                    }
+                }
+            }
+        }
+    );
+
+    // Setor Chart configuration
+    const setorData = [
+        {% for item in setores_data %}
+            {
+                setor: "{{ item.nome|escapejs }}",
+                pendente: {{ item.Pendente|default:0 }},
+                iniciada: {{ item.Iniciada|default:0 }},
+                finalizada: {{ item.Finalizada|default:0 }},
+                cancelada: {{ item.Cancelada|default:0 }},
+                analise: {{ item.Em_análise|default:0 }},
+                andamento: {{ item.Em_andamento|default:0 }},
+                undefined: {{ item.undefined|default:0 }}
+            },
+        {% endfor %}
+    ];
+
+    new Chart(
+        document.getElementById('setorChart'),
+        {
+            type: 'bar',
+            data: {
+                labels: setorData.map(item => item.setor),
+                datasets: [
+                    {
+                        label: 'Pendente',
+                        data: setorData.map(item => item.pendente),
+                        backgroundColor: colors.warning,
+                        borderWidth: 0,
+                        borderRadius: 4
+                    },
+                    {
+                        label: 'Em andamento',
+                        data: setorData.map(item => item.andamento),
+                        backgroundColor: colors.info,
+                        borderWidth: 0,
+                        borderRadius: 4
+                    },
+                    {
+                        label: 'Finalizada',
+                        data: setorData.map(item => item.finalizada),
+                        backgroundColor: colors.success,
+                        borderWidth: 0,
+                        borderRadius: 4
+                    },
+                    {
+                        label: 'Cancelada',
+                        data: setorData.map(item => item.cancelada),
+                        backgroundColor: colors.danger,
+                        borderWidth: 0,
+                        borderRadius: 4
+                    },
+                    {
+                        label: 'Em análise',
+                        data: setorData.map(item => item.analise),
+                        backgroundColor: colors.primary,
+                        borderWidth: 0,
+                        borderRadius: 4
+                    },
+                    {
+                        label: 'Sem status',
+                        data: setorData.map(item => item.undefined),
+                        backgroundColor: colors.gray,
+                        borderWidth: 0,
+                        borderRadius: 4
+                    }
+                ]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'bottom'
+                    },
+                    tooltip: {
+                        backgroundColor: 'white',
+                        titleColor: '#000',
+                        bodyColor: '#000',
+                        borderColor: '#e9ecef',
+                        borderWidth: 1,
+                        padding: 10,
+                        displayColors: true,
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.dataset.label}: ${context.parsed.x}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        stacked: true,
+                        grid: {
+                            display: false,
+                            drawBorder: false
+                        }
+                    },
+                    y: {
+                        stacked: true,
+                        grid: {
+                            display: false,
+                            drawBorder: false
+                        }
+                    }
+                }
+            }
+        }
+    );
+};
+</script>
+
+<!-- Adicione esses estilos para garantir que os gráficos tenham altura adequada -->
+<style>
+.hover-shadow {
+    transition: all 0.3s ease;
+}
+.hover-shadow:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+.table td {
+    vertical-align: middle;
+}
+
+/* Ajuste para altura dos gráficos */
+.card-body {
+    min-height: auto;
+}
+
+canvas {
+    width: 100% !important;
+    height: 100% !important;
+}
+</style>
+{% endblock %}
