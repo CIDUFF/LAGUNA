@@ -657,7 +657,7 @@ class TabColetaTable(tables.Table):
             "id_campanha",
             "id_setor",
             "ordem_servico",
-            "status",
+            "status_id",
         ]
         empty_text = "Não há dados para exibir"
         orderable = True
@@ -669,7 +669,7 @@ class TabColetaTable(tables.Table):
             "id_campanha",
             "id_setor",
             "ordem_servico",
-            "status",
+            "status_id",
         )
         per_page = 5
         paginator_class = tables.LazyPaginator
@@ -681,7 +681,7 @@ class TabColetaTable(tables.Table):
             "id_campanha": "Campanha",
             "id_setor": "Setor",
             "ordem_servico": "Ordem de Serviço",
-            "status": "Status",
+            "status_id": "Status",
         }
 
     def __init__(self, *args, **kwargs):
