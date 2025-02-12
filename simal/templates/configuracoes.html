@@ -1,184 +1,396 @@
-{% extends 'base/base_site.html' %}
-{% load django_tables2 %}
-{% load django_bootstrap5 %}
-{% load static %}
-{% block content %}
-{% comment %} {% block title %}
-Configurações
-{% endblock %} {% endcomment %}
-{% block header %}
-<h2>Configurações</h2>
-{% endblock header %}
-<ul class="nav nav-tabs" id="configTab" role="tablist">
-  <li class="nav-item" role="presentation">
-    <button class="nav-link active text-dark" id="tab_param-tab" data-bs-toggle="tab" data-bs-target="#tab_param" type="button" role="tab" aria-controls="tab_param" aria-selected="true">Parâmetros</button>
-  </li>
-  <li class="nav-item" role="presentation">
-    <button class="nav-link text-dark" id="tab_frasco-tab" data-bs-toggle="tab" data-bs-target="#tab_frasco" type="button" role="tab" aria-controls="tab_frasco" aria-selected="false">Frascos</button>
-  </li>
-  <li class="nav-item" role="presentation">
-    <button class="nav-link text-dark" id="tab_equipe-tab" data-bs-toggle="tab" data-bs-target="#tab_equipe" type="button" role="tab" aria-controls="tab_equipe" aria-selected="false">Equipe</button>
-  </li>
-  <li class="nav-item" role="presentation">
-    <button class="nav-link text-dark" id="tab_laboratorio-tab" data-bs-toggle="tab" data-bs-target="#tab_laboratorio" type="button" role="tab" aria-controls="tab_laboratorio" aria-selected="false">Laboratórios</button>
-  </li>
-  <li class="nav-item" role="presentation">
-    <button class="nav-link text-dark" id="tab_produto-tab" data-bs-toggle="tab" data-bs-target="#tab_produto" type="button" role="tab" aria-controls="tab_produto" aria-selected="false">Produtos</button>
-  </li>
-  <li class="nav-item" role="presentation">
-    <button class="nav-link text-dark" id="tab_prodxparam-tab" data-bs-toggle="tab" data-bs-target="#tab_prodxparam" type="button" role="tab" aria-controls="tab_prodxparam" aria-selected="false">Produto x Parâmetro</button>
-  </li>
-  <li class="nav-item" role="presentation">
-    <button class="nav-link text-dark" id="tab_serie_classificacao-tab" data-bs-toggle="tab" data-bs-target="#tab_serie_classificacao" type="button" role="tab" aria-controls="tab_serie_classificacao" aria-selected="false">Série Classificacao</button>
-  </li>
-  <li class="nav-item">
-    <button class="nav-link text-dark" id="tab_item_checklist-tab" data-bs-toggle="tab" data-bs-target="#tab_item_checklist" type="button" role="tab" aria-controls="tab_item_checklist" aria-selected="false">Itens de Checklist</button>
-  </li>
-  <li class="nav-item">
-    <button class="nav-link text-dark" id="tab_email-tab" data-bs-toggle="tab" data-bs-target="#tab_email" type="button" role="tab" aria-controls="tab_email" aria-selected="false">Templates de e-mail</button>
-  </li>
-  <li class="nav-item">
-    <button class="nav-link text-dark" id="tab_status_coleta-tab" data-bs-toggle="tab" data-bs-target="#tab_status_coleta" type="button" role="tab" aria-controls="tab_status_coleta" aria-selected="false">Status de Coleta</button>
-  </li>
+{% extends 'base/base_site.html' %} {% load static %} {% load django_tables2 %}
+{% load django_bootstrap5 %} {% load crispy_forms_tags %} {% block content %}
 
-</ul>
-<div class="tab-content" id="configTabContent">
-  <div class="tab-pane fade show active" id="tab_param" role="tabpanel" aria-labelledby="tab_param-tab">
-      <div class="card checklist mt-4">
-          <h3>Parâmetros</h3>
-          <form method="post" class="form-inline">
-              {% csrf_token %}
-              <input type="hidden" name="param_submit" value="1">
-              {% bootstrap_form param_form layout='floating' %}
-              <button type="submit" class="btn btn-primary">Salvar</button>
-          </form>
-          {% render_table table_parametro %}
+<div class="container-fluid px-4 py-3 mb-4">
+  <!-- Cabeçalho -->
+  <div class="row g-3 mb-4">
+    <div class="col-12">
+      <div
+        class="card border-0 rounded-4 shadow-sm bg-gradient hover-shadow"
+        style="background-color: #063c7a"
+      >
+        <div class="card-body p-4">
+          <div
+            class="d-flex flex-column flex-md-row justify-content-between align-items-md-center"
+          >
+            <h4 class="mb-3 mb-md-0 text-white">Configurações do Sistema</h4>
+          </div>
+        </div>
       </div>
-  </div>
-  <div class="tab-pane fade" id="tab_frasco" role="tabpanel" aria-labelledby="tab_frasco-tab">
-      <div class="card checklist mt-4">
-          <h3>Tipos de frasco</h3>
-          <form method="post" class="form-inline">
-              {% csrf_token %}
-              <input type="hidden" name="frasco_submit" value="1">
-              {% bootstrap_form frasco_form layout='floating' %}
-              <button type="submit" class="btn btn-primary">Salvar</button>
-          </form>
-          {% render_table table_frasco %}
-      </div>
-  </div>
-  <div class="tab-pane fade" id="tab_equipe" role="tabpanel" aria-labelledby="tab_equipe-tab">
-      <div class="card checklist mt-4">
-          <h3>Equipes</h3>
-          <form method="post" class="form-inline">
-              {% csrf_token %}
-              <input type="hidden" name="equipe_submit" value="1">
-              {% bootstrap_form equipe_form layout='floating' %}
-              <button type="submit" class="btn btn-primary">Salvar</button>
-          </form>
-          {% render_table table_equipe %}
-      </div>
-  </div>
-  <div class="tab-pane fade" id="tab_laboratorio" role="tabpanel" aria-labelledby="tab_laboratorio-tab">
-      <div class="card checklist mt-4">
-          <h3>Laboratórios</h3>
-          <form method="post" class="form-inline">
-              {% csrf_token %}
-              <input type="hidden" name="laboratorio_submit" value="1">
-              {% bootstrap_form laboratorio_form layout='floating' %}
-              <button type="submit" class="btn btn-primary">Salvar</button>
-          </form>
-          {% render_table table_laboratorio %}
-      </div>
-  </div>
-  <div class="tab-pane fade" id="tab_produto" role="tabpanel" aria-labelledby="tab_produto-tab">
-      <div class="card checklist mt-4">
-          <h3>Produtos</h3>
-          <form method="post" class="form-inline">
-              {% csrf_token %}
-              <input type="hidden" name="produto_submit" value="1">
-              {% bootstrap_form produto_form layout='floating' %}
-              <button type="submit" class="btn btn-primary">Salvar</button>
-          </form>
-          {% render_table table_produto %}
-      </div>
-  </div>
-  <div class="tab-pane fade" id="tab_prodxparam" role="tabpanel" aria-labelledby="tab_prodxparam-tab">
-      <div class="card checklist mt-4">
-          <h3>Produto x Parâmetro</h3>
-          <form method="post" class="form-inline">
-              {% csrf_token %}
-              <input type="hidden" name="prodxparam_submit" value="1">
-              {% bootstrap_form prodxparam_form layout='floating' %}
-              <button type="submit" class="btn btn-primary">Salvar</button>
-          </form>
-          {% render_table table_prodxparam %}
-      </div>
-  </div>
-  <div class="tab-pane fade" id="tab_serie_classificacao" role="tabpanel" aria-labelledby="tab_serie_classificacao-tab">
-      <div class="card checklist mt-4">
-          <h3>Série de Classificação</h3>
-          <form method="post" class="form-inline">
-              {% csrf_token %}
-              <input type="hidden" name="serie_classificacao_submit" value="1">
-              {% bootstrap_form serie_classificacao_form layout='floating' %}
-              <button type="submit" class="btn btn-primary">Salvar</button>
-          </form>
-          {% render_table table_serie_classificacao %}
-      </div>
-  </div>
-  <div class="tab-pane fade" id="tab_item_checklist" role="tabpanel" aria-labelledby="tab_item_checklist-tab">
-    <div class="card checklist mt-4">
-        <h3>Itens de Checklist</h3>
-        <form method="post" class="form">
-            {% csrf_token %}
-            <input type="hidden" name="item_checklist_submit" value="1">
-            {% bootstrap_form item_checklist_form layout='floating' %}
-            <button type="submit" class="btn btn-primary">Salvar</button>
-        </form>
-        {% render_table table_item_checklist %}
     </div>
   </div>
-  <div class="tab-pane fade" id="tab_email" role="tabpanel" aria-labelledby="tab_email-tab">
-    <div class="card checklist mt-4">
-        <h3>Templates de e-mail</h3>
-        <form method="post" class="form">
-            {% csrf_token %}
-            <input type="hidden" name="email_submit" value="1">
-            {% bootstrap_form email_form layout='floating' %}
-            <button type="submit" class="btn btn-primary">Salvar</button>
-        </form>
-        {% render_table table_email %}
-    </div>
-  </div>
-  <div class="tab-pane fade" id="tab_status_coleta" role="tabpanel" aria-labelledby="tab_status_coleta-tab">
-    <div class="card checklist mt-4">
-        <h3>Templates de e-mail</h3>
-        <form method="post" class="form">
-            {% csrf_token %}
-            <input type="hidden" name="status_coleta_submit" value="1">
-            {% bootstrap_form status_coleta_form layout='floating' %}
-            <button type="submit" class="btn btn-primary">Salvar</button>
-        </form>
-        {% render_table table_status_coleta %}
+
+  <!-- Abas e Conteúdo -->
+  <div class="card border-0 rounded-4 shadow-sm hover-shadow">
+    <div class="card-body p-4">
+      <!-- Navegação das abas -->
+      <ul class="nav nav-tabs" id="configTab" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link active text-dark"
+            id="tab_param-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#tab_param"
+            type="button"
+            role="tab"
+            aria-controls="tab_param"
+            aria-selected="true"
+          >
+            Parâmetros
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link text-dark"
+            id="tab_frasco-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#tab_frasco"
+            type="button"
+            role="tab"
+            aria-controls="tab_frasco"
+            aria-selected="false"
+          >
+            Frascos
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link text-dark"
+            id="tab_equipe-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#tab_equipe"
+            type="button"
+            role="tab"
+            aria-controls="tab_equipe"
+            aria-selected="false"
+          >
+            Equipe
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link text-dark"
+            id="tab_laboratorio-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#tab_laboratorio"
+            type="button"
+            role="tab"
+            aria-controls="tab_laboratorio"
+            aria-selected="false"
+          >
+            Laboratórios
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link text-dark"
+            id="tab_produto-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#tab_produto"
+            type="button"
+            role="tab"
+            aria-controls="tab_produto"
+            aria-selected="false"
+          >
+            Produtos
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link text-dark"
+            id="tab_prodxparam-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#tab_prodxparam"
+            type="button"
+            role="tab"
+            aria-controls="tab_prodxparam"
+            aria-selected="false"
+          >
+            Produto x Parâmetro
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link text-dark"
+            id="tab_serie_classificacao-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#tab_serie_classificacao"
+            type="button"
+            role="tab"
+            aria-controls="tab_serie_classificacao"
+            aria-selected="false"
+          >
+            Série Classificacao
+          </button>
+        </li>
+        <li class="nav-item">
+          <button
+            class="nav-link text-dark"
+            id="tab_item_checklist-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#tab_item_checklist"
+            type="button"
+            role="tab"
+            aria-controls="tab_item_checklist"
+            aria-selected="false"
+          >
+            Itens de Checklist
+          </button>
+        </li>
+        <li class="nav-item">
+          <button
+            class="nav-link text-dark"
+            id="tab_email-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#tab_email"
+            type="button"
+            role="tab"
+            aria-controls="tab_email"
+            aria-selected="false"
+          >
+            Templates de e-mail
+          </button>
+        </li>
+        <li class="nav-item">
+          <button
+            class="nav-link text-dark"
+            id="tab_status_coleta-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#tab_status_coleta"
+            type="button"
+            role="tab"
+            aria-controls="tab_status_coleta"
+            aria-selected="false"
+          >
+            Status de Coleta
+          </button>
+        </li>
+      </ul>
+
+      <!-- Conteúdo das abas -->
+      <div class="tab-content mt-4" id="configTabContent">
+        {% for tab_id, form, table, title in tabs %}
+        <div
+          class="tab-pane fade {% if forloop.first %}show active{% endif %}"
+          id="{{ tab_id }}"
+          role="tabpanel"
+        >
+          <div class="card border-0 rounded-4 shadow-sm">
+            <div
+              class="card-header bg-gradient border-0 rounded-top-4"
+              style="background-color: #63a355"
+            >
+              <div class="d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0 text-white">{{ title }}</h5>
+                <ul class="nav nav-pills">
+                  <li class="nav-item">
+                    <button
+                      class="nav-link active text-white"
+                      data-bs-toggle="pill"
+                      data-bs-target="#{{ tab_id }}-list"
+                    >
+                      <i class="bi bi-table me-2"></i>Visualizar
+                    </button>
+                  </li>
+                  <li class="nav-item ms-2">
+                    <button
+                      class="nav-link text-white"
+                      data-bs-toggle="pill"
+                      data-bs-target="#{{ tab_id }}-form"
+                    >
+                      <i class="bi bi-plus-circle me-2"></i>Cadastrar
+                    </button>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="tab-content">
+                <!-- Aba de visualização -->
+                <div class="tab-pane fade show active" id="{{ tab_id }}-list">
+                  <div class="table-responsive">{% render_table table %}</div>
+                </div>
+                <!-- Aba de cadastro -->
+                <div class="tab-pane fade" id="{{ tab_id }}-form">
+                  <form method="post" class="form">
+                    {% csrf_token %}
+                    <input type="hidden" name="{{ tab_id }}_submit" value="1" />
+                    {% bootstrap_form form layout='floating' %}
+                    <button type="submit" class="btn btn-primary rounded-pill">
+                      <i class="bi bi-save me-2"></i>Salvar
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
     </div>
   </div>
 </div>
+
+<style>
+  .hover-shadow {
+    transition: all 0.3s ease;
+  }
+  .hover-shadow:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+  }
+
+  /* Estilo para as abas */
+  .nav-tabs .nav-link {
+    border: none;
+    color: #495057;
+    font-weight: 500;
+    padding: 0.75rem 1.25rem;
+    border-radius: 0.375rem;
+    margin-right: 0.5rem;
+    transition: all 0.2s ease-in-out;
+  }
+
+  .nav-tabs .nav-link:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+
+  .nav-tabs .nav-link.active {
+    color: #0d6efd;
+    background-color: #fff;
+    border-bottom: 2px solid #0d6efd;
+  }
+
+  /* Estilo para os forms */
+  .form-floating > .form-control:focus,
+  .form-floating > .form-control:not(:placeholder-shown) {
+    padding-top: 1.625rem;
+    padding-bottom: 0.625rem;
+  }
+
+  /* Estilo para as tabelas */
+  .table {
+    width: 100%;
+    margin-bottom: 1rem;
+    background-color: transparent;
+    border-radius: 0.375rem;
+  }
+
+  /* Responsividade */
+  @media (max-width: 768px) {
+    .card-body {
+      padding: 1rem;
+    }
+
+    .nav-tabs {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      white-space: nowrap;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .nav-tabs::-webkit-scrollbar {
+      height: 4px;
+    }
+
+    .nav-tabs::-webkit-scrollbar-thumb {
+      background-color: rgba(0, 0, 0, 0.2);
+      border-radius: 4px;
+    }
+  }
+
+  /* Estilos para as nav-pills no card-header */
+  .nav-pills .nav-link {
+    color: white;
+    background-color: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    margin-left: 0.5rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    transition: all 0.2s ease-in-out;
+  }
+
+  .nav-pills .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .nav-pills .nav-link.active {
+    background-color: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.4);
+  }
+
+  /* Ajustes responsivos */
+  @media (max-width: 576px) {
+    .card-header .nav-pills {
+      margin-top: 1rem;
+      width: 100%;
+      display: flex;
+      justify-content: stretch;
+    }
+
+    .card-header .nav-item {
+      flex: 1;
+    }
+
+    .card-header .nav-link {
+      width: 100%;
+      text-align: center;
+      margin: 0.25rem;
+    }
+  }
+</style>
+
 <script>
   // Salva a aba ativa no localStorage
-  document.querySelectorAll('#configTab button').forEach(button => {
-    button.addEventListener('click', function () {
-      localStorage.setItem('activeConfigTab', this.id);
+  document.querySelectorAll("#configTab button").forEach((button) => {
+    button.addEventListener("click", function () {
+      localStorage.setItem("activeConfigTab", this.id);
     });
   });
+
   // Restaura a aba ativa do localStorage
-  document.addEventListener('DOMContentLoaded', function () {
-    const activeTab = localStorage.getItem('activeConfigTab');
+  document.addEventListener("DOMContentLoaded", function () {
+    const activeTab = localStorage.getItem("activeConfigTab");
     if (activeTab) {
       const tab = document.getElementById(activeTab);
       const tabInstance = new bootstrap.Tab(tab);
       tabInstance.show();
     }
+  });
+
+  // Inicializa os inputs de cor
+  document.addEventListener("DOMContentLoaded", function () {
+    const colorInputs = document.querySelectorAll('input[type="color"]');
+    colorInputs.forEach((input) => {
+      input.addEventListener("input", function () {
+        this.style.backgroundColor = this.value;
+      });
+      if (input.value) {
+        input.style.backgroundColor = input.value;
+      }
+    });
+  });
+
+  // Adiciona gestão de estado para as sub-abas
+  document.addEventListener("DOMContentLoaded", function () {
+    // Guarda o estado das sub-abas no localStorage
+    document.querySelectorAll(".card-header .nav-link").forEach((link) => {
+      link.addEventListener("click", function () {
+        const tabId = this.closest(".tab-pane").id;
+        localStorage.setItem(`${tabId}-subTab`, this.dataset.bsTarget);
+      });
+    });
+
+    // Restaura o estado das sub-abas
+    document.querySelectorAll(".tab-pane").forEach((pane) => {
+      const savedSubTab = localStorage.getItem(`${pane.id}-subTab`);
+      if (savedSubTab) {
+        const subTab = pane.querySelector(`[data-bs-target="${savedSubTab}"]`);
+        if (subTab) {
+          new bootstrap.Tab(subTab).show();
+        }
+      }
+    });
   });
 </script>
 {% endblock %}

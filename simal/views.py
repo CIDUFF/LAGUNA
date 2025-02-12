@@ -1582,32 +1582,34 @@ def configuracoes_view(request):
     RequestConfig(request).configure(table_email)
     RequestConfig(request).configure(table_status_coleta)
 
+    # Configurar os dados das abas
+    tabs = [
+        ('tab_param', param_form, table_parametro, 'Parâmetros'),
+        ('tab_frasco', frasco_form, table_frasco, 'Frascos'),
+        ('tab_equipe', equipe_form, table_equipe, 'Equipes'),
+        ('tab_laboratorio', laboratorio_form, table_laboratorio, 'Laboratórios'),
+        ('tab_produto', produto_form, table_produto, 'Produtos'),
+        ('tab_prodxparam', prodxparam_form,
+         table_prodxparam, 'Produto x Parâmetro'),
+        ('tab_serie_classificacao', serie_classificacao_form,
+         table_serie_classificacao, 'Série Classificação'),
+        ('tab_item_checklist', item_checklist_form,
+         table_item_checklist, 'Itens de Checklist'),
+        ('tab_email', email_form, table_email, 'Templates de E-mail'),
+        ('tab_status_coleta', status_coleta_form,
+         table_status_coleta, 'Status de Coleta'),
+    ]
+
+    context = {
+        'tabs': tabs,
+        # ... outros itens do contexto ...
+    }
+
     # Renderizar o template com os formulários e tabelas
     return render(
         request,
         "configuracoes.html",
-        {
-            "param_form": param_form,
-            "frasco_form": frasco_form,
-            "equipe_form": equipe_form,
-            "laboratorio_form": laboratorio_form,
-            "produto_form": produto_form,
-            "prodxparam_form": prodxparam_form,
-            "serie_classificacao_form": serie_classificacao_form,
-            "item_checklist_form": item_checklist_form,
-            "email_form": email_form,
-            "status_coleta_form": status_coleta_form,
-            "table_parametro": table_parametro,
-            "table_frasco": table_frasco,
-            "table_equipe": table_equipe,
-            "table_laboratorio": table_laboratorio,
-            "table_produto": table_produto,
-            "table_prodxparam": table_prodxparam,
-            "table_serie_classificacao": table_serie_classificacao,
-            "table_item_checklist": table_item_checklist,
-            "table_email": table_email,
-            "table_status_coleta": table_status_coleta,
-        },
+        context,
     )
 
 
@@ -3190,60 +3192,126 @@ def generate_sample_labels(request, coleta_id):
 
 @login_required
 def new_home(request):
-    # Obter todas as coletas ordenadas por data
-    coletas = TabColeta.objects.select_related(
-        'id_campanha',
-        'id_setor',
-        'status_id',
-        'criado_por'
-    ).order_by('-data')
+    try:
+        # Buscar status e contagens em uma única query
+        status_counts = TabColeta.objects.values('status_id__status', 'status_id__cor').annotate(
+            count=Count('id')
+        ).order_by('status_id__status')
 
-    # Estatísticas gerais
-    total_coletas = coletas.count()
-    coletas_pendentes = coletas.filter(status_id__id=1).count()
-    coletas_finalizadas = coletas.filter(status_id__id=5).count()
-    coletas_em_andamento = coletas.filter(status_id__id__in=[3, 4, 6]).count()
-    coletas_canceladas = coletas.filter(status_id__id=2).count()
+        # Criar dicionário de status e garantir que todos os status tenham uma contagem
+        all_status = {
+            status.status: {
+                'cor': status.cor,
+                'count': 0
+            } for status in TabStatusColeta.objects.all()
+        }
 
-    # Coletas recentes e próximas
-    coletas_recentes = coletas[:5]
-    proximas_coletas = coletas.filter(
-        data__gte=timezone.now()).order_by('data')[:5]
+        # Buscar totais para os cards
+        total_coletas = TabColeta.objects.count()
+        coletas_pendentes = TabColeta.objects.filter(
+            status_id__status='Pendente').count()
+        coletas_finalizadas = TabColeta.objects.filter(
+            status_id__status='Finalizada').count()
+        coletas_canceladas = TabColeta.objects.filter(
+            status_id__status='Cancelada').count()
 
-    # Dados para o gráfico de setores - ajustando a consulta
-    setores_data = (TabColeta.objects
-                    .values('id_setor__nome', 'status_id__status')
-                    .filter(id_setor__nome__isnull=False)
-                    .annotate(total=Count('id'))
-                    .order_by('id_setor__nome', 'status_id__status')
-                    )
+        # Atualizar contagens para o gráfico
+        for item in status_counts:
+            status = item['status_id__status']
+            if status in all_status:
+                all_status[status]['count'] = item['count']
 
-    # Group data by setor with null check for status
-    setores_agregados = {}
-    for item in setores_data:
-        setor = item['id_setor__nome']
-        status = item['status_id__status']
-        if setor not in setores_agregados:
-            setores_agregados[setor] = {'nome': setor}
+        # Dados para o novo gráfico de coletas por setor
+        coletas_por_setor = TabColeta.objects.values(
+            'id_setor__nome',
+            'data'
+        ).annotate(
+            total=Count('id')
+        ).order_by('id_setor__nome', 'data')
 
-        # Only try to replace spaces if status is not None
-        if status:
-            status_key = status.replace(' ', '_')
-        else:
-            status_key = 'undefined'  # Default key for null status
+        # Organizar dados para o gráfico de linha
+        setores_dados = {}
+        datas = set()
 
-        setores_agregados[setor][status_key] = item['total']
+        for coleta in coletas_por_setor:
+            setor = coleta['id_setor__nome'] or 'Não definido'
+            data = coleta['data'].strftime(
+                '%Y-%m-%d') if coleta['data'] else 'Não definido'
+            total = coleta['total']
 
-    context = {
-        'total_coletas': total_coletas,
-        'coletas_pendentes': coletas_pendentes,
-        'coletas_finalizadas': coletas_finalizadas,
-        'coletas_canceladas': coletas_canceladas,
-        'coletas_em_andamento': coletas_em_andamento,
-        'coletas_recentes': coletas_recentes,
-        'proximas_coletas': proximas_coletas,
-        # Convert to list for template
-        'setores_data': list(setores_agregados.values()),
-    }
+            if setor not in setores_dados:
+                setores_dados[setor] = {}
 
-    return render(request, 'new_home.html', context)
+            setores_dados[setor][data] = total
+            datas.add(data)
+
+        # Converter para formato do gráfico
+        datas_ordenadas = sorted(list(datas))
+        series_data = []
+
+        for setor, dados in setores_dados.items():
+            series_data.append({
+                'name': setor,
+                'data': [dados.get(data, 0) for data in datas_ordenadas]
+            })
+
+        # Preparar eventos do calendário
+        coletas = TabColeta.objects.select_related('status_id', 'id_setor').filter(
+            data__isnull=False  # Garantir que só pegaremos coletas com data
+        ).order_by('data')
+
+        calendar_events = []
+
+        print("Total de coletas encontradas:", coletas.count())  # Debug
+
+        for coleta in coletas:
+            print(f"Processando coleta {coleta.id}:")  # Debug
+            print(f"- Data: {coleta.data}")
+            print(f"- Ordem de serviço: {coleta.ordem_servico}")
+            print(
+                f"- Setor: {coleta.id_setor.nome if coleta.id_setor else 'N/A'}")
+
+            if coleta.data:
+                event = {
+                    'id': coleta.id,
+                    'title': f"{coleta.ordem_servico} - {coleta.id_setor.nome if coleta.id_setor else 'N/A'}",
+                    'start': coleta.data.strftime('%Y-%m-%d'),
+                    'backgroundColor': coleta.status_id.cor if coleta.status_id else '#6c757d',
+                    'borderColor': coleta.status_id.cor if coleta.status_id else '#6c757d',
+                    'textColor': '#ffffff',
+                    'allDay': True
+                }
+                calendar_events.append(event)
+                print(f"- Evento criado: {event}")  # Debug
+            else:
+                print(f"- Coleta sem data definida")  # Debug
+
+        # Debug do JSON final
+        calendar_events_json = json.dumps(calendar_events, default=str)
+        print("JSON final dos eventos:", calendar_events_json)
+
+        context = {
+            'total_coletas': total_coletas,
+            'coletas_pendentes': coletas_pendentes,
+            'coletas_finalizadas': coletas_finalizadas,
+            'coletas_canceladas': coletas_canceladas,
+            'chart_data': {
+                'labels': list(all_status.keys()),
+                'counts': [data['count'] for data in all_status.values()],
+                'colors': [data['cor'] for data in all_status.values()]
+            },
+            'timeline_data': {
+                'labels': datas_ordenadas,
+                'series': series_data
+            },
+            'calendar_events': calendar_events_json
+        }
+
+        return render(request, 'new_home.html', context)
+
+    except Exception as e:
+        print(f"Erro na view new_home: {str(e)}")
+        import traceback
+        traceback.print_exc()  # Imprime o traceback completo
+        messages.error(request, "Erro ao carregar o dashboard.")
+        return redirect('home')
