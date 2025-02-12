@@ -262,8 +262,8 @@
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="flex-grow-1">
-                            <p class="mb-0 text-white">Coletas Canceladas</p>
-                            <h3 class="mb-0 text-white">{{ coletas_canceladas }}</h3>
+                            <p class="mb-0 text-white">Coletas Aguardando resultados</p>
+                            <h3 class="mb-0 text-white">{{ coletas_esperando_resultados }}</h3>
                         </div>
                         <div class="ms-3">
                             <i class="bi bi-x-circle fs-1 text-white"></i>
@@ -300,96 +300,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Recent and Upcoming Collections -->
-    <div class="row g-3">
-        <!-- Recent Collections -->
-        <div class="col-md-6">
-            <div class="card border-0 rounded-4 shadow-sm hover-shadow">
-                <div class="card-header border-0 bg-transparent">
-                    <h5 class="card-title mb-0">Coletas Recentes</h5>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>OS</th>
-                                    <th>Data</th>
-                                    <th>Setor</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for coleta in coletas_recentes %}
-                                <tr onclick="window.location='{% url 'info_coleta' coleta.id %}'" style="cursor: pointer;">
-                                    <td>{{ coleta.ordem_servico }}</td>
-                                    <td>{{ coleta.data|date:"d/m/Y" }}</td>
-                                    <td>{{ coleta.id_setor.nome }}</td>
-                                    <td>
-                                        <span class="badge {% for status_item in status_coletas %}
-            {% if coleta.status.status == status_item.status %}
-            {% with bg_color=status_item.cor|default:'#6c757d' %}
-            text-white" style="background-color: {{ bg_color }}"
-            {% endwith %}
-            {% endif %}
-            {% endfor %}>
-    {{ coleta.status.status }}
-</span>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Upcoming Collections -->
-        <div class="col-md-6">
-            <div class="card border-0 rounded-4 shadow-sm hover-shadow">
-                <div class="card-header border-0 bg-transparent">
-                    <h5 class="card-title mb-0">Próximas Coletas</h5>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead>
-                                <tr>
-                                    <th>OS</th>
-                                    <th>Data</th>
-                                    <th>Setor</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for coleta in proximas_coletas %}
-                                <tr onclick="window.location='{% url 'info_coleta' coleta.id %}'" style="cursor: pointer;">
-                                    <td>{{ coleta.ordem_servico }}</td>
-                                    <td>{{ coleta.data|date:"d/m/Y" }}</td>
-                                    <td>{{ coleta.id_setor.nome }}</td>
-                                    <td>
-                                        <span class="badge {% for status_item in status_coletas %}
-            {% if coleta.status.status == status_item.status %}
-            {% with bg_color=status_item.cor|default:'#6c757d' %}
-            text-white" style="background-color: {{ bg_color }}"
-            {% endwith %}
-            {% endif %}
-            {% endfor %}">
-    {{ coleta.status.status }}
-</span>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -441,9 +351,9 @@ function initChart() {
                 data: cleanData.data,
                 backgroundColor: cleanData.colors,
                 borderWidth: 0,
-                borderRadius: 6,
-                barThickness: 25,  // Reduzido para barras mais finas
-                maxBarThickness: 35
+                borderRadius: 20,
+                barThickness: 50,  // Reduzido para barras mais finas
+                maxBarThickness: 100
             }]
         },
         options: {

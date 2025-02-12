@@ -3212,8 +3212,8 @@ def new_home(request):
             status_id__status='Em andamento').count()
         coletas_finalizadas = TabColeta.objects.filter(
             status_id__status='Concluída').count()
-        coletas_canceladas = TabColeta.objects.filter(
-            status_id__status='Cancelada').count()
+        coletas_esperando_resultados = TabColeta.objects.filter(
+            status_id__status='Aguardando resultados').count()
 
         # Atualizar contagens para o gráfico
         for item in status_counts:
@@ -3294,7 +3294,7 @@ def new_home(request):
             'total_coletas': total_coletas,
             'coletas_pendentes': coletas_pendentes,
             'coletas_finalizadas': coletas_finalizadas,
-            'coletas_canceladas': coletas_canceladas,
+            'coletas_esperando_resultados': coletas_esperando_resultados,
             'chart_data': {
                 'labels': list(all_status.keys()),
                 'counts': [data['count'] for data in all_status.values()],
