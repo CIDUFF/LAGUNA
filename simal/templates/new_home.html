@@ -4,8 +4,8 @@
 
 {% block title %}Nova Home{% endblock %}
 {% block content %}
-<link rel="stylesheet" href="https://uicdn.toast.com/calendar/latest/toastui-calendar.min.css" />
-<script src="https://uicdn.toast.com/calendar/latest/toastui-calendar.min.js"></script>
+<link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
 
 <style>
 /* Responsive button styles */
@@ -278,14 +278,6 @@
                     <h5 class="card-title mb-0 fw-bold">Calendário de Coletas</h5>
                 </div>
                 <div class="card-body">
-                    <div class="calendar-controls">
-                        <div class="nav-buttons">
-                            <button id="prevMonth"><i class="bi bi-chevron-left"></i></button>
-                            <button id="today">Hoje</button>
-                            <button id="nextMonth"><i class="bi bi-chevron-right"></i></button>
-                        </div>
-                        <div class="calendar-title" id="calendarTitle"></div>
-                    </div>
                     <div id="calendar"></div>
                 </div>
             </div>
@@ -324,7 +316,7 @@
             text-white" style="background-color: {{ bg_color }}"
             {% endwith %}
             {% endif %}
-            {% endfor %}">
+            {% endfor %}>
     {{ coleta.status.status }}
 </span>
                                     </td>
@@ -380,6 +372,7 @@
             </div>
         </div>
     </div>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -516,100 +509,110 @@ if (document.readyState === 'loading') {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Inicializando calendário...');
-    
     const calendarEl = document.getElementById('calendar');
-    if (!calendarEl) {
-        console.error('Elemento do calendário não encontrado');
-        return;
-    }
+    const calendarEvents = JSON.parse('{{ calendar_events|safe }}');
     
-    // Parse dos eventos
-    let calendarEvents;
-    try {
-        calendarEvents = JSON.parse('{{ calendar_events|safe }}').map(event => ({
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        locale: 'pt-br',
+        height: 400,
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: ''
+        },
+        buttonText: {
+            today: 'Hoje'
+        },
+        events: calendarEvents.map(event => ({
             id: event.id,
-            title: event.title, 
-            start: new Date(event.start),
-            end: new Date(event.end || event.start),
-            category: 'time'
-        }));
-        console.log('Eventos do calendário:', calendarEvents);
-    } catch (e) {
-        console.error('Erro ao fazer parse dos eventos:', e);
-        calendarEvents = [];
-    }
-
-    // Inicialização do calendário Toast UI
-    const calendar = new tui.Calendar(calendarEl, {
-        defaultView: 'month',
-        usageStatistics: false,
-        isReadOnly: true,
-        month: {
-            dayNames: ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'],
-            isAlways6Weeks: false
-        },
-        template: {
-            monthDayname: function(dayname) {
-                return '<span class="calendar-week-dayname">' + dayname.label + '</span>';
-            }
-        },
-        theme: {
-            common: {
-                backgroundColor: '#ffffff',
-                border: '1px solid #e5e5e5',
-                holidayColor: '#ff4040',
-                saturday: {color: '#333'},
-                sunday: {color: '#333'},
-            },
-            month: {
-                dayName: {color: '#333'},
-                holidayExceptThisMonth: {color: '#f3f3f3'},
-                dayExceptThisMonth: {color: '#bbb'},
-                weekend: {backgroundColor: '#fafafa'},
-            }
+            title: event.title,
+            start: event.start,
+            backgroundColor: event.backgroundColor || '#4361ee',
+            textColor: event.textColor || '#ffffff',
+            borderColor: 'transparent',
+            url: `/info_coleta/${event.id}/` // Adiciona a URL diretamente ao evento
+        })),
+        eventClick: function(info) {
+            // Previne o comportamento padrão do evento
+            info.jsEvent.preventDefault();
+            // Redireciona para a página de info da coleta
+            window.location.href = info.event.url;
         }
     });
 
-    // Adicionar eventos
-    calendar.createEvents(calendarEvents);
-
-    // Funções para os controles de navegação
-    const updateTitle = () => {
-        const date = calendar.getDate();
-        const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 
-                       'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-        document.getElementById('calendarTitle').textContent = 
-            `${months[date.getMonth()]} ${date.getFullYear()}`;
-    };
-
-    // Event listeners para os botões de navegação
-    document.getElementById('prevMonth').addEventListener('click', () => {
-        calendar.prev();
-        updateTitle();
-    });
-
-    document.getElementById('nextMonth').addEventListener('click', () => {
-        calendar.next();
-        updateTitle();
-    });
-
-    document.getElementById('today').addEventListener('click', () => {
-        calendar.today();
-        updateTitle();
-    });
-
-    // Atualizar título inicial
-    updateTitle();
-
-    // Handler de clique nos eventos
-    calendar.on('clickEvent', function(eventObj) {
-        if (eventObj.event.id) {
-            window.location.href = `/info_coleta/${eventObj.event.id}`;
-        }
-    });
+    calendar.render();
 });
 </script>
+
+<style>
+.fc {
+    background: white;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.fc-toolbar-title {
+    font-size: 1.2rem !important;
+    font-weight: 600 !important;
+    text-transform: capitalize;
+}
+
+.fc-button {
+    border-radius: 0.375rem !important;
+    text-transform: capitalize !important;
+    padding: 0.5rem 1rem !important;
+    height: auto !important;
+    background-color: #fff !important;
+    border-color: #dee2e6 !important;
+    color: #495057 !important;
+}
+
+.fc-button:hover {
+    background-color: #f8f9fa !important;
+    border-color: #4361ee !important;
+    color: #4361ee !important;
+}
+
+.fc-button-active {
+    background-color: #4361ee !important;
+    border-color: #4361ee !important;
+    color: #fff !important;
+}
+
+.fc-day-today {
+    background-color: rgba(67, 97, 238, 0.1) !important;
+}
+
+.fc-event {
+    border: none !important;
+    padding: 2px 4px !important;
+    margin: 1px !important;
+    font-size: 0.875rem !important;
+}
+
+.fc-daygrid-event {
+    white-space: normal !important;
+    align-items: center !important;
+    margin: 1px 2px !important;
+}
+
+.fc-daygrid-day {
+    transition: background-color 0.2s ease;
+}
+
+.fc-daygrid-day:hover {
+    background-color: rgba(67, 97, 238, 0.05);
+}
+
+.fc-col-header-cell-cushion,
+.fc-daygrid-day-number {
+    color: #495057;
+    text-decoration: none !important;
+    font-weight: 500;
+}
+</style>
 
 <style>
 .hover-shadow {
@@ -664,6 +667,185 @@ document.addEventListener('DOMContentLoaded', function() {
 
 .toastui-calendar-today {
     background-color: rgba(67, 97, 238, 0.1) !important;
+}
+
+/* Ajustes adicionais para o calendário */
+.calendar-date {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #333;
+}
+
+.calendar-more {
+    font-size: 0.8rem;
+    color: #666;
+    padding: 2px 4px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.toastui-calendar-daygrid-cell {
+    min-height: 80px !important;
+}
+
+.toastui-calendar-event {
+    margin: 1px 0;
+    padding: 2px 4px !important;
+    border-radius: 4px !important;
+    font-size: 0.8em;
+    white-space: normal;
+    word-break: break-word;
+}
+
+.toastui-calendar-event-time {
+    display: none !important; /* Remove explicitamente a exibição do horário */
+}
+
+.toastui-calendar-event {
+    margin: 1px 2px !important;
+    padding: 1px 4px !important;
+    border-radius: 4px !important;
+    font-size: 0.75rem !important;
+    line-height: 1.2 !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+    min-height: unset !important;
+}
+
+.calendar-event-title {
+    font-weight: 500;
+    display: block;
+}
+
+.calendar-event-body {
+    font-size: 0.7rem;
+    opacity: 0.8;
+    display: block;
+}
+
+.toastui-calendar-daygrid-cell {
+    min-height: 120px !important; // Aumentado para acomodar mais eventos
+}
+
+.toastui-calendar-daygrid-cell.toastui-calendar-grid-cell-more .toastui-calendar-weekday-grid {
+    overflow-y: auto !important;
+    max-height: 100% !important;
+}
+
+.toastui-calendar-weekday-grid {
+    min-height: 100% !important;
+}
+
+.calendar-event {
+    padding: 2px 4px;
+    border-radius: 4px;
+    margin: 1px 2px;
+    font-size: 0.75rem;
+    line-height: 1.2;
+}
+
+.toastui-calendar-event {
+    opacity: 0.9;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.toastui-calendar-event:hover {
+    opacity: 1;
+}
+
+#eventsList {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+#eventsList div:hover {
+    filter: brightness(95%);
+    transition: filter 0.2s ease-in-out;
+}
+
+.calendar-more {
+    font-size: 0.8rem;
+    color: #666;
+    padding: 2px 4px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.calendar-more:hover {
+    background: #e9ecef;
+    color: #333;
+}
+
+/* Estilos para o popup more */
+.toastui-calendar-popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0,0,0,0.5);
+    z-index: 1000;
+}
+
+.toastui-calendar-popup {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.toastui-calendar-popup-container {
+    padding: 16px;
+}
+
+.toastui-calendar-popup-section {
+    margin-bottom: 8px;
+}
+
+.toastui-calendar-scheduled-event {
+    cursor: pointer;
+    padding: 8px;
+    margin: 4px 0;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.toastui-calendar-scheduled-event:hover {
+    filter: brightness(95%);
+}
+
+.toastui-calendar-more-popup {
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15) !important;
+    border-radius: 8px !important;
+}
+
+.toastui-calendar-more-schedule {
+    margin: 4px !important;
+    padding: 4px 8px !important;
+    border-radius: 4px !important;
+    transition: all 0.2s ease !important;
+}
+
+.toastui-calendar-more-schedule:hover {
+    filter: brightness(95%) !important;
+}
+
+.toastui-calendar-more-popup-header {
+    padding: 12px 16px !important;
+    border-bottom: 1px solid #eee !important;
+}
+
+.toastui-calendar-more-popup-close {
+    top: 12px !important;
+    right: 12px !important;
+}
+
+.toastui-calendar-popup-container {
+    border-radius: 8px !important;
+    overflow: hidden !important;
 }
 </style>
 {% endblock %}

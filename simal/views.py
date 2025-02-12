@@ -3274,7 +3274,7 @@ def new_home(request):
             if coleta.data:
                 event = {
                     'id': coleta.id,
-                    'title': f"{coleta.ordem_servico} - {coleta.id_setor.nome if coleta.id_setor else 'N/A'}",
+                    'title': f"{coleta.id_setor.nome if coleta.id_setor else 'N/A'}",
                     'start': coleta.data.strftime('%Y-%m-%d'),
                     'backgroundColor': coleta.status_id.cor if coleta.status_id else '#6c757d',
                     'borderColor': coleta.status_id.cor if coleta.status_id else '#6c757d',
