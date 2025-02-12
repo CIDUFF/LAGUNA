@@ -458,12 +458,16 @@ document.addEventListener('DOMContentLoaded', function() {
             backgroundColor: event.backgroundColor || '#4361ee',
             textColor: event.textColor || '#ffffff',
             borderColor: 'transparent',
-            url: `/info_coleta/${event.id}/` // Adiciona a URL diretamente ao evento
+            url: `/info_coleta/${event.id}/`
         })),
+        dateClick: function(info) {
+            // Redirect to direcionamento_campanha when clicking on a date
+            window.location.href = `/cadastro_coleta/?data=${info.dateStr}`;
+        },
         eventClick: function(info) {
-            // Previne o comportamento padrão do evento
+            // Prevent default behavior
             info.jsEvent.preventDefault();
-            // Redireciona para a página de info da coleta
+            // Redirect to info_coleta page
             window.location.href = info.event.url;
         }
     });
