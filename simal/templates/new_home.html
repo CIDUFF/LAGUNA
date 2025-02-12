@@ -173,6 +173,68 @@
     vertical-align: middle !important;
     font-size: 0.9rem !important;
 }
+
+/* Add these styles to the existing <style> section */
+
+.event-tooltip {
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+.event-tooltip .btn {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.5rem;
+    background-color: #fff;
+    border: 1px solid #dee2e6;
+    color: #333;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.event-tooltip .btn:hover {
+    background-color: #f8f9fa;
+    border-color: #4361ee;
+    color: #4361ee;
+}
+
+.tooltip-inner {
+    max-width: 300px;
+    padding: 0.5rem;
+}
+
+/* Add these styles to your existing CSS */
+
+.event-tooltip-inner {
+    min-width: 200px;
+    padding: 0.75rem;
+    background-color: white;
+    border: 1px solid #dee2e6;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.tooltip.show {
+    opacity: 1;
+}
+
+.tooltip .btn {
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+.tooltip .btn:hover {
+    transform: translateY(-1px);
+}
+
+.tooltip-inner.event-tooltip-inner {
+    background-color: white;
+    color: #333;
+}
+
+.tooltip.bs-tooltip-top .tooltip-arrow::before {
+    border-top-color: #dee2e6;
+}
 </style>
 
 <div class="container-fluid px-4 py-3 mb-4">
@@ -453,7 +515,7 @@ document.addEventListener('DOMContentLoaded', function() {
         },
         events: calendarEvents.map(event => ({
             id: event.id,
-            title: event.title,
+            title: `Coleta em ${event.title}`, // Modified title format
             start: event.start,
             backgroundColor: event.backgroundColor || '#4361ee',
             textColor: event.textColor || '#ffffff',
@@ -469,11 +531,97 @@ document.addEventListener('DOMContentLoaded', function() {
             info.jsEvent.preventDefault();
             // Redirect to info_coleta page
             window.location.href = info.event.url;
+        },
+        eventDidMount: function(info) {
+            const googleCalendarUrl = createGoogleCalendarUrl({
+                title: info.event.title,
+                start: info.event.start,
+                end: info.event.end || info.event.start,
+                description: `Nova ${info.event.title}`
+            });
+            
+            // Create a div element for the tooltip content
+            const tooltipContent = document.createElement('div');
+            tooltipContent.innerHTML = `
+                <div class="event-tooltip">
+                    <p class="mb-2">${info.event.title}</p>
+                    <a href="${googleCalendarUrl}" target="_blank" class="btn btn-sm btn-light">
+                        <i class="bi bi-calendar-plus"></i> Adicionar coleta ao seu calendário google
+                    </a>
+                </div>
+            `;
+            
+            // Initialize the tooltip with updated configuration
+            const tooltip = new bootstrap.Tooltip(info.el, {
+                title: tooltipContent,
+                html: true,
+                placement: 'top',
+                trigger: 'manual', // Changed to manual trigger
+                container: 'body',
+                template: `
+                    <div class="tooltip" role="tooltip">
+                        <div class="tooltip-arrow"></div>
+                        <div class="tooltip-inner event-tooltip-inner"></div>
+                    </div>
+                `
+            });
+            
+            // Add hover events with delay
+            let timeout;
+            
+            info.el.addEventListener('mouseenter', () => {
+                tooltip.show();
+                clearTimeout(timeout);
+            });
+            
+            info.el.addEventListener('mouseleave', () => {
+                timeout = setTimeout(() => {
+                    if (!document.querySelector('.tooltip:hover')) {
+                        tooltip.hide();
+                    }
+                }, 300);
+            });
+            
+            // Add hover events for the tooltip itself
+            document.addEventListener('mouseover', function(e) {
+                if (e.target.closest('.tooltip')) {
+                    clearTimeout(timeout);
+                }
+            });
+            
+            document.addEventListener('mouseleave', function(e) {
+                if (e.target.closest('.tooltip')) {
+                    timeout = setTimeout(() => {
+                        tooltip.hide();
+                    }, 300);
+                }
+            });
         }
     });
 
     calendar.render();
 });
+
+// Replace the existing createGoogleCalendarUrl function with:
+
+function createGoogleCalendarUrl(event) {
+    const formatDate = (date) => {
+        return date.toISOString().replace(/-|:|\.\d\d\d/g, '');
+    };
+
+    // Get current user email from Django template
+    const userEmail = '{{ request.user.email }}';
+
+    const params = new URLSearchParams({
+        action: 'TEMPLATE',
+        text: event.title,
+        dates: `${formatDate(event.start)}/${formatDate(event.end)}`,
+        details: event.description,
+        add: userEmail // Add current user as attendee
+    });
+
+    return `https://www.google.com/calendar/render?${params.toString()}`;
+}
 </script>
 
 <style>
