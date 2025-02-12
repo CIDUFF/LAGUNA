@@ -258,4 +258,5 @@ urlpatterns = [
         name="generate_sample_labels",
     ),
     path('new_home/', new_home, name='new_home'),
+    path('new-home/', new_home, name='new_home'),
 ]

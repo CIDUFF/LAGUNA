@@ -3209,9 +3209,9 @@ def new_home(request):
         # Buscar totais para os cards
         total_coletas = TabColeta.objects.count()
         coletas_pendentes = TabColeta.objects.filter(
-            status_id__status='Pendente').count()
+            status_id__status='Em andamento').count()
         coletas_finalizadas = TabColeta.objects.filter(
-            status_id__status='Finalizada').count()
+            status_id__status='Concluída').count()
         coletas_canceladas = TabColeta.objects.filter(
             status_id__status='Cancelada').count()
 
@@ -3288,7 +3288,7 @@ def new_home(request):
 
         # Debug do JSON final
         calendar_events_json = json.dumps(calendar_events, default=str)
-        print("JSON final dos eventos:", calendar_events_json)
+        # print("JSON final dos eventos:", calendar_events_json)
 
         context = {
             'total_coletas': total_coletas,
