@@ -3304,7 +3304,7 @@ def new_home(request):
                 'labels': datas_ordenadas,
                 'series': series_data
             },
-            'calendar_events': calendar_events_json
+            'calendar_events': json.dumps(calendar_events, cls=DjangoJSONEncoder),
         }
 
         return render(request, 'new_home.html', context)

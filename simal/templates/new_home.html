@@ -4,12 +4,8 @@
 
 {% block title %}Nova Home{% endblock %}
 {% block content %}
-<link href='https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.8/main.min.css' rel='stylesheet' />
-<link href='https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid@6.1.8/main.min.css' rel='stylesheet' />
-<script src='https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.8/main.min.js'></script>
-<script src='https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid@6.1.8/main.min.js'></script>
-<script src='https://cdn.jsdelivr.net/npm/@fullcalendar/interaction@6.1.8/main.min.js'></script>
-<script src='https://cdn.jsdelivr.net/npm/@fullcalendar/bootstrap5@6.1.8/main.min.js'></script>
+<link rel="stylesheet" href="https://uicdn.toast.com/calendar/latest/toastui-calendar.min.css" />
+<script src="https://uicdn.toast.com/calendar/latest/toastui-calendar.min.js"></script>
 
 <style>
 /* Responsive button styles */
@@ -95,6 +91,70 @@
 .table tr:hover {
     background-color: rgba(0,0,0,0.05);
     transition: background-color 0.2s ease;
+}
+
+/* Cards de gráfico e calendário com mesmo tamanho */
+.chart-container {
+    position: relative;
+    margin: auto;
+    height: 400px;
+    width: 100%;
+    padding: 20px;
+}
+
+#statusChart, #calendar {
+    width: 100% !important;
+    height: 400px !important;
+}
+
+/* Garantir que os cards tenham a mesma altura */
+.row.g-3.mb-4 .card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.row.g-3.mb-4 .card-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Estilos para os controles do calendário */
+.calendar-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    margin-bottom: 1rem;
+}
+
+.calendar-controls button {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+    border-radius: 0.375rem;
+    border: 1px solid #dee2e6;
+    background: white;
+    color: #333;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.calendar-controls button:hover {
+    background: #f8f9fa;
+    border-color: #ced4da;
+}
+
+.calendar-controls .calendar-title {
+    font-weight: 500;
+    font-size: 1.1rem;
+    color: #333;
+    text-transform: capitalize;
+}
+
+.calendar-controls .nav-buttons {
+    display: flex;
+    gap: 0.5rem;
 }
 </style>
 
@@ -218,6 +278,14 @@
                     <h5 class="card-title mb-0 fw-bold">Calendário de Coletas</h5>
                 </div>
                 <div class="card-body">
+                    <div class="calendar-controls">
+                        <div class="nav-buttons">
+                            <button id="prevMonth"><i class="bi bi-chevron-left"></i></button>
+                            <button id="today">Hoje</button>
+                            <button id="nextMonth"><i class="bi bi-chevron-right"></i></button>
+                        </div>
+                        <div class="calendar-title" id="calendarTitle"></div>
+                    </div>
                     <div id="calendar"></div>
                 </div>
             </div>
@@ -448,58 +516,98 @@ if (document.readyState === 'loading') {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Primeiro log para verificar se o evento está sendo disparado
-    console.log('DOM carregado');
+    console.log('Inicializando calendário...');
     
     const calendarEl = document.getElementById('calendar');
     if (!calendarEl) {
-        console.error('Elemento do calendário não encontrado!');
+        console.error('Elemento do calendário não encontrado');
         return;
     }
-    console.log('Elemento do calendário:', calendarEl);
     
-    // Pegar os eventos do template e fazer parse
-    const eventsData = {{ calendar_events|safe }};
-    console.log('Dados dos eventos:', eventsData);
+    // Parse dos eventos
+    let calendarEvents;
+    try {
+        calendarEvents = JSON.parse('{{ calendar_events|safe }}').map(event => ({
+            id: event.id,
+            title: event.title, 
+            start: new Date(event.start),
+            end: new Date(event.end || event.start),
+            category: 'time'
+        }));
+        console.log('Eventos do calendário:', calendarEvents);
+    } catch (e) {
+        console.error('Erro ao fazer parse dos eventos:', e);
+        calendarEvents = [];
+    }
 
-    // Inicializar o calendário com as configurações necessárias
-    const calendar = new FullCalendar.Calendar(calendarEl, {
-        plugins: ['dayGrid', 'interaction'],
-        initialView: 'dayGridMonth',
-        locale: 'pt-br',
-        themeSystem: 'bootstrap5',
-        headerToolbar: {
-            left: 'prev,next today',
-            center: 'title',
-            right: 'dayGridMonth'
+    // Inicialização do calendário Toast UI
+    const calendar = new tui.Calendar(calendarEl, {
+        defaultView: 'month',
+        usageStatistics: false,
+        isReadOnly: true,
+        month: {
+            dayNames: ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'],
+            isAlways6Weeks: false
         },
-        height: 'auto',
-        events: eventsData,
-        eventClick: function(info) {
-            window.location.href = `/info_coleta/${info.event.id}`;
+        template: {
+            monthDayname: function(dayname) {
+                return '<span class="calendar-week-dayname">' + dayname.label + '</span>';
+            }
         },
-        eventDidMount: function(info) {
-            info.el.title = info.event.title;
-        },
-        dayMaxEvents: true,
-        displayEventTime: false,
-        eventTimeFormat: {
-            hour: '2-digit',
-            minute: '2-digit',
-            meridiem: false
+        theme: {
+            common: {
+                backgroundColor: '#ffffff',
+                border: '1px solid #e5e5e5',
+                holidayColor: '#ff4040',
+                saturday: {color: '#333'},
+                sunday: {color: '#333'},
+            },
+            month: {
+                dayName: {color: '#333'},
+                holidayExceptThisMonth: {color: '#f3f3f3'},
+                dayExceptThisMonth: {color: '#bbb'},
+                weekend: {backgroundColor: '#fafafa'},
+            }
         }
     });
-    
-    try {
-        calendar.render();
-        console.log('Calendário renderizado com sucesso');
-        
-        // Verificar eventos após renderização
-        const renderedEvents = calendar.getEvents();
-        console.log('Total de eventos renderizados:', renderedEvents.length);
-    } catch (error) {
-        console.error('Erro ao renderizar calendário:', error);
-    }
+
+    // Adicionar eventos
+    calendar.createEvents(calendarEvents);
+
+    // Funções para os controles de navegação
+    const updateTitle = () => {
+        const date = calendar.getDate();
+        const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 
+                       'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+        document.getElementById('calendarTitle').textContent = 
+            `${months[date.getMonth()]} ${date.getFullYear()}`;
+    };
+
+    // Event listeners para os botões de navegação
+    document.getElementById('prevMonth').addEventListener('click', () => {
+        calendar.prev();
+        updateTitle();
+    });
+
+    document.getElementById('nextMonth').addEventListener('click', () => {
+        calendar.next();
+        updateTitle();
+    });
+
+    document.getElementById('today').addEventListener('click', () => {
+        calendar.today();
+        updateTitle();
+    });
+
+    // Atualizar título inicial
+    updateTitle();
+
+    // Handler de clique nos eventos
+    calendar.on('clickEvent', function(eventObj) {
+        if (eventObj.event.id) {
+            window.location.href = `/info_coleta/${eventObj.event.id}`;
+        }
+    });
 });
 </script>
 
@@ -533,98 +641,29 @@ document.addEventListener('DOMContentLoaded', function() {
     font-size: 1.2rem;
 }
 
-/* Ajustes para o calendário */
+/* Estilos para o Toast UI Calendar */
 #calendar {
     width: 100%;
     height: 400px;
     font-family: 'Inter', sans-serif;
 }
 
-.fc .fc-toolbar-title {
-    font-size: 1.2rem;
-    font-weight: 600;
-}
-
-.fc .fc-button {
-    background-color: #4361ee;
-    border-color: #4361ee;
-}
-
-.fc .fc-button:hover {
-    background-color: #3651d1;
-    border-color: #3651d1;
-}
-
-.fc .fc-daygrid-day:hover {
-    background-color: rgba(67, 97, 238, 0.05);
-}
-
-.fc .fc-daygrid-day.fc-day-today {
-    background-color: rgba(67, 97, 238, 0.1);
-}
-
-/* Ajustes adicionais para o calendário */
-.fc-daygrid-event {
-    white-space: normal !important; /* Permite quebra de linha no título do evento */
-    padding: 2px 4px !important;
-    margin: 1px 0 !important;
-    font-size: 0.8em !important;
-}
-
-.fc-toolbar-title {
-    text-transform: capitalize !important;
-}
-
-.fc .fc-toolbar.fc-header-toolbar {
-    margin-bottom: 0.5em !important;
-}
-
-.fc-view-harness {
-    background-color: white !important;
-}
-
-/* Estilos específicos para o calendário */
-.fc {
-    background-color: #fff;
+.toastui-calendar-layout {
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    overflow: hidden;
 }
 
-.fc-daygrid-day-number {
+.calendar-week-dayname {
+    font-size: 0.9rem;
     font-weight: 500;
-    color: #333;
 }
 
-.fc-day-today {
-    background-color: rgba(67, 97, 238, 0.05) !important;
+.toastui-calendar-event {
+    border-radius: 4px;
 }
 
-.fc-event {
-    border: none;
-    padding: 2px 4px;
-    margin: 1px 0;
-    font-size: 0.85em;
-}
-
-.fc-toolbar-title {
-    font-size: 1.2em !important;
-    font-weight: 600 !important;
-}
-
-.fc-button-primary {
-    background-color: #4361ee !important;
-    border-color: #4361ee !important;
-}
-
-.fc-button-primary:hover {
-    background-color: #3651d1 !important;
-    border-color: #3651d1 !important;
-}
-
-#calendar {
-    min-height: 400px;
-    margin: 0;
-    padding: 0;
+.toastui-calendar-today {
+    background-color: rgba(67, 97, 238, 0.1) !important;
 }
 </style>
 {% endblock %}
