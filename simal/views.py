@@ -2373,46 +2373,77 @@ def meta_ponto(request, id):
 
 @login_required
 def lista_de_coletas(request):
-    coletas = TabColeta.objects.all()
-    table = TabColetaTable(coletas)
+    # Obter os filtros da query string
+    status_id = request.GET.get('status_id')
+    id_setor = request.GET.get('id_setor')
+
+    # Query base
+    queryset = TabColeta.objects.all().order_by('-data')
+
+    # Aplicar filtros se fornecidos
+    if status_id:
+        queryset = queryset.filter(status_id=status_id)
+    if id_setor:
+        queryset = queryset.filter(id_setor=id_setor)
+
+    # Obter listas únicas para os dropdowns
+    setores = TabSetor.objects.all()
+    status = TabStatusColeta.objects.all()
+
+    # Criar a tabela
+    table = TabColetaTable(queryset)
     RequestConfig(request, paginate={"per_page": 10}).configure(table)
 
-    return render(request, "lista_de_coletas.html", {"table": table})
+    context = {
+        "table": table,
+        "setores": setores,
+        "status": status,
+        "filtros": {
+            "status_id": status_id,
+            "id_setor": id_setor,
+        }
+    }
+
+    # Se for uma requisição AJAX, retornar apenas os dados filtrados
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({
+            'setores': list(setores.values('id', 'nome')),
+            'status': list(status.values('id', 'status')),
+        })
+
+    return render(request, "lista_de_coletas.html", context)
 
 
 @login_required
 def update_coleta(request, id):
     coleta = get_object_or_404(TabColeta, id=id)
-
-    # Verificar se a coleta está cancelada
-    if coleta.status.id == 2:  # status 2 = cancelada
-        messages.error(
-            request, "Não é possível editar uma coleta que já está cancelada.")
-        return redirect("lista_de_coletas")
-
     if request.method == "POST":
         form = CadastroColetaForm(request.POST, instance=coleta)
         if form.is_valid():
             coleta = form.save(commit=False)
-
-            # Converter a data da string para datetime
-            data_str = request.POST.get('data')
-            if data_str:
-                coleta.data = datetime.strptime(data_str, '%Y-%m-%d')
-
+            coleta.atualizado_por = request.user
             coleta.save()
-            messages.success(request, "Coleta atualizada com sucesso.")
+
+            # Log da atualização
+            TabLogColeta.objects.create(
+                id_coleta=coleta,
+                acao="Coleta atualizada",
+                usuario=request.user,
+                motivo=f"Atualização dos dados da coleta"
+            )
+
+            messages.success(request, "Coleta atualizada com sucesso!")
             return redirect("lista_de_coletas")
     else:
-        initial_data = {
-            'data': coleta.data.strftime('%Y-%m-%d') if coleta.data else None
-        }
-        form = CadastroColetaForm(instance=coleta, initial=initial_data)
+        # Mudança aqui: removendo a tentativa de acessar .status
+        form = CadastroColetaForm(instance=coleta)
 
-    return render(request, "cadastro_coleta.html", {
+    context = {
         "form": form,
-        "coleta": coleta
-    })
+        "titulo": "Atualizar Coleta",
+        "coleta_id": id,
+    }
+    return render(request, "cadastro_coleta.html", context)
 
 
 @login_required
@@ -3210,11 +3241,11 @@ def new_home(request):
         # Buscar totais para os cards
         total_coletas = TabColeta.objects.count()
         coletas_pendentes = TabColeta.objects.filter(
-            Q(status_id__status__in=['Adiada', 'Prorrogada', 'Programada', 'Em andamento']) | 
+            Q(status_id__status__in=['Adiada', 'Prorrogada', 'Programada', 'Em andamento']) |
             Q(status_id__isnull=True)
         ).count()
         coletas_finalizadas = TabColeta.objects.filter(
-            status_id__status='Concluída').count()  
+            status_id__status='Concluída').count()
         coletas_esperando_resultados = TabColeta.objects.filter(
             status_id__status='Aguardando resultados').count()
 
