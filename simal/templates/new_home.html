@@ -1,21 +1,20 @@
-{% extends 'base/base_site.html' %}
-{% load static %}
-{% load custom_filters %}
-
-{% block title %}Home{% endblock %}
-{% block content %}
-<link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
-<script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
+{% extends 'base/base_site.html' %} {% load static %} {% load custom_filters %}
+{% block title %}Home{% endblock %} {% block content %}
+<link
+  href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css"
+  rel="stylesheet"
+/>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
 
 <style>
-/* Responsive button styles */
-.action-buttons {
+  /* Responsive button styles */
+  .action-buttons {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
-}
+  }
 
-.action-btn {
+  .action-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -25,103 +24,104 @@
     min-width: 120px;
     white-space: nowrap;
     transition: all 0.2s ease-in-out;
-}
+  }
 
-@media (max-width: 768px) {
+  @media (max-width: 768px) {
     .action-buttons {
-        flex-direction: column;
+      flex-direction: column;
     }
-    
+
     .action-btn {
-        width: 100%;
-        margin-bottom: 0.5rem;
+      width: 100%;
+      margin-bottom: 0.5rem;
     }
-    
+
     .stats-grid {
-        grid-template-columns: 1fr;
+      grid-template-columns: 1fr;
     }
-}
+  }
 
-@media (min-width: 769px) and (max-width: 1200px) {
+  @media (min-width: 769px) and (max-width: 1200px) {
     .action-btn {
-        min-width: 160px;
+      min-width: 160px;
     }
-    
+
     .stats-grid {
-        grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(2, 1fr);
     }
-}
+  }
 
-@media (min-width: 1201px) {
+  @media (min-width: 1201px) {
     .action-btn {
-        min-width: 180px;
+      min-width: 180px;
     }
-}
+  }
 
-/* Button hover effects */
-.action-btn:hover {
+  /* Button hover effects */
+  .action-btn:hover {
     transform: translateY(-1px);
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
+  }
 
-/* Button colors and variants */
-.btn-primary.action-btn, 
-.btn-success.action-btn,
-.btn-info.action-btn {
+  /* Button colors and variants */
+  .btn-primary.action-btn,
+  .btn-success.action-btn,
+  .btn-info.action-btn {
     background-color: #fff !important;
     color: #063c7a !important;
     border: none !important;
-}
+  }
 
-.btn-warning.action-btn {
-    background-color: #F59E0B;
-    border-color: #F59E0B;
+  .btn-warning.action-btn {
+    background-color: #f59e0b;
+    border-color: #f59e0b;
     color: white;
-}
+  }
 
-/* Add hover effect for clickable rows */
-.table tr:hover {
-    background-color: rgba(0,0,0,0.05);
+  /* Add hover effect for clickable rows */
+  .table tr:hover {
+    background-color: rgba(0, 0, 0, 0.05);
     transition: background-color 0.2s ease;
-}
+  }
 
-/* Cards de gráfico e calendário com mesmo tamanho */
-.chart-container {
+  /* Cards de gráfico e calendário com mesmo tamanho */
+  .chart-container {
     position: relative;
     margin: auto;
     height: 400px;
     width: 100%;
     padding: 20px;
-}
+  }
 
-#statusChart, #calendar {
+  #statusChart,
+  #calendar {
     width: 100% !important;
     height: 400px !important;
-}
+  }
 
-/* Garantir que os cards tenham a mesma altura */
-.row.g-3.mb-4 .card {
+  /* Garantir que os cards tenham a mesma altura */
+  .row.g-3.mb-4 .card {
     height: 100%;
     display: flex;
     flex-direction: column;
-}
+  }
 
-.row.g-3.mb-4 .card-body {
+  .row.g-3.mb-4 .card-body {
     flex: 1;
     display: flex;
     flex-direction: column;
-}
+  }
 
-/* Estilos para os controles do calendário */
-.calendar-controls {
+  /* Estilos para os controles do calendário */
+  .calendar-controls {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 0.5rem 1rem;
     margin-bottom: 1rem;
-}
+  }
 
-.calendar-controls button {
+  .calendar-controls button {
     padding: 0.375rem 0.75rem;
     font-size: 0.875rem;
     border-radius: 0.375rem;
@@ -130,58 +130,59 @@
     color: #333;
     cursor: pointer;
     transition: all 0.2s;
-}
+  }
 
-.calendar-controls button:hover {
+  .calendar-controls button:hover {
     background: #f8f9fa;
     border-color: #ced4da;
-}
+  }
 
-.calendar-controls .calendar-title {
+  .calendar-controls .calendar-title {
     font-weight: 500;
     font-size: 1.1rem;
     color: #333;
     text-transform: capitalize;
-}
+  }
 
-.calendar-controls .nav-buttons {
+  .calendar-controls .nav-buttons {
     display: flex;
     gap: 0.5rem;
-}
+  }
 
-.card.small-card:first-of-type .card-body a.btn {
+  .card.small-card:first-of-type .card-body a.btn {
     background-color: #fff !important;
     color: #0d6efd !important; /* Ajuste caso o card use outra cor base */
-}
+  }
 
-.card.bg-gradient.hover-shadow {
+  .card.bg-gradient.hover-shadow {
     border-radius: 0.75rem !important;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.14);
-}
-.card.bg-gradient.hover-shadow:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.14);
+  }
+  .card.bg-gradient.hover-shadow:hover {
     transform: translateY(-6px);
-    box-shadow: 0 10px 16px rgba(0,0,0,0.2);
-}
-.card-header h5 {
+    box-shadow: 0 10px 16px rgba(0, 0, 0, 0.2);
+  }
+  .card-header h5 {
     font-size: 1.3rem !important;
-    font-family: 'Inter', sans-serif;
+    font-family: "Inter", sans-serif;
     font-weight: 600;
     color: #2c3e50;
-}
-.table th, .table td {
+  }
+  .table th,
+  .table td {
     vertical-align: middle !important;
     font-size: 0.9rem !important;
-}
+  }
 
-/* Add these styles to the existing <style> section */
+  /* Add these styles to the existing <style> section */
 
-.event-tooltip {
+  .event-tooltip {
     font-size: 0.9rem;
     text-align: center;
-}
+  }
 
-.event-tooltip .btn {
+  .event-tooltip .btn {
     font-size: 0.8rem;
     padding: 0.25rem 0.5rem;
     background-color: #fff;
@@ -191,454 +192,488 @@
     display: inline-flex;
     align-items: center;
     gap: 0.25rem;
-}
+  }
 
-.event-tooltip .btn:hover {
+  .event-tooltip .btn:hover {
     background-color: #f8f9fa;
     border-color: #4361ee;
     color: #4361ee;
-}
+  }
 
-.tooltip-inner {
+  .tooltip-inner {
     max-width: 300px;
     padding: 0.5rem;
-}
+  }
 
-/* Add these styles to your existing CSS */
+  /* Add these styles to your existing CSS */
 
-.event-tooltip-inner {
+  .event-tooltip-inner {
     min-width: 200px;
     padding: 0.75rem;
     background-color: white;
     border: 1px solid #dee2e6;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
 
-.tooltip.show {
+  .tooltip.show {
     opacity: 1;
-}
+  }
 
-.tooltip .btn {
+  .tooltip .btn {
     white-space: nowrap;
     transition: all 0.2s ease;
-}
+  }
 
-.tooltip .btn:hover {
+  .tooltip .btn:hover {
     transform: translateY(-1px);
-}
+  }
 
-.tooltip-inner.event-tooltip-inner {
+  .tooltip-inner.event-tooltip-inner {
     background-color: white;
     color: #333;
-}
+  }
 
-.tooltip.bs-tooltip-top .tooltip-arrow::before {
+  .tooltip.bs-tooltip-top .tooltip-arrow::before {
     border-top-color: #dee2e6;
-}
+  }
 </style>
 
 <div class="container-fluid px-4 py-3 mb-4">
-    <!-- Cabeçalho -->
-    <div class="row g-3 mb-4">
-        <div class="col-12">
-            <div class="card border-0 rounded-4 shadow-sm bg-gradient hover-shadow" style="background-color:#063c7a;">
-                <div class="card-body p-4">
-                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
-                        <h1 class="mb-3 mb-md-0 text-white">Bem vindo ao Laguna</h1>
-                        <div class="action-buttons">
-                            <a href="{% url 'cadastro_coleta' %}" class="btn btn-primary action-btn">
-                                <i class="bi bi-plus-circle me-2"></i>
-                                Nova Coleta
-                            </a>
-                            <a href="{% url 'lista_de_coletas' %}" class="btn btn-success action-btn">
-                                <i class="bi bi-list-check me-2"></i>
-                                Listar Coletas
-                            </a>
-                            <a href="{% url 'resultados_todas_medidas' %}" class="btn btn-info action-btn">
-                                <i class="bi bi-table me-2"></i>
-                                Resultados
-                            </a>
-                        </div>
-                    </div>
-                </div>
+  <!-- Cabeçalho -->
+  <div class="row g-3 mb-4">
+    <div class="col-12">
+      <div
+        class="card border-0 rounded-4 shadow-sm bg-gradient hover-shadow"
+        style="background-color: #063c7a"
+      >
+        <div class="card-body p-4">
+          <div
+            class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4"
+          >
+            <h1 class="mb-3 mb-md-0 text-white">Bem vindo ao Laguna</h1>
+            <div class="action-buttons">
+              <a
+                href="{% url 'cadastro_coleta' %}"
+                class="btn btn-primary action-btn"
+              >
+                <i class="bi bi-plus-circle me-2"></i>
+                Nova Coleta
+              </a>
+              <a
+                href="{% url 'lista_de_coletas' %}"
+                class="btn btn-success action-btn"
+              >
+                <i class="bi bi-list-check me-2"></i>
+                Listar Coletas
+              </a>
+              <a
+                href="{% url 'resultados_todas_medidas' %}"
+                class="btn btn-info action-btn"
+              >
+                <i class="bi bi-table me-2"></i>
+                Resultados
+              </a>
             </div>
+          </div>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Statistics Row -->
+  <div class="row g-3 mb-4">
+    <!-- Total Coletas -->
+    <div class="col-xl-3 col-md-6">
+      <div
+        class="card border-0 rounded-4 shadow-sm bg-gradient hover-shadow"
+        style="background-color: #4caf50"
+      >
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="flex-grow-1">
+              <p class="mb-0 text-white">Total de Coletas</p>
+              <h3 class="mb-0 text-white">{{ total_coletas }}</h3>
+            </div>
+            <div class="ms-3">
+              <i class="bi bi-clipboard-data fs-1 text-white"></i>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- Statistics Row -->
-    <div class="row g-3 mb-4">
-        <!-- Total Coletas -->
-        <div class="col-xl-3 col-md-6">
-            <div class="card border-0 rounded-4 shadow-sm bg-gradient hover-shadow" style="background-color:#4CAF50;">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-grow-1">
-                            <p class="mb-0 text-white">Total de Coletas</p>
-                            <h3 class="mb-0 text-white">{{ total_coletas }}</h3>
-                        </div>
-                        <div class="ms-3">
-                            <i class="bi bi-clipboard-data fs-1 text-white"></i>
-                        </div>
-                    </div>
-                </div>
+    <!-- Coletas Pendentes -->
+    <div class="col-xl-3 col-md-6">
+      <div
+        class="card border-0 rounded-4 shadow-sm bg-gradient hover-shadow"
+        style="background-color: #ffa726"
+      >
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="flex-grow-1">
+              <p class="mb-0 text-white">Coletas Pendentes</p>
+              <h3 class="mb-0 text-white">{{ coletas_pendentes }}</h3>
             </div>
-        </div>
-
-        <!-- Coletas Pendentes -->
-        <div class="col-xl-3 col-md-6">
-            <div class="card border-0 rounded-4 shadow-sm bg-gradient hover-shadow" style="background-color:#FFA726;">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-grow-1">
-                            <p class="mb-0 text-white">Coletas Pendentes</p>
-                            <h3 class="mb-0 text-white">{{ coletas_pendentes }}</h3>
-                        </div>
-                        <div class="ms-3">
-                            <i class="bi bi-hourglass-split fs-1 text-white"></i>
-                        </div>
-                    </div>
-                </div>
+            <div class="ms-3">
+              <i class="bi bi-hourglass-split fs-1 text-white"></i>
             </div>
+          </div>
         </div>
-
-        <!-- Coletas Finalizadas -->
-        <div class="col-xl-3 col-md-6">
-            <div class="card border-0 rounded-4 shadow-sm bg-gradient hover-shadow" style="background-color:#42A5F5;">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-grow-1">
-                            <p class="mb-0 text-white">Coletas Finalizadas</p>
-                            <h3 class="mb-0 text-white">{{ coletas_finalizadas }}</h3>
-                        </div>
-                        <div class="ms-3">
-                            <i class="bi bi-check-circle fs-1 text-white"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Coletas Canceladas -->
-        <div class="col-xl-3 col-md-6">
-            <div class="card border-0 rounded-4 shadow-sm bg-gradient hover-shadow" style="background-color:#EF5350;">
-                <div class="card-body">
-                    <div class="d-flex align-items-center">
-                        <div class="flex-grow-1">
-                            <p class="mb-0 text-white">Coletas Aguardando resultados</p>
-                            <h3 class="mb-0 text-white">{{ coletas_esperando_resultados }}</h3>
-                        </div>
-                        <div class="ms-3">
-                            <i class="bi bi-x-circle fs-1 text-white"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+      </div>
     </div>
 
-    <!-- Charts Row -->
-    <div class="row g-3 mb-4">
-        <!-- Status Chart -->
-        <div class="col-md-6">
-            <div class="card border-0 rounded-4 shadow-sm hover-shadow">
-                <div class="card-header border-0 bg-transparent pb-0">
-                    <h5 class="card-title mb-0 fw-bold">Coletas por Status</h5>
-                </div>
-                <div class="card-body chart-container">
-                    <canvas id="statusChart"></canvas>
-                </div>
+    <!-- Coletas Finalizadas -->
+    <div class="col-xl-3 col-md-6">
+      <div
+        class="card border-0 rounded-4 shadow-sm bg-gradient hover-shadow"
+        style="background-color: #42a5f5"
+      >
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="flex-grow-1">
+              <p class="mb-0 text-white">Coletas Finalizadas</p>
+              <h3 class="mb-0 text-white">{{ coletas_finalizadas }}</h3>
             </div>
-        </div>
-        
-        <!-- Calendar -->
-        <div class="col-md-6">
-            <div class="card border-0 rounded-4 shadow-sm hover-shadow">
-                <div class="card-header border-0 bg-transparent pb-0">
-                    <h5 class="card-title mb-0 fw-bold">Calendário de Coletas</h5>
-                </div>
-                <div class="card-body">
-                    <div id="calendar"></div>
-                </div>
+            <div class="ms-3">
+              <i class="bi bi-check-circle fs-1 text-white"></i>
             </div>
+          </div>
         </div>
+      </div>
     </div>
+
+    <!-- Coletas Canceladas -->
+    <div class="col-xl-3 col-md-6">
+      <div
+        class="card border-0 rounded-4 shadow-sm bg-gradient hover-shadow"
+        style="background-color: #ef5350"
+      >
+        <div class="card-body">
+          <div class="d-flex align-items-center">
+            <div class="flex-grow-1">
+              <p class="mb-0 text-white">Coletas Aguardando resultados</p>
+              <h3 class="mb-0 text-white">
+                {{ coletas_esperando_resultados }}
+              </h3>
+            </div>
+            <div class="ms-3">
+              <i class="bi bi-x-circle fs-1 text-white"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts Row -->
+  <div class="row g-3 mb-4">
+    <!-- Status Chart -->
+    <div class="col-md-6">
+      <div class="card border-0 rounded-4 shadow-sm hover-shadow">
+        <div class="card-header border-0 bg-transparent pb-0">
+          <h5 class="card-title mb-0 fw-bold">Coletas por Status</h5>
+        </div>
+        <div class="card-body chart-container">
+          <canvas id="statusChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Calendar -->
+    <div class="col-md-6">
+      <div class="card border-0 rounded-4 shadow-sm hover-shadow">
+        <div class="card-header border-0 bg-transparent pb-0">
+          <h5 class="card-title mb-0 fw-bold">Calendário de Coletas</h5>
+        </div>
+        <div class="card-body">
+          <div id="calendar"></div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-function initChart() {
-    const canvas = document.getElementById('statusChart');
-    if (!canvas) {
-        console.error('Canvas element not found');
-        return;
-    }
+  function initChart() {
+      const canvas = document.getElementById('statusChart');
+      if (!canvas) {
+          console.error('Canvas element not found');
+          return;
+      }
 
-    const ctx = canvas.getContext('2d');
-    
-    const chartData = {
-        labels: {{ chart_data.labels|safe }},
-        data: {{ chart_data.counts|safe }},
-        colors: {{ chart_data.colors|safe|default:'[]' }}
-    };
+      const ctx = canvas.getContext('2d');
 
-    // Filtrar dados com contagem zero e ordenar em ordem decrescente
-    const filteredData = chartData.data.map((value, index) => ({
-        label: chartData.labels[index],
-        value: value,
-        color: chartData.colors[index]
-    }))
-    .filter(item => item.value > 0)
-    .sort((a, b) => b.value - a.value); // Ordenar por valor em ordem decrescente
+      const chartData = {
+          labels: {{ chart_data.labels|safe }},
+          data: {{ chart_data.counts|safe }},
+          colors: {{ chart_data.colors|safe|default:'[]' }}
+      };
 
-    // Reorganizar os dados filtrados
-    const cleanData = {
-        labels: filteredData.map(item => item.label),
-        data: filteredData.map(item => item.value),
-        colors: filteredData.map(item => item.color)
-    };
+      // Filtrar dados com contagem zero e ordenar em ordem decrescente
+      const filteredData = chartData.data.map((value, index) => ({
+          label: chartData.labels[index],
+          value: value,
+          color: chartData.colors[index]
+      }))
+      .filter(item => item.value > 0)
+      .sort((a, b) => b.value - a.value); // Ordenar por valor em ordem decrescente
 
-    console.log('Dados do gráfico filtrados:', cleanData);
+      // Reorganizar os dados filtrados
+      const cleanData = {
+          labels: filteredData.map(item => item.label),
+          data: filteredData.map(item => item.value),
+          colors: filteredData.map(item => item.color)
+      };
 
-    if (cleanData.labels.length === 0) {
-        console.error('Nenhum dado disponível para o gráfico');
-        return;
-    }
+      console.log('Dados do gráfico filtrados:', cleanData);
 
-    const chart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: cleanData.labels,
-            datasets: [{
-                label: 'Quantidade de Coletas',
-                data: cleanData.data,
-                backgroundColor: cleanData.colors,
-                borderWidth: 0,
-                borderRadius: 20,
-                barThickness: 25,  // Reduzido para barras mais finas
-                maxBarThickness: 100
-            }]
-        },
-        options: {
-            indexAxis: 'y',  // Isso faz o gráfico ficar horizontal
-            responsive: true,
-            maintainAspectRatio: false,
-            aspectRatio: 2,  // Ajustado para melhor visualização horizontal
-            layout: {
-                padding: {
-                    left: 20,
-                    right: 30,  // Aumentado para acomodar os valores
-                    top: 20,
-                    bottom: 10
-                }
-            },
-            plugins: {
-                legend: {
-                    display: false
-                },
-                tooltip: {
-                    backgroundColor: 'rgba(0,0,0,0.8)',
-                    titleColor: '#fff',
-                    titleFont: {
-                        size: 13,
-                        family: "'Inter', sans-serif",
-                        weight: '600'
-                    },
-                    bodyFont: {
-                        size: 12,
-                        family: "'Inter', sans-serif"
-                    },
-                    padding: 12,
-                    cornerRadius: 8,
-                    callbacks: {
-                        label: function(context) {
-                            return `Total: ${context.parsed.x}`;  // Mudado para x por causa da orientação horizontal
-                        }
-                    }
-                }
-            },
-            scales: {
-                x: {  // Era y antes
-                    beginAtZero: false,
-                    ticks: {
-                        stepSize: 1,
-                        font: {
-                            size: 12,
-                            family: "'Inter', sans-serif"
-                        }
-                    },
-                    grid: {
-                        display: true,
-                        color: 'rgba(0,0,0,0.05)'
-                    }
-                },
-                y: {  // Era x antes
-                    ticks: {
-                        font: {
-                            size: 12,
-                            weight: '500',
-                            family: "'Inter', sans-serif"
-                        }
-                    },
-                    grid: {
-                        display: false
-                    }
-                }
-            }
-        }
-    });
-}
+      if (cleanData.labels.length === 0) {
+          console.error('Nenhum dado disponível para o gráfico');
+          return;
+      }
 
-// Garantir que o DOM está completamente carregado
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function() {
-        initChart();
-    });
-} else {
-    initChart();
-}
+      const chart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+              labels: cleanData.labels,
+              datasets: [{
+                  label: 'Quantidade de Coletas',
+                  data: cleanData.data,
+                  backgroundColor: cleanData.colors,
+                  borderWidth: 0,
+                  borderRadius: 20,
+                  barThickness: 25,  // Reduzido para barras mais finas
+                  maxBarThickness: 100
+              }]
+          },
+          options: {
+              indexAxis: 'y',  // Isso faz o gráfico ficar horizontal
+              responsive: true,
+              maintainAspectRatio: false,
+              aspectRatio: 2,  // Ajustado para melhor visualização horizontal
+              layout: {
+                  padding: {
+                      left: 20,
+                      right: 30,  // Aumentado para acomodar os valores
+                      top: 20,
+                      bottom: 10
+                  }
+              },
+              plugins: {
+                  legend: {
+                      display: false
+                  },
+                  tooltip: {
+                      backgroundColor: 'rgba(0,0,0,0.8)',
+                      titleColor: '#fff',
+                      titleFont: {
+                          size: 13,
+                          family: "'Inter', sans-serif",
+                          weight: '600'
+                      },
+                      bodyFont: {
+                          size: 12,
+                          family: "'Inter', sans-serif"
+                      },
+                      padding: 12,
+                      cornerRadius: 8,
+                      callbacks: {
+                          label: function(context) {
+                              return `Total: ${context.parsed.x}`;  // Mudado para x por causa da orientação horizontal
+                          }
+                      }
+                  }
+              },
+              scales: {
+                  x: {  // Era y antes
+                      beginAtZero: false,
+                      ticks: {
+                          stepSize: 1,
+                          font: {
+                              size: 12,
+                              family: "'Inter', sans-serif"
+                          }
+                      },
+                      grid: {
+                          display: true,
+                          color: 'rgba(0,0,0,0.05)'
+                      }
+                  },
+                  y: {  // Era x antes
+                      ticks: {
+                          font: {
+                              size: 12,
+                              weight: '500',
+                              family: "'Inter', sans-serif"
+                          }
+                      },
+                      grid: {
+                          display: false
+                      }
+                  }
+              }
+          }
+      });
+  }
 
-document.addEventListener('DOMContentLoaded', function() {
-    const calendarEl = document.getElementById('calendar');
-    const calendarEvents = JSON.parse('{{ calendar_events|safe }}');
-    
-    const calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'dayGridMonth',
-        locale: 'pt-br',
-        height: 400,
-        headerToolbar: {
-            left: 'prev,next today',
-            center: 'title',
-            right: ''
-        },
-        buttonText: {
-            today: 'Hoje'
-        },
-        events: calendarEvents.map(event => ({
-            id: event.id,
-            title: `Coleta em ${event.title}`, // Modified title format
-            start: event.start,
-            backgroundColor: event.backgroundColor || '#4361ee',
-            textColor: event.textColor || '#ffffff',
-            borderColor: 'transparent',
-            url: `/info_coleta/${event.id}/`
-        })),
-        dateClick: function(info) {
-            // Redirect to direcionamento_campanha when clicking on a date
-            window.location.href = `/cadastro_coleta/?data=${info.dateStr}`;
-        },
-        eventClick: function(info) {
-            // Prevent default behavior
-            info.jsEvent.preventDefault();
-            // Redirect to info_coleta page
-            window.location.href = info.event.url;
-        },
-        eventDidMount: function(info) {
-            const googleCalendarUrl = createGoogleCalendarUrl({
-                title: info.event.title,
-                start: info.event.start,
-                end: info.event.end || info.event.start,
-                description: `Nova ${info.event.title}`
-            });
-            
-            // Create a div element for the tooltip content
-            const tooltipContent = document.createElement('div');
-            tooltipContent.innerHTML = `
-                <div class="event-tooltip">
-                    <p class="mb-2">${info.event.title}</p>
-                    <a href="${googleCalendarUrl}" target="_blank" class="btn btn-sm btn-light">
-                        <i class="bi bi-calendar-plus"></i> Adicionar coleta ao seu calendário google
-                    </a>
-                </div>
-            `;
-            
-            // Initialize the tooltip with updated configuration
-            const tooltip = new bootstrap.Tooltip(info.el, {
-                title: tooltipContent,
-                html: true,
-                placement: 'top',
-                trigger: 'manual', // Changed to manual trigger
-                container: 'body',
-                template: `
-                    <div class="tooltip" role="tooltip">
-                        <div class="tooltip-arrow"></div>
-                        <div class="tooltip-inner event-tooltip-inner"></div>
-                    </div>
-                `
-            });
-            
-            // Add hover events with delay
-            let timeout;
-            
-            info.el.addEventListener('mouseenter', () => {
-                tooltip.show();
-                clearTimeout(timeout);
-            });
-            
-            info.el.addEventListener('mouseleave', () => {
-                timeout = setTimeout(() => {
-                    if (!document.querySelector('.tooltip:hover')) {
-                        tooltip.hide();
-                    }
-                }, 300);
-            });
-            
-            // Add hover events for the tooltip itself
-            document.addEventListener('mouseover', function(e) {
-                if (e.target.closest('.tooltip')) {
-                    clearTimeout(timeout);
-                }
-            });
-            
-            document.addEventListener('mouseleave', function(e) {
-                if (e.target.closest('.tooltip')) {
-                    timeout = setTimeout(() => {
-                        tooltip.hide();
-                    }, 300);
-                }
-            });
-        }
-    });
+  // Garantir que o DOM está completamente carregado
+  if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function() {
+          initChart();
+      });
+  } else {
+      initChart();
+  }
 
-    calendar.render();
-});
+  document.addEventListener('DOMContentLoaded', function() {
+      const calendarEl = document.getElementById('calendar');
+      const calendarEvents = JSON.parse('{{ calendar_events|safe }}');
+      let currentTooltip = null;
+      let isMouseOverTooltip = false;
 
-// Replace the existing createGoogleCalendarUrl function with:
+      const calendar = new FullCalendar.Calendar(calendarEl, {
+          initialView: 'dayGridMonth',
+          locale: 'pt-br',
+          height: 400,
+          headerToolbar: {
+              left: 'prev,next today',
+              center: 'title',
+              right: ''
+          },
+          buttonText: {
+              today: 'Hoje'
+          },
+          events: calendarEvents.map(event => ({
+              id: event.id,
+              title: `Coleta em ${event.title}`, // Modified title format
+              start: event.start,
+              backgroundColor: event.backgroundColor || '#4361ee',
+              textColor: event.textColor || '#ffffff',
+              borderColor: 'transparent',
+              url: `/info_coleta/${event.id}/`
+          })),
+          dateClick: function(info) {
+              // Redirect to direcionamento_campanha when clicking on a date
+              window.location.href = `/cadastro_coleta/?data=${info.dateStr}`;
+          },
+          eventClick: function(info) {
+              // Prevent default behavior
+              info.jsEvent.preventDefault();
+              // Redirect to info_coleta page
+              window.location.href = info.event.url;
+          },
+          eventDidMount: function(info) {
+              const googleCalendarUrl = createGoogleCalendarUrl({
+                  title: info.event.title,
+                  start: info.event.start,
+                  end: info.event.end || info.event.start,
+                  description: `Nova ${info.event.title}`
+              });
 
-function createGoogleCalendarUrl(event) {
-    const formatDate = (date) => {
-        return date.toISOString().replace(/-|:|\.\d\d\d/g, '');
-    };
+              // Create tooltip content
+              const tooltipContent = document.createElement('div');
+              tooltipContent.innerHTML = `
+                  <div class="event-tooltip">
+                      <p class="mb-2">${info.event.title}</p>
+                      <a href="${googleCalendarUrl}" target="_blank" class="btn btn-sm btn-light">
+                          <i class="bi bi-calendar-plus"></i> Adicionar coleta ao seu calendário google
+                      </a>
+                  </div>
+              `;
 
-    // Get current user email from Django template
-    const userEmail = '{{ request.user.email }}';
+              // Initialize tooltip
+              const tooltip = new bootstrap.Tooltip(info.el, {
+                  title: tooltipContent,
+                  html: true,
+                  placement: 'top',
+                  trigger: 'manual',
+                  container: 'body',
+                  template: `
+                      <div class="tooltip" role="tooltip">
+                          <div class="tooltip-arrow"></div>
+                          <div class="tooltip-inner event-tooltip-inner"></div>
+                      </div>
+                  `
+              });
 
-    const params = new URLSearchParams({
-        action: 'TEMPLATE',
-        text: event.title,
-        dates: `${formatDate(event.start)}/${formatDate(event.end)}`,
-        details: event.description,
-        add: userEmail // Add current user as attendee
-    });
+              // Handle mouse events
+              info.el.addEventListener('mouseenter', () => {
+                  if (currentTooltip) {
+                      currentTooltip.hide();
+                  }
+                  tooltip.show();
+                  currentTooltip = tooltip;
 
-    return `https://www.google.com/calendar/render?${params.toString()}`;
-}
+                  // Adicionar listener para o tooltip atual
+                  const tooltipElement = document.querySelector('.tooltip');
+                  if (tooltipElement) {
+                      tooltipElement.addEventListener('mouseenter', () => {
+                          isMouseOverTooltip = true;
+                      });
+                      tooltipElement.addEventListener('mouseleave', () => {
+                          isMouseOverTooltip = false;
+                          setTimeout(() => {
+                              if (!isMouseOverTooltip && currentTooltip === tooltip) {
+                                  tooltip.hide();
+                                  currentTooltip = null;
+                              }
+                          }, 300);
+                      });
+                  }
+              });
+
+              info.el.addEventListener('mouseleave', () => {
+                  setTimeout(() => {
+                      if (!isMouseOverTooltip && currentTooltip === tooltip) {
+                          tooltip.hide();
+                          currentTooltip = null;
+                      }
+                  }, 300);
+              });
+          }
+      });
+
+      calendar.render();
+  });
+
+  // Replace the existing createGoogleCalendarUrl function with:
+
+  function createGoogleCalendarUrl(event) {
+      const formatDate = (date) => {
+          return date.toISOString().replace(/-|:|\.\d\d\d/g, '');
+      };
+
+      // Get current user email from Django template
+      const userEmail = '{{ request.user.email }}';
+
+      const params = new URLSearchParams({
+          action: 'TEMPLATE',
+          text: event.title,
+          dates: `${formatDate(event.start)}/${formatDate(event.end)}`,
+          details: event.description,
+          add: userEmail // Add current user as attendee
+      });
+
+      return `https://www.google.com/calendar/render?${params.toString()}`;
+  }
 </script>
 
 <style>
-.fc {
+  .fc {
     background: white;
     padding: 1rem;
     border-radius: 0.5rem;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
 
-.fc-toolbar-title {
+  .fc-toolbar-title {
     font-size: 1.2rem !important;
     font-weight: 600 !important;
     text-transform: capitalize;
-}
+  }
 
-.fc-button {
+  .fc-button {
     border-radius: 0.375rem !important;
     text-transform: capitalize !important;
     padding: 0.5rem 1rem !important;
@@ -646,142 +681,142 @@ function createGoogleCalendarUrl(event) {
     background-color: #fff !important;
     border-color: #dee2e6 !important;
     color: #495057 !important;
-}
+  }
 
-.fc-button:hover {
+  .fc-button:hover {
     background-color: #f8f9fa !important;
     border-color: #4361ee !important;
     color: #4361ee !important;
-}
+  }
 
-.fc-button-active {
+  .fc-button-active {
     background-color: #4361ee !important;
     border-color: #4361ee !important;
     color: #fff !important;
-}
+  }
 
-.fc-day-today {
+  .fc-day-today {
     background-color: rgba(67, 97, 238, 0.1) !important;
-}
+  }
 
-.fc-event {
+  .fc-event {
     border: none !important;
     padding: 2px 4px !important;
     margin: 1px !important;
     font-size: 0.875rem !important;
-}
+  }
 
-.fc-daygrid-event {
+  .fc-daygrid-event {
     white-space: normal !important;
     align-items: center !important;
     margin: 1px 2px !important;
-}
+  }
 
-.fc-daygrid-day {
+  .fc-daygrid-day {
     transition: background-color 0.2s ease;
-}
+  }
 
-.fc-daygrid-day:hover {
+  .fc-daygrid-day:hover {
     background-color: rgba(67, 97, 238, 0.05);
-}
+  }
 
-.fc-col-header-cell-cushion,
-.fc-daygrid-day-number {
+  .fc-col-header-cell-cushion,
+  .fc-daygrid-day-number {
     color: #495057;
     text-decoration: none !important;
     font-weight: 500;
-}
+  }
 </style>
 
 <style>
-.hover-shadow {
+  .hover-shadow {
     transition: all 0.3s ease;
-}
-.hover-shadow:hover {
+  }
+  .hover-shadow:hover {
     transform: translateY(-5px);
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
-}
-.table td {
+  }
+  .table td {
     vertical-align: middle;
-}
-.chart-container {
+  }
+  .chart-container {
     position: relative;
     margin: auto;
-    height: 400px;  /* Aumentado para 400px */
+    height: 400px; /* Aumentado para 400px */
     width: 100%;
-    max-width: 1200px;  /* Aumentado para 1200px */
-    padding: 20px;  /* Aumentado padding */
-}
+    max-width: 1200px; /* Aumentado para 1200px */
+    padding: 20px; /* Aumentado padding */
+  }
 
-#statusChart {
+  #statusChart {
     width: 100% !important;
     height: 100% !important;
-}
+  }
 
-.card-header h5 {
-    color: #2c3e50;  /* Cor mais profissional para o título */
+  .card-header h5 {
+    color: #2c3e50; /* Cor mais profissional para o título */
     font-size: 1.2rem;
-}
+  }
 
-/* Estilos para o Toast UI Calendar */
-#calendar {
+  /* Estilos para o Toast UI Calendar */
+  #calendar {
     width: 100%;
     height: 400px;
-    font-family: 'Inter', sans-serif;
-}
+    font-family: "Inter", sans-serif;
+  }
 
-.toastui-calendar-layout {
+  .toastui-calendar-layout {
     border-radius: 8px;
     overflow: hidden;
-}
+  }
 
-.calendar-week-dayname {
+  .calendar-week-dayname {
     font-size: 0.9rem;
     font-weight: 500;
-}
+  }
 
-.toastui-calendar-event {
+  .toastui-calendar-event {
     border-radius: 4px;
-}
+  }
 
-.toastui-calendar-today {
+  .toastui-calendar-today {
     background-color: rgba(67, 97, 238, 0.1) !important;
-}
+  }
 
-/* Ajustes adicionais para o calendário */
-.calendar-date {
+  /* Ajustes adicionais para o calendário */
+  .calendar-date {
     font-size: 0.9rem;
     font-weight: 500;
     color: #333;
-}
+  }
 
-.calendar-more {
+  .calendar-more {
     font-size: 0.8rem;
     color: #666;
     padding: 2px 4px;
     background: #f8f9fa;
     border-radius: 4px;
     cursor: pointer;
-}
+  }
 
-.toastui-calendar-daygrid-cell {
+  .toastui-calendar-daygrid-cell {
     min-height: 80px !important;
-}
+  }
 
-.toastui-calendar-event {
+  .toastui-calendar-event {
     margin: 1px 0;
     padding: 2px 4px !important;
     border-radius: 4px !important;
     font-size: 0.8em;
     white-space: normal;
     word-break: break-word;
-}
+  }
 
-.toastui-calendar-event-time {
+  .toastui-calendar-event-time {
     display: none !important; /* Remove explicitamente a exibição do horário */
-}
+  }
 
-.toastui-calendar-event {
+  .toastui-calendar-event {
     margin: 1px 2px !important;
     padding: 1px 4px !important;
     border-radius: 4px !important;
@@ -790,141 +825,142 @@ function createGoogleCalendarUrl(event) {
     white-space: normal !important;
     word-break: break-word !important;
     min-height: unset !important;
-}
+  }
 
-.calendar-event-title {
+  .calendar-event-title {
     font-weight: 500;
     display: block;
-}
+  }
 
-.calendar-event-body {
+  .calendar-event-body {
     font-size: 0.7rem;
     opacity: 0.8;
     display: block;
-}
+  }
 
-.toastui-calendar-daygrid-cell {
+  .toastui-calendar-daygrid-cell {
     min-height: 120px !important; // Aumentado para acomodar mais eventos
-}
+  }
 
-.toastui-calendar-daygrid-cell.toastui-calendar-grid-cell-more .toastui-calendar-weekday-grid {
+  .toastui-calendar-daygrid-cell.toastui-calendar-grid-cell-more
+    .toastui-calendar-weekday-grid {
     overflow-y: auto !important;
     max-height: 100% !important;
-}
+  }
 
-.toastui-calendar-weekday-grid {
+  .toastui-calendar-weekday-grid {
     min-height: 100% !important;
-}
+  }
 
-.calendar-event {
+  .calendar-event {
     padding: 2px 4px;
     border-radius: 4px;
     margin: 1px 2px;
     font-size: 0.75rem;
     line-height: 1.2;
-}
+  }
 
-.toastui-calendar-event {
+  .toastui-calendar-event {
     opacity: 0.9;
     transition: opacity 0.2s ease-in-out;
-}
+  }
 
-.toastui-calendar-event:hover {
+  .toastui-calendar-event:hover {
     opacity: 1;
-}
+  }
 
-#eventsList {
+  #eventsList {
     max-height: 400px;
     overflow-y: auto;
-}
+  }
 
-#eventsList div:hover {
+  #eventsList div:hover {
     filter: brightness(95%);
     transition: filter 0.2s ease-in-out;
-}
+  }
 
-.calendar-more {
+  .calendar-more {
     font-size: 0.8rem;
     color: #666;
     padding: 2px 4px;
     background: #f8f9fa;
     border-radius: 4px;
     cursor: pointer;
-}
+  }
 
-.calendar-more:hover {
+  .calendar-more:hover {
     background: #e9ecef;
     color: #333;
-}
+  }
 
-/* Estilos para o popup more */
-.toastui-calendar-popup-overlay {
+  /* Estilos para o popup more */
+  .toastui-calendar-popup-overlay {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0,0,0,0.5);
+    background-color: rgba(0, 0, 0, 0.5);
     z-index: 1000;
-}
+  }
 
-.toastui-calendar-popup {
+  .toastui-calendar-popup {
     background: #fff;
     border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
     max-height: 80vh;
     overflow-y: auto;
-}
+  }
 
-.toastui-calendar-popup-container {
+  .toastui-calendar-popup-container {
     padding: 16px;
-}
+  }
 
-.toastui-calendar-popup-section {
+  .toastui-calendar-popup-section {
     margin-bottom: 8px;
-}
+  }
 
-.toastui-calendar-scheduled-event {
+  .toastui-calendar-scheduled-event {
     cursor: pointer;
     padding: 8px;
     margin: 4px 0;
     border-radius: 4px;
     transition: all 0.2s ease;
-}
+  }
 
-.toastui-calendar-scheduled-event:hover {
+  .toastui-calendar-scheduled-event:hover {
     filter: brightness(95%);
-}
+  }
 
-.toastui-calendar-more-popup {
-    box-shadow: 0 2px 6px rgba(0,0,0,0.15) !important;
+  .toastui-calendar-more-popup {
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
     border-radius: 8px !important;
-}
+  }
 
-.toastui-calendar-more-schedule {
+  .toastui-calendar-more-schedule {
     margin: 4px !important;
     padding: 4px 8px !important;
     border-radius: 4px !important;
     transition: all 0.2s ease !important;
-}
+  }
 
-.toastui-calendar-more-schedule:hover {
+  .toastui-calendar-more-schedule:hover {
     filter: brightness(95%) !important;
-}
+  }
 
-.toastui-calendar-more-popup-header {
+  .toastui-calendar-more-popup-header {
     padding: 12px 16px !important;
     border-bottom: 1px solid #eee !important;
-}
+  }
 
-.toastui-calendar-more-popup-close {
+  .toastui-calendar-more-popup-close {
     top: 12px !important;
     right: 12px !important;
-}
+  }
 
-.toastui-calendar-popup-container {
+  .toastui-calendar-popup-container {
     border-radius: 8px !important;
     overflow: hidden !important;
-}
+  }
 </style>
 {% endblock %}
