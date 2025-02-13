@@ -1,156 +1,179 @@
-{% extends 'base/base_site.html' %}
-{% load django_tables2 %}
-{% load django_bootstrap5 %}
-{% load static %}
-
-{% block content %}
+{% extends 'base/base_site.html' %} {% load django_tables2 %} {% load
+django_bootstrap5 %} {% load static %} {% block content %}
 <div class="container-fluid px-4 py-3 mb-4">
-    <!-- Cabeçalho moderno -->
-    <div class="row g-3 mb-4">
-        <div class="col-12">
-            <div class="card border-0 rounded-4 shadow-sm bg-gradient hover-shadow" style="background-color:rgb(6, 60, 122);">
-                <div class="card-body p-4">
-                    <div class="row align-items-center">
-                        <div class="col-md-8">
-                            <h1 class="display-6 mb-3 text-white d-flex align-items-center">
-                                <i class="bi bi-clipboard-data me-3"></i>
-                                <span>Lista de Campanhas</span>
-                            </h1>
-                            <p class="text-white-50">Gerencie e visualize todas as campanhas cadastradas</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="card border-0 rounded-4 shadow-sm hover-shadow">
-        <div class="card-header bg-gradient border-0 rounded-top-4" style="background-color: #4361ee;">
-            <h5 class="card-title mb-0 text-white">
-                <i class="bi bi-list-check me-2"></i>Campanhas Cadastradas
-            </h5>
-        </div>
+  <!-- Cabeçalho moderno -->
+  <div class="row g-3 mb-4">
+    <div class="col-12">
+      <div
+        class="card border-0 rounded-4 shadow-sm bg-gradient hover-shadow"
+        style="background-color: rgb(6, 60, 122)"
+      >
         <div class="card-body p-4">
-            <form method="post" action="{% url 'aplicar_acao' %}" id="coletaForm">
-                {% csrf_token %}
-                {% render_table table %}
-                
-                <div class="d-flex gap-3 flex-wrap justify-content-center mt-4">
-                    <button type="submit" 
-                            name="acao" 
-                            value="editar" 
-                            class="btn btn-primary btn-lg rounded-pill"
-                            data-bs-toggle="tooltip"
-                            data-bs-placement="top"
-                            title="Editar a campanha selecionada">
-                        <i class="bi bi-pencil-square me-2"></i>Editar
-                    </button>
-                    <button type="submit" 
-                            name="acao" 
-                            value="detalhes" 
-                            class="btn btn-secondary btn-lg rounded-pill"
-                            data-bs-toggle="tooltip"
-                            data-bs-placement="top"
-                            title="Ver detalhes da campanha selecionada">
-                        <i class="bi bi-info-circle me-2"></i>Detalhes
-                    </button>
-                    <button type="button" 
-                            id="btnCancelar" 
-                            class="btn btn-danger btn-lg rounded-pill"
-                            data-bs-toggle="tooltip"
-                            data-bs-placement="top"
-                            title="Cancelar a campanha selecionada">
-                        <i class="bi bi-x-circle me-2"></i>Cancelar
-                    </button>
-                    <a href="{% url 'direcionamento_campanha' %}" 
-                       class="btn btn-success btn-lg rounded-pill"
-                       data-bs-toggle="tooltip"
-                       data-bs-placement="top"
-                       title="Criar uma nova campanha">
-                        <i class="bi bi-plus-circle me-2"></i>Nova Campanha
-                    </a>
-                </div>
-                <input type="hidden" name="acao" id="acaoInput" value="">
-            </form>
+          <div class="row align-items-center">
+            <div class="col-md-8">
+              <h1 class="display-6 mb-3 text-white d-flex align-items-center">
+                <i class="bi bi-clipboard-data me-3"></i>
+                <span>Lista de Campanhas</span>
+              </h1>
+              <p class="text-white-50">
+                Gerencie e visualize todas as campanhas cadastradas
+              </p>
+            </div>
+          </div>
         </div>
+      </div>
     </div>
+  </div>
+
+  <div class="card border-0 rounded-4 shadow-sm hover-shadow">
+    <div
+      class="card-header bg-gradient border-0 rounded-top-4"
+      style="background-color: #4361ee"
+    >
+      <h5 class="card-title mb-0 text-white">
+        <i class="bi bi-list-check me-2"></i>Campanhas Cadastradas
+      </h5>
+    </div>
+    <div class="card-body p-4">
+      <form method="post" action="{% url 'aplicar_acao' %}" id="coletaForm">
+        {% csrf_token %} {% render_table table %}
+
+        <div class="d-flex gap-3 flex-wrap justify-content-center mt-4">
+          <button
+            type="submit"
+            name="acao"
+            value="editar"
+            class="btn btn-primary btn-lg rounded-pill"
+            data-bs-toggle="tooltip"
+            data-bs-placement="top"
+            title="Editar a campanha selecionada"
+          >
+            <i class="bi bi-pencil-square me-2"></i>Editar
+          </button>
+          <button
+            type="submit"
+            name="acao"
+            value="detalhes"
+            class="btn btn-secondary btn-lg rounded-pill"
+            data-bs-toggle="tooltip"
+            data-bs-placement="top"
+            title="Ver detalhes da campanha selecionada"
+          >
+            <i class="bi bi-info-circle me-2"></i>Detalhes
+          </button>
+          <button
+            type="button"
+            id="btnCancelar"
+            class="btn btn-danger btn-lg rounded-pill"
+            data-bs-toggle="tooltip"
+            data-bs-placement="top"
+            title="Cancelar a campanha selecionada"
+          >
+            <i class="bi bi-x-circle me-2"></i>Cancelar
+          </button>
+          <a
+            href="{% url 'direcionamento_campanha' %}"
+            class="btn btn-success btn-lg rounded-pill"
+            data-bs-toggle="tooltip"
+            data-bs-placement="top"
+            title="Criar uma nova campanha"
+          >
+            <i class="bi bi-plus-circle me-2"></i>Nova Campanha
+          </a>
+        </div>
+        <input type="hidden" name="acao" id="acaoInput" value="" />
+      </form>
+    </div>
+  </div>
 </div>
 
 <!-- Modal de Confirmação -->
 <div class="modal fade" id="confirmarCancelamentoModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Confirmar Cancelamento</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="text-center mb-4">
-                    <i class="bi bi-exclamation-triangle text-warning display-4"></i>
-                    <h4 class="mt-3">Tem certeza que deseja cancelar?</h4>
-                    <p class="text-muted">Esta ação não pode ser desfeita.</p>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">
-                    <i class="bi bi-x-circle me-2"></i>Não, voltar
-                </button>
-                <button type="button" class="btn btn-danger rounded-pill" id="confirmarCancelamento">
-                    <i class="bi bi-check-circle me-2"></i>Sim, cancelar
-                </button>
-            </div>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Confirmar Cancelamento</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <div class="text-center mb-4">
+          <i class="bi bi-exclamation-triangle text-warning display-4"></i>
+          <h4 class="mt-3">Tem certeza que deseja cancelar?</h4>
+          <p class="text-muted">Esta ação não pode ser desfeita.</p>
         </div>
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-secondary rounded-pill"
+          data-bs-dismiss="modal"
+        >
+          <i class="bi bi-x-circle me-2"></i>Não, voltar
+        </button>
+        <button
+          type="button"
+          class="btn btn-danger rounded-pill"
+          id="confirmarCancelamento"
+        >
+          <i class="bi bi-check-circle me-2"></i>Sim, cancelar
+        </button>
+      </div>
     </div>
+  </div>
 </div>
 
 <style>
-.hover-shadow {
+  .hover-shadow {
     transition: all 0.3s ease;
-}
+  }
 
-.hover-shadow:hover {
+  .hover-shadow:hover {
     transform: translateY(-5px);
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
-}
+  }
 
-table {
+  table {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
-}
+  }
 
-table thead th {
+  table thead th {
     background-color: #f8f9fa;
     border-bottom: 2px solid #dee2e6;
     padding: 1rem;
     font-weight: 600;
     color: #4361ee;
-}
+  }
 
-table tbody tr {
+  table tbody tr {
     transition: all 0.2s ease;
     border-bottom: 1px solid #dee2e6;
-}
+  }
 
-table tbody tr:hover {
+  table tbody tr:hover {
     background-color: #f8f9fa;
     cursor: pointer;
     transform: translateY(-2px);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-}
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  }
 
-table td {
+  table td {
     padding: 1rem;
     vertical-align: middle;
-}
+  }
 
-single-select {
+  single-select {
     width: 20px;
     height: 20px;
     cursor: pointer;
-}
+  }
 
-.popup {
+  .popup {
     display: none;
     position: fixed;
     right: 20px; /* Força o popup a ficar 20px da direita */
@@ -158,183 +181,195 @@ single-select {
     border: none;
     border-radius: 1rem;
     padding: 1.5rem;
-    box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
     z-index: 1000;
     max-width: 300px;
     font-size: 0.9rem;
-}
+    opacity: 0.9; /* Define a opacidade para 60% */
+  }
 
-.popup h4 {
+  .popup h4 {
     color: #4361ee;
     font-size: 1.1rem;
     margin-bottom: 1rem;
     border-bottom: 2px solid #4361ee;
     padding-bottom: 0.5rem;
-}
+  }
 
-@media (max-width: 768px) {
+  @media (max-width: 768px) {
     .popup {
-        display: none !important;
+      display: none !important;
     }
-    
+
     .btn {
-        width: 100%;
-        margin-bottom: 0.5rem;
+      width: 100%;
+      margin-bottom: 0.5rem;
     }
-    
+
     .d-flex.gap-3 {
-        flex-direction: column;
+      flex-direction: column;
     }
-    
+
     table {
-        font-size: 0.9rem;
+      font-size: 0.9rem;
     }
-    
-    table td, table th {
-        padding: 0.75rem;
+
+    table td,
+    table th {
+      padding: 0.75rem;
     }
-}
+  }
 </style>
 
 <div id="popup" class="popup"></div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+  document.addEventListener("DOMContentLoaded", function () {
     // Inicializa todos os tooltips
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-    tooltipTriggerList.forEach(function(tooltipTriggerEl) {
-        new bootstrap.Tooltip(tooltipTriggerEl, {
-            trigger: 'hover'
-        });
+    var tooltipTriggerList = [].slice.call(
+      document.querySelectorAll('[data-bs-toggle="tooltip"]')
+    );
+    tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+      new bootstrap.Tooltip(tooltipTriggerEl, {
+        trigger: "hover",
+      });
     });
 
-    const rows = document.querySelectorAll('table tbody tr');
-    const popup = document.getElementById('popup');
+    const rows = document.querySelectorAll("table tbody tr");
+    const popup = document.getElementById("popup");
     let popupTimeout;
     let currentRequest = null;
 
     function isMobile() {
-        return window.innerWidth <= 768;
+      return window.innerWidth <= 768;
     }
 
-    rows.forEach(row => {
-        const radio = row.querySelector('.single-select');
+    rows.forEach((row) => {
+      const radio = row.querySelector(".single-select");
 
-        row.addEventListener('mouseenter', function(e) {
-            if (isMobile()) return;
-            const coletaId = radio.value;
-            clearTimeout(popupTimeout);
-            
-            if (currentRequest) {
-                currentRequest.abort();
+      row.addEventListener("mouseenter", function (e) {
+        if (isMobile()) return;
+        const coletaId = radio.value;
+        clearTimeout(popupTimeout);
+
+        if (currentRequest) {
+          currentRequest.abort();
+        }
+
+        currentRequest = fetch(`/detalhes_coleta_popup/${coletaId}/`)
+          .then((response) => response.text())
+          .then((data) => {
+            popup.innerHTML = data;
+            popup.style.display = "block";
+
+            // Posicionamento do popup sempre à direita
+            const rect = row.getBoundingClientRect();
+            const popupRect = popup.getBoundingClientRect();
+
+            // Calcula a posição vertical
+            let top = rect.top + window.scrollY;
+
+            // Ajusta verticalmente se sair da tela
+            if (top + popupRect.height > window.innerHeight + window.scrollY) {
+              top = window.innerHeight + window.scrollY - popupRect.height - 20;
             }
-            
-            currentRequest = fetch(`/detalhes_coleta_popup/${coletaId}/`)
-                .then(response => response.text())
-                .then(data => {
-                    popup.innerHTML = data;
-                    popup.style.display = 'block';
-                    
-                    // Posicionamento do popup sempre à direita
-                    const rect = row.getBoundingClientRect();
-                    const popupRect = popup.getBoundingClientRect();
-                    
-                    // Calcula a posição vertical
-                    let top = rect.top + window.scrollY;
-                    
-                    // Ajusta verticalmente se sair da tela
-                    if (top + popupRect.height > window.innerHeight + window.scrollY) {
-                        top = window.innerHeight + window.scrollY - popupRect.height - 20;
-                    }
-                    
-                    // Garante valor mínimo para o top
-                    top = Math.max(window.scrollY + 20, top);
-                    
-                    popup.style.top = `${top}px`;
-                    
-                    currentRequest = null;
-                })
-                .catch(() => {
-                    currentRequest = null;
-                });
-        });
 
-        row.addEventListener('mouseleave', function() {
-            if (isMobile()) return;
-            popupTimeout = setTimeout(() => {
-                popup.style.display = 'none';
-                popup.innerHTML = '';
-            }, 300);
-        });
+            // Garante valor mínimo para o top
+            top = Math.max(window.scrollY + 20, top);
 
-        row.addEventListener('click', function(e) {
-            if (e.target.closest('td').querySelector('.single-select')) {
-                return;
-            }
-            const coletaId = radio.value;
-            window.location.href = `{% url 'info_coleta' coleta_id=0 %}`.replace('0', coletaId);
-        });
+            popup.style.top = `${top}px`;
+
+            currentRequest = null;
+          })
+          .catch(() => {
+            currentRequest = null;
+          });
+      });
+
+      row.addEventListener("mouseleave", function () {
+        if (isMobile()) return;
+        popupTimeout = setTimeout(() => {
+          popup.style.display = "none";
+          popup.innerHTML = "";
+        }, 300);
+      });
+
+      row.addEventListener("click", function (e) {
+        if (e.target.closest("td").querySelector(".single-select")) {
+          return;
+        }
+        const coletaId = radio.value;
+        window.location.href = `{% url 'info_coleta' coleta_id=0 %}`.replace(
+          "0",
+          coletaId
+        );
+      });
     });
 
     // Gerenciamento de seleção única
-    const radios = document.querySelectorAll('.single-select');
-    radios.forEach(radio => {
-        radio.addEventListener('change', function() {
-            if (this.checked) {
-                radios.forEach(rb => {
-                    if (rb !== this) rb.checked = false;
-                });
-            }
-        });
+    const radios = document.querySelectorAll(".single-select");
+    radios.forEach((radio) => {
+      radio.addEventListener("change", function () {
+        if (this.checked) {
+          radios.forEach((rb) => {
+            if (rb !== this) rb.checked = false;
+          });
+        }
+      });
     });
 
     // Adiciona manipuladores para o cancelamento
-    const btnCancelar = document.getElementById('btnCancelar');
-    const form = document.getElementById('coletaForm');
-    const acaoInput = document.getElementById('acaoInput');
-    const modal = new bootstrap.Modal(document.getElementById('confirmarCancelamentoModal'));
-    const btnConfirmarCancelamento = document.getElementById('confirmarCancelamento');
+    const btnCancelar = document.getElementById("btnCancelar");
+    const form = document.getElementById("coletaForm");
+    const acaoInput = document.getElementById("acaoInput");
+    const modal = new bootstrap.Modal(
+      document.getElementById("confirmarCancelamentoModal")
+    );
+    const btnConfirmarCancelamento = document.getElementById(
+      "confirmarCancelamento"
+    );
 
-    btnCancelar.addEventListener('click', function() {
-        const selecionados = document.querySelectorAll('.single-select:checked');
-        if (selecionados.length === 0) {
-            alert('Por favor, selecione pelo menos uma coleta para cancelar.');
-            return;
+    btnCancelar.addEventListener("click", function () {
+      const selecionados = document.querySelectorAll(".single-select:checked");
+      if (selecionados.length === 0) {
+        alert("Por favor, selecione pelo menos uma coleta para cancelar.");
+        return;
+      }
+
+      // Verifica se alguma coleta selecionada já está cancelada
+      let temColetaCancelada = false;
+      selecionados.forEach((radio) => {
+        const row = radio.closest("tr");
+        const statusCell = row.querySelector("td[data-status]");
+        if (statusCell && statusCell.dataset.status === "2") {
+          // 2 = status cancelada
+          temColetaCancelada = true;
         }
+      });
 
-        // Verifica se alguma coleta selecionada já está cancelada
-        let temColetaCancelada = false;
-        selecionados.forEach(radio => {
-            const row = radio.closest('tr');
-            const statusCell = row.querySelector('td[data-status]');
-            if (statusCell && statusCell.dataset.status === "2") { // 2 = status cancelada
-                temColetaCancelada = true;
-            }
-        });
+      if (temColetaCancelada) {
+        alert("Não é possível cancelar uma coleta que já está cancelada.");
+        return;
+      }
 
-        if (temColetaCancelada) {
-            alert('Não é possível cancelar uma coleta que já está cancelada.');
-            return;
-        }
-
-        modal.show();
+      modal.show();
     });
 
-    btnConfirmarCancelamento.addEventListener('click', function() {
-        acaoInput.value = 'cancelar';
-        form.submit();
+    btnConfirmarCancelamento.addEventListener("click", function () {
+      acaoInput.value = "cancelar";
+      form.submit();
     });
 
     // Atualiza o form para outros botões
-    document.querySelectorAll('button[type="submit"]').forEach(button => {
-        if (button.name === 'acao') {
-            button.addEventListener('click', function(e) {
-                e.preventDefault();
-                acaoInput.value = this.value;
-                form.submit();
-            });
-        }
+    document.querySelectorAll('button[type="submit"]').forEach((button) => {
+      if (button.name === "acao") {
+        button.addEventListener("click", function (e) {
+          e.preventDefault();
+          acaoInput.value = this.value;
+          form.submit();
+        });
+      }
     });
-});
+  });
 </script>
 {% endblock %}

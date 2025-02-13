@@ -20,7 +20,8 @@ from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.core.mail import send_mail
 from django.core.paginator import Paginator
-from django.db import connection, transaction
+from django.db import connection, transaction, models
+from django.db.models import Q
 from django.forms import inlineformset_factory, modelformset_factory
 from django.http import FileResponse, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -2425,7 +2426,7 @@ def aplicar_acao(request):
             coleta = get_object_or_404(TabColeta, id=selecionados[0])
 
             # Verificar se a coleta está cancelada antes de qualquer ação
-            if coleta.status.id == 2:  # status 2 = cancelada
+            if coleta.status_id.id == 2:  # status 2 = cancelada
                 messages.error(
                     request, "Não é possível editar uma coleta que já está cancelada.")
                 return redirect("lista_de_coletas")
@@ -2436,11 +2437,11 @@ def aplicar_acao(request):
                 return redirect("info_coleta", coleta_id=selecionados[0])
             elif acao == "cancelar":
                 coletas = TabColeta.objects.filter(id__in=selecionados)
-                if coletas.filter(status=2).exists():
+                if coletas.filter(status_id=2).exists():
                     messages.error(
                         request, "Não é possível cancelar coletas que já estão canceladas.")
                 else:
-                    coletas.update(status=2)
+                    coletas.update(status_id=2)
                     messages.success(
                         request, "Coletas canceladas com sucesso.")
 
@@ -3209,9 +3210,11 @@ def new_home(request):
         # Buscar totais para os cards
         total_coletas = TabColeta.objects.count()
         coletas_pendentes = TabColeta.objects.filter(
-            status_id__status='Em andamento').count()
+            Q(status_id__status__in=['Adiada', 'Prorrogada', 'Programada', 'Em andamento']) | 
+            Q(status_id__isnull=True)
+        ).count()
         coletas_finalizadas = TabColeta.objects.filter(
-            status_id__status='Concluída').count()
+            status_id__status='Concluída').count()  
         coletas_esperando_resultados = TabColeta.objects.filter(
             status_id__status='Aguardando resultados').count()
 
