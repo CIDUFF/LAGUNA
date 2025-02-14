@@ -214,7 +214,8 @@ class LaboratoriosTable(tables.Table):
         empty_values=[],
         text="EDITAR",
     )
-    analises = tables.Column(empty_values=(), orderable=False, verbose_name="Análises")
+    analises = tables.Column(
+        empty_values=(), orderable=False, verbose_name="Análises")
 
     def render_analises(self, record):
         return ", ".join([analise.analise for analise in record.analises.all()])
@@ -226,7 +227,8 @@ class LaboratoriosTable(tables.Table):
         empty_text = "Não há dados para exibir"
         orderable = False
         exclude = ("id", "created_at", "updated_at")
-        sequence = ("nome", "email", "telefone", "endereco", "tipo", "analises")
+        sequence = ("nome", "email", "telefone",
+                    "endereco", "tipo", "analises")
         per_page = 10
         paginator_class = tables.LazyPaginator
         table_pagination = True
@@ -284,7 +286,8 @@ class TopCampanhas(tables.Table):
     class Meta:
         model = ProgramaColeta
         template_name = "tables/bootstrap5.html"
-        fields = ["ordem_servico", "data_coleta_campo", "local_coleta", "status_coleta"]
+        fields = ["ordem_servico", "data_coleta_campo",
+                  "local_coleta", "status_coleta"]
         empty_text = "Não há dados para exibir"
         orderable = True
         exclude = ("id", "created_at", "updated_at", "campo")
@@ -360,7 +363,8 @@ class PontoTable(tables.Table):
     class Meta:
         model = TabPonto
         template_name = "tables/bootstrap5.html"
-        fields = ["nome", "id_setor", "id_local", "modalidade", "lat", "lon", "status"]
+        fields = ["nome", "id_setor", "id_local",
+                  "modalidade", "lat", "lon", "status"]
         empty_text = "Não há dados para exibir"
         orderable = True
         exclude = ("id", "created_at", "updated_at")
@@ -419,6 +423,23 @@ class TipoParametroTable(tables.Table):
         table_pagination = True
 
 
+# Criar uma classe base para os botões de editar que será usada em todas as tabelas
+class BaseEditButtonMixin:
+    @staticmethod
+    def get_edit_button_attrs():
+        return {
+            "a": {
+                "class": "btn btn-sm btn-outline-primary rounded-pill",
+                "style": """
+                    color: #0d6efd !important; 
+                    border-color: #0d6efd !important;
+                    background-color: transparent !important;
+                    pointer-events: initial !important;
+                """.replace('\n', '').strip()
+            }
+        }
+
+
 class ParametroTable(tables.Table):
     update = tables.LinkColumn(
         "editar_registro",
@@ -428,7 +449,7 @@ class ParametroTable(tables.Table):
         text=lambda record: format_html(
             '<i class="bi bi-pencil-square me-1"></i>Editar'
         ),
-        attrs={"a": {"class": "btn btn-sm btn-outline-primary rounded-pill"}},
+        attrs=BaseEditButtonMixin.get_edit_button_attrs()
     )
 
     class Meta:
@@ -446,7 +467,7 @@ class EmailTable(tables.Table):
         text=lambda record: format_html(
             '<i class="bi bi-pencil-square me-1"></i>Editar'
         ),
-        attrs={"a": {"class": "btn btn-sm btn-outline-primary rounded-pill"}},
+        attrs=BaseEditButtonMixin.get_edit_button_attrs()
     )
 
     class Meta:
@@ -473,7 +494,7 @@ class FrascoTable(tables.Table):
         text=lambda record: format_html(
             '<i class="bi bi-pencil-square me-1"></i>Editar'
         ),
-        attrs={"a": {"class": "btn btn-sm btn-outline-primary rounded-pill"}},
+        attrs=BaseEditButtonMixin.get_edit_button_attrs()
     )
 
     class Meta:
@@ -498,7 +519,7 @@ class EquipeTable(tables.Table):
         text=lambda record: format_html(
             '<i class="bi bi-pencil-square me-1"></i>Editar'
         ),
-        attrs={"a": {"class": "btn btn-sm btn-outline-primary rounded-pill"}},
+        attrs=BaseEditButtonMixin.get_edit_button_attrs()
     )
 
     class Meta:
@@ -516,7 +537,7 @@ class LaboratorioTable(tables.Table):
         text=lambda record: format_html(
             '<i class="bi bi-pencil-square me-1"></i>Editar'
         ),
-        attrs={"a": {"class": "btn btn-sm btn-outline-primary rounded-pill"}},
+        attrs=BaseEditButtonMixin.get_edit_button_attrs()
     )
 
     class Meta:
@@ -534,7 +555,7 @@ class ProdutoTable(tables.Table):
         text=lambda record: format_html(
             '<i class="bi bi-pencil-square me-1"></i>Editar'
         ),
-        attrs={"a": {"class": "btn btn-sm btn-outline-primary rounded-pill"}},
+        attrs=BaseEditButtonMixin.get_edit_button_attrs()
     )
 
     class Meta:
@@ -552,7 +573,7 @@ class ProdxparamTable(tables.Table):
         text=lambda record: format_html(
             '<i class="bi bi-pencil-square me-1"></i>Editar'
         ),
-        attrs={"a": {"class": "btn btn-sm btn-outline-primary rounded-pill"}},
+        attrs=BaseEditButtonMixin.get_edit_button_attrs()
     )
 
     class Meta:
@@ -570,7 +591,7 @@ class SerieClassificacaoTable(tables.Table):
         text=lambda record: format_html(
             '<i class="bi bi-pencil-square me-1"></i>Editar'
         ),
-        attrs={"a": {"class": "btn btn-sm btn-outline-primary rounded-pill"}},
+        attrs=BaseEditButtonMixin.get_edit_button_attrs()
     )
 
     class Meta:
@@ -588,7 +609,7 @@ class TipoItemChecklistColetaTable(tables.Table):
         text=lambda record: format_html(
             '<i class="bi bi-pencil-square me-1"></i>Editar'
         ),
-        attrs={"a": {"class": "btn btn-sm btn-outline-primary rounded-pill"}},
+        attrs=BaseEditButtonMixin.get_edit_button_attrs()
     )
 
     class Meta:
@@ -612,13 +633,25 @@ class StatusColetaTable(tables.Table):
         text=lambda record: format_html(
             '<i class="bi bi-pencil-square me-1"></i>Editar'
         ),
-        attrs={"a": {"class": "btn btn-sm btn-outline-primary rounded-pill"}},
+        attrs=BaseEditButtonMixin.get_edit_button_attrs()
     )
+    cor = tables.Column(
+        verbose_name='Cor',
+        accessor='cor',
+        orderable=False,
+        attrs={'td': {'class': 'text-center'}},
+    )
+
+    def render_cor(self, value):
+        return format_html(
+            '<div style="width: 30px; height: 30px; border-radius: 50%; background-color: {}; margin: 0 auto; border: 1px solid #dee2e6"></div>',
+            value
+        )
 
     class Meta:
         model = TabStatusColeta
         template_name = "tables/bootstrap5.html"
-        fields = ("status", "descricao")
+        fields = ("status", "descricao", "cor")
 
 
 class ListaCampoTable(tables.Table):

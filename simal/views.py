@@ -20,7 +20,8 @@ from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.core.mail import send_mail
 from django.core.paginator import Paginator
-from django.db import connection, transaction
+from django.db import connection, transaction, models
+from django.db.models import Q
 from django.forms import inlineformset_factory, modelformset_factory
 from django.http import FileResponse, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -1582,32 +1583,34 @@ def configuracoes_view(request):
     RequestConfig(request).configure(table_email)
     RequestConfig(request).configure(table_status_coleta)
 
+    # Configurar os dados das abas
+    tabs = [
+        ('tab_param', param_form, table_parametro, 'Parâmetros'),
+        ('tab_frasco', frasco_form, table_frasco, 'Frascos'),
+        ('tab_equipe', equipe_form, table_equipe, 'Equipes'),
+        ('tab_laboratorio', laboratorio_form, table_laboratorio, 'Laboratórios'),
+        ('tab_produto', produto_form, table_produto, 'Produtos'),
+        ('tab_prodxparam', prodxparam_form,
+         table_prodxparam, 'Produto x Parâmetro'),
+        ('tab_serie_classificacao', serie_classificacao_form,
+         table_serie_classificacao, 'Série Classificação'),
+        ('tab_item_checklist', item_checklist_form,
+         table_item_checklist, 'Itens de Checklist'),
+        ('tab_email', email_form, table_email, 'Templates de E-mail'),
+        ('tab_status_coleta', status_coleta_form,
+         table_status_coleta, 'Status de Coleta'),
+    ]
+
+    context = {
+        'tabs': tabs,
+        # ... outros itens do contexto ...
+    }
+
     # Renderizar o template com os formulários e tabelas
     return render(
         request,
         "configuracoes.html",
-        {
-            "param_form": param_form,
-            "frasco_form": frasco_form,
-            "equipe_form": equipe_form,
-            "laboratorio_form": laboratorio_form,
-            "produto_form": produto_form,
-            "prodxparam_form": prodxparam_form,
-            "serie_classificacao_form": serie_classificacao_form,
-            "item_checklist_form": item_checklist_form,
-            "email_form": email_form,
-            "status_coleta_form": status_coleta_form,
-            "table_parametro": table_parametro,
-            "table_frasco": table_frasco,
-            "table_equipe": table_equipe,
-            "table_laboratorio": table_laboratorio,
-            "table_produto": table_produto,
-            "table_prodxparam": table_prodxparam,
-            "table_serie_classificacao": table_serie_classificacao,
-            "table_item_checklist": table_item_checklist,
-            "table_email": table_email,
-            "table_status_coleta": table_status_coleta,
-        },
+        context,
     )
 
 
@@ -2370,46 +2373,77 @@ def meta_ponto(request, id):
 
 @login_required
 def lista_de_coletas(request):
-    coletas = TabColeta.objects.all()
-    table = TabColetaTable(coletas)
+    # Obter os filtros da query string
+    status_id = request.GET.get('status_id')
+    id_setor = request.GET.get('id_setor')
+
+    # Query base
+    queryset = TabColeta.objects.all().order_by('-data')
+
+    # Aplicar filtros se fornecidos
+    if status_id:
+        queryset = queryset.filter(status_id=status_id)
+    if id_setor:
+        queryset = queryset.filter(id_setor=id_setor)
+
+    # Obter listas únicas para os dropdowns
+    setores = TabSetor.objects.all()
+    status = TabStatusColeta.objects.all()
+
+    # Criar a tabela
+    table = TabColetaTable(queryset)
     RequestConfig(request, paginate={"per_page": 10}).configure(table)
 
-    return render(request, "lista_de_coletas.html", {"table": table})
+    context = {
+        "table": table,
+        "setores": setores,
+        "status": status,
+        "filtros": {
+            "status_id": status_id,
+            "id_setor": id_setor,
+        }
+    }
+
+    # Se for uma requisição AJAX, retornar apenas os dados filtrados
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({
+            'setores': list(setores.values('id', 'nome')),
+            'status': list(status.values('id', 'status')),
+        })
+
+    return render(request, "lista_de_coletas.html", context)
 
 
 @login_required
 def update_coleta(request, id):
     coleta = get_object_or_404(TabColeta, id=id)
-
-    # Verificar se a coleta está cancelada
-    if coleta.status.id == 2:  # status 2 = cancelada
-        messages.error(
-            request, "Não é possível editar uma coleta que já está cancelada.")
-        return redirect("lista_de_coletas")
-
     if request.method == "POST":
         form = CadastroColetaForm(request.POST, instance=coleta)
         if form.is_valid():
             coleta = form.save(commit=False)
-
-            # Converter a data da string para datetime
-            data_str = request.POST.get('data')
-            if data_str:
-                coleta.data = datetime.strptime(data_str, '%Y-%m-%d')
-
+            coleta.atualizado_por = request.user
             coleta.save()
-            messages.success(request, "Coleta atualizada com sucesso.")
+
+            # Log da atualização
+            TabLogColeta.objects.create(
+                id_coleta=coleta,
+                acao="Coleta atualizada",
+                usuario=request.user,
+                motivo=f"Atualização dos dados da coleta"
+            )
+
+            messages.success(request, "Coleta atualizada com sucesso!")
             return redirect("lista_de_coletas")
     else:
-        initial_data = {
-            'data': coleta.data.strftime('%Y-%m-%d') if coleta.data else None
-        }
-        form = CadastroColetaForm(instance=coleta, initial=initial_data)
+        # Mudança aqui: removendo a tentativa de acessar .status
+        form = CadastroColetaForm(instance=coleta)
 
-    return render(request, "cadastro_coleta.html", {
+    context = {
         "form": form,
-        "coleta": coleta
-    })
+        "titulo": "Atualizar Coleta",
+        "coleta_id": id,
+    }
+    return render(request, "cadastro_coleta.html", context)
 
 
 @login_required
@@ -2423,7 +2457,7 @@ def aplicar_acao(request):
             coleta = get_object_or_404(TabColeta, id=selecionados[0])
 
             # Verificar se a coleta está cancelada antes de qualquer ação
-            if coleta.status.id == 2:  # status 2 = cancelada
+            if coleta.status_id.id == 2:  # status 2 = cancelada
                 messages.error(
                     request, "Não é possível editar uma coleta que já está cancelada.")
                 return redirect("lista_de_coletas")
@@ -2434,11 +2468,11 @@ def aplicar_acao(request):
                 return redirect("info_coleta", coleta_id=selecionados[0])
             elif acao == "cancelar":
                 coletas = TabColeta.objects.filter(id__in=selecionados)
-                if coletas.filter(status=2).exists():
+                if coletas.filter(status_id=2).exists():
                     messages.error(
                         request, "Não é possível cancelar coletas que já estão canceladas.")
                 else:
-                    coletas.update(status=2)
+                    coletas.update(status_id=2)
                     messages.success(
                         request, "Coletas canceladas com sucesso.")
 
@@ -3190,60 +3224,128 @@ def generate_sample_labels(request, coleta_id):
 
 @login_required
 def new_home(request):
-    # Obter todas as coletas ordenadas por data
-    coletas = TabColeta.objects.select_related(
-        'id_campanha',
-        'id_setor',
-        'status_id',
-        'criado_por'
-    ).order_by('-data')
+    try:
+        # Buscar status e contagens em uma única query
+        status_counts = TabColeta.objects.values('status_id__status', 'status_id__cor').annotate(
+            count=Count('id')
+        ).order_by('status_id__status')
 
-    # Estatísticas gerais
-    total_coletas = coletas.count()
-    coletas_pendentes = coletas.filter(status_id__id=1).count()
-    coletas_finalizadas = coletas.filter(status_id__id=5).count()
-    coletas_em_andamento = coletas.filter(status_id__id__in=[3, 4, 6]).count()
-    coletas_canceladas = coletas.filter(status_id__id=2).count()
+        # Criar dicionário de status e garantir que todos os status tenham uma contagem
+        all_status = {
+            status.status: {
+                'cor': status.cor,
+                'count': 0
+            } for status in TabStatusColeta.objects.all()
+        }
 
-    # Coletas recentes e próximas
-    coletas_recentes = coletas[:5]
-    proximas_coletas = coletas.filter(
-        data__gte=timezone.now()).order_by('data')[:5]
+        # Buscar totais para os cards
+        total_coletas = TabColeta.objects.count()
+        coletas_pendentes = TabColeta.objects.filter(
+            Q(status_id__status__in=['Adiada', 'Prorrogada', 'Programada', 'Em andamento']) |
+            Q(status_id__isnull=True)
+        ).count()
+        coletas_finalizadas = TabColeta.objects.filter(
+            status_id__status='Concluída').count()
+        coletas_esperando_resultados = TabColeta.objects.filter(
+            status_id__status='Aguardando resultados').count()
 
-    # Dados para o gráfico de setores - ajustando a consulta
-    setores_data = (TabColeta.objects
-                    .values('id_setor__nome', 'status_id__status')
-                    .filter(id_setor__nome__isnull=False)
-                    .annotate(total=Count('id'))
-                    .order_by('id_setor__nome', 'status_id__status')
-                    )
+        # Atualizar contagens para o gráfico
+        for item in status_counts:
+            status = item['status_id__status']
+            if status in all_status:
+                all_status[status]['count'] = item['count']
 
-    # Group data by setor with null check for status
-    setores_agregados = {}
-    for item in setores_data:
-        setor = item['id_setor__nome']
-        status = item['status_id__status']
-        if setor not in setores_agregados:
-            setores_agregados[setor] = {'nome': setor}
+        # Dados para o novo gráfico de coletas por setor
+        coletas_por_setor = TabColeta.objects.values(
+            'id_setor__nome',
+            'data'
+        ).annotate(
+            total=Count('id')
+        ).order_by('id_setor__nome', 'data')
 
-        # Only try to replace spaces if status is not None
-        if status:
-            status_key = status.replace(' ', '_')
-        else:
-            status_key = 'undefined'  # Default key for null status
+        # Organizar dados para o gráfico de linha
+        setores_dados = {}
+        datas = set()
 
-        setores_agregados[setor][status_key] = item['total']
+        for coleta in coletas_por_setor:
+            setor = coleta['id_setor__nome'] or 'Não definido'
+            data = coleta['data'].strftime(
+                '%Y-%m-%d') if coleta['data'] else 'Não definido'
+            total = coleta['total']
 
-    context = {
-        'total_coletas': total_coletas,
-        'coletas_pendentes': coletas_pendentes,
-        'coletas_finalizadas': coletas_finalizadas,
-        'coletas_canceladas': coletas_canceladas,
-        'coletas_em_andamento': coletas_em_andamento,
-        'coletas_recentes': coletas_recentes,
-        'proximas_coletas': proximas_coletas,
-        # Convert to list for template
-        'setores_data': list(setores_agregados.values()),
-    }
+            if setor not in setores_dados:
+                setores_dados[setor] = {}
 
-    return render(request, 'new_home.html', context)
+            setores_dados[setor][data] = total
+            datas.add(data)
+
+        # Converter para formato do gráfico
+        datas_ordenadas = sorted(list(datas))
+        series_data = []
+
+        for setor, dados in setores_dados.items():
+            series_data.append({
+                'name': setor,
+                'data': [dados.get(data, 0) for data in datas_ordenadas]
+            })
+
+        # Preparar eventos do calendário
+        coletas = TabColeta.objects.select_related('status_id', 'id_setor').filter(
+            data__isnull=False  # Garantir que só pegaremos coletas com data
+        ).order_by('data')
+
+        calendar_events = []
+
+        print("Total de coletas encontradas:", coletas.count())  # Debug
+
+        for coleta in coletas:
+            print(f"Processando coleta {coleta.id}:")  # Debug
+            print(f"- Data: {coleta.data}")
+            print(f"- Ordem de serviço: {coleta.ordem_servico}")
+            print(
+                f"- Setor: {coleta.id_setor.nome if coleta.id_setor else 'N/A'}")
+
+            if coleta.data:
+                event = {
+                    'id': coleta.id,
+                    'title': f"{coleta.id_setor.nome if coleta.id_setor else 'N/A'}",
+                    'start': coleta.data.strftime('%Y-%m-%d'),
+                    'backgroundColor': coleta.status_id.cor if coleta.status_id else '#6c757d',
+                    'borderColor': coleta.status_id.cor if coleta.status_id else '#6c757d',
+                    'textColor': '#ffffff',
+                    'allDay': True
+                }
+                calendar_events.append(event)
+                print(f"- Evento criado: {event}")  # Debug
+            else:
+                print(f"- Coleta sem data definida")  # Debug
+
+        # Debug do JSON final
+        calendar_events_json = json.dumps(calendar_events, default=str)
+        # print("JSON final dos eventos:", calendar_events_json)
+
+        context = {
+            'total_coletas': total_coletas,
+            'coletas_pendentes': coletas_pendentes,
+            'coletas_finalizadas': coletas_finalizadas,
+            'coletas_esperando_resultados': coletas_esperando_resultados,
+            'chart_data': {
+                'labels': list(all_status.keys()),
+                'counts': [data['count'] for data in all_status.values()],
+                'colors': [data['cor'] for data in all_status.values()]
+            },
+            'timeline_data': {
+                'labels': datas_ordenadas,
+                'series': series_data
+            },
+            'calendar_events': json.dumps(calendar_events, cls=DjangoJSONEncoder),
+        }
+
+        return render(request, 'new_home.html', context)
+
+    except Exception as e:
+        print(f"Erro na view new_home: {str(e)}")
+        import traceback
+        traceback.print_exc()  # Imprime o traceback completo
+        messages.error(request, "Erro ao carregar o dashboard.")
+        return redirect('home')

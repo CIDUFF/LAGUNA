@@ -86,15 +86,18 @@ class ProgramaColeta(models.Model):
     ordem_servico = models.CharField(
         max_length=100, blank=True, verbose_name="Ordem de Serviço"
     )
-    data_coleta_campo = models.DateField(null=True, verbose_name="Data da Coleta")
+    data_coleta_campo = models.DateField(
+        null=True, verbose_name="Data da Coleta")
     data_programacao = models.DateField(
         auto_now_add=True, null=True, verbose_name="Data da Programação"
     )
     data_check_forecast = models.DateField(
         null=True, verbose_name="Data do Check Forecast"
     )
-    data_check_lab = models.DateField(null=True, verbose_name="Data do Check Lab")
-    data_check_car = models.DateField(null=True, verbose_name="Data do Check Car")
+    data_check_lab = models.DateField(
+        null=True, verbose_name="Data do Check Lab")
+    data_check_car = models.DateField(
+        null=True, verbose_name="Data do Check Car")
     data_check_material = models.DateField(
         null=True, verbose_name="Data do Check Material"
     )
@@ -110,10 +113,12 @@ class ProgramaColeta(models.Model):
     prazo_material = models.FloatField(
         null=True, verbose_name="Prazo para check de material", default=3
     )
-    equipe_coleta = models.CharField(max_length=50, verbose_name="Equipe de Coleta")
+    equipe_coleta = models.CharField(
+        max_length=50, verbose_name="Equipe de Coleta")
     # solicitante = models.CharField(
     #     max_length=50, default='João Silva', verbose_name='Responsável')
-    local_coleta = models.CharField(max_length=50, verbose_name="Local de Coleta")
+    local_coleta = models.CharField(
+        max_length=50, verbose_name="Local de Coleta")
     status_coleta = models.CharField(max_length=50, null=True)
     observacoes = models.TextField(
         max_length=500, blank=True, verbose_name="Observações"
@@ -122,12 +127,14 @@ class ProgramaColeta(models.Model):
         User, on_delete=models.CASCADE, verbose_name="Usuário", null=True
     )  # Adiciona o campo usuario
     rota = models.CharField(max_length=25, null=True)
-    bentos = models.BooleanField(default=False, verbose_name="Bentos", blank=True)
+    bentos = models.BooleanField(
+        default=False, verbose_name="Bentos", blank=True)
 
     def save(self, usuario=None, *args, **kwargs):
         if not self.ordem_servico:
             hora = datetime.now().strftime("%H%M%S")
-            localizacao = TabSetor.objects.filter(nome=self.local_coleta).first()
+            localizacao = TabSetor.objects.filter(
+                nome=self.local_coleta).first()
 
             if localizacao:
                 codigo = localizacao.abreviatura
@@ -139,7 +146,8 @@ class ProgramaColeta(models.Model):
                 ordem_servico_ascii = ordem_servico_normalized.encode(
                     "ASCII", "ignore"
                 ).decode("ASCII")
-                self.ordem_servico = re.sub(r"[\s\W_]+", "", ordem_servico_ascii)
+                self.ordem_servico = re.sub(
+                    r"[\s\W_]+", "", ordem_servico_ascii)
             else:
                 raise ValueError("Localização não encontrada")
 
@@ -152,8 +160,10 @@ class ProgramaColeta(models.Model):
         self.data_check_material = self.data_coleta_campo - timedelta(
             self.prazo_material
         )
-        self.data_check_car = self.data_coleta_campo - timedelta(self.prazo_car)
-        self.data_check_lab = self.data_coleta_campo - timedelta(self.prazo_lab)
+        self.data_check_car = self.data_coleta_campo - \
+            timedelta(self.prazo_car)
+        self.data_check_lab = self.data_coleta_campo - \
+            timedelta(self.prazo_lab)
 
         super().save(*args, **kwargs)
 
@@ -166,7 +176,8 @@ class Campo(models.Model):
     ordem_servico = models.ForeignKey(
         ProgramaColeta, on_delete=models.CASCADE, related_name="ordem_servico_campo"
     )
-    codigo_coleta = models.CharField("Código da Coleta", max_length=50, null=True)
+    codigo_coleta = models.CharField(
+        "Código da Coleta", max_length=50, null=True)
     ordem = models.FloatField("Ordem", null=True)
     clima = models.CharField("Clima", max_length=150, null=True)
     data = models.DateField(default=date.today)
@@ -183,10 +194,12 @@ class Campo(models.Model):
     od_pct = models.FloatField("OD %", null=True)
     tds = models.FloatField("TDS", null=True)
     salinidade = models.FloatField("Salinidade", null=True)
-    status_form = models.CharField("Status", max_length=20, default="Não preenchido")
+    status_form = models.CharField(
+        "Status", max_length=20, default="Não preenchido")
     check_amostras = models.BooleanField("Check Amostras", default=False)
     observacoes = models.TextField("Observações", max_length=500, blank=True)
-    foto = models.ImageField(upload_to="fotos_coleta/", null=True, verbose_name="Foto")
+    foto = models.ImageField(upload_to="fotos_coleta/",
+                             null=True, verbose_name="Foto")
 
     def save(self, *args, **kwargs):
         campos = [
@@ -230,7 +243,8 @@ class MetadadosCampo(models.Model):
         max_length=50, choices=[(acesso, acesso) for acesso in ACESSOS], null=True
     )
     dragagem = models.IntegerField("Dragagem", choices=AVALIACAO, null=True)
-    gigoga = models.IntegerField("Quantidade de gigoga", choices=AVALIACAO, null=True)
+    gigoga = models.IntegerField(
+        "Quantidade de gigoga", choices=AVALIACAO, null=True)
     odor = models.IntegerField("Odor", choices=AVALIACAO, null=True)
     fezes = models.IntegerField("Fezes", choices=AVALIACAO, null=True)
     oleo = models.IntegerField("Óleo", choices=AVALIACAO, null=True)
@@ -241,7 +255,8 @@ class MetadadosCampo(models.Model):
     animais_presentes = models.IntegerField(
         "Animais Presentes", choices=AVALIACAO, null=True
     )
-    pescadores = models.IntegerField("Pescadores", choices=AVALIACAO, null=True)
+    pescadores = models.IntegerField(
+        "Pescadores", choices=AVALIACAO, null=True)
     contato_populacao = models.IntegerField(
         "Contato com a população", choices=AVALIACAO, null=True
     )
@@ -266,7 +281,8 @@ class AnalisesLista(models.Model):
     amonia = models.FloatField(null=True, blank=True)  # Amônia
     nitrito = models.FloatField(null=True, blank=True)
     nitrato = models.FloatField(null=True, blank=True)
-    nitrogenio_total = models.FloatField(null=True, blank=True)  # Nitrogênio Total
+    nitrogenio_total = models.FloatField(
+        null=True, blank=True)  # Nitrogênio Total
     # Ortofosfato como P (Fósforo Reativo Solúvel)
     ortofosfato_como_p = models.FloatField(null=True, blank=True)
     fosfato_total = models.FloatField(null=True, blank=True)
@@ -299,7 +315,8 @@ class ChecklistCampo(models.Model):
     previsao_tempo = models.BooleanField(
         "Previsão do tempo", blank=True, null=True, default=False
     )
-    data_previsao_tempo = models.DateField("Data da previsão", blank=True, null=True)
+    data_previsao_tempo = models.DateField(
+        "Data da previsão", blank=True, null=True)
     observacao_previsao_tempo = models.TextField(
         "Observações da previsão", blank=True, null=True
     )
@@ -316,14 +333,16 @@ class ChecklistCampo(models.Model):
     observacao_reservar_carro = models.TextField(
         "Observações da reserva", blank=True, null=True
     )
-    data_reservar_carro = models.DateField("Data da reserva", blank=True, null=True)
+    data_reservar_carro = models.DateField(
+        "Data da reserva", blank=True, null=True)
     reservar_barco = models.BooleanField(
         "Reservar barco", blank=True, null=True, default=False
     )
     observacao_reservar_barco = models.TextField(
         "Observações da reserva", blank=True, null=True
     )
-    data_reservar_barco = models.DateField("Data da reserva", blank=True, null=True)
+    data_reservar_barco = models.DateField(
+        "Data da reserva", blank=True, null=True)
     separar_equipamentos = models.BooleanField(
         "Separar equipamentos", blank=True, null=True, default=False
     )
@@ -345,7 +364,8 @@ class ChecklistCampo(models.Model):
     comprar_gelo = models.BooleanField(
         "Comprar gelo", blank=True, null=True, default=False
     )
-    data_comprar_gelo = models.DateField("Data da compra", blank=True, null=True)
+    data_comprar_gelo = models.DateField(
+        "Data da compra", blank=True, null=True)
     observacao_comprar_gelo = models.TextField(
         "Observações da compra", blank=True, null=True
     )
@@ -432,7 +452,8 @@ class DetalhesUsuario(models.Model):
     telefone = models.CharField(max_length=15)
     endereco = models.CharField(max_length=255)
     cpf = models.CharField(max_length=11)
-    foto_perfil = models.ImageField(upload_to="perfil_fotos/", blank=True, null=True)
+    foto_perfil = models.ImageField(
+        upload_to="perfil_fotos/", blank=True, null=True)
 
     def __str__(self):
         return self.usuario.username
@@ -537,7 +558,7 @@ class TabColeta(models.Model):
     status_id = models.ForeignKey(
         "TabStatusColeta",
         on_delete=models.CASCADE,
-        db_column="status", 
+        db_column="status",
         blank=True,
         null=True,
         related_name="coletas"  # Adicionando related_name
@@ -567,6 +588,13 @@ class TabColeta(models.Model):
 class TabStatusColeta(models.Model):
     status = models.CharField(max_length=50, blank=True, null=True)
     descricao = models.TextField(blank=True, null=True)
+    cor = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True,
+        default='#6c757d',
+        help_text='Código hexadecimal da cor (ex: #FF0000 para vermelho)'
+    )
 
     def __str__(self):
         return f"{self.status}"
@@ -887,7 +915,8 @@ class TabAnexoAmostra(models.Model):
     id_envio = models.ForeignKey(
         TabEnvio, on_delete=models.CASCADE, db_column="id_envio", blank=True, null=True
     )
-    anexo = models.FileField(upload_to="anexos_amostras/", null=True, blank=True)
+    anexo = models.FileField(
+        upload_to="anexos_amostras/", null=True, blank=True)
     ordem = models.IntegerField(default=0)  # Novo campo para ordenar anexos
     observacao = models.TextField(blank=True, null=True)
     atualizado_em = models.DateTimeField(auto_now=True, blank=True, null=True)
@@ -926,7 +955,8 @@ class MetadadosPonto(models.Model):
         max_length=50, choices=[(acesso, acesso) for acesso in ACESSOS], null=True
     )
     dragagem = models.IntegerField("Dragagem", choices=AVALIACAO, null=True)
-    gigoga = models.IntegerField("Quantidade de gigoga", choices=AVALIACAO, null=True)
+    gigoga = models.IntegerField(
+        "Quantidade de gigoga", choices=AVALIACAO, null=True)
     odor = models.IntegerField("Odor", choices=AVALIACAO, null=True)
     fezes = models.IntegerField("Fezes", choices=AVALIACAO, null=True)
     oleo = models.IntegerField("Óleo", choices=AVALIACAO, null=True)
@@ -937,11 +967,13 @@ class MetadadosPonto(models.Model):
     animais_presentes = models.IntegerField(
         "Animais Presentes", choices=AVALIACAO, null=True
     )
-    pescadores = models.IntegerField("Pescadores", choices=AVALIACAO, null=True)
+    pescadores = models.IntegerField(
+        "Pescadores", choices=AVALIACAO, null=True)
     contato_populacao = models.IntegerField(
         "Contato com a população", choices=AVALIACAO, null=True
     )
-    observacao = models.TextField("Observações", max_length=500, blank=True, null=True)
+    observacao = models.TextField(
+        "Observações", max_length=500, blank=True, null=True)
 
     def __str__(self):
         return f"{self.codigo_coleta}"
@@ -967,7 +999,8 @@ class EmailTemplate(models.Model):
 
 
 class TabLogColeta(models.Model):
-    id_coleta = models.ForeignKey(TabColeta, on_delete=models.CASCADE, related_name='logs')
+    id_coleta = models.ForeignKey(
+        TabColeta, on_delete=models.CASCADE, related_name='logs')
     acao = models.CharField(max_length=255)
     data = models.DateTimeField(auto_now_add=True)
     motivo = models.TextField(blank=True, null=True)

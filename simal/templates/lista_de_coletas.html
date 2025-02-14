@@ -24,6 +24,57 @@
         </div>
     </div>
 
+    <!-- Nova seção de filtros -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 rounded-4 shadow-sm">
+                <div class="card-header bg-gradient border-0 rounded-top-4" style="background-color: #68a7f1;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0 text-white">
+                            <i class="bi bi-funnel me-2"></i>Filtros
+                        </h5>
+                        <button class="btn btn-link text-white p-0 toggle-filtros" type="button" data-bs-toggle="collapse" data-bs-target="#filtrosCollapse" aria-expanded="true" aria-controls="filtrosCollapse">
+                            <i class="bi bi-chevron-up"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="collapse show" id="filtrosCollapse">
+                    <div class="card-body">
+                        <form method="get" class="row g-3" id="filterForm">
+                            <div class="col-md-4">
+                                <label class="form-label">Status</label>
+                                <select name="status_id" class="form-select auto-submit">
+                                    <option value="">Todos</option>
+                                    {% for s in status %}
+                                        <option value="{{ s.id }}" {% if filtros.status_id|stringformat:"s" == s.id|stringformat:"s" %}selected{% endif %}>
+                                            {{ s.status }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Setor</label>
+                                <select name="id_setor" class="form-select auto-submit">
+                                    <option value="">Todos</option>
+                                    {% for s in setores %}
+                                        <option value="{{ s.id }}" {% if filtros.id_setor|stringformat:"s" == s.id|stringformat:"s" %}selected{% endif %}>
+                                            {{ s.nome }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <a href="{% url 'lista_de_coletas' %}" class="btn btn-outline-secondary btn-static">
+                                    <i class="bi bi-x-circle me-2"></i>Limpar Filtros
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="card border-0 rounded-4 shadow-sm hover-shadow">
         <div class="card-header bg-gradient border-0 rounded-top-4" style="background-color: #4361ee;">
             <h5 class="card-title mb-0 text-white">
@@ -150,33 +201,7 @@ single-select {
     cursor: pointer;
 }
 
-.popup {
-    display: none;
-    position: fixed;
-    right: 20px; /* Força o popup a ficar 20px da direita */
-    background-color: white;
-    border: none;
-    border-radius: 1rem;
-    padding: 1.5rem;
-    box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);
-    z-index: 1000;
-    max-width: 300px;
-    font-size: 0.9rem;
-}
-
-.popup h4 {
-    color: #4361ee;
-    font-size: 1.1rem;
-    margin-bottom: 1rem;
-    border-bottom: 2px solid #4361ee;
-    padding-bottom: 0.5rem;
-}
-
 @media (max-width: 768px) {
-    .popup {
-        display: none !important;
-    }
-    
     .btn {
         width: 100%;
         margin-bottom: 0.5rem;
@@ -194,9 +219,17 @@ single-select {
         padding: 0.75rem;
     }
 }
-</style>
 
-<div id="popup" class="popup"></div>
+.btn-static {
+    background-color: #fff !important;
+    border-color: #6c757d !important;
+    color: #6c757d !important;
+}
+
+.btn-static:hover {
+    background-color: #f8f9fa !important;
+}
+</style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -209,63 +242,9 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     const rows = document.querySelectorAll('table tbody tr');
-    const popup = document.getElementById('popup');
-    let popupTimeout;
-    let currentRequest = null;
-
-    function isMobile() {
-        return window.innerWidth <= 768;
-    }
-
+    
     rows.forEach(row => {
         const radio = row.querySelector('.single-select');
-
-        row.addEventListener('mouseenter', function(e) {
-            if (isMobile()) return;
-            const coletaId = radio.value;
-            clearTimeout(popupTimeout);
-            
-            if (currentRequest) {
-                currentRequest.abort();
-            }
-            
-            currentRequest = fetch(`/detalhes_coleta_popup/${coletaId}/`)
-                .then(response => response.text())
-                .then(data => {
-                    popup.innerHTML = data;
-                    popup.style.display = 'block';
-                    
-                    // Posicionamento do popup sempre à direita
-                    const rect = row.getBoundingClientRect();
-                    const popupRect = popup.getBoundingClientRect();
-                    
-                    // Calcula a posição vertical
-                    let top = rect.top + window.scrollY;
-                    
-                    // Ajusta verticalmente se sair da tela
-                    if (top + popupRect.height > window.innerHeight + window.scrollY) {
-                        top = window.innerHeight + window.scrollY - popupRect.height - 20;
-                    }
-                    
-                    // Garante valor mínimo para o top
-                    top = Math.max(window.scrollY + 20, top);
-                    
-                    popup.style.top = `${top}px`;
-                    
-                    currentRequest = null;
-                })
-                .catch(() => {
-                    currentRequest = null;
-                });
-        });
-
-        row.addEventListener('mouseleave', function() {
-            if (isMobile()) return;
-            popupTimeout = setTimeout(() => {
-                popup.style.display = 'none';
-                popup.innerHTML = '';
-            }, 300);
-        });
 
         row.addEventListener('click', function(e) {
             if (e.target.closest('td').querySelector('.single-select')) {
@@ -335,6 +314,62 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     });
+
+    // Adicionar auto-submit para os filtros
+    const filterForm = document.getElementById('filterForm');
+    const filterInputs = filterForm.querySelectorAll('.auto-submit');
+
+    filterInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            // Fazer requisição AJAX para atualizar opções dependentes
+            const formData = new FormData(filterForm);
+            fetch(`${window.location.pathname}?${new URLSearchParams(formData).toString()}`, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Atualizar as opções dos selects conforme necessário
+                updateSelectOptions('id_setor', data.setores, 'nome', this.name !== 'id_setor');
+                updateSelectOptions('status_id', data.status, 'status', this.name !== 'status_id');
+                
+                // Submeter o formulário para atualizar a tabela
+                filterForm.submit();
+            });
+        });
+    });
+
+    function updateSelectOptions(selectName, options, labelField, shouldUpdate) {
+        if (!shouldUpdate) return;
+        
+        const select = document.querySelector(`select[name="${selectName}"]`);
+        const currentValue = select.value;
+        
+        // Manter a opção "Todos"
+        select.innerHTML = '<option value="">Todos</option>';
+        
+        // Adicionar novas opções
+        options.forEach(option => {
+            const opt = document.createElement('option');
+            opt.value = option.id;
+            opt.textContent = option[labelField];
+            if (option.id.toString() === currentValue) {
+                opt.selected = true;
+            }
+            select.appendChild(opt);
+        });
+    }
+    
+    // Toggle ícone do filtro
+    const toggleBtn = document.querySelector('.toggle-filtros');
+    function updateIcon(isCollapsed) {
+        toggleBtn.querySelector('i').style.transform = isCollapsed ? 'rotate(180deg)' : '';
+    }
+    
+    const filtrosCollapse = document.getElementById('filtrosCollapse');
+    filtrosCollapse.addEventListener('shown.bs.collapse', () => updateIcon(false));
+    filtrosCollapse.addEventListener('hidden.bs.collapse', () => updateIcon(true));
 });
 </script>
 {% endblock %}
