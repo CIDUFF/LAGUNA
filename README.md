@@ -73,6 +73,10 @@ SELECT setval('nomedatabela_id_seq', (SELECT MAX(id) FROM nomedatabela)+1);
 
 <!-- /var/log/django/amostras.log -->
 
+reset da sequenccia sql
+
+uv run ./manage.py sqlsequencereset simal
+
 # comandos do django
 
 Comandos Django Padrão
