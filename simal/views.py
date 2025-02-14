@@ -1470,85 +1470,49 @@ def cadastro_tipo_parametro(request):
 @login_required
 def configuracoes_view(request):
     if request.method == "POST":
-        if "param_submit" in request.POST:
-            param_form = ParametroForm(request.POST, label_suffix="param")
-            if param_form.is_valid():
-                param_form.save()
-                messages.success(request, "Parâmetro salvo com sucesso.")
-        elif "frasco_submit" in request.POST:
-            frasco_form = TabFrascoForm(request.POST, label_suffix="frasco")
-            if frasco_form.is_valid():
-                frasco_form.save()
-                messages.success(request, "Frasco salvo com sucesso.")
-        elif "equipe_submit" in request.POST:
-            equipe_form = TabEquipeForm(request.POST, label_suffix="equipe")
-            if equipe_form.is_valid():
-                equipe = equipe_form.save(commit=False)
-                equipe.responsavel = request.user  # Define o campo responsavel
-                equipe.save()
-                messages.success(request, "Equipe salva com sucesso.")
-        elif "laboratorio_submit" in request.POST:
-            laboratorio_form = TabLaboratorioForm(
-                request.POST, label_suffix="laboratorio"
-            )
-            if laboratorio_form.is_valid():
-                laboratorio_form.save()
-                messages.success(request, "Laboratório salvo com sucesso.")
-        elif "produto_submit" in request.POST:
-            produto_form = TabProdutoForm(request.POST, label_suffix="produto")
-            if produto_form.is_valid():
-                produto_form.save()
-                messages.success(request, "Produto salvo com sucesso.")
-        elif "prodxparam_submit" in request.POST:
-            prodxparam_form = TabProdxParamForm(
-                request.POST, label_suffix="prodxparam")
-            if prodxparam_form.is_valid():
-                prodxparam_form.save()
-                messages.success(
-                    request, "Produto x Parâmetro salvo com sucesso.")
-        elif "serie_classificacao_submit" in request.POST:
-            serie_classificacao_form = TabSerieClassificacaoForm(
-                request.POST, label_suffix="serie_classificacao"
-            )
-            if serie_classificacao_form.is_valid():
-                serie_classificacao_form.save()
-                messages.success(
-                    request, "Série de Classificação salva com sucesso.")
-        elif "item_checklist_submit" in request.POST:
-            item_checklist_form = CadastroItemChecklistColetaForm(
-                request.POST, label_suffix="item_checklist"
-            )
-            if item_checklist_form.is_valid():
-                item_checklist_form.save(user=request.user)
-                messages.success(
-                    request, "Item de checklist cadastrado com sucesso.")
-        elif "email_submit" in request.POST:
-            email_form = EmailForm(request.POST, label_suffix="email")
-            if email_form.is_valid():
-                email_form.save()
-                messages.success(
-                    request, "Novo template de e-mail cadastrado com sucesso."
-                )
-        elif "status_coleta_submit" in request.POST:
-            status_coleta_form = StatusColetaForm(request.POST)
-            if status_coleta_form.is_valid():
-                status_coleta_form.save()
-                messages.success(
-                    request, "Novo status cadastrado com sucesso."
-                )
+        form_type = None
+        for key in request.POST:
+            if key.endswith("_submit"):
+                form_type = key.replace("_submit", "")
+                break
 
-        return redirect("configuracoes")
-    else:
-        param_form = ParametroForm()
-        frasco_form = TabFrascoForm()
-        equipe_form = TabEquipeForm()
-        laboratorio_form = TabLaboratorioForm()
-        produto_form = TabProdutoForm()
-        prodxparam_form = TabProdxParamForm()
-        serie_classificacao_form = TabSerieClassificacaoForm()
-        item_checklist_form = CadastroItemChecklistColetaForm()
-        email_form = EmailForm()
-        status_coleta_form = StatusColetaForm()
+        form_map = {
+            'tab_param': (ParametroForm, TabParam),
+            'tab_frasco': (TabFrascoForm, TabFrasco),
+            'tab_equipe': (TabEquipeForm, TabEquipe),
+            'tab_laboratorio': (TabLaboratorioForm, TabLaboratorio),
+            'tab_produto': (TabProdutoForm, TabProduto),
+            'tab_prodxparam': (TabProdxParamForm, TabProdxparam),
+            'tab_serie_classificacao': (TabSerieClassificacaoForm, TabSerieClassificacao),
+            'tab_item_checklist': (CadastroItemChecklistColetaForm, TabItemChecklistColeta),
+            'tab_email': (EmailForm, EmailTemplate),
+            'tab_status_coleta': (StatusColetaForm, TabStatusColeta),
+        }
+        if form_type in form_map:
+            FormClass, ModelClass = form_map[form_type]
+            form = FormClass(request.POST)
+            if form.is_valid():
+                try:
+                    form.save()
+                    messages.success(
+                        request, "Novo registro criado com sucesso.")
+                except Exception as e:
+                    messages.error(request, f"Erro ao salvar: {str(e)}")
+            else:
+                messages.error(
+                    request, "Por favor, corrija os erros no formulário.")
+        return redirect('configuracoes')
+
+    param_form = ParametroForm()
+    frasco_form = TabFrascoForm()
+    equipe_form = TabEquipeForm()
+    laboratorio_form = TabLaboratorioForm()
+    produto_form = TabProdutoForm()
+    prodxparam_form = TabProdxParamForm()
+    serie_classificacao_form = TabSerieClassificacaoForm()
+    item_checklist_form = CadastroItemChecklistColetaForm()
+    email_form = EmailForm()
+    status_coleta_form = StatusColetaForm()
 
     # Instanciar as tabelas
     table_parametro = ParametroTable(TabParam.objects.all())

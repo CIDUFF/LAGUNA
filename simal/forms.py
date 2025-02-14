@@ -755,7 +755,7 @@ class TipoParametroForm(forms.ModelForm):
 class StatusColetaForm(forms.ModelForm):
     class Meta:
         model = TabStatusColeta
-        fields = ['status', 'descricao', 'cor']
+        exclude = ['id']
         labels = {
             'status': 'Status',
             'descricao': 'Descrição',

@@ -586,6 +586,7 @@ class TabColeta(models.Model):
 
 
 class TabStatusColeta(models.Model):
+    id = models.AutoField(primary_key=True)
     status = models.CharField(max_length=50, blank=True, null=True)
     descricao = models.TextField(blank=True, null=True)
     cor = models.CharField(
