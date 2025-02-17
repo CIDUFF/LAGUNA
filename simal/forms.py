@@ -843,7 +843,10 @@ class CadastroCampanhaForm(forms.ModelForm):
 
 class CadastroColetaForm(forms.ModelForm):
     data = forms.DateField(
-        widget=forms.DateInput(attrs={"type": "date"}),
+        widget=forms.DateInput(attrs={
+            "type": "date",
+            "id": "id_data_programada"  # Adicionando um id específico
+        }),
         label="Data programada",
         required=True,
     )
@@ -991,6 +994,12 @@ class InputFisicoQuimicoForm(forms.ModelForm):
                 css_class="form-row",
             )
         )
+
+    def save(self, commit=True, usuario=None):
+        instance = super().save(commit=False)
+        if commit:
+            instance.save(usuario=usuario)
+        return instance
 
 
 class AnexoAmostraForm(forms.ModelForm):

@@ -1,122 +1,160 @@
-{% extends 'base/base_site.html' %}
-{% load crispy_forms_tags %}
-{% block title %}Cadastro de Coleta{% endblock %}
-{% block content %}
+{% extends 'base/base_site.html' %} 
+
+{% load crispy_forms_tags %} 
+
+{% block title %}Cadastro de Coleta{% endblock %} 
+{% block content %} 
 {% if user.is_authenticated %}
 <div class="container-fluid px-4 py-3 mb-4">
-    <div class="row g-3 mb-4">
-        <div class="col-12">
-            <div class="card border-0 rounded-4 shadow-sm bg-gradient hover-shadow" style="background-color:rgb(6, 60, 122);">
-                <div class="card-body p-4">
-                    <div class="row align-items-center">
-                        <div class="col-md-8">
-                            <h1 class="display-6 mb-3 text-white d-flex align-items-center">
-                                <i class="bi bi-droplet-fill me-3"></i>
-                                <span>Nova Coleta</span>
-                            </h1>
-                            <p class="text-white-50">Cadastre uma nova coleta de dados</p>
-                        </div>
-                    </div>
-                </div>
+  <div class="row g-3 mb-4">
+    <div class="col-12">
+      <div
+        class="card border-0 rounded-4 shadow-sm bg-gradient hover-shadow"
+        style="background-color: rgb(6, 60, 122)"
+      >
+        <div class="card-body p-4">
+          <div class="row align-items-center">
+            <div class="col-md-8">
+              <h1 class="display-6 mb-3 text-white d-flex align-items-center">
+                <i class="bi bi-droplet-fill me-3"></i>
+                <span>Nova Coleta</span>
+              </h1>
+              <p class="text-white-50">Cadastre uma nova coleta de dados</p>
             </div>
+          </div>
         </div>
+      </div>
     </div>
+  </div>
 
-    <div class="row">
-        <div class="col-12">
-            <div class="card border-0 rounded-4 shadow-sm hover-shadow">
-                <div class="card-header bg-gradient border-0 rounded-top-4" style="background-color: #4361ee;">
-                    <h5 class="card-title mb-0 text-white">
-                        <i class="bi bi-info-circle-fill me-2"></i>Informações da Coleta
-                    </h5>
-                </div>
-                <div class="card-body p-4">
-                    <form method="post">
-                        {% csrf_token %}
-                        {% crispy form %}
-                        {{ formset.management_form }}
-                        {% for fs in formset %}
-                        <div class="inlineform">
-                            {% crispy fs %}
-                        </div>
-                        {% endfor %}
-                    </form>
-                </div>
-            </div>
+  <div class="row">
+    <div class="col-12">
+      <div class="card border-0 rounded-4 shadow-sm hover-shadow">
+        <div
+          class="card-header bg-gradient border-0 rounded-top-4"
+          style="background-color: #4361ee"
+        >
+          <h5 class="card-title mb-0 text-white">
+            <i class="bi bi-info-circle-fill me-2"></i>Informações da Coleta
+          </h5>
         </div>
+        <div class="card-body p-4">
+          <form method="post">
+            {% csrf_token %} {% crispy form %} {{ formset.management_form }} {% for fs in formset %}
+            <div class="inlineform">{% crispy fs %}</div>
+            {% endfor %}
+          </form>
+        </div>
+      </div>
     </div>
+  </div>
 </div>
 
 <style>
-.hover-shadow {
+  .hover-shadow {
     transition: all 0.3s ease;
-}
-.hover-shadow:hover {
+  }
+  .hover-shadow:hover {
     transform: translateY(-5px);
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
-}
+  }
 
-/* Estilos para os campos do formulário */
-.form-group {
+  /* Estilos para os campos do formulário */
+  .form-group {
     margin-bottom: 1.5rem;
-}
+  }
 
-.form-control {
+  .form-control {
     border-radius: 0.5rem;
     border: 1px solid #dee2e6;
     padding: 0.75rem;
     transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-}
+  }
 
-.form-control:focus {
+  .form-control:focus {
     border-color: #4361ee;
     box-shadow: 0 0 0 0.2rem rgba(67, 97, 238, 0.25);
-}
+  }
 
-/* Estilo para os botões */
-.btn-primary {
+  /* Estilo para os botões */
+  .btn-primary {
     background-color: #4361ee;
     border-color: #4361ee;
     border-radius: 50rem;
     padding: 0.75rem 2rem;
     font-weight: 500;
     transition: all 0.3s ease;
-}
+  }
 
-.btn-primary:hover {
+  .btn-primary:hover {
     background-color: #3151e8;
     border-color: #3151e8;
     transform: translateY(-2px);
-}
+  }
 
-/* Estilos para as labels */
-label {
+  /* Estilos para as labels */
+  label {
     font-weight: 500;
     color: #495057;
     margin-bottom: 0.5rem;
-}
+  }
 </style>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+  document.addEventListener("DOMContentLoaded", function () {
     // Preenche o campo de data se estiver disponível na instância
     const dataInput = document.querySelector('input[name="data"]');
     if (dataInput && !dataInput.value) {
-        const dataInicial = "{{ coleta.data|date:'Y-m-d' }}";
-        if (dataInicial) {
-            dataInput.value = dataInicial;
-        }
+      const dataInicial = "{{ coleta.data|date:'Y-m-d' }}";
+      if (dataInicial) {
+        dataInput.value = dataInicial;
+      }
     }
-});
+  });
+
+  $(document).ready(function () {
+    let urlParams = new URLSearchParams(window.location.search);
+    let dataSelecionada = urlParams.get("data");
+    if (dataSelecionada) {
+      $("#id_data_programada").val(dataSelecionada);
+    }
+  });
+</script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Tenta todos os possíveis seletores para o campo de data
+    const dataInputs = [
+      document.querySelector('input[name="data"]'),
+      document.querySelector("#id_data"),
+      document.querySelector("#id_data_programada"),
+      document.querySelector('input[type="date"]'),
+    ];
+
+    // URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const dataParam = urlParams.get("data");
+
+    if (dataParam) {
+      // Tenta preencher o campo usando todos os seletores possíveis
+      dataInputs.forEach((input) => {
+        if (input) {
+          input.value = dataParam;
+        }
+      });
+    }
+  });
 </script>
 
 {% else %}
-    <div class="container mt-5">
-        <h1 class="text-center">Olá, visitante</h1>
-        <p class="text-center">Faça login para visualizar o sistema</p>
-        <div class="d-flex justify-content-center">
-            <a href="{% url 'account_login' %}" class="btn btn-primary">Clique aqui para logar</a>
-        </div>
-    </div>
-{% endif %}
-{% endblock %}
+
+<div class="container mt-5">
+  <h1 class="text-center">Olá, visitante</h1>
+  <p class="text-center">Faça login para visualizar o sistema</p>
+  <div class="d-flex justify-content-center">
+    <a href="{% url 'account_login' %}" class="btn btn-primary"
+      >Clique aqui para logar</a
+    >
+  </div>
+</div>
+{% endif %} {% endblock %}
