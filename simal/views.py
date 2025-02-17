@@ -2521,7 +2521,10 @@ def input_laboratorio(request, coleta_id, ponto_id, frasco_id):
             queryset=medidas
         )
         if formset.is_valid():
-            instances = formset.save()
+            instances = formset.save(commit=False)
+            for instance in instances:
+                instance.save(usuario=request.user)  # Passa o usuário atual
+            formset.save_m2m()
 
             # Processa o anexo se houver arquivo ou observação
             primeiro_envio = instances[0].id_envio if instances else None

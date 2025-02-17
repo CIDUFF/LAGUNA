@@ -992,6 +992,12 @@ class InputFisicoQuimicoForm(forms.ModelForm):
             )
         )
 
+    def save(self, commit=True, usuario=None):
+        instance = super().save(commit=False)
+        if commit:
+            instance.save(usuario=usuario)
+        return instance
+
 
 class AnexoAmostraForm(forms.ModelForm):
     class Meta:

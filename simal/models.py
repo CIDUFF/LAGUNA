@@ -699,6 +699,24 @@ class TabLaboratorio(models.Model):
         db_table = "tab_laboratorio"
 
 
+class TabLogMedida(models.Model):
+    id_medida = models.ForeignKey(
+        'TabMedida', on_delete=models.CASCADE, related_name='logs')
+    campo_alterado = models.CharField(max_length=255)
+    valor_antigo = models.TextField(blank=True, null=True)
+    valor_novo = models.TextField(blank=True, null=True)
+    data_alteracao = models.DateTimeField(auto_now_add=True)
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"Log da medida {self.id_medida.id} - {self.campo_alterado} alterado em {self.data_alteracao}"
+
+    class Meta:
+        managed = True
+        db_table = 'tab_log_medida'
+        ordering = ['-data_alteracao']  # Mais recentes primeiro
+
+
 class TabMedida(models.Model):
     id = models.BigAutoField(primary_key=True)
     id_envio = models.ForeignKey(
@@ -720,6 +738,31 @@ class TabMedida(models.Model):
     class Meta:
         managed = True
         db_table = "tab_medida"
+
+    def save(self, *args, **kwargs):
+        usuario = kwargs.pop('usuario', None)
+        if not usuario:
+            raise ValueError("User must be provided when saving TabMedida")
+
+        if self.pk:  # Se já existe, é uma atualização
+            old_instance = TabMedida.objects.get(pk=self.pk)
+            campos_monitorados = ['valor', 'input_valor']
+
+            for campo in campos_monitorados:
+                valor_antigo = getattr(old_instance, campo)
+                valor_novo = getattr(self, campo)
+
+                if valor_antigo != valor_novo:
+                    # Registra o log apenas se houver mudança
+                    TabLogMedida.objects.create(
+                        id_medida=self,
+                        campo_alterado=campo,
+                        valor_antigo=valor_antigo,
+                        valor_novo=valor_novo,
+                        usuario=usuario
+                    )
+
+        super().save(*args, **kwargs)
 
 
 class TabParam(models.Model):
