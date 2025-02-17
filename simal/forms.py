@@ -843,7 +843,10 @@ class CadastroCampanhaForm(forms.ModelForm):
 
 class CadastroColetaForm(forms.ModelForm):
     data = forms.DateField(
-        widget=forms.DateInput(attrs={"type": "date"}),
+        widget=forms.DateInput(attrs={
+            "type": "date",
+            "id": "id_data_programada"  # Adicionando um id específico
+        }),
         label="Data programada",
         required=True,
     )

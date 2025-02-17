@@ -398,268 +398,275 @@
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-  function initChart() {
-      const canvas = document.getElementById('statusChart');
-      if (!canvas) {
-          console.error('Canvas element not found');
-          return;
-      }
+    function initChart() {
+        const canvas = document.getElementById('statusChart');
+        if (!canvas) {
+            console.error('Canvas element not found');
+            return;
+        }
 
-      const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d');
 
-      const chartData = {
-          labels: {{ chart_data.labels|safe }},
-          data: {{ chart_data.counts|safe }},
-          colors: {{ chart_data.colors|safe|default:'[]' }}
-      };
+        const chartData = {
+            labels: {{ chart_data.labels|safe }},
+            data: {{ chart_data.counts|safe }},
+            colors: {{ chart_data.colors|safe|default:'[]' }}
+        };
 
-      // Filtrar dados com contagem zero e ordenar em ordem decrescente
-      const filteredData = chartData.data.map((value, index) => ({
-          label: chartData.labels[index],
-          value: value,
-          color: chartData.colors[index]
-      }))
-      .filter(item => item.value > 0)
-      .sort((a, b) => b.value - a.value); // Ordenar por valor em ordem decrescente
+        // Filtrar dados com contagem zero e ordenar em ordem decrescente
+        const filteredData = chartData.data.map((value, index) => ({
+            label: chartData.labels[index],
+            value: value,
+            color: chartData.colors[index]
+        }))
+        .filter(item => item.value > 0)
+        .sort((a, b) => b.value - a.value); // Ordenar por valor em ordem decrescente
 
-      // Reorganizar os dados filtrados
-      const cleanData = {
-          labels: filteredData.map(item => item.label),
-          data: filteredData.map(item => item.value),
-          colors: filteredData.map(item => item.color)
-      };
+        // Reorganizar os dados filtrados
+        const cleanData = {
+            labels: filteredData.map(item => item.label),
+            data: filteredData.map(item => item.value),
+            colors: filteredData.map(item => item.color)
+        };
 
-      console.log('Dados do gráfico filtrados:', cleanData);
+        console.log('Dados do gráfico filtrados:', cleanData);
 
-      if (cleanData.labels.length === 0) {
-          console.error('Nenhum dado disponível para o gráfico');
-          return;
-      }
+        if (cleanData.labels.length === 0) {
+            console.error('Nenhum dado disponível para o gráfico');
+            return;
+        }
 
-      const chart = new Chart(ctx, {
-          type: 'bar',
-          data: {
-              labels: cleanData.labels,
-              datasets: [{
-                  label: 'Quantidade de Coletas',
-                  data: cleanData.data,
-                  backgroundColor: cleanData.colors,
-                  borderWidth: 0,
-                  borderRadius: 20,
-                  barThickness: 25,  // Reduzido para barras mais finas
-                  maxBarThickness: 100
-              }]
-          },
-          options: {
-              indexAxis: 'y',  // Isso faz o gráfico ficar horizontal
-              responsive: true,
-              maintainAspectRatio: false,
-              aspectRatio: 2,  // Ajustado para melhor visualização horizontal
-              layout: {
-                  padding: {
-                      left: 20,
-                      right: 30,  // Aumentado para acomodar os valores
-                      top: 20,
-                      bottom: 10
-                  }
-              },
-              plugins: {
-                  legend: {
-                      display: false
-                  },
-                  tooltip: {
-                      backgroundColor: 'rgba(0,0,0,0.8)',
-                      titleColor: '#fff',
-                      titleFont: {
-                          size: 13,
-                          family: "'Inter', sans-serif",
-                          weight: '600'
-                      },
-                      bodyFont: {
-                          size: 12,
-                          family: "'Inter', sans-serif"
-                      },
-                      padding: 12,
-                      cornerRadius: 8,
-                      callbacks: {
-                          label: function(context) {
-                              return `Total: ${context.parsed.x}`;  // Mudado para x por causa da orientação horizontal
-                          }
-                      }
-                  }
-              },
-              scales: {
-                  x: {  // Era y antes
-                      beginAtZero: true,
-                      ticks: {
-                          stepSize: 1,
-                          font: {
-                              size: 12,
-                              family: "'Inter', sans-serif"
-                          }
-                      },
-                      grid: {
-                          display: true,
-                          color: 'rgba(0,0,0,0.05)'
-                      }
-                  },
-                  y: {  // Era x antes
-                      ticks: {
-                          font: {
-                              size: 12,
-                              weight: '500',
-                              family: "'Inter', sans-serif"
-                          }
-                      },
-                      grid: {
-                          display: false
-                      }
-                  }
-              }
-          }
+        const chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: cleanData.labels,
+                datasets: [{
+                    label: 'Quantidade de Coletas',
+                    data: cleanData.data,
+                    backgroundColor: cleanData.colors,
+                    borderWidth: 0,
+                    borderRadius: 20,
+                    barThickness: 25,  // Reduzido para barras mais finas
+                    maxBarThickness: 100
+                }]
+            },
+            options: {
+                indexAxis: 'y',  // Isso faz o gráfico ficar horizontal
+                responsive: true,
+                maintainAspectRatio: false,
+                aspectRatio: 2,  // Ajustado para melhor visualização horizontal
+                layout: {
+                    padding: {
+                        left: 20,
+                        right: 30,  // Aumentado para acomodar os valores
+                        top: 20,
+                        bottom: 10
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0,0,0,0.8)',
+                        titleColor: '#fff',
+                        titleFont: {
+                            size: 13,
+                            family: "'Inter', sans-serif",
+                            weight: '600'
+                        },
+                        bodyFont: {
+                            size: 12,
+                            family: "'Inter', sans-serif"
+                        },
+                        padding: 12,
+                        cornerRadius: 8,
+                        callbacks: {
+                            label: function(context) {
+                                return `Total: ${context.parsed.x}`;  // Mudado para x por causa da orientação horizontal
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {  // Era y antes
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1,
+                            font: {
+                                size: 12,
+                                family: "'Inter', sans-serif"
+                            }
+                        },
+                        grid: {
+                            display: true,
+                            color: 'rgba(0,0,0,0.05)'
+                        }
+                    },
+                    y: {  // Era x antes
+                        ticks: {
+                            font: {
+                                size: 12,
+                                weight: '500',
+                                family: "'Inter', sans-serif"
+                            }
+                        },
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Garantir que o DOM está completamente carregado
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            initChart();
+        });
+    } else {
+        initChart();
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const calendarEl = document.getElementById('calendar');
+        const calendarEvents = JSON.parse('{{ calendar_events|safe }}');
+        let currentTooltip = null;
+        let isMouseOverTooltip = false;
+
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            locale: 'pt-br',
+            height: 400,
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: ''
+            },
+            buttonText: {
+                today: 'Hoje'
+            },
+            events: calendarEvents.map(event => ({
+                id: event.id,
+                title: `Coleta em ${event.title}`, // Modified title format
+                start: event.start,
+                backgroundColor: event.backgroundColor || '#4361ee',
+                textColor: event.textColor || '#ffffff',
+                borderColor: 'transparent',
+                url: `/info_coleta/${event.id}/`
+            })),
+            dateClick: function(info) {
+                // Redirect to direcionamento_campanha when clicking on a date
+                window.location.href = `/cadastro_coleta/?data=${info.dateStr}`;
+            },
+            eventClick: function(info) {
+                // Prevent default behavior
+                info.jsEvent.preventDefault();
+                // Redirect to info_coleta page
+                window.location.href = info.event.url;
+            },
+            eventDidMount: function(info) {
+                const googleCalendarUrl = createGoogleCalendarUrl({
+                    title: info.event.title,
+                    start: info.event.start,
+                    end: info.event.end || info.event.start,
+                    description: `Nova ${info.event.title}`
+                });
+
+                // Create tooltip content
+                const tooltipContent = document.createElement('div');
+                tooltipContent.innerHTML = `
+                    <div class="event-tooltip">
+                        <p class="mb-2">${info.event.title}</p>
+                        <a href="${googleCalendarUrl}" target="_blank" class="btn btn-sm btn-light">
+                            <i class="bi bi-calendar-plus"></i> Adicionar coleta ao seu calendário google
+                        </a>
+                    </div>
+                `;
+
+                // Initialize tooltip
+                const tooltip = new bootstrap.Tooltip(info.el, {
+                    title: tooltipContent,
+                    html: true,
+                    placement: 'top',
+                    trigger: 'manual',
+                    container: 'body',
+                    template: `
+                        <div class="tooltip" role="tooltip">
+                            <div class="tooltip-arrow"></div>
+                            <div class="tooltip-inner event-tooltip-inner"></div>
+                        </div>
+                    `
+                });
+
+                // Handle mouse events
+                info.el.addEventListener('mouseenter', () => {
+                    if (currentTooltip) {
+                        currentTooltip.hide();
+                    }
+                    tooltip.show();
+                    currentTooltip = tooltip;
+
+                    // Adicionar listener para o tooltip atual
+                    const tooltipElement = document.querySelector('.tooltip');
+                    if (tooltipElement) {
+                        tooltipElement.addEventListener('mouseenter', () => {
+                            isMouseOverTooltip = true;
+                        });
+                        tooltipElement.addEventListener('mouseleave', () => {
+                            isMouseOverTooltip = false;
+                            setTimeout(() => {
+                                if (!isMouseOverTooltip && currentTooltip === tooltip) {
+                                    tooltip.hide();
+                                    currentTooltip = null;
+                                }
+                            }, 300);
+                        });
+                    }
+                });
+
+                info.el.addEventListener('mouseleave', () => {
+                    setTimeout(() => {
+                        if (!isMouseOverTooltip && currentTooltip === tooltip) {
+                            tooltip.hide();
+                            currentTooltip = null;
+                        }
+                    }, 300);
+                });
+            }
+        });
+
+        calendar.render();
+    });
+
+    // Replace the existing createGoogleCalendarUrl function with:
+
+    function createGoogleCalendarUrl(event) {
+        const formatDate = (date) => {
+            return date.toISOString().replace(/-|:|\.\d\d\d/g, '');
+        };
+
+        // Get current user email from Django template
+        const userEmail = '{{ request.user.email }}';
+
+        const params = new URLSearchParams({
+            action: 'TEMPLATE',
+            text: event.title,
+            dates: `${formatDate(event.start)}/${formatDate(event.end)}`,
+            details: event.description,
+            add: userEmail // Add current user as attendee
+        });
+
+        return `https://www.google.com/calendar/render?${params.toString()}`;
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      // ...existing code...
+      calendar.setOption('dateClick', function(info) {
+          window.location.href = "/cadastro_coleta/?date=" + info.dateStr;
       });
-  }
-
-  // Garantir que o DOM está completamente carregado
-  if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', function() {
-          initChart();
-      });
-  } else {
-      initChart();
-  }
-
-  document.addEventListener('DOMContentLoaded', function() {
-      const calendarEl = document.getElementById('calendar');
-      const calendarEvents = JSON.parse('{{ calendar_events|safe }}');
-      let currentTooltip = null;
-      let isMouseOverTooltip = false;
-
-      const calendar = new FullCalendar.Calendar(calendarEl, {
-          initialView: 'dayGridMonth',
-          locale: 'pt-br',
-          height: 400,
-          headerToolbar: {
-              left: 'prev,next today',
-              center: 'title',
-              right: ''
-          },
-          buttonText: {
-              today: 'Hoje'
-          },
-          events: calendarEvents.map(event => ({
-              id: event.id,
-              title: `Coleta em ${event.title}`, // Modified title format
-              start: event.start,
-              backgroundColor: event.backgroundColor || '#4361ee',
-              textColor: event.textColor || '#ffffff',
-              borderColor: 'transparent',
-              url: `/info_coleta/${event.id}/`
-          })),
-          dateClick: function(info) {
-              // Redirect to direcionamento_campanha when clicking on a date
-              window.location.href = `/cadastro_coleta/?data=${info.dateStr}`;
-          },
-          eventClick: function(info) {
-              // Prevent default behavior
-              info.jsEvent.preventDefault();
-              // Redirect to info_coleta page
-              window.location.href = info.event.url;
-          },
-          eventDidMount: function(info) {
-              const googleCalendarUrl = createGoogleCalendarUrl({
-                  title: info.event.title,
-                  start: info.event.start,
-                  end: info.event.end || info.event.start,
-                  description: `Nova ${info.event.title}`
-              });
-
-              // Create tooltip content
-              const tooltipContent = document.createElement('div');
-              tooltipContent.innerHTML = `
-                  <div class="event-tooltip">
-                      <p class="mb-2">${info.event.title}</p>
-                      <a href="${googleCalendarUrl}" target="_blank" class="btn btn-sm btn-light">
-                          <i class="bi bi-calendar-plus"></i> Adicionar coleta ao seu calendário google
-                      </a>
-                  </div>
-              `;
-
-              // Initialize tooltip
-              const tooltip = new bootstrap.Tooltip(info.el, {
-                  title: tooltipContent,
-                  html: true,
-                  placement: 'top',
-                  trigger: 'manual',
-                  container: 'body',
-                  template: `
-                      <div class="tooltip" role="tooltip">
-                          <div class="tooltip-arrow"></div>
-                          <div class="tooltip-inner event-tooltip-inner"></div>
-                      </div>
-                  `
-              });
-
-              // Handle mouse events
-              info.el.addEventListener('mouseenter', () => {
-                  if (currentTooltip) {
-                      currentTooltip.hide();
-                  }
-                  tooltip.show();
-                  currentTooltip = tooltip;
-
-                  // Adicionar listener para o tooltip atual
-                  const tooltipElement = document.querySelector('.tooltip');
-                  if (tooltipElement) {
-                      tooltipElement.addEventListener('mouseenter', () => {
-                          isMouseOverTooltip = true;
-                      });
-                      tooltipElement.addEventListener('mouseleave', () => {
-                          isMouseOverTooltip = false;
-                          setTimeout(() => {
-                              if (!isMouseOverTooltip && currentTooltip === tooltip) {
-                                  tooltip.hide();
-                                  currentTooltip = null;
-                              }
-                          }, 300);
-                      });
-                  }
-              });
-
-              info.el.addEventListener('mouseleave', () => {
-                  setTimeout(() => {
-                      if (!isMouseOverTooltip && currentTooltip === tooltip) {
-                          tooltip.hide();
-                          currentTooltip = null;
-                      }
-                  }, 300);
-              });
-          }
-      });
-
-      calendar.render();
   });
-
-  // Replace the existing createGoogleCalendarUrl function with:
-
-  function createGoogleCalendarUrl(event) {
-      const formatDate = (date) => {
-          return date.toISOString().replace(/-|:|\.\d\d\d/g, '');
-      };
-
-      // Get current user email from Django template
-      const userEmail = '{{ request.user.email }}';
-
-      const params = new URLSearchParams({
-          action: 'TEMPLATE',
-          text: event.title,
-          dates: `${formatDate(event.start)}/${formatDate(event.end)}`,
-          details: event.description,
-          add: userEmail // Add current user as attendee
-      });
-
-      return `https://www.google.com/calendar/render?${params.toString()}`;
-  }
 </script>
 
 <style>

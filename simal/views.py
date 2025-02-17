@@ -1396,21 +1396,22 @@ def export_pontos_csv(request):
         response, delimiter=";", quotechar='"', quoting=csv.QUOTE_MINIMAL
     )
     writer.writerow(
-        ["Nome", "Setor", "Local", "Descrição", "Status", "Latitude", "Longitude"]
+        ["Nome", "Setor", "Local", "Descrição", "Status",
+            "Latitude", "Longitude", "Modalidade"]
     )
 
-    pontos = TabPonto.objects.select_related("setor", "local").all()
+    pontos = TabPonto.objects.select_related("id_setor", "id_local").all()
     for ponto in pontos:
         writer.writerow(
             [
                 ponto.nome,
-                ponto.setor,  # Acessa o nome do setor
-                ponto.local,  # Acessa o nome do local
-                ponto.nome,
+                ponto.id_setor.nome if ponto.id_setor else '',
+                ponto.id_local.nome if ponto.id_local else '',
+                ponto.observacao or '',  # Usando observacao ao invés de descrição
                 "Ativo" if ponto.status else "Inativo",
-                ponto.lat,
-                ponto.lon,
-                ponto.tipo,
+                ponto.lat or '',
+                ponto.lon or '',
+                ponto.modalidade or ''  # Adicionando modalidade ao invés de tipo
             ]
         )
 
@@ -1706,6 +1707,7 @@ def enviar_email_async(subject, message, from_email, recipient_list):
 
 @login_required
 def cadastro_coleta_view(request):
+    data_inicial = request.GET.get('date')
     if request.method == "POST":
         form = CadastroColetaForm(request.POST)
         if form.is_valid():
@@ -1739,8 +1741,10 @@ def cadastro_coleta_view(request):
 
             return redirect("checklist_coleta", coleta_id=coleta.id)
     else:
-        form = CadastroColetaForm()
-
+        initial_data = {}
+        if data_inicial:
+            initial_data['data'] = data_inicial
+        form = CadastroColetaForm(initial=initial_data)
     return render(request, "cadastro_coleta.html", {"form": form})
 
 
