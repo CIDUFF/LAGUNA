@@ -3188,10 +3188,10 @@ def generate_sample_labels(request, coleta_id):
         c.drawString(text_x, y + 15*mm, ponto_text)
 
         # Demais informações em tamanho menor e mais compactas
-        c.setFont("Helvetica", 7)  # Reduzido de 6 para 7 para melhor legibilidade
-        c.drawString(text_x, y + 12*mm, f"{amostra.id_ponto.id_setor.nome}")
-        c.drawString(text_x, y + 9*mm, f"{coleta.data.strftime('%d/%m/%Y')}")
-        c.drawString(text_x, y + 6*mm, f"{amostra.id_frasco.nome}")
+        c.setFont("Helvetica-Bold", 9)  # Reduzido de 6 para 7 para melhor legibilidade
+        c.drawString(text_x, y + 11*mm, f"{amostra.id_ponto.id_setor.nome}")
+        c.drawString(text_x, y + 7*mm, f"{coleta.data.strftime('%d/%m/%Y')}")
+        c.drawString(text_x, y + 3*mm, f"{amostra.id_frasco.nome}")
 
         # Atualizar posição para próxima etiqueta
         current_col += 1
