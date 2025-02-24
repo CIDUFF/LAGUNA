@@ -3114,30 +3114,24 @@ def generate_sample_labels(request, coleta_id):
     amostras = TabAmostra.objects.filter(
         id_coleta=coleta).exclude(id_frasco__id=1)
 
-    # Create PDF buffer
-    buffer = BytesIO()
+    # Parâmetros fixos
+    margin = 1 * mm
+    label_spacing = 3 * mm
+    label_width = 47 * mm  # Largura fixa da etiqueta
+    label_height = 25 * mm  # Altura fixa da etiqueta
+    labels_per_row = 2  # Número fixo de etiquetas por linha
 
-    # Definir tamanho personalizado da página: 104mm x 99.1mm
-    PAGE_WIDTH = 104 * mm  # 10.4 cm convertido para mm
-    PAGE_HEIGHT = 99.1 * mm  # 9.91 cm convertido para mm
+    # Calcular número total de linhas necessárias
+    total_labels = amostras.count()
+    total_rows = (total_labels + labels_per_row - 1) // labels_per_row  # Arredonda para cima
+
+    # Calcular dimensões da página
+    PAGE_WIDTH = (label_width * labels_per_row) + (label_spacing * (labels_per_row - 1)) + (2 * margin)
+    PAGE_HEIGHT = (label_height * total_rows) + (label_spacing * (total_rows - 1)) + (2 * margin)
     PAGE_SIZE = (PAGE_WIDTH, PAGE_HEIGHT)
 
-    # Margens e espaçamento 
-    margin = 5 * mm
-    label_spacing = 2 * mm
-
-    # Largura e altura úteis
-    usable_width = PAGE_WIDTH - (2 * margin) - label_spacing
-    usable_height = PAGE_HEIGHT - (2 * margin)
-
-    # Dimensões das etiquetas
-    label_width = (usable_width / 2)  # Duas colunas
-    label_height = 25 * mm  # Altura padrão da etiqueta
-
-    # Número de etiquetas por página
-    labels_per_row = 2
-    labels_per_col = int(usable_height // (label_height + label_spacing))
-
+    # Create PDF buffer
+    buffer = BytesIO()
     c = canvas.Canvas(buffer, pagesize=PAGE_SIZE)
 
     current_row = 0
@@ -3146,13 +3140,12 @@ def generate_sample_labels(request, coleta_id):
     for amostra in amostras:
         # Calcular posição para a etiqueta atual
         x = margin + (current_col * (label_width + label_spacing))
-        y = PAGE_HEIGHT - margin - \
-            ((current_row + 1) * label_height) - (current_row * label_spacing)
+        y = PAGE_HEIGHT - margin - (current_row * (label_height + label_spacing)) - label_height
 
         # Desenhar borda da etiqueta
         c.rect(x, y, label_width, label_height)
 
-        # Primeiro, desenhar o ID no topo da etiqueta com tamanho original
+        # Primeiro, desenhar o ID no topo da etiqueta
         c.setFont("Helvetica-Bold", 8)
         c.drawString(x + 2*mm, y + label_height - 4*mm, f"{amostra.etiqueta}")
 
@@ -3183,12 +3176,12 @@ def generate_sample_labels(request, coleta_id):
         text_x = x + (qr_size + 4*mm)
 
         # Desenhar o nome do ponto em tamanho maior
-        c.setFont("Helvetica-Bold", 20)  # Aumentado de 8 para 12
+        c.setFont("Helvetica-Bold", 20)
         ponto_text = f"{amostra.id_ponto.nome}"
         c.drawString(text_x, y + 15*mm, ponto_text)
 
         # Demais informações em tamanho menor e mais compactas
-        c.setFont("Helvetica-Bold", 9)  # Reduzido de 6 para 7 para melhor legibilidade
+        c.setFont("Helvetica-Bold", 9)
         c.drawString(text_x, y + 11*mm, f"{amostra.id_ponto.id_setor.nome}")
         c.drawString(text_x, y + 7*mm, f"{coleta.data.strftime('%d/%m/%Y')}")
         c.drawString(text_x, y + 3*mm, f"{amostra.id_frasco.nome}")
@@ -3198,12 +3191,6 @@ def generate_sample_labels(request, coleta_id):
         if current_col >= labels_per_row:
             current_col = 0
             current_row += 1
-
-        # Nova página se necessário
-        if current_row >= labels_per_col:
-            c.showPage()
-            current_row = 0
-            current_col = 0
 
     c.save()
     buffer.seek(0)
