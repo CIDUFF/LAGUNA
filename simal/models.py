@@ -779,7 +779,6 @@ class TabParam(models.Model):
 
 
 class TabPonto(models.Model):
-    id = models.BigAutoField(primary_key=True)
     id_setor = models.ForeignKey(
         "TabSetor",
         on_delete=models.CASCADE,

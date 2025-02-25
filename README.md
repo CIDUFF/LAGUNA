@@ -60,6 +60,10 @@ docker-compose build --no-cache
 docker-compose up
 ``` -->
 
+<!-- reiniciar sequencia de id:
+
+SELECT setval(pg_get_serial_sequence('tab_nome_tabela', 'id'), COALESCE((SELECT MAX(id) FROM tab_ponto), 1), true); -->
+
 ## Documentação
 
 Em tabelas que foram populadas com dump de dados de excel e outros sistemas, é possível que o id_seq não esteja correto, para corrigir isso, execute o comando sql:
