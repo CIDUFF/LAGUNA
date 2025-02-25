@@ -1,4 +1,5 @@
-from django.urls import path
+from django.urls import path, include
+from simal.dashboard import *
 from simal.views import (
     export_resultados_medidas_csv,
     home,
@@ -67,6 +68,19 @@ from simal.views import (
     generate_sample_labels,
 )
 from .apis import get_filtered_options
+
+# Agrupando as URLs de resultados com prefixo correto
+resultados_patterns = [
+    path('dashboard/', dashboard, name='dashboard'),
+    path('dashboard/get_grafico/', get_grafico, name='get_grafico'),
+    path('dashboard/medias/', dashboard_medias, name='dashboard_medias'),
+    path('dashboard/get_grafico_medias/', get_grafico_medias, name='get_grafico_medias'),
+    path('dashboard/grupos/', grupos_list, name='grupos_list'),
+    path('dashboard/grupos/create/', grupo_create, name='grupo_create'),
+    path('dashboard/grupos/delete/<int:pk>/', grupo_delete, name='grupo_delete'),
+    path('dashboard/dados-ausentes/', dados_ausentes, name='dados_ausentes'),
+    path('dashboard/atualizar-valor/', atualizar_valor, name='atualizar_valor'),
+]
 
 urlpatterns = [
     path("", new_home, name="home"),  # Nova página inicial
@@ -258,4 +272,8 @@ urlpatterns = [
         name="generate_sample_labels",
     ),
     path('new_home/', new_home, name='new_home'),
+    
+    # Adicionar o namespace 'resultados' com o prefixo correto
+    path('', include((resultados_patterns, 'resultados'))),
 ]
+

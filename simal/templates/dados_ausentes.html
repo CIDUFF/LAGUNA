@@ -1,0 +1,236 @@
+{% extends 'base/base_site.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <ul class="nav nav-tabs mb-4">
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'resultados:dashboard' %}">Dados por Ponto</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'resultados:dashboard_medias' %}">Médias</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'resultados:grupos_list' %}">Grupos de Pontos</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link active" href="{% url 'resultados:dados_ausentes' %}">Dados Ausentes</a>
+        </li>
+    </ul>
+
+    <div class="container mt-5">
+        <h2>Dados Ausentes ou Zerados</h2>
+        <div class="alert alert-info">
+            Total de registros encontrados: {{ total_registros }}
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5>Filtros</h5>
+                <div class="row">
+                    <div class="col-md-4">
+                        <label for="filtro-parametro">Parâmetro:</label>
+                        <select id="filtro-parametro" class="form-control">
+                            <option value="">Todos</option>
+                            {% for parametro in parametros %}
+                            <option value="{{ parametro }}">{{ parametro }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="filtro-setor">Setor:</label>
+                        <select id="filtro-setor" class="form-control">
+                            <option value="">Todos</option>
+                            {% for setor in setores %}
+                            <option value="{{ setor }}">{{ setor }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="filtro-ponto">Ponto:</label>
+                        <select id="filtro-ponto" class="form-control">
+                            <option value="">Todos</option>
+                            {% for ponto in pontos %}
+                            <option value="{{ ponto }}">{{ ponto }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-striped" id="tabela-dados">
+                <thead>
+                    <tr>
+                        <th>Parâmetro</th>
+                        <th>Ponto</th>
+                        <th>Setor</th>
+                        <th>Data</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in dados %}
+                    <tr class="dado-row" id="row-{{ forloop.counter }}">
+                        <td class="parametro">{{ item.Parâmetro }}</td>
+                        <td class="ponto">{{ item.Ponto }}</td>
+                        <td class="setor">{{ item.Setor }}</td>
+                        <td class="data">{{ item.Data|date:"Y-m-d" }}</td>
+                        <td>
+                            <button class="btn btn-primary btn-sm" 
+                                    onclick="abrirModalAtualizacao('{{ item.Parâmetro }}', '{{ item.Ponto }}', '{{ item.Setor }}', '{{ item.Data|date:"Y-m-d" }}', '{{ forloop.counter }}')">
+                                Inserir Valor
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para atualização de valor -->
+<div class="modal fade" id="modalAtualizacao" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Atualizar Valor</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="formAtualizacao">
+                    <input type="hidden" id="modal-parametro" name="parametro">
+                    <input type="hidden" id="modal-ponto" name="ponto">
+                    <input type="hidden" id="modal-setor" name="setor">
+                    <input type="hidden" id="modal-data" name="data">
+                    <input type="hidden" id="modal-row-id" name="row-id">
+                    
+                    <div class="form-group">
+                        <label>Parâmetro: <span id="display-parametro"></span></label>
+                    </div>
+                    <div class="form-group">
+                        <label>Ponto: <span id="display-ponto"></span></label>
+                    </div>
+                    <div class="form-group">
+                        <label>Data: <span id="display-data"></span></label>
+                    </div>
+                    <div class="form-group">
+                        <label for="modal-valor">Novo Valor:</label>
+                        <input type="number" step="0.01" class="form-control" id="modal-valor" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="atualizarValor()">Salvar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const filtros = {
+        parametro: document.getElementById('filtro-parametro'),
+        setor: document.getElementById('filtro-setor'),
+        ponto: document.getElementById('filtro-ponto')
+    };
+
+    function aplicarFiltros() {
+        const rows = document.querySelectorAll('.dado-row');
+        const parametroSelecionado = filtros.parametro.value.toLowerCase();
+        const setorSelecionado = filtros.setor.value.toLowerCase();
+        const pontoSelecionado = filtros.ponto.value.toLowerCase();
+
+        rows.forEach(row => {
+            const parametro = row.querySelector('.parametro').textContent.toLowerCase();
+            const setor = row.querySelector('.setor').textContent.toLowerCase();
+            const ponto = row.querySelector('.ponto').textContent.toLowerCase();
+
+            const matchParametro = !parametroSelecionado || parametro === parametroSelecionado;
+            const matchSetor = !setorSelecionado || setor === setorSelecionado;
+            const matchPonto = !pontoSelecionado || ponto === pontoSelecionado;
+
+            row.style.display = matchParametro && matchSetor && matchPonto ? '' : 'none';
+        });
+    }
+
+    Object.values(filtros).forEach(filtro => {
+        filtro.addEventListener('change', aplicarFiltros);
+    });
+});
+
+function abrirModalAtualizacao(parametro, ponto, setor, data, rowId) {
+    $('#modal-parametro').val(parametro);
+    $('#modal-ponto').val(ponto);
+    $('#modal-setor').val(setor);
+    $('#modal-data').val(data);
+    $('#modal-row-id').val(rowId);
+    
+    $('#display-parametro').text(parametro);
+    $('#display-ponto').text(ponto);
+    $('#display-data').text(data);
+    
+    $('#modalAtualizacao').modal('show');
+}
+
+function atualizarValor() {
+    const dados = {
+        parametro: $('#modal-parametro').val(),
+        ponto: $('#modal-ponto').val(),
+        setor: $('#modal-setor').val(),
+        data: $('#modal-data').val(),
+        valor: $('#modal-valor').val()
+    };
+    
+    $.ajax({
+        url: '{% url "resultados:atualizar_valor" %}',
+        method: 'POST',
+        data: dados,
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        success: function(response) {
+            if (response.status === 'success') {
+                // Remover a linha da tabela
+                const rowId = $('#modal-row-id').val();
+                $(`#row-${rowId}`).fadeOut(400, function() {
+                    $(this).remove();
+                    atualizarTotalRegistros();
+                });
+                $('#modalAtualizacao').modal('hide');
+            } else {
+                alert('Erro ao atualizar: ' + response.message);
+            }
+        },
+        error: function(xhr, status, error) {
+            alert('Erro ao atualizar o valor: ' + error);
+        }
+    });
+}
+
+function atualizarTotalRegistros() {
+    const totalRows = $('.dado-row:visible').length;
+    $('.alert-info').text(`Total de registros encontrados: ${totalRows}`);
+}
+</script>
+
+<style>
+.table {
+    font-size: 0.9rem;
+}
+.table th {
+    background-color: #f8f9fa;
+}
+.form-control {
+    margin-bottom: 10px;
+}
+</style>
+
+{% endblock %}

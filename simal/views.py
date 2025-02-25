@@ -3328,3 +3328,4 @@ def new_home(request):
         traceback.print_exc()  # Imprime o traceback completo
         messages.error(request, "Erro ao carregar o dashboard.")
         return redirect('home')
+

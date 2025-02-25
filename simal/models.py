@@ -796,6 +796,9 @@ class TabPonto(models.Model):
     lon = models.FloatField(blank=True, null=True)
     observacao = models.TextField(blank=True, null=True)
     status = models.BooleanField(null=True, blank=True)
+    grupo = models.ForeignKey(
+        "GrupoPontos", on_delete=models.CASCADE, blank=True, null=True
+    )
 
     def __str__(self):
         return f"{self.nome}"
@@ -1056,3 +1059,16 @@ class TabLogColeta(models.Model):
     class Meta:
         managed = True
         db_table = 'tab_log_coleta'
+
+class GrupoPontos(models.Model):
+    nome = models.CharField(max_length=100)
+    descricao = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return self.nome
+    
+    class Meta:
+        managed=True
+        db_table = 'tab_grupo_pontos'
