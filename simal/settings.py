@@ -39,4 +39,9 @@ CORS_ALLOWED_ORIGINS = [
     "https://cdnjs.cloudflare.com",
 ]
 
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'simal/static'),
+]
+
 # Remover completamente a seção LOGGING daqui, pois já está definida no settings principal

@@ -1,18 +1,30 @@
-<ul class="nav nav-tabs mb-4">
-    <li class="nav-item">
-        <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" 
-           href="{% url 'resultados:dashboard' %}">Dados por Ponto</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link {% if request.resolver_match.url_name == 'dashboard_medias' %}active{% endif %}" 
-           href="{% url 'resultados:dashboard_medias' %}">Médias</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link {% if request.resolver_match.url_name == 'grupos_list' %}active{% endif %}" 
-           href="{% url 'resultados:grupos_list' %}">Grupos de Pontos</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link {% if request.resolver_match.url_name == 'dados_ausentes' %}active{% endif %}" 
-           href="{% url 'resultados:dados_ausentes' %}">Dados Ausentes</a>
-    </li>
-</ul>
+{% extends 'base/base_site.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard_tabs.css' %}" type="text/css">
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <ul class="nav nav-tabs mb-4">
+        <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" 
+               href="{% url 'resultados:dashboard' %}">Dados por Ponto</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name == 'dashboard_medias' %}active{% endif %}" 
+               href="{% url 'resultados:dashboard_medias' %}">Médias</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name == 'grupos_list' %}active{% endif %}" 
+               href="{% url 'resultados:grupos_list' %}">Grupos de Pontos</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name == 'dados_ausentes' %}active{% endif %}" 
+               href="{% url 'resultados:dados_ausentes' %}">Dados Ausentes</a>
+        </li>
+    </ul>
+    <!-- ... resto do conteúdo ... -->
+</div>
+{% endblock %}
