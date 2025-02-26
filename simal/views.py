@@ -3109,6 +3109,7 @@ def atualizar_status_coleta(request, coleta_id):
     return JsonResponse({'success': False, 'error': 'Método não permitido'}, status=405)
 
 @login_required
+@login_required
 def generate_sample_labels(request, coleta_id):
     coleta = TabColeta.objects.get(id=coleta_id)
     amostras = TabAmostra.objects.filter(
@@ -3156,17 +3157,23 @@ def generate_sample_labels(request, coleta_id):
         watermark_path = None
 
     # Processar amostras
-    for i in range(0, len(amostras), labels_per_page):
+    total_amostras = len(amostras)
+    for i in range(0, total_amostras, labels_per_page):
         page_amostras = amostras[i:i + labels_per_page]
-        total_width = (label_width * len(page_amostras)) + (label_spacing * (len(page_amostras) - 1))
-        start_x = (PAGE_WIDTH - total_width) / 2
+        is_last_page = (i + labels_per_page >= total_amostras)
+        is_odd_last_page = is_last_page and (total_amostras % labels_per_page == 1)
+
+        if is_odd_last_page:
+            # Se for a última página com uma única etiqueta, alinhar à esquerda
+            start_x = margin
+        else:
+            # Caso contrário, centralizar as etiquetas na página
+            total_width = (label_width * len(page_amostras)) + (label_spacing * (len(page_amostras) - 1))
+            start_x = (PAGE_WIDTH - total_width) / 2
         
         for idx, amostra in enumerate(page_amostras):
             x = start_x + (idx * (label_width + label_spacing))
             y = margin
-
-            # Desenhar borda da etiqueta
-            # c.rect(x, y, label_width, label_height)
 
             # Adicionar código da etiqueta
             c.setFont("Helvetica-Bold", 8)
@@ -3221,7 +3228,7 @@ def generate_sample_labels(request, coleta_id):
                 except Exception as e:
                     print(f"Erro ao desenhar marca d'água: {str(e)}")
 
-        if i + labels_per_page < len(amostras):
+        if i + labels_per_page < total_amostras:
             c.showPage()
 
     c.save()
