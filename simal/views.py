@@ -3116,7 +3116,7 @@ def generate_sample_labels(request, coleta_id):
 
     # Parâmetros fixos
     margin = 1 * mm
-    label_spacing = 3 * mm
+    label_spacing = 5 * mm
     label_width = 47 * mm
     label_height = 25 * mm
     labels_per_row = 2
@@ -3166,7 +3166,7 @@ def generate_sample_labels(request, coleta_id):
             y = margin
 
             # Desenhar borda da etiqueta
-            c.rect(x, y, label_width, label_height)
+            # c.rect(x, y, label_width, label_height)
 
             # Adicionar código da etiqueta
             c.setFont("Helvetica-Bold", 8)
