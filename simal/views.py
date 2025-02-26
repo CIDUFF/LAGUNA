@@ -3108,7 +3108,7 @@ def atualizar_status_coleta(request, coleta_id):
 
     return JsonResponse({'success': False, 'error': 'Método não permitido'}, status=405)
 
-
+@login_required
 def generate_sample_labels(request, coleta_id):
     coleta = TabColeta.objects.get(id=coleta_id)
     amostras = TabAmostra.objects.filter(
@@ -3116,81 +3116,113 @@ def generate_sample_labels(request, coleta_id):
 
     # Parâmetros fixos
     margin = 1 * mm
-    label_spacing = 3 * mm
-    label_width = 47 * mm  # Largura fixa da etiqueta
-    label_height = 25 * mm  # Altura fixa da etiqueta
-    labels_per_row = 2  # Número fixo de etiquetas por linha
-
-    # Calcular número total de linhas necessárias
-    total_labels = amostras.count()
-    total_rows = (total_labels + labels_per_row - 1) // labels_per_row  # Arredonda para cima
-
-    # Calcular dimensões da página
+    label_spacing = 5 * mm
+    label_width = 47 * mm
+    label_height = 25 * mm
+    labels_per_row = 2
+    labels_per_page = 2
+    
     PAGE_WIDTH = (label_width * labels_per_row) + (label_spacing * (labels_per_row - 1)) + (2 * margin)
-    PAGE_HEIGHT = (label_height * total_rows) + (label_spacing * (total_rows - 1)) + (2 * margin)
+    PAGE_HEIGHT = label_height + (2 * margin)
     PAGE_SIZE = (PAGE_WIDTH, PAGE_HEIGHT)
 
-    # Create PDF buffer
     buffer = BytesIO()
     c = canvas.Canvas(buffer, pagesize=PAGE_SIZE)
 
-    current_row = 0
-    current_col = 0
+    # Carregar e preparar a marca d'água
+    watermark_path = os.path.join(
+        settings.STATIC_ROOT, "/home/marcus/desenvolvimento/LAGUNA/simal/static/images/logo_projeto_lagoa_viva.png")
+    try:
+        # Abrir e converter a imagem
+        watermark_img = Image.open(watermark_path)
+        if watermark_img.mode != 'RGBA':
+            watermark_img = watermark_img.convert('RGBA')
+        
+        # Ajustar o tamanho da marca d'água para ser menor e proporcional
+        watermark_width = label_width * 0.35  # Reduzido para 35% da largura da etiqueta
+        aspect_ratio = watermark_img.height / watermark_img.width
+        watermark_height = watermark_width * aspect_ratio
 
-    for amostra in amostras:
-        # Calcular posição para a etiqueta atual
-        x = margin + (current_col * (label_width + label_spacing))
-        y = PAGE_HEIGHT - margin - (current_row * (label_height + label_spacing)) - label_height
+        # Ajustar a transparência da imagem
+        alpha = Image.new('RGBA', watermark_img.size, (255, 255, 255, 128))
+        watermark_img = Image.blend(watermark_img, alpha, 0.2)
 
-        # Desenhar borda da etiqueta
-        c.rect(x, y, label_width, label_height)
+        # Salvar em buffer temporário
+        temp_watermark = BytesIO()
+        watermark_img.save(temp_watermark, format='PNG')
+        temp_watermark.seek(0)
+    except Exception as e:
+        print(f"Erro ao carregar marca d'água: {str(e)}")
+        watermark_path = None
 
-        # Primeiro, desenhar o ID no topo da etiqueta
-        c.setFont("Helvetica-Bold", 8)
-        c.drawString(x + 2*mm, y + label_height - 4*mm, f"{amostra.etiqueta}")
+    # Processar amostras
+    for i in range(0, len(amostras), labels_per_page):
+        page_amostras = amostras[i:i + labels_per_page]
+        total_width = (label_width * len(page_amostras)) + (label_spacing * (len(page_amostras) - 1))
+        start_x = (PAGE_WIDTH - total_width) / 2
+        
+        for idx, amostra in enumerate(page_amostras):
+            x = start_x + (idx * (label_width + label_spacing))
+            y = margin
 
-        # Gerar QR code
-        qr = qrcode.QRCode(version=1, box_size=10, border=0)
-        url = request.build_absolute_uri(
-            reverse('input_laboratorio', args=[
+            # Desenhar borda da etiqueta
+            # c.rect(x, y, label_width, label_height)
+
+            # Adicionar código da etiqueta
+            c.setFont("Helvetica-Bold", 8)
+            c.drawString(x + 2*mm, y + label_height - 4*mm, f"{amostra.etiqueta}")
+
+            # Gerar e desenhar QR code
+            qr = qrcode.QRCode(version=1, box_size=10, border=0)
+            url = request.build_absolute_uri(
+                reverse('input_laboratorio', args=[
                     coleta.id, amostra.id_ponto.id, amostra.id_frasco.id])
-        )
-        redirect_url = url
-        login_url = f"{request.build_absolute_uri('/accounts/login/')}?next={redirect_url}"
+            )
+            qr.add_data(url)
+            qr.make(fit=True)
+            qr_img = qr.make_image(fill_color="black", back_color="white")
 
-        qr.add_data(login_url)
-        qr.make(fit=True)
-        qr_img = qr.make_image(fill_color="black", back_color="white")
+            # Salvar QR code em buffer
+            qr_buffer = BytesIO()
+            qr_img.save(qr_buffer, format='PNG')
+            qr_buffer.seek(0)
 
-        # Salvar QR code no buffer
-        qr_buffer = BytesIO()
-        qr_img.save(qr_buffer, format='PNG')
-        qr_buffer.seek(0)
+            # Desenhar QR code
+            qr_size = 18 * mm
+            c.drawImage(ImageReader(qr_buffer),
+                       x + 2*mm, y + 2*mm,
+                       width=qr_size, height=qr_size)
 
-        # Desenhar QR code
-        qr_size = 18 * mm
-        c.drawImage(ImageReader(qr_buffer), x + 2*mm, y + 2*mm,
-                   width=qr_size, height=qr_size)
+            # Configurar posição do texto à direita do QR code
+            text_x = x + (qr_size + 4*mm)
 
-        # Configurar posição do texto à direita do QR code
-        text_x = x + (qr_size + 4*mm)
+            # Desenhar informações
+            c.setFont("Helvetica-Bold", 16)
+            c.drawString(text_x, y + 15*mm, f"{amostra.id_ponto.nome}")
+            c.setFont("Helvetica-Bold", 9)
+            c.drawString(text_x, y + 11*mm, f"{coleta.id_setor.nome}")
+            c.drawString(text_x, y + 7*mm, f"{coleta.data.strftime('%d/%m/%Y')}")
+            c.drawString(text_x, y + 3*mm, f"{amostra.id_frasco.nome}")
 
-        # Desenhar o nome do ponto em tamanho maior
-        c.setFont("Helvetica-Bold", 20)
-        ponto_text = f"{amostra.id_ponto.nome}"
-        c.drawString(text_x, y + 15*mm, ponto_text)
+            # Desenhar marca d'água à direita do QR code
+            if watermark_path:
+                try:
+                    watermark_x = text_x + 2*mm  # Posiciona após o texto
+                    watermark_y = y + (label_height - watermark_height) / 2  # Centraliza verticalmente
+                    
+                    c.saveState()
+                    c.setFillAlpha(0.3)  # Reduz a opacidade para 30%
+                    c.drawImage(ImageReader(temp_watermark),
+                              watermark_x, watermark_y,
+                              width=watermark_width,
+                              height=watermark_height,
+                              mask='auto')
+                    c.restoreState()
+                except Exception as e:
+                    print(f"Erro ao desenhar marca d'água: {str(e)}")
 
-        # Demais informações em tamanho menor e mais compactas
-        c.setFont("Helvetica-Bold", 9)
-        c.drawString(text_x, y + 11*mm, f"{amostra.id_ponto.id_setor.nome}")
-        c.drawString(text_x, y + 7*mm, f"{coleta.data.strftime('%d/%m/%Y')}")
-        c.drawString(text_x, y + 3*mm, f"{amostra.id_frasco.nome}")
-
-        # Atualizar posição para próxima etiqueta
-        current_col += 1
-        if current_col >= labels_per_row:
-            current_col = 0
-            current_row += 1
+        if i + labels_per_page < len(amostras):
+            c.showPage()
 
     c.save()
     buffer.seek(0)
