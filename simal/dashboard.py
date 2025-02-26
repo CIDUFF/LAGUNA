@@ -2,25 +2,48 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
 import pandas as pd
 import plotly.express as px
-from .models import GrupoPontos
+from .models import GrupoPontos, TabMedida, TabParam, TabSetor, TabPonto
 import json
-import csv
-import os
-from datetime import datetime
+import traceback
+from django.db.models import F
 
 def load_data():
-    # Read CSV file
-    df = pd.read_csv('dados/resultados_medidas_20250218_104500.csv', sep=';')
+    # Buscar dados do banco de dados
+    medidas = TabMedida.objects.select_related(
+        'id_envio__id_amostra__id_coleta',
+        'id_envio__id_amostra__id_ponto',
+        'id_envio__id_amostra__id_coleta__id_setor',
+        'id_pp__id_param'
+    ).annotate(
+        parametro=F('id_pp__id_param__nome'),
+        unidade=F('id_pp__unidade'),
+        ponto=F('id_envio__id_amostra__id_ponto__nome'),
+        setor=F('id_envio__id_amostra__id_coleta__id_setor__nome'),
+        data=F('id_envio__id_amostra__id_coleta__data')
+    )
     
-    # Converter a coluna Data para datetime
-    df['Data'] = pd.to_datetime(df['Data'], format='%d/%m/%Y')
+    # Converter para DataFrame
+    df = pd.DataFrame.from_records(medidas.values(
+        'parametro', 'unidade', 'ponto', 'setor', 'data', 'valor'
+    ))
+    
+    # Renomear colunas para manter compatibilidade
+    df = df.rename(columns={
+        'parametro': 'Parâmetro',
+        'unidade': 'Unidade',
+        'ponto': 'Ponto',
+        'setor': 'Setor',
+        'data': 'Data',
+        'valor': 'Valor'
+    })
+    
     return df
 
 def dashboard(request):  # Alterado de index para dashboard
-    df = load_data()
-    parametros = sorted(df['Parâmetro'].unique())
-    setores = sorted(df['Setor'].unique())
-    pontos = sorted(df['Ponto'].unique())
+    # Buscar dados direto do banco
+    parametros = TabParam.objects.values_list('nome', flat=True).distinct().order_by('nome')
+    setores = TabSetor.objects.values_list('nome', flat=True).distinct().order_by('nome')
+    pontos = TabPonto.objects.filter(status=True).values_list('nome', flat=True).distinct().order_by('nome')
     grupos = GrupoPontos.objects.all().order_by('nome')
     
     context = {
@@ -34,6 +57,10 @@ def dashboard(request):  # Alterado de index para dashboard
 
 def get_grafico(request):
     try:
+        # Verifica se é uma requisição AJAX
+        if not request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return HttpResponse("Requisição inválida", status=400)
+
         df = load_data()
         parametro = request.GET.get('parametro')
         setor = request.GET.get('setor')
@@ -41,25 +68,24 @@ def get_grafico(request):
         grupo_id = request.GET.get('grupo')
         
         if not parametro:
-            return HttpResponse('')
+            return HttpResponse("Parâmetro não selecionado", status=400)
         
         df_filtered = df[df['Parâmetro'] == parametro].copy()
         
         if setor:
             df_filtered = df_filtered[df_filtered['Setor'] == setor]
-            
+        
         # Filtrar por grupo se um grupo foi selecionado
         if grupo_id:
-            try:
-                grupo = GrupoPontos.objects.get(pk=grupo_id)
-                pontos_grupo = json.loads(grupo.pontos)
-                df_filtered = df_filtered[df_filtered['Ponto'].isin(pontos_grupo)]
-            except GrupoPontos.DoesNotExist:
-                return HttpResponse('Grupo não encontrado')
-        # Se não há grupo selecionado, verificar se há ponto específico selecionado
+            grupo = GrupoPontos.objects.get(pk=grupo_id)
+            pontos_grupo = [p for p in grupo.pontos]
+            df_filtered = df_filtered[df_filtered['Ponto'].isin(pontos_grupo)]
         elif ponto:
             df_filtered = df_filtered[df_filtered['Ponto'] == ponto]
         
+        if df_filtered.empty:
+            return HttpResponse("Nenhum dado encontrado para os filtros selecionados", status=404)
+            
         # Converter e formatar a data
         df_filtered['Data'] = pd.to_datetime(df_filtered['Data'])
         
@@ -154,9 +180,8 @@ def get_grafico(request):
         
     except Exception as e:
         print(f"Erro ao gerar gráfico: {e}")
-        import traceback
-        print(traceback.format_exc())  # Print stack trace completo
-        return HttpResponse(f'Erro ao gerar o gráfico: {str(e)}')
+        print(traceback.format_exc())
+        return HttpResponse(f'Erro ao gerar o gráfico: {str(e)}', status=500)
 
 def dashboard_medias(request):
     df = load_data()

@@ -44,4 +44,15 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'simal/static'),
 ]
 
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'simal',  # nome do banco de dados
+        'USER': 'seu_usuario',  # usuário do PostgreSQL 
+        'PASSWORD': 'sua_senha',  # senha do PostgreSQL
+        'HOST': 'ultron.inea.rj.gov.br',  # hostname do Ultron
+        'PORT': '5432',  # porta padrão do PostgreSQL
+    }
+}
+
 # Remover completamente a seção LOGGING daqui, pois já está definida no settings principal

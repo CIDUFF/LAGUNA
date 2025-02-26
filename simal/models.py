@@ -738,6 +738,10 @@ class TabMedida(models.Model):
     class Meta:
         managed = True
         db_table = "tab_medida"
+        indexes = [
+            models.Index(fields=['id_envio']),
+            models.Index(fields=['id_pp']),
+        ]
 
     def save(self, *args, **kwargs):
         usuario = kwargs.pop('usuario', None)
@@ -776,6 +780,9 @@ class TabParam(models.Model):
     class Meta:
         managed = True
         db_table = "tab_param"
+        indexes = [
+            models.Index(fields=['nome']),
+        ]
 
 
 class TabPonto(models.Model):

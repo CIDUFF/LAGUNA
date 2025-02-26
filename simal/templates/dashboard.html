@@ -141,19 +141,25 @@
             return;
         }
         
+        // Mostra indicador de carregamento
+        $('#grafico').html('<div class="text-center"><div class="spinner-border" role="status"><span class="sr-only">Carregando...</span></div></div>');
+        
         $.ajax({
-            url: '{% url "resultados:get_grafico" %}',  // URL corrigida
+            url: '{% url "resultados:get_grafico" %}',
             data: {
                 'parametro': parametro,
                 'setor': setor,
                 'ponto': ponto,
                 'grupo': grupo
             },
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            },
             success: function(response) {
                 $('#grafico').html(response);
             },
             error: function(xhr, status, error) {
-                alert('Erro ao gerar o gráfico: ' + error);
+                $('#grafico').html('<div class="alert alert-danger">Erro ao gerar o gráfico: ' + error + '</div>');
             }
         });
     }
