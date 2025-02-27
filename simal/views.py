@@ -2268,7 +2268,7 @@ def input_fisico_quimico(request, coleta_id, ponto_id):
             request.POST,
             request.FILES,
             queryset=TabMedida.objects.filter(
-                # id_pp_id=parametro_id,
+                id_pp_id=parametro_id,
                 id_envio__id_amostra__id_ponto_id=ponto_id
             ).select_related(
                 'id_envio__id_amostra__id_coleta'
@@ -3585,25 +3585,23 @@ def new_home(request):
         messages.error(request, "Erro ao carregar o dashboard.")
         return redirect('home')
 
-
 @login_required
 def dashboard_parametros(request):
     # Obtém todos os parâmetros ativos ordenados alfabeticamente pelo nome
-    parametros = TabProdxparam.objects.filter(
-        status=True).select_related('id_param').order_by('id_param__nome')
-
+    parametros = TabProdxparam.objects.filter(status=True).select_related('id_param').order_by('id_param__nome')
+    
     # Obtém todos os pontos ativos ordenados pelo id (ordem de pontos)
     pontos = TabPonto.objects.filter(status=True).order_by('id')
-
+    
     # Obtém todos os setores ativos ordenados pelo nome
     setores = TabSetor.objects.all().order_by('nome')
-
+    
     # Processa seleção do usuário
     parametro_id = request.GET.get('parametro')
     ponto_id = request.GET.get('ponto')
     setor_id = request.GET.get('setor')
-    tipo_visualizacao = request.GET.get('tipo', 'ponto')  # 'ponto' ou 'setor'
-
+    tipo_visualizacao = request.GET.get('tipo', 'ponto') # 'ponto' ou 'setor'
+    
     dados_grafico = None
     dados_grafico_setor = None
 
@@ -3616,18 +3614,17 @@ def dashboard_parametros(request):
             ).select_related(
                 'id_envio__id_amostra__id_coleta'
             ).order_by('id_envio__id_amostra__id_coleta__data')
-
+            
             # Prepara dados para o gráfico
             dados_grafico = {
                 'datas': [],
                 'valores': []
             }
-
+            
             for medida in medidas:
                 if medida.input_valor and medida.id_envio.id_amostra.id_coleta.data:
                     dados_grafico['datas'].append(
-                        medida.id_envio.id_amostra.id_coleta.data.strftime(
-                            '%Y-%m-%d')
+                        medida.id_envio.id_amostra.id_coleta.data.strftime('%Y-%m-%d')
                     )
                     dados_grafico['valores'].append(float(medida.input_valor))
 
@@ -3679,5 +3676,5 @@ def dashboard_parametros(request):
         'setor_selecionado': setor_id,
         'tipo_visualizacao': tipo_visualizacao
     }
-
+    
     return render(request, 'dashboard.html', context)
