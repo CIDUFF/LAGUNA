@@ -1,5 +1,6 @@
 from django.urls import path
 from simal.views import (
+    dashboard_parametros,
     export_resultados_medidas_csv,
     home,
     coleta,
@@ -258,4 +259,5 @@ urlpatterns = [
         name="generate_sample_labels",
     ),
     path('new_home/', new_home, name='new_home'),
+    path('dashboard/', dashboard_parametros, name='dashboard_parametros'),
 ]

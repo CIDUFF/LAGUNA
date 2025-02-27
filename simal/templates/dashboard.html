@@ -1,0 +1,171 @@
+{% extends 'base/base_site.html' %}
+
+{% block content %}
+<style>
+/* Estilos para as abas */
+.nav-tabs {
+    border-bottom: 1px solid #1f77b4; /* Borda inferior azul */
+}
+
+.nav-tabs .nav-link {
+    color: #ffffff; /* Texto branco para todas as abas */
+    background-color: #1f77b4; /* Fundo azul para todas as abas */
+    border: 1px solid #1f77b4; /* Borda azul para todas as abas */
+    border-bottom: none; /* Remove borda inferior */
+    margin-right: 4px; /* Espaçamento entre abas */
+    opacity: 0.7; /* Aba inativa um pouco transparente */
+}
+
+.nav-tabs .nav-link:hover {
+    background-color: #1f77b4;
+    border-color: #1f77b4;
+    border-bottom: none;
+    opacity: 0.9; /* Mais opaco no hover */
+}
+
+.nav-tabs .nav-link.active {
+    color: #ffffff;
+    background-color: #1f77b4;
+    border-color: #1f77b4;
+    border-bottom: none;
+    opacity: 1; /* Aba ativa totalmente opaca */
+}
+</style>
+
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header">
+            <ul class="nav nav-tabs card-header-tabs">
+                <li class="nav-item">
+                    <a class="nav-link {% if tipo_visualizacao == 'ponto' %}active{% endif %}" 
+                       href="?tipo=ponto">Por Ponto</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if tipo_visualizacao == 'setor' %}active{% endif %}" 
+                       href="?tipo=setor">Por Setor</a>
+                </li>
+            </ul>
+        </div>
+        <div class="card-body">
+            <!-- Formulário de seleção -->
+            <form method="get" class="mb-4">
+                <input type="hidden" name="tipo" value="{{ tipo_visualizacao }}">
+                <div class="row">
+                    <div class="col-md-5">
+                        <select name="parametro" class="form-control" id="parametro">
+                            <option value="">Selecione um parâmetro...</option>
+                            {% for param in parametros %}
+                                <option value="{{ param.id }}" {% if param.id|stringformat:"s" == parametro_selecionado %}selected{% endif %}>
+                                    {{ param.id_param.nome }} ({{ param.unidade }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    {% if tipo_visualizacao == 'ponto' %}
+                    <div class="col-md-5">
+                        <select name="ponto" class="form-control" id="ponto">
+                            <option value="">Selecione um ponto...</option>
+                            {% for ponto in pontos %}
+                                <option value="{{ ponto.id }}" {% if ponto.id|stringformat:"s" == ponto_selecionado %}selected{% endif %}>
+                                    {{ ponto.nome }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% else %}
+                    <div class="col-md-5">
+                        <select name="setor" class="form-control" id="setor">
+                            <option value="">Selecione um setor...</option>
+                            {% for setor in setores %}
+                                <option value="{{ setor.id }}" {% if setor.id|stringformat:"s" == setor_selecionado %}selected{% endif %}>
+                                    {{ setor.nome }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">Visualizar</button>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Gráfico -->
+            {% if tipo_visualizacao == 'ponto' and dados_grafico %}
+                <div id="grafico"></div>
+            {% elif tipo_visualizacao == 'setor' and dados_grafico_setor %}
+                <div id="grafico-setor"></div>
+            {% else %}
+                <div class="alert alert-info">
+                    Selecione um parâmetro e um {% if tipo_visualizacao == 'ponto' %}ponto{% else %}setor{% endif %} para visualizar o gráfico.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Plotly.js -->
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+{% if tipo_visualizacao == 'ponto' and dados_grafico %}
+<script>
+    const dados = {
+        x: {{ dados_grafico.datas|safe }},
+        y: {{ dados_grafico.valores|safe }},
+        type: 'scatter',
+        mode: 'lines+markers',
+        name: '{{ parametro_selecionado }}',
+        line: {
+            color: '#1f77b4'  // Cor azul para o gráfico por ponto
+        },
+        marker: {
+            color: '#1f77b4'
+        }
+    };
+
+    const layout = {
+        title: 'Variação do Parâmetro ao Longo do Tempo',
+        xaxis: {
+            title: 'Data'
+        },
+        yaxis: {
+            title: '{{ parametro_selecionado.unidade }}'
+        }
+    };
+
+    Plotly.newPlot('grafico', [dados], layout);
+</script>
+{% endif %}
+
+{% if tipo_visualizacao == 'setor' and dados_grafico_setor %}
+<script>
+    const dadosSetor = {
+        x: {{ dados_grafico_setor.datas|safe }},
+        y: {{ dados_grafico_setor.valores|safe }},
+        type: 'scatter', 
+        mode: 'lines+markers',
+        name: 'Média do Setor',
+        line: {
+            color: '#1f77b4'  // Cor azul para o gráfico de média por setor
+        },
+        marker: {
+            color: '#1f77b4'
+        }
+    };
+
+    const layoutSetor = {
+        title: 'Média do Parâmetro no Setor ao Longo do Tempo',
+        xaxis: {
+            title: 'Data'
+        },
+        yaxis: {
+            title: '{{ parametro_selecionado.unidade }}'
+        }
+    };
+
+    Plotly.newPlot('grafico-setor', [dadosSetor], layoutSetor);
+</script>
+{% endif %}
+{% endblock %}
