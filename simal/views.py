@@ -2216,10 +2216,11 @@ def input_fisico_quimico(request, coleta_id, ponto_id):
             request.POST,
             request.FILES,
             queryset=TabMedida.objects.filter(
-                id_envio__id_amostra__id_coleta=coleta_id,
-                id_envio__id_amostra__id_ponto=ponto_id,
-                id_envio__id_amostra__id_frasco=1,
-            ),
+                id_pp_id=parametro_id,
+                id_envio__id_amostra__id_ponto_id=ponto_id
+            ).select_related(
+                'id_envio__id_amostra__id_coleta'
+            ).order_by('id_envio__id_amostra__id_coleta__data')
         )
 
         if formset.is_valid():
@@ -3500,4 +3501,98 @@ def new_home(request):
 
         traceback.print_exc()  # Imprime o traceback completo
         messages.error(request, "Erro ao carregar o dashboard.")
-        return redirect("home")
+        return redirect('home')
+
+@login_required
+def dashboard_parametros(request):
+    # Obtém todos os parâmetros ativos ordenados alfabeticamente pelo nome
+    parametros = TabProdxparam.objects.filter(status=True).select_related('id_param').order_by('id_param__nome')
+    
+    # Obtém todos os pontos ativos ordenados pelo id (ordem de pontos)
+    pontos = TabPonto.objects.filter(status=True).order_by('id')
+    
+    # Obtém todos os setores ativos ordenados pelo nome
+    setores = TabSetor.objects.all().order_by('nome')
+    
+    # Processa seleção do usuário
+    parametro_id = request.GET.get('parametro')
+    ponto_id = request.GET.get('ponto')
+    setor_id = request.GET.get('setor')
+    tipo_visualizacao = request.GET.get('tipo', 'ponto') # 'ponto' ou 'setor'
+    
+    dados_grafico = None
+    dados_grafico_setor = None
+
+    if parametro_id:
+        if tipo_visualizacao == 'ponto' and ponto_id:
+            # Lógica existente para visualização por ponto
+            medidas = TabMedida.objects.filter(
+                id_pp_id=parametro_id,
+                id_envio__id_amostra__id_ponto_id=ponto_id
+            ).select_related(
+                'id_envio__id_amostra__id_coleta'
+            ).order_by('id_envio__id_amostra__id_coleta__data')
+            
+            # Prepara dados para o gráfico
+            dados_grafico = {
+                'datas': [],
+                'valores': []
+            }
+            
+            for medida in medidas:
+                if medida.input_valor and medida.id_envio.id_amostra.id_coleta.data:
+                    dados_grafico['datas'].append(
+                        medida.id_envio.id_amostra.id_coleta.data.strftime('%Y-%m-%d')
+                    )
+                    dados_grafico['valores'].append(float(medida.input_valor))
+
+        elif tipo_visualizacao == 'setor' and setor_id:
+            # Nova lógica para visualização por setor
+            medidas = TabMedida.objects.filter(
+                id_pp_id=parametro_id,
+                id_envio__id_amostra__id_ponto__id_setor=setor_id
+            ).select_related(
+                'id_envio__id_amostra__id_coleta'
+            ).order_by('id_envio__id_amostra__id_coleta__data')
+
+            # Agrupa medidas por data e calcula média
+            valores_por_data = {}
+            for medida in medidas:
+                data = medida.id_envio.id_amostra.id_coleta.data
+                if data and medida.input_valor:
+                    data_str = data.strftime('%Y-%m-%d')
+                    if data_str not in valores_por_data:
+                        valores_por_data[data_str] = {'soma': 0, 'count': 0}
+                    try:
+                        valor = float(medida.input_valor)
+                        valores_por_data[data_str]['soma'] += valor
+                        valores_por_data[data_str]['count'] += 1
+                    except (ValueError, TypeError):
+                        continue
+
+            # Calcula as médias e prepara dados para o gráfico
+            dados_grafico_setor = {
+                'datas': [],
+                'valores': []
+            }
+
+            for data in sorted(valores_por_data.keys()):
+                dados = valores_por_data[data]
+                if dados['count'] > 0:
+                    media = dados['soma'] / dados['count']
+                    dados_grafico_setor['datas'].append(data)
+                    dados_grafico_setor['valores'].append(round(media, 2))
+
+    context = {
+        'parametros': parametros,
+        'pontos': pontos,
+        'setores': setores,
+        'dados_grafico': dados_grafico,
+        'dados_grafico_setor': dados_grafico_setor,
+        'parametro_selecionado': parametro_id,
+        'ponto_selecionado': ponto_id,
+        'setor_selecionado': setor_id,
+        'tipo_visualizacao': tipo_visualizacao
+    }
+    
+    return render(request, 'dashboard.html', context)
