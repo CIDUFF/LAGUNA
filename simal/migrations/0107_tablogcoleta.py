@@ -6,26 +6,46 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('simal', '0106_remove_tabcoleta_observacao_status'),
+        ("simal", "0106_remove_tabcoleta_observacao_status"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='TabLogColeta',
+            name="TabLogColeta",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('acao', models.CharField(max_length=255)),
-                ('data', models.DateTimeField(auto_now_add=True)),
-                ('motivo', models.TextField(blank=True, null=True)),
-                ('id_coleta', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='logs', to='simal.tabcoleta')),
-                ('usuario', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("acao", models.CharField(max_length=255)),
+                ("data", models.DateTimeField(auto_now_add=True)),
+                ("motivo", models.TextField(blank=True, null=True)),
+                (
+                    "id_coleta",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="logs",
+                        to="simal.tabcoleta",
+                    ),
+                ),
+                (
+                    "usuario",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'db_table': 'tab_log_coleta',
-                'managed': True,
+                "db_table": "tab_log_coleta",
+                "managed": True,
             },
         ),
     ]

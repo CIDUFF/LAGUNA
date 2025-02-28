@@ -6,28 +6,48 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('simal', '0111_alter_tabstatuscoleta_id'),
+        ("simal", "0111_alter_tabstatuscoleta_id"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='TabLogMedida',
+            name="TabLogMedida",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('campo_alterado', models.CharField(max_length=255)),
-                ('valor_antigo', models.TextField(blank=True, null=True)),
-                ('valor_novo', models.TextField(blank=True, null=True)),
-                ('data_alteracao', models.DateTimeField(auto_now_add=True)),
-                ('id_medida', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='logs', to='simal.tabmedida')),
-                ('usuario', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("campo_alterado", models.CharField(max_length=255)),
+                ("valor_antigo", models.TextField(blank=True, null=True)),
+                ("valor_novo", models.TextField(blank=True, null=True)),
+                ("data_alteracao", models.DateTimeField(auto_now_add=True)),
+                (
+                    "id_medida",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="logs",
+                        to="simal.tabmedida",
+                    ),
+                ),
+                (
+                    "usuario",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'db_table': 'tab_log_medida',
-                'ordering': ['-data_alteracao'],
-                'managed': True,
+                "db_table": "tab_log_medida",
+                "ordering": ["-data_alteracao"],
+                "managed": True,
             },
         ),
     ]

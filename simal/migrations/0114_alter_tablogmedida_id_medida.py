@@ -5,15 +5,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('simal', '0113_alter_tabponto_id'),
+        ("simal", "0113_alter_tabponto_id"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='tablogmedida',
-            name='id_medida',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='logs', to='simal.tabmedida'),
+            model_name="tablogmedida",
+            name="id_medida",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="logs",
+                to="simal.tabmedida",
+            ),
         ),
     ]
