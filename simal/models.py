@@ -755,7 +755,7 @@ class TabLaboratorio(models.Model):
 
 class TabLogMedida(models.Model):
     id_medida = models.ForeignKey(
-        'TabMedida', on_delete=models.CASCADE, related_name='logs')
+        'TabMedida', on_delete=models.SET_NULL, related_name='logs', null=True)
     campo_alterado = models.CharField(max_length=255)
     valor_antigo = models.TextField(blank=True, null=True)
     valor_novo = models.TextField(blank=True, null=True)
@@ -763,7 +763,8 @@ class TabLogMedida(models.Model):
     usuario = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"Log da medida {self.id_medida.id} - {self.campo_alterado} alterado em {self.data_alteracao}"
+        medida_id = self.id_medida.id if self.id_medida else "excluída"
+        return f"Log da medida {medida_id} - {self.campo_alterado} alterado em {self.data_alteracao}"
 
     class Meta:
         managed = True
