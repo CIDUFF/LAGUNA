@@ -2396,25 +2396,77 @@ def lista_de_coletas(request):
 @login_required
 def update_coleta(request, id):
     coleta = get_object_or_404(TabColeta, id=id)
+    coleta_original = TabColeta.objects.get(pk=coleta.pk)  # Cópia do estado original
+    
     if request.method == "POST":
         form = CadastroColetaForm(request.POST, instance=coleta)
         if form.is_valid():
-            coleta = form.save(commit=False)
-            coleta.atualizado_por = request.user
-            coleta.save()
-
-            # Log da atualização
-            TabLogColeta.objects.create(
-                id_coleta=coleta,
-                acao="Coleta atualizada",
-                usuario=request.user,
-                motivo=f"Atualização dos dados da coleta"
-            )
-
-            messages.success(request, "Coleta atualizada com sucesso!")
+            # Não salva ainda para poder comparar os campos
+            coleta_atualizada = form.save(commit=False)
+            coleta_atualizada.atualizado_por = request.user
+            
+            # Lista de campos a serem monitorados para registro de logs
+            campos_monitorados = [
+                ('nome', 'Nome'),
+                ('data', 'Data'),
+                ('id_campanha_id', 'Campanha'),
+                ('id_setor_id', 'Setor'),
+                ('analise_bentos', 'Análise Bentos'),
+                ('ordem_servico', 'Ordem de Serviço'),
+                ('status_id_id', 'Status'),
+                ('observacao', 'Observação')
+            ]
+            
+            mudancas = []
+            for campo_id, campo_nome in campos_monitorados:
+                valor_antigo = getattr(coleta_original, campo_id)
+                valor_novo = getattr(coleta_atualizada, campo_id)
+                
+                # Tratamento especial para FKs
+                if campo_id.endswith('_id'):
+                    # Usar .get_FOO_display() para obter nome legível de objetos relacionados
+                    campo_base = campo_id[:-3]  # Remove o sufixo '_id'
+                    objeto_relacionado_antigo = getattr(coleta_original, campo_base, None)
+                    objeto_relacionado_novo = getattr(coleta_atualizada, campo_base, None)
+                    
+                    if objeto_relacionado_antigo:
+                        valor_antigo = str(objeto_relacionado_antigo)
+                    if objeto_relacionado_novo:
+                        valor_novo = str(objeto_relacionado_novo)
+                
+                # Tratamento especial para campos date/datetime
+                if isinstance(valor_antigo, datetime):
+                    valor_antigo = valor_antigo.strftime("%d/%m/%Y %H:%M")
+                if isinstance(valor_novo, datetime):
+                    valor_novo = valor_novo.strftime("%d/%m/%Y %H:%M")
+                
+                # Se houve mudança, registra
+                if valor_antigo != valor_novo:
+                    mudancas.append(f"{campo_nome}: '{valor_antigo}' → '{valor_novo}'")
+            
+            # Salva as alterações na coleta
+            coleta_atualizada.save()
+            
+            # Gerar log detalhado se houver mudanças
+            if mudancas:
+                motivo = f"Alterações realizadas: {', '.join(mudancas)}"
+                
+                # Cria o log da atualização
+                TabLogColeta.objects.create(
+                    id_coleta=coleta,
+                    acao="Coleta atualizada",
+                    usuario=request.user,
+                    motivo=motivo
+                )
+                
+                # Mostra mensagem de sucesso com detalhes
+                messages.success(request, f"Coleta atualizada com sucesso! {motivo}")
+            else:
+                messages.info(request, "Nenhuma alteração detectada na coleta.")
+                
             return redirect("lista_de_coletas")
     else:
-        # Mudança aqui: removendo a tentativa de acessar .status
+        # Inicializa o formulário com os dados atuais
         form = CadastroColetaForm(instance=coleta)
 
     context = {

@@ -566,14 +566,68 @@ class TabColeta(models.Model):
     observacao = models.TextField(blank=True, null=True)
 
     def save(self, *args, **kwargs):
-        data_hora = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        campanha_id = self.id_campanha.id
-        setor = TabSetor.objects.get(id=self.id_setor.id)
-        setor_abreviatura = setor.abreviatura
-        raw_ordem_servico = f"{setor_abreviatura}{campanha_id}{data_hora}"
-        self.ordem_servico = re.sub(r"[^A-Za-z0-9]", "", raw_ordem_servico)
-        self.status = TabStatusColeta.objects.get(id=1)
-        super().save(*args, **kwargs)
+        # Capturar o usuário se for passado como parâmetro
+        usuario = kwargs.pop('usuario', None) if 'usuario' in kwargs else None
+        
+        # Verificar se é um objeto existente sendo atualizado
+        is_update = self.pk is not None
+        
+        if is_update:
+            # Buscar o estado anterior do objeto
+            old_instance = TabColeta.objects.get(pk=self.pk)
+            
+            # Lista de campos que queremos monitorar
+            campos_monitorados = ['data', 'nome', 'id_campanha_id', 'id_setor_id', 
+                                 'ordem_servico', 'status_id_id', 'observacao', 'analise_bentos']
+            
+            # Verificar mudanças em cada campo
+            for campo in campos_monitorados:
+                valor_antigo = getattr(old_instance, campo, None)
+                valor_novo = getattr(self, campo, None)
+                
+                # Se houve mudança e temos um usuário, registrar log
+                if valor_antigo != valor_novo and usuario:
+                    TabLogColeta.objects.create(
+                        id_coleta=self,
+                        acao=f'Alteração no campo {campo}',
+                        motivo=f'Valor alterado de "{valor_antigo}" para "{valor_novo}"',
+                        usuario=usuario
+                    )
+        
+        # Se for uma nova coleta, gerar ordem de serviço
+        if not self.ordem_servico and self.id_campanha and self.id_setor:
+            data_hora = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            campanha_id = self.id_campanha.id
+            setor = TabSetor.objects.get(id=self.id_setor.id)
+            setor_abreviatura = setor.abreviatura
+            raw_ordem_servico = f"{setor_abreviatura}{campanha_id}{data_hora}"
+            self.ordem_servico = re.sub(r"[^A-Za-z0-9]", "", raw_ordem_servico)
+        
+        # Definir status inicial se não existir
+        if not self.status_id and not is_update:
+            self.status_id = TabStatusColeta.objects.get(id=1)
+        
+        # Atualizar carimbos de data/hora
+        if is_update:
+            self.atualizado_em = timezone.now()
+            if usuario and not self.atualizado_por:
+                self.atualizado_por = usuario
+        else:
+            if usuario and not self.criado_por:
+                self.criado_por = usuario
+        
+        # Registrar criação se for um novo objeto e tiver usuário
+        is_new = not is_update
+        if is_new and usuario:
+            result = super().save(*args, **kwargs)
+            TabLogColeta.objects.create(
+                id_coleta=self,
+                acao='Coleta criada',
+                usuario=usuario
+            )
+            return result
+        
+        return super().save(*args, **kwargs)
 
     def update(self, **kwargs):
         self.atualizado_em = timezone.now()
