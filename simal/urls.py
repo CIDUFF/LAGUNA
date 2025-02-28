@@ -1,4 +1,5 @@
 from django.urls import path
+from .apis import get_filtered_options
 from simal.views import (
     export_resultados_medidas_csv,
     home,
@@ -66,7 +67,7 @@ from simal.views import (
     atualizar_status_coleta,
     generate_sample_labels,
 )
-from .apis import get_filtered_options
+
 
 urlpatterns = [
     path("", new_home, name="home"),  # Nova página inicial
