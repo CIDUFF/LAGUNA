@@ -12,7 +12,7 @@ ENV/
 
 # Database
 db.sqlite3
-
+queries.sql
 # Static folders
 /static/
 staticfiles/

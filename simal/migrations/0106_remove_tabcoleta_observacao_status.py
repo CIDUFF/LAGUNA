@@ -4,14 +4,13 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('simal', '0105_tabcoleta_observacao_status_alter_tabcoleta_status'),
+        ("simal", "0105_tabcoleta_observacao_status_alter_tabcoleta_status"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='tabcoleta',
-            name='observacao_status',
+            model_name="tabcoleta",
+            name="observacao_status",
         ),
     ]

@@ -801,6 +801,54 @@
     animation: none;
     background-color: #3151e8 !important;
 }
+
+/* Ajustes para os modais */
+.modal-dialog:not(.modal-fullscreen) {
+    display: flex;
+    align-items: center;
+    min-height: calc(100% - 3.5rem);
+}
+
+.modal-content {
+    max-height: 80vh; /* Limita a altura máxima do modal */
+    overflow-y: auto; /* Adiciona scroll quando necessário */
+}
+
+/* Mantém o modal de mapa em tela cheia */
+.modal-fullscreen .modal-content {
+    height: 100vh;
+    max-height: none;
+}
+
+/* Centraliza o modal verticalmente */
+.modal.fade .modal-dialog:not(.modal-fullscreen) {
+    transform: translate(0, -25%);
+}
+
+.modal.show .modal-dialog:not(.modal-fullscreen) {
+    transform: translate(0, 0);
+}
+
+/* Ajusta o tamanho do modal de status */
+#statusChangeModal .modal-dialog {
+    max-width: 500px;
+}
+
+/* Ajusta o tamanho do modal de seleção de frasco */
+#modalSelecaoFrasco .modal-dialog {
+    max-width: 600px;
+}
+
+/* Adicione este estilo na seção de estilos CSS */
+.permanent-tooltip .leaflet-tooltip {
+    background-color: rgba(255, 255, 255, 0.9);
+    border: 1px solid #999;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 1000;
+}
 </style>
 
 <script>
@@ -1017,16 +1065,21 @@ document.addEventListener('DOMContentLoaded', function() {
             // Atualiza o texto do tooltip para incluir o estado parcial
             let tooltipText = ponto.nome;
             if (ponto.formulario_preenchido) {
-                tooltipText += ' (Preenchido)';
+                tooltipText += '';
             } else if (ponto.parcialmente_preenchido) {
-                tooltipText += ' (Parcialmente preenchido)';
+                tooltipText += '';
             } else {
-                tooltipText += ' (Pendente)';
+                tooltipText += '';
             }
 
             var marker = L.marker([ponto.lat, ponto.lon], {icon: markerIcon})
                 .addTo(map)
-                .bindTooltip(tooltipText);
+                .bindTooltip(tooltipText, {
+                    permanent: true,
+                    direction: 'top',
+                    offset: [0, -30],
+                    className: 'permanent-tooltip'
+                });
             
             {% if fill_amostra_gerado %}
             marker.on('click', function() {
@@ -1322,7 +1375,12 @@ function initFullscreenMap() {
 
             L.marker([ponto.lat, ponto.lon], {icon: markerIcon})
                 .addTo(fullscreenMap)
-                .bindTooltip(tooltipText)
+                .bindTooltip(tooltipText, {
+                    permanent: true,
+                    direction: 'top',
+                    offset: [0, -30],
+                    className: 'permanent-tooltip'
+                })
                 .on('click', function() {
                     window.location.href = `/input_fisico_quimico/{{ coleta }}/${ponto.id}/`;
                 });

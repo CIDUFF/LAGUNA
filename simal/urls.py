@@ -1,4 +1,6 @@
 from django.urls import path
+from .ninja_api import api
+from .apis import get_filtered_options
 from simal.views import (
     dashboard_parametros,
     export_resultados_medidas_csv,
@@ -67,18 +69,18 @@ from simal.views import (
     atualizar_status_coleta,
     generate_sample_labels,
 )
-from .apis import get_filtered_options
+
 
 urlpatterns = [
     path("", new_home, name="home"),  # Nova página inicial
+    path("api/", api.urls),
     # Rota antiga fica acessível aqui
     path("old_home/", home, name="old_home"),
     path("coleta/", coleta, name="coleta"),
     path("ajuda/", ajuda, name="ajuda"),
     path("iniciar_campanha/", iniciar_campanha, name="iniciar_campanha"),
     path("lista_coleta/", lista_coleta, name="lista_coleta"),
-    path("lista_coleta/<str:ordem_servico>/",
-         lista_coleta, name="lista_coleta"),
+    path("lista_coleta/<str:ordem_servico>/", lista_coleta, name="lista_coleta"),
     path("lista_coleta/<str:id>/", lista_coleta, name="lista_coleta"),
     path("atualizar_coleta/<int:id>/", atualizar_coleta, name="atualizar_coleta"),
     path("meta_coleta/<int:id>/", meta_coleta, name="meta_coleta"),
@@ -101,8 +103,7 @@ urlpatterns = [
     path("coletas_agendas/", coletas_agendas, name="coletas_agendas"),
     path("agendar_coleta/", agenda_coleta, name="agendar_coleta"),
     path("checklist_campanha/", checklist_campanha, name="checklist_campanha"),
-    path("cadastro_laboratorio/", cadastro_laboratorio,
-         name="cadastro_laboratorio"),
+    path("cadastro_laboratorio/", cadastro_laboratorio, name="cadastro_laboratorio"),
     path(
         "laboratorios_cadastrados/",
         laboratorios_cadastrados,
@@ -140,10 +141,8 @@ urlpatterns = [
     ),
     path("etiquetagem/<str:ordem_servico>/", etiquetagem, name="etiquetagem"),
     path("cadastro-usuarios/", cadastro_usuarios, name="cadastro_usuarios"),
-    path("usuarios_cadastrados/", usuarios_cadastrados,
-         name="usuarios_cadastrados"),
-    path("editar_usuario/<int:user_id>/",
-         editar_usuario, name="editar_usuario"),
+    path("usuarios_cadastrados/", usuarios_cadastrados, name="usuarios_cadastrados"),
+    path("editar_usuario/<int:user_id>/", editar_usuario, name="editar_usuario"),
     path("cadastro_local/", cadastro_local, name="cadastro_local"),
     path("cadastro_local/<int:id>/", atualizar_local, name="atualizar_local"),
     path("cadastro_setor/", cadastro_setor, name="cadastro_setor"),
@@ -198,8 +197,7 @@ urlpatterns = [
         name="input_fisico_quimico",
     ),
     path("perfil/", perfil_usuario, name="perfil_usuario"),
-    path("cadastro_usuarios_adm/", cadastro_usuarios_adm,
-         name="cadastro_usuarios_adm"),
+    path("cadastro_usuarios_adm/", cadastro_usuarios_adm, name="cadastro_usuarios_adm"),
     path("info_coleta/<int:coleta_id>/", info_coleta, name="info_coleta"),
     path("lista_campo/<int:coleta_id>/", lista_campo, name="lista_campo"),
     path("lista_de_coletas/", lista_de_coletas, name="lista_de_coletas"),
