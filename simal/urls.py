@@ -2,6 +2,7 @@ from django.urls import path
 from .ninja_api import api
 from .apis import get_filtered_options
 from simal.views import (
+    dashboard_parametros,
     export_resultados_medidas_csv,
     home,
     coleta,
@@ -255,5 +256,6 @@ urlpatterns = [
         generate_sample_labels,
         name="generate_sample_labels",
     ),
-    path("new_home/", new_home, name="new_home"),
+    path('new_home/', new_home, name='new_home'),
+    path('dashboard/', dashboard_parametros, name='dashboard_parametros'),
 ]
