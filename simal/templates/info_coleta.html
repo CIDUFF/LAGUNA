@@ -838,6 +838,17 @@
 #modalSelecaoFrasco .modal-dialog {
     max-width: 600px;
 }
+
+/* Adicione este estilo na seção de estilos CSS */
+.permanent-tooltip .leaflet-tooltip {
+    background-color: rgba(255, 255, 255, 0.9);
+    border: 1px solid #999;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 1000;
+}
 </style>
 
 <script>
@@ -1063,7 +1074,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
             var marker = L.marker([ponto.lat, ponto.lon], {icon: markerIcon})
                 .addTo(map)
-                .bindTooltip(tooltipText);
+                .bindTooltip(tooltipText, {
+                    permanent: true,
+                    direction: 'top',
+                    offset: [0, -30],
+                    className: 'permanent-tooltip'
+                });
             
             {% if fill_amostra_gerado %}
             marker.on('click', function() {
@@ -1359,7 +1375,12 @@ function initFullscreenMap() {
 
             L.marker([ponto.lat, ponto.lon], {icon: markerIcon})
                 .addTo(fullscreenMap)
-                .bindTooltip(tooltipText)
+                .bindTooltip(tooltipText, {
+                    permanent: true,
+                    direction: 'top',
+                    offset: [0, -30],
+                    className: 'permanent-tooltip'
+                })
                 .on('click', function() {
                     window.location.href = `/input_fisico_quimico/{{ coleta }}/${ponto.id}/`;
                 });
