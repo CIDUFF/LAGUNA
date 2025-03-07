@@ -5,20 +5,26 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('simal', '0104_alter_tabanexoamostra_options_tabanexoamostra_ordem'),
+        ("simal", "0104_alter_tabanexoamostra_options_tabanexoamostra_ordem"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='tabcoleta',
-            name='observacao_status',
+            model_name="tabcoleta",
+            name="observacao_status",
             field=models.TextField(blank=True, null=True),
         ),
         migrations.AlterField(
-            model_name='tabcoleta',
-            name='status',
-            field=models.ForeignKey(blank=True, db_column='status', null=True, on_delete=django.db.models.deletion.CASCADE, related_name='coletas', to='simal.tabstatuscoleta'),
+            model_name="tabcoleta",
+            name="status",
+            field=models.ForeignKey(
+                blank=True,
+                db_column="status",
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="coletas",
+                to="simal.tabstatuscoleta",
+            ),
         ),
     ]

@@ -20,14 +20,13 @@ from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.core.mail import send_mail
 from django.core.paginator import Paginator
-from django.db import connection, transaction, models
+from django.db import connection, transaction
 from django.db.models import Q
 from django.forms import inlineformset_factory, modelformset_factory
 from django.http import FileResponse, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
-from django.utils.html import escapejs
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
 from django.core.serializers.json import DjangoJSONEncoder
@@ -35,10 +34,8 @@ from openpyxl.styles import Font, PatternFill
 
 import qrcode
 from reportlab.pdfgen import canvas
-from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import mm
 from reportlab.lib.utils import ImageReader
-from django.conf import settings
 from io import BytesIO
 from PIL import Image
 
@@ -218,7 +215,7 @@ def home(request):
         weather_description_two_days_before = None
         gantt_div = None
 
-        if (proxima_coleta):
+        if proxima_coleta:
             percentual_checklist = (
                 ChecklistCampo.objects.filter(ordem_servico=proxima_coleta.id)
                 .values_list("progresso", flat=True)
@@ -273,38 +270,31 @@ def home(request):
                     dict(
                         Tarefa="Avisar Laboratórios",
                         Inicio=proxima_coleta.data_check_lab,
-                        Termino=proxima_coleta.data_check_lab +
-                        timedelta(days=2),
+                        Termino=proxima_coleta.data_check_lab + timedelta(days=2),
                         Cor="#2ca02c" if checklist.avisar_labs else "#d62728",
                     ),
                     dict(
                         Tarefa="Reservar Carro e barco",
                         Inicio=proxima_coleta.data_check_car,
-                        Termino=proxima_coleta.data_check_car +
-                        timedelta(days=2),
+                        Termino=proxima_coleta.data_check_car + timedelta(days=2),
                         Cor="#2ca02c" if checklist.reservar_carro else "#d62728",
                     ),
                     dict(
                         Tarefa="Checar Equipamentos",
                         Inicio=proxima_coleta.data_check_material,
-                        Termino=proxima_coleta.data_check_material +
-                        timedelta(days=3),
+                        Termino=proxima_coleta.data_check_material + timedelta(days=3),
                         Cor="#2ca02c" if checklist.separar_equipamentos else "#d62728",
                     ),
                     dict(
                         Tarefa="Etiquetar frascos",
-                        Inicio=proxima_coleta.data_check_material +
-                        timedelta(days=3),
-                        Termino=proxima_coleta.data_check_material +
-                        timedelta(days=3),
+                        Inicio=proxima_coleta.data_check_material + timedelta(days=3),
+                        Termino=proxima_coleta.data_check_material + timedelta(days=3),
                         Cor="#2ca02c" if checklist.conferir_equipamentos else "#d62728",
                     ),
                     dict(
                         Tarefa="Comprar gelo",
-                        Inicio=proxima_coleta.data_check_material +
-                        timedelta(days=3),
-                        Termino=proxima_coleta.data_check_material +
-                        timedelta(days=3),
+                        Inicio=proxima_coleta.data_check_material + timedelta(days=3),
+                        Termino=proxima_coleta.data_check_material + timedelta(days=3),
                         Cor="#2ca02c" if checklist.conferir_equipamentos else "#d62728",
                     ),
                 ]
@@ -325,29 +315,25 @@ def home(request):
                     dict(
                         Tarefa="Contatar Laboratórios",
                         Inicio=proxima_coleta.data_check_lab,
-                        Termino=proxima_coleta.data_check_lab +
-                        timedelta(days=2),
+                        Termino=proxima_coleta.data_check_lab + timedelta(days=2),
                         Cor="#2ca02c",
                     ),  # Verde moderno para tarefas já feitas
                     dict(
                         Tarefa="Reservar Carro",
                         Inicio=proxima_coleta.data_check_car,
-                        Termino=proxima_coleta.data_check_car +
-                        timedelta(days=2),
+                        Termino=proxima_coleta.data_check_car + timedelta(days=2),
                         Cor="#2ca02c",
                     ),  # Verde moderno para tarefas já feitas
                     dict(
                         Tarefa="Preparar Equipamentos",
                         Inicio=proxima_coleta.data_check_material,
-                        Termino=proxima_coleta.data_check_material +
-                        timedelta(days=3),
+                        Termino=proxima_coleta.data_check_material + timedelta(days=3),
                         Cor="#2ca02c",
                     ),  # Verde moderno para tarefas já feitas
                     dict(
                         Tarefa="Etiquetar frascos",
                         Inicio=proxima_coleta.data_check_material,
-                        Termino=proxima_coleta.data_check_material +
-                        timedelta(days=3),
+                        Termino=proxima_coleta.data_check_material + timedelta(days=3),
                         Cor="#2ca02c",
                     ),  # Verde moderno para tarefas já feitas
                     dict(
@@ -386,7 +372,7 @@ def home(request):
 
             # Adiciona bolinhas para tarefas com duração zero
             for i, row in df.iterrows():
-                if (row["Duracao"] == 0):
+                if row["Duracao"] == 0:
                     fig.add_scatter(
                         x=[row["Inicio"]],
                         y=[row["Tarefa"]],
@@ -486,8 +472,7 @@ def atualizar_coleta(request, id):
         "ponto"
     )
 
-    form_data = {field: getattr(coleta, field)
-                 for field in ColetaCampo.base_fields}
+    form_data = {field: getattr(coleta, field) for field in ColetaCampo.base_fields}
     form_data["hora_inicio"] = timezone.now().strftime("%H:%M")
     form = ColetaCampo(initial=form_data)
 
@@ -510,8 +495,7 @@ def atualizar_coleta(request, id):
             )
 
             if todos_pontos_preenchidos:
-                campanha = ProgramaColeta.objects.get(
-                    id=coleta.ordem_servico.id)
+                campanha = ProgramaColeta.objects.get(id=coleta.ordem_servico.id)
                 campanha.status_coleta = "Coleta realizada"
                 campanha.save()
 
@@ -546,8 +530,7 @@ def meta_coleta(request, id):
     coleta = get_object_or_404(Campo, id=id)
 
     # Verifica se já existe um registro de metadados para o código de coleta
-    metadados, created = MetadadosCampo.objects.get_or_create(
-        codigo_coleta=coleta)
+    metadados, created = MetadadosCampo.objects.get_or_create(codigo_coleta=coleta)
 
     if created:
         messages.info(
@@ -590,8 +573,7 @@ def lista_coleta(request, ordem_servico=None):
     ordem_servico = ProgramaColeta.objects.get(id=ordem_servico)
     responsavel = ProgramaColeta.objects.get(id=ordem_servico.id).usuario
     filtro = CampoFilter(
-        request.GET, queryset=Campo.objects.filter(
-            ordem_servico_id=ordem_servico)
+        request.GET, queryset=Campo.objects.filter(ordem_servico_id=ordem_servico)
     )
     table = ColetaCampoTable(filtro.qs)
     RequestConfig(request, paginate={"per_page": 25}).configure(table)
@@ -624,8 +606,7 @@ def resultados(request):
 
 @login_required
 def coletas_agendas(request):
-    filtro = ProgramaColetaFilter(
-        request.GET, queryset=ProgramaColeta.objects.all())
+    filtro = ProgramaColetaFilter(request.GET, queryset=ProgramaColeta.objects.all())
     table = ProgramaColetaTable(filtro.qs)
     RequestConfig(request, paginate={"per_page": 25}).configure(table)
     return render(
@@ -699,8 +680,7 @@ def atualizar_programacao(request, id):
         }
         for date_field in ["data_coleta_campo"]:
             if date_field in form_data and form_data[date_field]:
-                form_data[date_field] = form_data[date_field].strftime(
-                    "%Y-%m-%d")
+                form_data[date_field] = form_data[date_field].strftime("%Y-%m-%d")
         form = ProgramaColetaForm(initial=form_data)
     return render(request, "coleta/agendar_coleta.html", {"form": form})
 
@@ -725,8 +705,7 @@ def deletar_programacao(request, id):
 
     """
     if not request.user.is_superuser:
-        messages.warning(
-            request, "Você não tem permissão para executar esta ação.")
+        messages.warning(request, "Você não tem permissão para executar esta ação.")
         raise PermissionDenied
 
     programacao = get_object_or_404(ProgramaColeta, id=id)
@@ -762,8 +741,7 @@ def cancelar_programacao(request, id):
     else:
         programacao.status_coleta = "Cancelada"
         programacao.save()
-        messages.success(
-            request, "Programação de coleta cancelada com sucesso!")
+        messages.success(request, "Programação de coleta cancelada com sucesso!")
         return redirect("coletas_agendas")
 
 
@@ -859,8 +837,7 @@ def checklist_campanha(request, ordem_servico=None):
         ProgramaColeta, ordem_servico=ordem_servico_selecionada
     )
     if campanha.status_coleta == "Cancelada":
-        messages.warning(
-            request, "Não é possível iniciar uma campanha cancelada")
+        messages.warning(request, "Não é possível iniciar uma campanha cancelada")
         return redirect("coletas_agendas")
     try:
         checklist_campanha = ChecklistCampo.objects.get(ordem_servico=campanha)
@@ -947,8 +924,7 @@ def checklist_campanha(request, ordem_servico=None):
     campanha.save()
 
     data = campanha.data_coleta_campo
-    previsao_tempo = get_weather_description(
-        "Maricá", data.strftime("%Y-%m-%d"))
+    previsao_tempo = get_weather_description("Maricá", data.strftime("%Y-%m-%d"))
 
     context = {
         "form": form,
@@ -965,15 +941,13 @@ def gerar_rota_campanha(request, ordem_servico=None):
     ordem_servico = request.GET.get("ordem_servico", ordem_servico)
     campanha = None
     if ordem_servico:
-        campanha = get_object_or_404(
-            ProgramaColeta, ordem_servico=ordem_servico)
+        campanha = get_object_or_404(ProgramaColeta, ordem_servico=ordem_servico)
 
     previsao_tempo = None
     pontos_coleta = []
     if campanha:
         data = campanha.data_coleta_campo
-        previsao_tempo = get_weather_description(
-            "Maricá", data.strftime("%Y-%m-%d"))
+        previsao_tempo = get_weather_description("Maricá", data.strftime("%Y-%m-%d"))
 
         local_campanha = campanha.local_coleta
         setor_local = TabSetor.objects.get(nome=local_campanha)
@@ -1005,8 +979,7 @@ def etiquetagem(request, ordem_servico=None):
     ordem_servico = request.GET.get("ordem_servico", ordem_servico)
     campanha = None
     if ordem_servico:
-        campanha = get_object_or_404(
-            ProgramaColeta, ordem_servico=ordem_servico)
+        campanha = get_object_or_404(ProgramaColeta, ordem_servico=ordem_servico)
 
         data = campanha.data_coleta_campo.strftime("%d/%m/%Y")
         responsavel = campanha.usuario
@@ -1057,8 +1030,7 @@ def cadastro_laboratorio(request):
         formset = AnaliseFormSet()
 
     return render(
-        request, "cadastro_laboratorio.html", {
-            "form": form, "formset": formset}
+        request, "cadastro_laboratorio.html", {"form": form, "formset": formset}
     )
 
 
@@ -1096,8 +1068,7 @@ def atualizar_laboratorio(request, id):
         formset = AnaliseFormSet(instance=laboratorio)
 
     return render(
-        request, "cadastro_laboratorio.html", {
-            "form": form, "formset": formset}
+        request, "cadastro_laboratorio.html", {"form": form, "formset": formset}
     )
 
 
@@ -1393,7 +1364,7 @@ def export_pontos_csv(request):
     response["Content-Disposition"] = 'attachment; filename="pontos_coleta.csv"'
 
     # Adiciona BOM UTF-8 para o Excel reconhecer os caracteres especiais
-    response.write(u'\ufeff'.encode('utf-8'))
+    response.write("\ufeff".encode("utf-8"))
 
     writer = csv.writer(
         response,
@@ -1402,29 +1373,33 @@ def export_pontos_csv(request):
         quoting=csv.QUOTE_MINIMAL,
     )
 
-    writer.writerow([
-        "Nome",
-        "Setor",
-        "Local",
-        "Descrição",
-        "Status",
-        "Latitude",
-        "Longitude",
-        "Modalidade"
-    ])
+    writer.writerow(
+        [
+            "Nome",
+            "Setor",
+            "Local",
+            "Descrição",
+            "Status",
+            "Latitude",
+            "Longitude",
+            "Modalidade",
+        ]
+    )
 
     pontos = TabPonto.objects.select_related("id_setor", "id_local").all()
     for ponto in pontos:
-        writer.writerow([
-            ponto.nome,
-            ponto.id_setor.nome if ponto.id_setor else '',
-            ponto.id_local.nome if ponto.id_local else '',
-            ponto.observacao or '',
-            "Ativo" if ponto.status else "Inativo",
-            ponto.lat or '',
-            ponto.lon or '',
-            ponto.modalidade or ''
-        ])
+        writer.writerow(
+            [
+                ponto.nome,
+                ponto.id_setor.nome if ponto.id_setor else "",
+                ponto.id_local.nome if ponto.id_local else "",
+                ponto.observacao or "",
+                "Ativo" if ponto.status else "Inativo",
+                ponto.lat or "",
+                ponto.lon or "",
+                ponto.modalidade or "",
+            ]
+        )
 
     return response
 
@@ -1448,8 +1423,7 @@ def cadastro_unidade_medida(request):
         form = UnidadeMedidaForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(
-                request, "Unidade de Medida cadastrada com sucesso.")
+            messages.success(request, "Unidade de Medida cadastrada com sucesso.")
             return redirect("cadastro_unidade_medida")
     else:
         form = UnidadeMedidaForm()
@@ -1462,15 +1436,13 @@ def cadastro_tipo_parametro(request):
         form = TipoParametroForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(
-                request, "Tipo de Parâmetro cadastrado com sucesso.")
+            messages.success(request, "Tipo de Parâmetro cadastrado com sucesso.")
             return redirect("cadastro_tipo_parametro")
     else:
         form = TipoParametroForm()
 
     table_tipo_parametro = TipoParametroTable(TipoParametro.objects.all())
-    RequestConfig(request, paginate={"per_page": 25}).configure(
-        table_tipo_parametro)
+    RequestConfig(request, paginate={"per_page": 25}).configure(table_tipo_parametro)
 
     return render(
         request,
@@ -1489,16 +1461,22 @@ def configuracoes_view(request):
                 break
 
         form_map = {
-            'tab_param': (ParametroForm, TabParam),
-            'tab_frasco': (TabFrascoForm, TabFrasco),
-            'tab_equipe': (TabEquipeForm, TabEquipe),
-            'tab_laboratorio': (TabLaboratorioForm, TabLaboratorio),
-            'tab_produto': (TabProdutoForm, TabProduto),
-            'tab_prodxparam': (TabProdxParamForm, TabProdxparam),
-            'tab_serie_classificacao': (TabSerieClassificacaoForm, TabSerieClassificacao),
-            'tab_item_checklist': (CadastroItemChecklistColetaForm, TabItemChecklistColeta),
-            'tab_email': (EmailForm, EmailTemplate),
-            'tab_status_coleta': (StatusColetaForm, TabStatusColeta),
+            "tab_param": (ParametroForm, TabParam),
+            "tab_frasco": (TabFrascoForm, TabFrasco),
+            "tab_equipe": (TabEquipeForm, TabEquipe),
+            "tab_laboratorio": (TabLaboratorioForm, TabLaboratorio),
+            "tab_produto": (TabProdutoForm, TabProduto),
+            "tab_prodxparam": (TabProdxParamForm, TabProdxparam),
+            "tab_serie_classificacao": (
+                TabSerieClassificacaoForm,
+                TabSerieClassificacao,
+            ),
+            "tab_item_checklist": (
+                CadastroItemChecklistColetaForm,
+                TabItemChecklistColeta,
+            ),
+            "tab_email": (EmailForm, EmailTemplate),
+            "tab_status_coleta": (StatusColetaForm, TabStatusColeta),
         }
         if form_type in form_map:
             FormClass, ModelClass = form_map[form_type]
@@ -1506,14 +1484,12 @@ def configuracoes_view(request):
             if form.is_valid():
                 try:
                     form.save()
-                    messages.success(
-                        request, "Novo registro criado com sucesso.")
+                    messages.success(request, "Novo registro criado com sucesso.")
                 except Exception as e:
                     messages.error(request, f"Erro ao salvar: {str(e)}")
             else:
-                messages.error(
-                    request, "Por favor, corrija os erros no formulário.")
-        return redirect('configuracoes')
+                messages.error(request, "Por favor, corrija os erros no formulário.")
+        return redirect("configuracoes")
 
     param_form = ParametroForm()
     frasco_form = TabFrascoForm()
@@ -1543,15 +1519,12 @@ def configuracoes_view(request):
     table_status_coleta = StatusColetaTable(TabStatusColeta.objects.all())
 
     # Configurar a paginação das tabelas
-    RequestConfig(request, paginate={"per_page": 25}).configure(
-        table_parametro)
+    RequestConfig(request, paginate={"per_page": 25}).configure(table_parametro)
     RequestConfig(request, paginate={"per_page": 25}).configure(table_frasco)
     RequestConfig(request, paginate={"per_page": 25}).configure(table_equipe)
-    RequestConfig(request, paginate={"per_page": 25}).configure(
-        table_laboratorio)
+    RequestConfig(request, paginate={"per_page": 25}).configure(table_laboratorio)
     RequestConfig(request, paginate={"per_page": 25}).configure(table_produto)
-    RequestConfig(request, paginate={"per_page": 25}).configure(
-        table_prodxparam)
+    RequestConfig(request, paginate={"per_page": 25}).configure(table_prodxparam)
     RequestConfig(request, paginate={"per_page": 25}).configure(
         table_serie_classificacao
     )
@@ -1561,24 +1534,35 @@ def configuracoes_view(request):
 
     # Configurar os dados das abas
     tabs = [
-        ('tab_param', param_form, table_parametro, 'Parâmetros'),
-        ('tab_frasco', frasco_form, table_frasco, 'Frascos'),
-        ('tab_equipe', equipe_form, table_equipe, 'Equipes'),
-        ('tab_laboratorio', laboratorio_form, table_laboratorio, 'Laboratórios'),
-        ('tab_produto', produto_form, table_produto, 'Produtos'),
-        ('tab_prodxparam', prodxparam_form,
-         table_prodxparam, 'Produto x Parâmetro'),
-        ('tab_serie_classificacao', serie_classificacao_form,
-         table_serie_classificacao, 'Série Classificação'),
-        ('tab_item_checklist', item_checklist_form,
-         table_item_checklist, 'Itens de Checklist'),
-        ('tab_email', email_form, table_email, 'Templates de E-mail'),
-        ('tab_status_coleta', status_coleta_form,
-         table_status_coleta, 'Status de Coleta'),
+        ("tab_param", param_form, table_parametro, "Parâmetros"),
+        ("tab_frasco", frasco_form, table_frasco, "Frascos"),
+        ("tab_equipe", equipe_form, table_equipe, "Equipes"),
+        ("tab_laboratorio", laboratorio_form, table_laboratorio, "Laboratórios"),
+        ("tab_produto", produto_form, table_produto, "Produtos"),
+        ("tab_prodxparam", prodxparam_form, table_prodxparam, "Produto x Parâmetro"),
+        (
+            "tab_serie_classificacao",
+            serie_classificacao_form,
+            table_serie_classificacao,
+            "Série Classificação",
+        ),
+        (
+            "tab_item_checklist",
+            item_checklist_form,
+            table_item_checklist,
+            "Itens de Checklist",
+        ),
+        ("tab_email", email_form, table_email, "Templates de E-mail"),
+        (
+            "tab_status_coleta",
+            status_coleta_form,
+            table_status_coleta,
+            "Status de Coleta",
+        ),
     ]
 
     context = {
-        'tabs': tabs,
+        "tabs": tabs,
         # ... outros itens do contexto ...
     }
 
@@ -1640,14 +1624,12 @@ def perfil_usuario(request):
         detalhes_usuario = DetalhesUsuario(usuario=usuario)
 
     if request.method == "POST":
-        detalhes_form = DetalhesUsuarioForm(
-            request.POST, instance=detalhes_usuario)
+        detalhes_form = DetalhesUsuarioForm(request.POST, instance=detalhes_usuario)
         senha_form = PasswordChangeForm(user=usuario, data=request.POST)
 
         if detalhes_form.is_valid():
             detalhes_form.save()
-            messages.success(
-                request, "Detalhes do perfil atualizados com sucesso.")
+            messages.success(request, "Detalhes do perfil atualizados com sucesso.")
 
         if senha_form.is_valid():
             user = senha_form.save()
@@ -1680,8 +1662,7 @@ def cadastro_usuarios_adm(request):
             subject = "Bem-vindo ao sistema LAGUNA"
             message = f"Olá {user.username},\n\nVocê foi cadastrado no sistema LAGUNA. Por favor, clique no link abaixo para definir sua senha e completar seu cadastro:\n\n{settings.SITE_URL}/accounts/password/reset/"
             recipient_list = [user.email]
-            send_mail(subject, message,
-                      settings.EMAIL_HOST_USER, recipient_list)
+            send_mail(subject, message, settings.EMAIL_HOST_USER, recipient_list)
 
             messages.success(
                 request,
@@ -1718,7 +1699,7 @@ def enviar_email_async(subject, message, from_email, recipient_list):
 
 @login_required
 def cadastro_coleta_view(request):
-    data_inicial = request.GET.get('date')
+    data_inicial = request.GET.get("date")
     if request.method == "POST":
         form = CadastroColetaForm(request.POST)
         if form.is_valid():
@@ -1726,9 +1707,9 @@ def cadastro_coleta_view(request):
             coleta.criado_por = request.user  # Atribui o usuário logado
 
             # Converter a data da string para datetime
-            data_str = request.POST.get('data')
+            data_str = request.POST.get("data")
             if data_str:
-                coleta.data = datetime.strptime(data_str, '%Y-%m-%d')
+                coleta.data = datetime.strptime(data_str, "%Y-%m-%d")
 
             coleta.save()  # Agora salva no banco
             # Criar entradas na tabela TabChecklistColeta para cada item de checklist
@@ -1742,19 +1723,21 @@ def cadastro_coleta_view(request):
             # Enviar e-mail para o usuário
             subject = "Não responda - Coleta programada com sucesso"
             message = f"Olá {request.user.username},\n\nA coleta com a ordem de serviço {coleta.ordem_servico} foi criada com sucesso. \n\nAcesse o sistema em {settings.SITE_URL}/info_coleta/{coleta.id} para mais informações. \n\n Este é um e-mail automático, favor não responder."
-            recipient_list = [request.user.email, ]
+            recipient_list = [
+                request.user.email,
+            ]
 
             # Iniciar thread para envio de email
             Thread(
                 target=enviar_email_async,
-                args=(subject, message, settings.EMAIL_HOST_USER, recipient_list)
+                args=(subject, message, settings.EMAIL_HOST_USER, recipient_list),
             ).start()
 
             return redirect("checklist_coleta", coleta_id=coleta.id)
     else:
         initial_data = {}
         if data_inicial:
-            initial_data['data'] = data_inicial
+            initial_data["data"] = data_inicial
         form = CadastroColetaForm(initial=initial_data)
     return render(request, "cadastro_coleta.html", {"form": form})
 
@@ -1765,8 +1748,7 @@ def cadastro_item_checklist_coleta(request):
         form = CadastroItemChecklistColetaForm(request.POST)
         if form.is_valid():
             form.save(user=request.user)
-            messages.success(
-                request, "Item de checklist cadastrado com sucesso.")
+            messages.success(request, "Item de checklist cadastrado com sucesso.")
             return redirect("cadastro_item_checklist_coleta")
     else:
         form = CadastroItemChecklistColetaForm()
@@ -1776,8 +1758,7 @@ def cadastro_item_checklist_coleta(request):
     RequestConfig(request).configure(table)
 
     return render(
-        request, "cadastro_item_checklist_coleta.html", {
-            "form": form, "table": table}
+        request, "cadastro_item_checklist_coleta.html", {"form": form, "table": table}
     )
 
 
@@ -1872,8 +1853,7 @@ def checklist_coleta(request, coleta_id):
     campanha = coleta.id_campanha
     if request.method == "POST":
         formset = ChecklistColetaFormSet(
-            request.POST, queryset=TabChecklistColeta.objects.filter(
-                id_coleta=coleta)
+            request.POST, queryset=TabChecklistColeta.objects.filter(id_coleta=coleta)
         )
         if formset.is_valid():
             formset.save()
@@ -1907,8 +1887,9 @@ def fill_amostra(request, coleta_id):
 
             # Obter amostras existentes para esta coleta
             amostras_existentes = set(
-                TabAmostra.objects.filter(id_coleta=coleta)
-                .values_list('id_ponto_id', 'id_coleta_id', 'id_frasco_id')
+                TabAmostra.objects.filter(id_coleta=coleta).values_list(
+                    "id_ponto_id", "id_coleta_id", "id_frasco_id"
+                )
             )
 
             amostras = []
@@ -1946,19 +1927,22 @@ def fill_amostra(request, coleta_id):
                 messages.success(request, "Amostras criadas com sucesso!")
             else:
                 messages.info(
-                    request, "Todas as amostras já foram criadas anteriormente.")
+                    request, "Todas as amostras já foram criadas anteriormente."
+                )
 
             # Após criar as amostras e envios, gerar medidas para todos os frascos
             for frasco in frascos:
                 if not coleta.analise_bentos and frasco.id in [5, 6, 7]:
                     continue
-                return redirect('fill_frasco_medida', coleta_id=coleta_id, frasco_id=frasco.id)
+                return redirect(
+                    "fill_frasco_medida", coleta_id=coleta_id, frasco_id=frasco.id
+                )
 
-            return redirect('info_coleta', coleta_id=coleta_id)
+            return redirect("info_coleta", coleta_id=coleta_id)
 
     except Exception as e:
         messages.error(request, f"Erro ao criar amostras: {str(e)}")
-        return redirect('info_coleta', coleta_id=coleta_id)
+        return redirect("info_coleta", coleta_id=coleta_id)
 
 
 @login_required
@@ -1972,37 +1956,26 @@ def fill_frasco_medida(request, coleta_id, frasco_id):
     # Verifica se já existem medidas para este frasco nesta coleta
     medidas_existentes = TabMedida.objects.filter(
         id_envio__id_amostra__id_coleta=coleta_id,
-        id_envio__id_amostra__id_frasco=frasco_id
+        id_envio__id_amostra__id_frasco=frasco_id,
     ).exists()
 
     if not medidas_existentes:
         try:
             # Obtém todas as amostras para este frasco
-            amostras = TabAmostra.objects.filter(
-                id_coleta=coleta,
-                id_frasco=frasco
-            )
+            amostras = TabAmostra.objects.filter(id_coleta=coleta, id_frasco=frasco)
 
             # Para cada amostra, verifica/cria o envio e as medidas
             for amostra in amostras:
                 # Cria ou obtém o envio
-                envio, created = TabEnvio.objects.get_or_create(
-                    id_amostra=amostra
-                )
+                envio, created = TabEnvio.objects.get_or_create(id_amostra=amostra)
 
                 # Obtém os parâmetros ativos para este frasco
-                parametros = TabProdxparam.objects.filter(
-                    id_frasco=frasco,
-                    status=True
-                )
+                parametros = TabProdxparam.objects.filter(id_frasco=frasco, status=True)
 
                 # Cria as medidas para cada parâmetro
                 medidas = []
                 for parametro in parametros:
-                    medida = TabMedida(
-                        id_envio=envio,
-                        id_pp=parametro
-                    )
+                    medida = TabMedida(id_envio=envio, id_pp=parametro)
                     medidas.append(medida)
 
                 # Cria todas as medidas de uma vez
@@ -2011,22 +1984,26 @@ def fill_frasco_medida(request, coleta_id, frasco_id):
 
             # Procura próximo frasco que precise de medidas
             proximo_frasco = TabFrasco.objects.filter(
-                id__gt=frasco_id,
-                tabamostra__id_coleta=coleta
+                id__gt=frasco_id, tabamostra__id_coleta=coleta
             ).first()
 
             if proximo_frasco:
-                return redirect('fill_frasco_medida', coleta_id=coleta_id, frasco_id=proximo_frasco.id)
+                return redirect(
+                    "fill_frasco_medida",
+                    coleta_id=coleta_id,
+                    frasco_id=proximo_frasco.id,
+                )
             else:
                 # Só mostra a mensagem de sucesso quando terminar todos os frascos
                 messages.success(
-                    request, 'Formulários gerados com sucesso para todos os frascos')
+                    request, "Formulários gerados com sucesso para todos os frascos"
+                )
 
         except Exception as e:
-            messages.error(request, f'Erro ao gerar formulários: {str(e)}')
-            return redirect('info_coleta', coleta_id=coleta_id)
+            messages.error(request, f"Erro ao gerar formulários: {str(e)}")
+            return redirect("info_coleta", coleta_id=coleta_id)
 
-    return redirect('info_coleta', coleta_id=coleta_id)
+    return redirect("info_coleta", coleta_id=coleta_id)
 
 
 @login_required
@@ -2038,20 +2015,18 @@ def lista_campo_frasco(request, coleta_id, frasco_id):
     frasco = get_object_or_404(TabFrasco, id=frasco_id)
 
     # Filtra as amostras da coleta atual para o frasco específico
-    amostras = TabAmostra.objects.filter(
-        id_coleta=coleta,
-        id_frasco=frasco
-    ).order_by('id_ponto')
+    amostras = TabAmostra.objects.filter(id_coleta=coleta, id_frasco=frasco).order_by(
+        "id_ponto"
+    )
 
     table = ListaCampoTable(amostras)
     RequestConfig(request, paginate={"per_page": 40}).configure(table)
 
-    return render(request, 'lista_campo.html', {
-        "coleta": coleta,
-        "frasco": frasco,
-        "table": table,
-        "amostras": amostras
-    })
+    return render(
+        request,
+        "lista_campo.html",
+        {"coleta": coleta, "frasco": frasco, "table": table, "amostras": amostras},
+    )
 
 
 @login_required
@@ -2060,37 +2035,39 @@ def selecionar_frasco(request, coleta_id):
 
     # Obtém os frascos disponíveis para esta coleta
     frascos_disponiveis = TabFrasco.objects.filter(
-        id__in=TabAmostra.objects.filter(
-            id_coleta=coleta
-        ).values_list('id_frasco', flat=True).distinct()
+        id__in=TabAmostra.objects.filter(id_coleta=coleta)
+        .values_list("id_frasco", flat=True)
+        .distinct()
     )
 
     # Para cada frasco, verifica se tem envios E medidas
     frascos_info = []
     for frasco in frascos_disponiveis:
         envios_existentes = TabEnvio.objects.filter(
-            id_amostra__id_coleta=coleta_id,
-            id_amostra__id_frasco=frasco.id
+            id_amostra__id_coleta=coleta_id, id_amostra__id_frasco=frasco.id
         ).exists()
 
         medidas_existentes = TabMedida.objects.filter(
             id_envio__id_amostra__id_coleta=coleta_id,
-            id_envio__id_amostra__id_frasco=frasco.id
+            id_envio__id_amostra__id_frasco=frasco.id,
         ).exists()
 
         tem_formularios = envios_existentes and medidas_existentes
 
-        frascos_info.append({
-            'id': frasco.id,
-            'nome': frasco.nome,
-            'tem_formularios': tem_formularios,
-            'status': 'success' if tem_formularios else 'warning'
-        })
+        frascos_info.append(
+            {
+                "id": frasco.id,
+                "nome": frasco.nome,
+                "tem_formularios": tem_formularios,
+                "status": "success" if tem_formularios else "warning",
+            }
+        )
 
-    return render(request, 'modal_selecao_frasco.html', {
-        'coleta': coleta,
-        'frascos': frascos_info
-    })
+    return render(
+        request,
+        "modal_selecao_frasco.html",
+        {"coleta": coleta, "frascos": frascos_info},
+    )
 
 
 @login_required
@@ -2110,7 +2087,7 @@ def info_coleta(request, coleta_id):
         link_sistema = f"{settings.SITE_URL}/info_coleta/{coleta_id}"
 
         hoje = datetime.today()
-        if (data_coleta < hoje):
+        if data_coleta < hoje:
             mensagem = f"Foi criada uma coleta para a data de {data_coleta.strftime('%d/%m/%Y')} em {coleta.id_setor}, com a ordem de serviço {coleta.ordem_servico}, Observação: {coleta.observacao}.\n\nLink para acesso: {link_sistema}"
         else:
             mensagem = f"Será realizada uma nova coleta para a data de {data_coleta.strftime('%d/%m/%Y')} em {coleta.id_setor}, com a ordem de serviço {coleta.ordem_servico}. \n\nObservação: {coleta.observacao}.\n\nLink para acesso: {link_sistema}"
@@ -2129,13 +2106,13 @@ def info_coleta(request, coleta_id):
         )
 
         # Cálculo do percentual do checklist
-        total_items = TabChecklistColeta.objects.filter(
-            id_coleta=coleta).count()
+        total_items = TabChecklistColeta.objects.filter(id_coleta=coleta).count()
         items_preenchidos = TabChecklistColeta.objects.filter(
             id_coleta=coleta, status=True
         ).count()
-        percentual_checklist = float(
-            (items_preenchidos / total_items) * 100) if total_items > 0 else 0.0
+        percentual_checklist = (
+            float((items_preenchidos / total_items) * 100) if total_items > 0 else 0.0
+        )
 
         # Obter pontos de coleta e verificar preenchimento do formulário
         pontos_coleta = []
@@ -2146,18 +2123,20 @@ def info_coleta(request, coleta_id):
             amostra = TabAmostra.objects.filter(
                 id_coleta=coleta,
                 id_ponto=ponto,
-                id_frasco=1  # Apenas frasco 1
+                id_frasco=1,  # Apenas frasco 1
             ).first()
 
             formulario_preenchido = False
             parcialmente_preenchido = False
             if amostra:
                 # Busca todas as medidas para esta amostra
-                medidas = TabMedida.objects.filter(
-                    id_envio__id_amostra=amostra)
+                medidas = TabMedida.objects.filter(id_envio__id_amostra=amostra)
                 total_medidas = medidas.count()
-                medidas_preenchidas = medidas.exclude(
-                    input_valor__isnull=True).exclude(input_valor__exact='').count()
+                medidas_preenchidas = (
+                    medidas.exclude(input_valor__isnull=True)
+                    .exclude(input_valor__exact="")
+                    .count()
+                )
 
                 if total_medidas > 0:
                     if medidas_preenchidas == total_medidas:
@@ -2165,16 +2144,17 @@ def info_coleta(request, coleta_id):
                     elif medidas_preenchidas > 0:
                         parcialmente_preenchido = True
 
-            pontos_coleta.append({
-                'id': ponto.id,
-                'nome': ponto.nome,
-                'lat': ponto.lat,
-                'lon': ponto.lon,
-                'status': ponto.status,
-                'formulario_preenchido': formulario_preenchido,
-                'parcialmente_preenchido': parcialmente_preenchido
-
-            })
+            pontos_coleta.append(
+                {
+                    "id": ponto.id,
+                    "nome": ponto.nome,
+                    "lat": ponto.lat,
+                    "lon": ponto.lon,
+                    "status": ponto.status,
+                    "formulario_preenchido": formulario_preenchido,
+                    "parcialmente_preenchido": parcialmente_preenchido,
+                }
+            )
 
         pontos_coleta_json = json.dumps(pontos_coleta, cls=DjangoJSONEncoder)
 
@@ -2193,7 +2173,7 @@ def info_coleta(request, coleta_id):
             "atualizado": coleta.atualizado_em,
             "status_coleta": coleta.status_id,
             # Mudou de 'nome' para 'status'
-            "status_disponiveis": TabStatusColeta.objects.all().order_by('status'),
+            "status_disponiveis": TabStatusColeta.objects.all().order_by("status"),
         }
 
         return render(request, "info_coleta.html", context)
@@ -2320,8 +2300,7 @@ def meta_ponto(request, id):
     coleta = get_object_or_404(TabColeta, id=id)
 
     # Verifica se já existe um registro de metadados para o código de coleta
-    metadados, created = MetadadosPonto.objects.get_or_create(
-        codigo_coleta=coleta)
+    metadados, created = MetadadosPonto.objects.get_or_create(codigo_coleta=coleta)
 
     if created:
         messages.info(
@@ -2353,11 +2332,11 @@ def meta_ponto(request, id):
 @login_required
 def lista_de_coletas(request):
     # Obter os filtros da query string
-    status_id = request.GET.get('status_id')
-    id_setor = request.GET.get('id_setor')
+    status_id = request.GET.get("status_id")
+    id_setor = request.GET.get("id_setor")
 
     # Query base
-    queryset = TabColeta.objects.all().order_by('-data')
+    queryset = TabColeta.objects.all().order_by("-data")
 
     # Aplicar filtros se fornecidos
     if status_id:
@@ -2380,15 +2359,17 @@ def lista_de_coletas(request):
         "filtros": {
             "status_id": status_id,
             "id_setor": id_setor,
-        }
+        },
     }
 
     # Se for uma requisição AJAX, retornar apenas os dados filtrados
-    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        return JsonResponse({
-            'setores': list(setores.values('id', 'nome')),
-            'status': list(status.values('id', 'status')),
-        })
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return JsonResponse(
+            {
+                "setores": list(setores.values("id", "nome")),
+                "status": list(status.values("id", "status")),
+            }
+        )
 
     return render(request, "lista_de_coletas.html", context)
 
@@ -2397,73 +2378,77 @@ def lista_de_coletas(request):
 def update_coleta(request, id):
     coleta = get_object_or_404(TabColeta, id=id)
     coleta_original = TabColeta.objects.get(pk=coleta.pk)  # Cópia do estado original
-    
+
     if request.method == "POST":
         form = CadastroColetaForm(request.POST, instance=coleta)
         if form.is_valid():
             # Não salva ainda para poder comparar os campos
             coleta_atualizada = form.save(commit=False)
             coleta_atualizada.atualizado_por = request.user
-            
+
             # Lista de campos a serem monitorados para registro de logs
             campos_monitorados = [
-                ('nome', 'Nome'),
-                ('data', 'Data'),
-                ('id_campanha_id', 'Campanha'),
-                ('id_setor_id', 'Setor'),
-                ('analise_bentos', 'Análise Bentos'),
-                ('ordem_servico', 'Ordem de Serviço'),
-                ('status_id_id', 'Status'),
-                ('observacao', 'Observação')
+                ("nome", "Nome"),
+                ("data", "Data"),
+                ("id_campanha_id", "Campanha"),
+                ("id_setor_id", "Setor"),
+                ("analise_bentos", "Análise Bentos"),
+                ("ordem_servico", "Ordem de Serviço"),
+                ("status_id_id", "Status"),
+                ("observacao", "Observação"),
             ]
-            
+
             mudancas = []
             for campo_id, campo_nome in campos_monitorados:
                 valor_antigo = getattr(coleta_original, campo_id)
                 valor_novo = getattr(coleta_atualizada, campo_id)
-                
+
                 # Tratamento especial para FKs
-                if campo_id.endswith('_id'):
+                if campo_id.endswith("_id"):
                     # Usar .get_FOO_display() para obter nome legível de objetos relacionados
                     campo_base = campo_id[:-3]  # Remove o sufixo '_id'
-                    objeto_relacionado_antigo = getattr(coleta_original, campo_base, None)
-                    objeto_relacionado_novo = getattr(coleta_atualizada, campo_base, None)
-                    
+                    objeto_relacionado_antigo = getattr(
+                        coleta_original, campo_base, None
+                    )
+                    objeto_relacionado_novo = getattr(
+                        coleta_atualizada, campo_base, None
+                    )
+
                     if objeto_relacionado_antigo:
                         valor_antigo = str(objeto_relacionado_antigo)
                     if objeto_relacionado_novo:
                         valor_novo = str(objeto_relacionado_novo)
-                
+
                 # Tratamento especial para campos date/datetime
                 if isinstance(valor_antigo, datetime):
                     valor_antigo = valor_antigo.strftime("%d/%m/%Y %H:%M")
                 if isinstance(valor_novo, datetime):
                     valor_novo = valor_novo.strftime("%d/%m/%Y %H:%M")
-                
+
                 # Se houve mudança, registra
                 if valor_antigo != valor_novo:
                     mudancas.append(f"{campo_nome}: '{valor_antigo}' → '{valor_novo}'")
-            
+
             # Salva as alterações na coleta
             coleta_atualizada.save()
-            
+
             # Gerar log detalhado se houver mudanças
             if mudancas:
                 motivo = f"Alterações realizadas: {', '.join(mudancas)}"
-                
+
                 # Cria o log da atualização
                 TabLogColeta.objects.create(
                     id_coleta=coleta,
                     acao="Coleta atualizada",
                     usuario=request.user,
-                    motivo=motivo
+                    motivo=motivo,
                 )
-                
+
                 # Mostra mensagem de sucesso com detalhes
                 messages.success(request, f"Coleta atualizada com sucesso! {motivo}")
             else:
                 messages.info(request, "Nenhuma alteração detectada na coleta.")
-                
+
             return redirect("lista_de_coletas")
     else:
         # Inicializa o formulário com os dados atuais
@@ -2490,7 +2475,8 @@ def aplicar_acao(request):
             # Verificar se a coleta está cancelada antes de qualquer ação
             if coleta.status_id.id == 2:  # status 2 = cancelada
                 messages.error(
-                    request, "Não é possível editar uma coleta que já está cancelada.")
+                    request, "Não é possível editar uma coleta que já está cancelada."
+                )
                 return redirect("lista_de_coletas")
 
             if acao == "editar":
@@ -2501,11 +2487,12 @@ def aplicar_acao(request):
                 coletas = TabColeta.objects.filter(id__in=selecionados)
                 if coletas.filter(status_id=2).exists():
                     messages.error(
-                        request, "Não é possível cancelar coletas que já estão canceladas.")
+                        request,
+                        "Não é possível cancelar coletas que já estão canceladas.",
+                    )
                 else:
                     coletas.update(status_id=2)
-                    messages.success(
-                        request, "Coletas canceladas com sucesso.")
+                    messages.success(request, "Coletas canceladas com sucesso.")
 
     return redirect("lista_de_coletas")
 
@@ -2528,8 +2515,7 @@ def cadastro_email(request):
         form = EmailForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(
-                request, "Template de email cadastrado com sucesso.")
+            messages.success(request, "Template de email cadastrado com sucesso.")
             return redirect("cadastro_email")
     else:
         form = EmailForm()
@@ -2552,18 +2538,19 @@ def input_laboratorio(request, coleta_id, ponto_id, frasco_id):
 
     # Get amostra and envio for this specific combination
     amostra = TabAmostra.objects.filter(
-        id_coleta=coleta,
-        id_ponto=ponto,
-        id_frasco=frasco
+        id_coleta=coleta, id_ponto=ponto, id_frasco=frasco
     ).first()
 
-    envio = TabEnvio.objects.filter(
-        id_amostra=amostra).first() if amostra else None
+    envio = TabEnvio.objects.filter(id_amostra=amostra).first() if amostra else None
 
     # Get medidas for this envio
-    medidas = TabMedida.objects.filter(
-        id_envio=envio
-    ).select_related('id_envio', 'id_pp', 'id_pp__id_param') if envio else TabMedida.objects.none()
+    medidas = (
+        TabMedida.objects.filter(id_envio=envio).select_related(
+            "id_envio", "id_pp", "id_pp__id_param"
+        )
+        if envio
+        else TabMedida.objects.none()
+    )
 
     # Busca anexo existente
     anexo_existente = None
@@ -2582,11 +2569,7 @@ def input_laboratorio(request, coleta_id, ponto_id, frasco_id):
             anexo_existente = None
 
     if request.method == "POST":
-        formset = MedidaFormSet(
-            request.POST,
-            request.FILES,
-            queryset=medidas
-        )
+        formset = MedidaFormSet(request.POST, request.FILES, queryset=medidas)
         if formset.is_valid():
             instances = formset.save(commit=False)
             for instance in instances:
@@ -2602,19 +2585,19 @@ def input_laboratorio(request, coleta_id, ponto_id, frasco_id):
 
             # Find next point
             proximo_ponto = TabPonto.objects.filter(
-                id_setor=coleta.id_setor,
-                status=True,
-                id__gt=ponto.id
+                id_setor=coleta.id_setor, status=True, id__gt=ponto.id
             ).first()
 
             if proximo_ponto:
-                return redirect('input_laboratorio',
-                                coleta_id=coleta_id,
-                                ponto_id=proximo_ponto.id,
-                                frasco_id=frasco_id)
-            return redirect('lista_campo_frasco',
-                            coleta_id=coleta_id,
-                            frasco_id=frasco_id)
+                return redirect(
+                    "input_laboratorio",
+                    coleta_id=coleta_id,
+                    ponto_id=proximo_ponto.id,
+                    frasco_id=frasco_id,
+                )
+            return redirect(
+                "lista_campo_frasco", coleta_id=coleta_id, frasco_id=frasco_id
+            )
     else:
         formset = MedidaFormSet(queryset=medidas)
 
@@ -2626,22 +2609,21 @@ def input_laboratorio(request, coleta_id, ponto_id, frasco_id):
             form.unidade = medida.id_pp.unidade
 
     # Get existing attachments with proper ordering
-    anexos_existentes = TabAnexoAmostra.objects.filter(
-        id_envio=envio
-    ).order_by('ordem') if envio else []
+    anexos_existentes = (
+        TabAnexoAmostra.objects.filter(id_envio=envio).order_by("ordem")
+        if envio
+        else []
+    )
 
     # Obter todos os pontos desta coleta para navegação
-    todos_pontos = list(TabPonto.objects.filter(
-        id_setor=coleta.id_setor,
-        status=True
-    ).order_by('id'))
+    todos_pontos = list(
+        TabPonto.objects.filter(id_setor=coleta.id_setor, status=True).order_by("id")
+    )
 
     # Para cada ponto, verificar se já tem dados preenchidos
     for p in todos_pontos:
         amostra = TabAmostra.objects.filter(
-            id_coleta=coleta,
-            id_ponto=p,
-            id_frasco=frasco
+            id_coleta=coleta, id_ponto=p, id_frasco=frasco
         ).first()
 
         if amostra:
@@ -2657,18 +2639,22 @@ def input_laboratorio(request, coleta_id, ponto_id, frasco_id):
     # Encontrar índice do ponto atual e pontos anterior/próximo
     try:
         ponto_atual_index = [p.id for p in todos_pontos].index(ponto.id)
-        ponto_anterior = todos_pontos[ponto_atual_index -
-                                      1] if ponto_atual_index > 0 else None
-        ponto_proximo = todos_pontos[ponto_atual_index +
-                                     1] if ponto_atual_index < len(todos_pontos) - 1 else None
+        ponto_anterior = (
+            todos_pontos[ponto_atual_index - 1] if ponto_atual_index > 0 else None
+        )
+        ponto_proximo = (
+            todos_pontos[ponto_atual_index + 1]
+            if ponto_atual_index < len(todos_pontos) - 1
+            else None
+        )
     except (ValueError, IndexError):
-        ponto_anterior = None
-        ponto_proximo = None
+        return None
 
     # Calcular progresso
-    total_pontos = len(todos_pontos)
-    progresso = ((ponto_atual_index + 1) / total_pontos *
-                 100) if total_pontos > 0 else 0
+    # total_pontos = len(todos_pontos)
+    # progresso = (
+    #     ((ponto_atual_index + 1) / total_pontos * 100) if total_pontos > 0 else 0
+    # )
 
     return render(
         request,
@@ -2710,15 +2696,14 @@ def handle_anexo(request, envio):
             # Atualiza anexo existente
             if tem_novo_anexo:
                 anexo_existente.anexo = request.FILES["anexo"]
-            anexo_existente.observacao = request.POST.get(
-                "observacao_anexo", "")
+            anexo_existente.observacao = request.POST.get("observacao_anexo", "")
             anexo_existente.save()
         else:
             # Cria novo anexo
             anexo_existente = TabAnexoAmostra.objects.create(
                 id_envio=envio,
                 anexo=request.FILES.get("anexo"),
-                observacao=request.POST.get("observacao_anexo", "")
+                observacao=request.POST.get("observacao_anexo", ""),
             )
     # Se não tem novo conteúdo e existe um anexo vazio
     elif anexo_existente and not (anexo_existente.anexo or anexo_existente.observacao):
@@ -2735,99 +2720,107 @@ def resultados_todas_medidas(request):
         def sanitize_param(param):
             if param:
                 return param.strip()
-            return ''
+            return ""
 
-        campanha = sanitize_param(request.GET.get('campanha', ''))
-        setor = sanitize_param(request.GET.get('setor', ''))
-        ponto = sanitize_param(request.GET.get('ponto', ''))
-        coleta = sanitize_param(request.GET.get('coleta', ''))
+        campanha = sanitize_param(request.GET.get("campanha", ""))
+        setor = sanitize_param(request.GET.get("setor", ""))
+        ponto = sanitize_param(request.GET.get("ponto", ""))
+        coleta = sanitize_param(request.GET.get("coleta", ""))
 
         # Adicionar filtros de data junto com os outros
-        data_inicio = request.GET.get('data_inicio', '')
-        data_fim = request.GET.get('data_fim', '')
+        data_inicio = request.GET.get("data_inicio", "")
+        data_fim = request.GET.get("data_fim", "")
 
         # Query base otimizada
         query = TabMedida.objects.select_related(
-            'id_envio__id_amostra__id_coleta',
-            'id_envio__id_amostra__id_ponto',
-            'id_envio__id_amostra__id_coleta__id_setor',
-            'id_envio__id_amostra__id_coleta__id_campanha',
-            'id_pp__id_param'
+            "id_envio__id_amostra__id_coleta",
+            "id_envio__id_amostra__id_ponto",
+            "id_envio__id_amostra__id_coleta__id_setor",
+            "id_envio__id_amostra__id_coleta__id_campanha",
+            "id_pp__id_param",
         )
 
         # Aplicar filtros de data
         if data_inicio:
-            query = query.filter(
-                id_envio__id_amostra__id_coleta__data__gte=data_inicio)
+            query = query.filter(id_envio__id_amostra__id_coleta__data__gte=data_inicio)
         if data_fim:
-            query = query.filter(
-                id_envio__id_amostra__id_coleta__data__lte=data_fim)
+            query = query.filter(id_envio__id_amostra__id_coleta__data__lte=data_fim)
 
         # Aplicar os mesmos filtros
         if campanha:
             query = query.filter(
-                id_envio__id_amostra__id_coleta__id_campanha__nome__icontains=campanha)
+                id_envio__id_amostra__id_coleta__id_campanha__nome__icontains=campanha
+            )
         if setor:
             query = query.filter(
-                id_envio__id_amostra__id_coleta__id_setor__nome__icontains=setor)
+                id_envio__id_amostra__id_coleta__id_setor__nome__icontains=setor
+            )
         if ponto:
-            query = query.filter(
-                id_envio__id_amostra__id_ponto__nome__icontains=ponto)
+            query = query.filter(id_envio__id_amostra__id_ponto__nome__icontains=ponto)
 
         # Modificar a busca de coletas para incluir nulos
-        coletas = list(TabColeta.objects.values_list(
-            'nome', flat=True
-        ).distinct().order_by('nome'))
+        coletas = list(
+            TabColeta.objects.values_list("nome", flat=True).distinct().order_by("nome")
+        )
 
         # Adiciona um valor para representar coletas sem nome
         if None in coletas:
             coletas.remove(None)
-            coletas.append('Não definido')
+            coletas.append("Não definido")
 
         # Se o filtro de coleta for 'Não definido', ajustar a query
-        if coleta == 'Não definido':
-            query = query.filter(
-                id_envio__id_amostra__id_coleta__nome__isnull=True)
+        if coleta == "Não definido":
+            query = query.filter(id_envio__id_amostra__id_coleta__nome__isnull=True)
         elif coleta:  # Mantém o filtro original para outros casos
             query = query.filter(
-                id_envio__id_amostra__id_coleta__nome__icontains=coleta)
+                id_envio__id_amostra__id_coleta__nome__icontains=coleta
+            )
 
         # Buscar valores únicos para filtros de forma mais eficiente
-        campanhas = TabMedida.objects.values_list(
-            'id_envio__id_amostra__id_coleta__id_campanha__nome',
-            flat=True
-        ).distinct().order_by('id_envio__id_amostra__id_coleta__id_campanha__nome')
+        campanhas = (
+            TabMedida.objects.values_list(
+                "id_envio__id_amostra__id_coleta__id_campanha__nome", flat=True
+            )
+            .distinct()
+            .order_by("id_envio__id_amostra__id_coleta__id_campanha__nome")
+        )
 
-        setores = TabMedida.objects.values_list(
-            'id_envio__id_amostra__id_coleta__id_setor__nome',
-            flat=True
-        ).distinct().order_by('id_envio__id_amostra__id_coleta__id_setor__nome')
+        setores = (
+            TabMedida.objects.values_list(
+                "id_envio__id_amostra__id_coleta__id_setor__nome", flat=True
+            )
+            .distinct()
+            .order_by("id_envio__id_amostra__id_coleta__id_setor__nome")
+        )
 
-        pontos = TabMedida.objects.values_list(
-            'id_envio__id_amostra__id_ponto__nome',
-            flat=True
-        ).distinct().order_by('id_envio__id_amostra__id_ponto__nome')
+        pontos = (
+            TabMedida.objects.values_list(
+                "id_envio__id_amostra__id_ponto__nome", flat=True
+            )
+            .distinct()
+            .order_by("id_envio__id_amostra__id_ponto__nome")
+        )
 
-        coletas = TabColeta.objects.values_list(
-            'nome', flat=True
-        ).distinct().order_by('nome')
+        coletas = (
+            TabColeta.objects.values_list("nome", flat=True).distinct().order_by("nome")
+        )
 
         # Paginação com validação melhorada
         PER_PAGE_CHOICES = [10, 20, 40, 80, 100]
-        per_page = request.GET.get('per_page')
+        per_page = request.GET.get("per_page")
 
         try:
             per_page = int(per_page) if per_page else 10
-            if (per_page not in PER_PAGE_CHOICES):
+            if per_page not in PER_PAGE_CHOICES:
                 per_page = 10
         except ValueError:
             per_page = 10
 
         paginator = Paginator(query, per_page)
-        page = request.GET.get('page', 1)
+        page = request.GET.get("page", 1)
         try:
             medidas = paginator.page(page)
-        except:
+        except Exception:
             medidas = paginator.page(1)
 
         # Processar resultados de forma mais eficiente
@@ -2837,17 +2830,23 @@ def resultados_todas_medidas(request):
                 amostra = medida.id_envio.id_amostra
                 coleta = amostra.id_coleta
                 resultado = {
-                    'campanha_nome': coleta.id_campanha.nome if coleta.id_campanha else 'N/A',
-                    'coleta_nome': coleta.nome if coleta.nome else 'N/A',
-                    'ordem_servico': coleta.ordem_servico,
+                    "campanha_nome": coleta.id_campanha.nome
+                    if coleta.id_campanha
+                    else "N/A",
+                    "coleta_nome": coleta.nome if coleta.nome else "N/A",
+                    "ordem_servico": coleta.ordem_servico,
                     # Corrigido aqui
-                    'data_coleta': coleta.data.strftime('%d/%m/%Y') if coleta.data else 'N/A',
-                    'setor': coleta.id_setor.nome if coleta.id_setor else 'N/A',
-                    'ponto': amostra.id_ponto.nome if amostra.id_ponto else 'N/A',
-                    'etiqueta': amostra.etiqueta,
-                    'parametro': medida.id_pp.id_param.nome if medida.id_pp and medida.id_pp.id_param else 'N/A',
-                    'valor': medida.input_valor if medida.input_valor else 'Não medido',
-                    'unidade': medida.id_pp.unidade if medida.id_pp else '',
+                    "data_coleta": coleta.data.strftime("%d/%m/%Y")
+                    if coleta.data
+                    else "N/A",
+                    "setor": coleta.id_setor.nome if coleta.id_setor else "N/A",
+                    "ponto": amostra.id_ponto.nome if amostra.id_ponto else "N/A",
+                    "etiqueta": amostra.etiqueta,
+                    "parametro": medida.id_pp.id_param.nome
+                    if medida.id_pp and medida.id_pp.id_param
+                    else "N/A",
+                    "valor": medida.input_valor if medida.input_valor else "Não medido",
+                    "unidade": medida.id_pp.unidade if medida.id_pp else "",
                 }
                 resultados.append(resultado)
             except Exception as e:
@@ -2855,41 +2854,46 @@ def resultados_todas_medidas(request):
                 continue
 
         context = {
-            'page_obj': {
-                'object_list': resultados,
-                'number': medidas.number,
-                'paginator': medidas.paginator,
-                'has_previous': medidas.has_previous(),
-                'has_next': medidas.has_next(),
-                'previous_page_number': medidas.previous_page_number if medidas.has_previous() else None,
-                'next_page_number': medidas.next_page_number if medidas.has_next() else None,
-                'start_index': medidas.start_index(),
-                'end_index': medidas.end_index(),
+            "page_obj": {
+                "object_list": resultados,
+                "number": medidas.number,
+                "paginator": medidas.paginator,
+                "has_previous": medidas.has_previous(),
+                "has_next": medidas.has_next(),
+                "previous_page_number": medidas.previous_page_number
+                if medidas.has_previous()
+                else None,
+                "next_page_number": medidas.next_page_number
+                if medidas.has_next()
+                else None,
+                "start_index": medidas.start_index(),
+                "end_index": medidas.end_index(),
             },
-            'total_resultados': paginator.count,
-            'campanhas': campanhas,
-            'setores': setores,
-            'pontos': pontos,
-            'coletas': coletas,
-            'filtros': {
-                'campanha': campanha,
-                'setor': setor,
-                'ponto': ponto,
-                'coleta': coleta,
-                'data_inicio': data_inicio,  # Adicionar data_inicio ao contexto
-                'data_fim': data_fim,        # Adicionar data_fim ao contexto
+            "total_resultados": paginator.count,
+            "campanhas": campanhas,
+            "setores": setores,
+            "pontos": pontos,
+            "coletas": coletas,
+            "filtros": {
+                "campanha": campanha,
+                "setor": setor,
+                "ponto": ponto,
+                "coleta": coleta,
+                "data_inicio": data_inicio,  # Adicionar data_inicio ao contexto
+                "data_fim": data_fim,  # Adicionar data_fim ao contexto
             },
-            'per_page_choices': PER_PAGE_CHOICES,  # Adiciona as opções ao contexto
-            'current_per_page': per_page,          # Adiciona o valor atual
+            "per_page_choices": PER_PAGE_CHOICES,  # Adiciona as opções ao contexto
+            "current_per_page": per_page,  # Adiciona o valor atual
         }
 
-        return render(request, 'resultados_todas_medidas.html', context)
+        return render(request, "resultados_todas_medidas.html", context)
 
     except Exception as e:
         logger.error(f"Erro ao carregar resultados: {str(e)}")
         messages.error(
-            request, "Erro ao carregar os resultados. Por favor, tente novamente.")
-        return redirect('home')
+            request, "Erro ao carregar os resultados. Por favor, tente novamente."
+        )
+        return redirect("home")
 
 
 @login_required
@@ -2899,68 +2903,71 @@ def export_resultados_medidas_csv(request):
         def sanitize_param(param):
             if param:
                 return param.strip()
-            return ''
+            return ""
 
-        campanha = sanitize_param(request.GET.get('campanha', ''))
-        setor = sanitize_param(request.GET.get('setor', ''))
-        ponto = sanitize_param(request.GET.get('ponto', ''))
-        coleta = sanitize_param(request.GET.get(
-            'coleta', ''))  # Adicionar esta linha
+        campanha = sanitize_param(request.GET.get("campanha", ""))
+        setor = sanitize_param(request.GET.get("setor", ""))
+        ponto = sanitize_param(request.GET.get("ponto", ""))
+        coleta = sanitize_param(request.GET.get("coleta", ""))  # Adicionar esta linha
 
         # Query base otimizada
         query = TabMedida.objects.select_related(
-            'id_envio__id_amostra__id_coleta',
-            'id_envio__id_amostra__id_ponto',
-            'id_envio__id_amostra__id_coleta__id_setor',
-            'id_envio__id_amostra__id_coleta__id_campanha',
-            'id_pp__id_param'
+            "id_envio__id_amostra__id_coleta",
+            "id_envio__id_amostra__id_ponto",
+            "id_envio__id_amostra__id_coleta__id_setor",
+            "id_envio__id_amostra__id_coleta__id_campanha",
+            "id_pp__id_param",
         )
 
         # Aplicar os mesmos filtros
         if campanha:
             query = query.filter(
-                id_envio__id_amostra__id_coleta__id_campanha__nome__icontains=campanha)
+                id_envio__id_amostra__id_coleta__id_campanha__nome__icontains=campanha
+            )
         if setor:
             query = query.filter(
-                id_envio__id_amostra__id_coleta__id_setor__nome__icontains=setor)
+                id_envio__id_amostra__id_coleta__id_setor__nome__icontains=setor
+            )
         if ponto:
-            query = query.filter(
-                id_envio__id_amostra__id_ponto__nome__icontains=ponto)
+            query = query.filter(id_envio__id_amostra__id_ponto__nome__icontains=ponto)
         if coleta:
             # Adicionar esta linha
             query = query.filter(
-                id_envio__id_amostra__id_coleta__nome__icontains=coleta)
+                id_envio__id_amostra__id_coleta__nome__icontains=coleta
+            )
 
         # Adicionar filtros de data
-        data_inicio = request.GET.get('data_inicio')
-        data_fim = request.GET.get('data_fim')
+        data_inicio = request.GET.get("data_inicio")
+        data_fim = request.GET.get("data_fim")
 
         if data_inicio:
-            query = query.filter(
-                id_envio__id_amostra__id_coleta__data__gte=data_inicio)
+            query = query.filter(id_envio__id_amostra__id_coleta__data__gte=data_inicio)
         if data_fim:
-            query = query.filter(
-                id_envio__id_amostra__id_coleta__data__lte=data_fim)
+            query = query.filter(id_envio__id_amostra__id_coleta__data__lte=data_fim)
 
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = f'attachment; filename="resultados_medidas_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv"'
+        response = HttpResponse(content_type="text/csv")
+        response["Content-Disposition"] = (
+            f'attachment; filename="resultados_medidas_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv"'
+        )
 
         # Adicionar BOM para identificar arquivo como UTF-8
-        response.write('\ufeff'.encode('utf-8'))
+        response.write("\ufeff".encode("utf-8"))
 
-        writer = csv.writer(response, delimiter=';', dialect='excel')
-        writer.writerow([
-            'Campanha',
-            'Coleta',
-            'Ordem Serviço',
-            'Data',
-            'Setor',
-            'Ponto',
-            'Etiqueta',
-            'Parâmetro',
-            'Valor',
-            'Unidade'
-        ])
+        writer = csv.writer(response, delimiter=";", dialect="excel")
+        writer.writerow(
+            [
+                "Campanha",
+                "Coleta",
+                "Ordem Serviço",
+                "Data",
+                "Setor",
+                "Ponto",
+                "Etiqueta",
+                "Parâmetro",
+                "Valor",
+                "Unidade",
+            ]
+        )
 
         # Processar resultados de forma otimizada
         batch_size = 1000
@@ -2969,16 +2976,20 @@ def export_resultados_medidas_csv(request):
                 amostra = medida.id_envio.id_amostra
                 coleta = amostra.id_coleta
                 row = [
-                    str(coleta.id_campanha.nome if coleta.id_campanha else 'N/A'),
-                    str(coleta.nome if coleta.nome else 'N/A'),
+                    str(coleta.id_campanha.nome if coleta.id_campanha else "N/A"),
+                    str(coleta.nome if coleta.nome else "N/A"),
                     str(coleta.ordem_servico),
-                    coleta.data.strftime('%d/%m/%Y') if coleta.data else 'N/A',
-                    str(coleta.id_setor.nome if coleta.id_setor else 'N/A'),
-                    str(amostra.id_ponto.nome if amostra.id_ponto else 'N/A'),
+                    coleta.data.strftime("%d/%m/%Y") if coleta.data else "N/A",
+                    str(coleta.id_setor.nome if coleta.id_setor else "N/A"),
+                    str(amostra.id_ponto.nome if amostra.id_ponto else "N/A"),
                     str(amostra.etiqueta),
-                    str(medida.id_pp.id_param.nome if medida.id_pp and medida.id_pp.id_param else 'N/A'),
-                    str(medida.input_valor if medida.input_valor else 'Não medido'),
-                    str(medida.id_pp.unidade if medida.id_pp else '')
+                    str(
+                        medida.id_pp.id_param.nome
+                        if medida.id_pp and medida.id_pp.id_param
+                        else "N/A"
+                    ),
+                    str(medida.input_valor if medida.input_valor else "Não medido"),
+                    str(medida.id_pp.unidade if medida.id_pp else ""),
                 ]
                 writer.writerow(row)
             except Exception as e:
@@ -2990,54 +3001,56 @@ def export_resultados_medidas_csv(request):
     except Exception as e:
         logger.error(f"Erro ao exportar resultados: {str(e)}")
         messages.error(
-            request, "Erro ao exportar os resultados. Por favor, tente novamente.")
-        return redirect('resultados_todas_medidas')
+            request, "Erro ao exportar os resultados. Por favor, tente novamente."
+        )
+        return redirect("resultados_todas_medidas")
 
 
 @login_required
 def export_resultados_medidas_xlsx(request):
     try:
-        def sanitize_param(param):
-            return param.strip() if param else ''
 
-        campanha = sanitize_param(request.GET.get('campanha', ''))
-        setor = sanitize_param(request.GET.get('setor', ''))
-        ponto = sanitize_param(request.GET.get('ponto', ''))
-        coleta = sanitize_param(request.GET.get('coleta', ''))
+        def sanitize_param(param):
+            return param.strip() if param else ""
+
+        campanha = sanitize_param(request.GET.get("campanha", ""))
+        setor = sanitize_param(request.GET.get("setor", ""))
+        ponto = sanitize_param(request.GET.get("ponto", ""))
+        coleta = sanitize_param(request.GET.get("coleta", ""))
 
         # Query base otimizada
         query = TabMedida.objects.select_related(
-            'id_envio__id_amostra__id_coleta',
-            'id_envio__id_amostra__id_ponto',
-            'id_envio__id_amostra__id_coleta__id_setor',
-            'id_envio__id_amostra__id_coleta__id_campanha',
-            'id_pp__id_param'
+            "id_envio__id_amostra__id_coleta",
+            "id_envio__id_amostra__id_ponto",
+            "id_envio__id_amostra__id_coleta__id_setor",
+            "id_envio__id_amostra__id_coleta__id_campanha",
+            "id_pp__id_param",
         )
 
         # Aplicar filtros
         if campanha:
             query = query.filter(
-                id_envio__id_amostra__id_coleta__id_campanha__nome__icontains=campanha)
+                id_envio__id_amostra__id_coleta__id_campanha__nome__icontains=campanha
+            )
         if setor:
             query = query.filter(
-                id_envio__id_amostra__id_coleta__id_setor__nome__icontains=setor)
+                id_envio__id_amostra__id_coleta__id_setor__nome__icontains=setor
+            )
         if ponto:
-            query = query.filter(
-                id_envio__id_amostra__id_ponto__nome__icontains=ponto)
+            query = query.filter(id_envio__id_amostra__id_ponto__nome__icontains=ponto)
         if coleta:
             query = query.filter(
-                id_envio__id_amostra__id_coleta__nome__icontains=coleta)
+                id_envio__id_amostra__id_coleta__nome__icontains=coleta
+            )
 
         # Adicionar filtros de data
-        data_inicio = request.GET.get('data_inicio')
-        data_fim = request.GET.get('data_fim')
+        data_inicio = request.GET.get("data_inicio")
+        data_fim = request.GET.get("data_fim")
 
         if data_inicio:
-            query = query.filter(
-                id_envio__id_amostra__id_coleta__data__gte=data_inicio)
+            query = query.filter(id_envio__id_amostra__id_coleta__data__gte=data_inicio)
         if data_fim:
-            query = query.filter(
-                id_envio__id_amostra__id_coleta__data__lte=data_fim)
+            query = query.filter(id_envio__id_amostra__id_coleta__data__lte=data_fim)
 
         wb = Workbook()
         ws = wb.active
@@ -3045,22 +3058,23 @@ def export_resultados_medidas_xlsx(request):
 
         # Definir cabeçalhos
         headers = [
-            'Campanha',
-            'Coleta',
-            'Ordem Serviço',
-            'Data',
-            'Setor',
-            'Ponto',
-            'Etiqueta',
-            'Parâmetro',
-            'Valor',
-            'Unidade'
+            "Campanha",
+            "Coleta",
+            "Ordem Serviço",
+            "Data",
+            "Setor",
+            "Ponto",
+            "Etiqueta",
+            "Parâmetro",
+            "Valor",
+            "Unidade",
         ]
 
         # Estilo para cabeçalho
         header_font = Font(bold=True)
         header_fill = PatternFill(
-            start_color='CCCCCC', end_color='CCCCCC', fill_type='solid')
+            start_color="CCCCCC", end_color="CCCCCC", fill_type="solid"
+        )
 
         # Aplicar cabeçalhos
         for col, header in enumerate(headers, 1):
@@ -3076,24 +3090,52 @@ def export_resultados_medidas_xlsx(request):
                 amostra = medida.id_envio.id_amostra
                 coleta = amostra.id_coleta
 
-                ws.cell(row=row, column=1, value=str(
-                    coleta.id_campanha.nome if coleta.id_campanha else 'N/A'))
-                ws.cell(row=row, column=2, value=str(
-                    coleta.nome if coleta.nome else 'N/A'))
+                ws.cell(
+                    row=row,
+                    column=1,
+                    value=str(coleta.id_campanha.nome if coleta.id_campanha else "N/A"),
+                )
+                ws.cell(
+                    row=row, column=2, value=str(coleta.nome if coleta.nome else "N/A")
+                )
                 ws.cell(row=row, column=3, value=str(coleta.ordem_servico))
-                ws.cell(row=row, column=4, value=coleta.data.strftime(
-                    '%d/%m/%Y') if coleta.data else 'N/A')
-                ws.cell(row=row, column=5, value=str(
-                    coleta.id_setor.nome if coleta.id_setor else 'N/A'))
-                ws.cell(row=row, column=6, value=str(
-                    amostra.id_ponto.nome if amostra.id_ponto else 'N/A'))
+                ws.cell(
+                    row=row,
+                    column=4,
+                    value=coleta.data.strftime("%d/%m/%Y") if coleta.data else "N/A",
+                )
+                ws.cell(
+                    row=row,
+                    column=5,
+                    value=str(coleta.id_setor.nome if coleta.id_setor else "N/A"),
+                )
+                ws.cell(
+                    row=row,
+                    column=6,
+                    value=str(amostra.id_ponto.nome if amostra.id_ponto else "N/A"),
+                )
                 ws.cell(row=row, column=7, value=str(amostra.etiqueta))
-                ws.cell(row=row, column=8, value=str(
-                    medida.id_pp.id_param.nome if medida.id_pp and medida.id_pp.id_param else 'N/A'))
-                ws.cell(row=row, column=9, value=str(
-                    medida.input_valor if medida.input_valor else 'Não medido'))
-                ws.cell(row=row, column=10, value=str(
-                    medida.id_pp.unidade if medida.id_pp else ''))
+                ws.cell(
+                    row=row,
+                    column=8,
+                    value=str(
+                        medida.id_pp.id_param.nome
+                        if medida.id_pp and medida.id_pp.id_param
+                        else "N/A"
+                    ),
+                )
+                ws.cell(
+                    row=row,
+                    column=9,
+                    value=str(
+                        medida.input_valor if medida.input_valor else "Não medido"
+                    ),
+                )
+                ws.cell(
+                    row=row,
+                    column=10,
+                    value=str(medida.id_pp.unidade if medida.id_pp else ""),
+                )
 
                 row += 1
             except Exception as e:
@@ -3106,13 +3148,15 @@ def export_resultados_medidas_xlsx(request):
             column_letter = get_column_letter(column[0].column)
             for cell in column:
                 if len(str(cell.value)) > max_length:
-                    adjusted_width = (max_length + 2)
+                    adjusted_width = max_length + 2
                     ws.column_dimensions[column_letter].width = adjusted_width
 
         response = HttpResponse(
-            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
-        response['Content-Disposition'] = f'attachment; filename="resultados_medidas_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx"'
+        response["Content-Disposition"] = (
+            f'attachment; filename="resultados_medidas_{datetime.now().strftime("%Y%m%d_%H%M%S")}.xlsx"'
+        )
 
         wb.save(response)
         return response
@@ -3120,19 +3164,18 @@ def export_resultados_medidas_xlsx(request):
     except Exception as e:
         logger.error(f"Erro ao exportar resultados: {str(e)}")
         messages.error(
-            request, "Erro ao exportar os resultados. Por favor, tente novamente.")
-        return redirect('resultados_todas_medidas')
+            request, "Erro ao exportar os resultados. Por favor, tente novamente."
+        )
+        return redirect("resultados_todas_medidas")
 
 
 @login_required
 def atualizar_status_coleta(request, coleta_id):
-    if request.method == 'POST':
+    if request.method == "POST":
         try:
-            coleta = TabColeta.objects.select_related(
-                'status_id').get(id=coleta_id)
-            novo_status = TabStatusColeta.objects.get(
-                id=request.POST.get('status'))
-            motivo = request.POST.get('motivo')
+            coleta = TabColeta.objects.select_related("status_id").get(id=coleta_id)
+            novo_status = TabStatusColeta.objects.get(id=request.POST.get("status"))
+            motivo = request.POST.get("motivo")
 
             # Debug
             print(f"Status atual: {coleta.status_id}")
@@ -3147,25 +3190,25 @@ def atualizar_status_coleta(request, coleta_id):
             # Registra o log com o motivo
             TabLogColeta.objects.create(
                 id_coleta=coleta,
-                acao=f'Status alterado para {novo_status.status}',
+                acao=f"Status alterado para {novo_status.status}",
                 motivo=motivo,
-                usuario=request.user
+                usuario=request.user,
             )
 
-            return JsonResponse({'success': True})
+            return JsonResponse({"success": True})
 
         except Exception as e:
             print(f"Erro ao atualizar status: {str(e)}")  # Debug
-            return JsonResponse({'success': False, 'error': str(e)}, status=400)
+            return JsonResponse({"success": False, "error": str(e)}, status=400)
 
-    return JsonResponse({'success': False, 'error': 'Método não permitido'}, status=405)
+    return JsonResponse({"success": False, "error": "Método não permitido"}, status=405)
+
 
 @login_required
 @login_required
 def generate_sample_labels(request, coleta_id):
     coleta = TabColeta.objects.get(id=coleta_id)
-    amostras = TabAmostra.objects.filter(
-        id_coleta=coleta).exclude(id_frasco__id=1)
+    amostras = TabAmostra.objects.filter(id_coleta=coleta).exclude(id_frasco__id=1)
 
     # Parâmetros fixos
     margin = 1 * mm
@@ -3174,8 +3217,12 @@ def generate_sample_labels(request, coleta_id):
     label_height = 25 * mm
     labels_per_row = 2
     labels_per_page = 2
-    
-    PAGE_WIDTH = (label_width * labels_per_row) + (label_spacing * (labels_per_row - 1)) + (2 * margin)
+
+    PAGE_WIDTH = (
+        (label_width * labels_per_row)
+        + (label_spacing * (labels_per_row - 1))
+        + (2 * margin)
+    )
     PAGE_HEIGHT = label_height + (2 * margin)
     PAGE_SIZE = (PAGE_WIDTH, PAGE_HEIGHT)
 
@@ -3184,25 +3231,27 @@ def generate_sample_labels(request, coleta_id):
 
     # Carregar e preparar a marca d'água
     watermark_path = os.path.join(
-        settings.STATIC_ROOT, "/home/marcus/desenvolvimento/LAGUNA/simal/static/images/logo_projeto_lagoa_viva.png")
+        settings.STATIC_ROOT,
+        "/home/marcus/desenvolvimento/LAGUNA/simal/static/images/logo_projeto_lagoa_viva.png",
+    )
     try:
         # Abrir e converter a imagem
         watermark_img = Image.open(watermark_path)
-        if watermark_img.mode != 'RGBA':
-            watermark_img = watermark_img.convert('RGBA')
-        
+        if watermark_img.mode != "RGBA":
+            watermark_img = watermark_img.convert("RGBA")
+
         # Ajustar o tamanho da marca d'água para ser menor e proporcional
         watermark_width = label_width * 0.35  # Reduzido para 35% da largura da etiqueta
         aspect_ratio = watermark_img.height / watermark_img.width
         watermark_height = watermark_width * aspect_ratio
 
         # Ajustar a transparência da imagem
-        alpha = Image.new('RGBA', watermark_img.size, (255, 255, 255, 128))
+        alpha = Image.new("RGBA", watermark_img.size, (255, 255, 255, 128))
         watermark_img = Image.blend(watermark_img, alpha, 0.2)
 
         # Salvar em buffer temporário
         temp_watermark = BytesIO()
-        watermark_img.save(temp_watermark, format='PNG')
+        watermark_img.save(temp_watermark, format="PNG")
         temp_watermark.seek(0)
     except Exception as e:
         print(f"Erro ao carregar marca d'água: {str(e)}")
@@ -3211,8 +3260,8 @@ def generate_sample_labels(request, coleta_id):
     # Processar amostras
     total_amostras = len(amostras)
     for i in range(0, total_amostras, labels_per_page):
-        page_amostras = amostras[i:i + labels_per_page]
-        is_last_page = (i + labels_per_page >= total_amostras)
+        page_amostras = amostras[i : i + labels_per_page]
+        is_last_page = i + labels_per_page >= total_amostras
         is_odd_last_page = is_last_page and (total_amostras % labels_per_page == 1)
 
         if is_odd_last_page:
@@ -3220,22 +3269,26 @@ def generate_sample_labels(request, coleta_id):
             start_x = margin
         else:
             # Caso contrário, centralizar as etiquetas na página
-            total_width = (label_width * len(page_amostras)) + (label_spacing * (len(page_amostras) - 1))
+            total_width = (label_width * len(page_amostras)) + (
+                label_spacing * (len(page_amostras) - 1)
+            )
             start_x = (PAGE_WIDTH - total_width) / 2
-        
+
         for idx, amostra in enumerate(page_amostras):
             x = start_x + (idx * (label_width + label_spacing))
             y = margin
 
             # Adicionar código da etiqueta
             c.setFont("Helvetica-Bold", 8)
-            c.drawString(x + 2*mm, y + label_height - 4*mm, f"{amostra.etiqueta}")
+            c.drawString(x + 2 * mm, y + label_height - 4 * mm, f"{amostra.etiqueta}")
 
             # Gerar e desenhar QR code
             qr = qrcode.QRCode(version=1, box_size=10, border=0)
             url = request.build_absolute_uri(
-                reverse('input_laboratorio', args=[
-                    coleta.id, amostra.id_ponto.id, amostra.id_frasco.id])
+                reverse(
+                    "input_laboratorio",
+                    args=[coleta.id, amostra.id_ponto.id, amostra.id_frasco.id],
+                )
             )
             qr.add_data(url)
             qr.make(fit=True)
@@ -3243,39 +3296,48 @@ def generate_sample_labels(request, coleta_id):
 
             # Salvar QR code em buffer
             qr_buffer = BytesIO()
-            qr_img.save(qr_buffer, format='PNG')
+            qr_img.save(qr_buffer, format="PNG")
             qr_buffer.seek(0)
 
             # Desenhar QR code
             qr_size = 18 * mm
-            c.drawImage(ImageReader(qr_buffer),
-                       x + 2*mm, y + 2*mm,
-                       width=qr_size, height=qr_size)
+            c.drawImage(
+                ImageReader(qr_buffer),
+                x + 2 * mm,
+                y + 2 * mm,
+                width=qr_size,
+                height=qr_size,
+            )
 
             # Configurar posição do texto à direita do QR code
-            text_x = x + (qr_size + 4*mm)
+            text_x = x + (qr_size + 4 * mm)
 
             # Desenhar informações
             c.setFont("Helvetica-Bold", 16)
-            c.drawString(text_x, y + 15*mm, f"{amostra.id_ponto.nome}")
+            c.drawString(text_x, y + 15 * mm, f"{amostra.id_ponto.nome}")
             c.setFont("Helvetica-Bold", 9)
-            c.drawString(text_x, y + 11*mm, f"{coleta.id_setor.nome}")
-            c.drawString(text_x, y + 7*mm, f"{coleta.data.strftime('%d/%m/%Y')}")
-            c.drawString(text_x, y + 3*mm, f"{amostra.id_frasco.nome}")
+            c.drawString(text_x, y + 11 * mm, f"{coleta.id_setor.nome}")
+            c.drawString(text_x, y + 7 * mm, f"{coleta.data.strftime('%d/%m/%Y')}")
+            c.drawString(text_x, y + 3 * mm, f"{amostra.id_frasco.nome}")
 
             # Desenhar marca d'água à direita do QR code
             if watermark_path:
                 try:
-                    watermark_x = text_x + 2*mm  # Posiciona após o texto
-                    watermark_y = y + (label_height - watermark_height) / 2  # Centraliza verticalmente
-                    
+                    watermark_x = text_x + 2 * mm  # Posiciona após o texto
+                    watermark_y = (
+                        y + (label_height - watermark_height) / 2
+                    )  # Centraliza verticalmente
+
                     c.saveState()
                     c.setFillAlpha(0.3)  # Reduz a opacidade para 30%
-                    c.drawImage(ImageReader(temp_watermark),
-                              watermark_x, watermark_y,
-                              width=watermark_width,
-                              height=watermark_height,
-                              mask='auto')
+                    c.drawImage(
+                        ImageReader(temp_watermark),
+                        watermark_x,
+                        watermark_y,
+                        width=watermark_width,
+                        height=watermark_height,
+                        mask="auto",
+                    )
                     c.restoreState()
                 except Exception as e:
                     print(f"Erro ao desenhar marca d'água: {str(e)}")
@@ -3286,8 +3348,10 @@ def generate_sample_labels(request, coleta_id):
     c.save()
     buffer.seek(0)
 
-    response = HttpResponse(buffer, content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="etiquetas_coleta_{coleta_id}.pdf"'
+    response = HttpResponse(buffer, content_type="application/pdf")
+    response["Content-Disposition"] = (
+        f'attachment; filename="etiquetas_coleta_{coleta_id}.pdf"'
+    )
 
     return response
 
@@ -3296,52 +3360,63 @@ def generate_sample_labels(request, coleta_id):
 def new_home(request):
     try:
         # Buscar status e contagens em uma única query
-        status_counts = TabColeta.objects.values('status_id__status', 'status_id__cor').annotate(
-            count=Count('id')
-        ).order_by('status_id__status')
+        status_counts = (
+            TabColeta.objects.values("status_id__status", "status_id__cor")
+            .annotate(count=Count("id"))
+            .order_by("status_id__status")
+        )
 
         # Criar dicionário de status e garantir que todos os status tenham uma contagem
         all_status = {
-            status.status: {
-                'cor': status.cor,
-                'count': 0
-            } for status in TabStatusColeta.objects.all()
+            status.status: {"cor": status.cor, "count": 0}
+            for status in TabStatusColeta.objects.all()
         }
 
         # Buscar totais para os cards
         total_coletas = TabColeta.objects.count()
         coletas_pendentes = TabColeta.objects.filter(
-            Q(status_id__status__in=['Adiada', 'Prorrogada', 'Programada', 'Em andamento']) |
-            Q(status_id__isnull=True)
+            Q(
+                status_id__status__in=[
+                    "Adiada",
+                    "Prorrogada",
+                    "Programada",
+                    "Em andamento",
+                ]
+            )
+            | Q(status_id__isnull=True)
         ).count()
         coletas_finalizadas = TabColeta.objects.filter(
-            status_id__status='Concluída').count()
+            status_id__status="Concluída"
+        ).count()
         coletas_esperando_resultados = TabColeta.objects.filter(
-            status_id__status='Aguardando resultados').count()
+            status_id__status="Aguardando resultados"
+        ).count()
 
         # Atualizar contagens para o gráfico
         for item in status_counts:
-            status = item['status_id__status']
+            status = item["status_id__status"]
             if status in all_status:
-                all_status[status]['count'] = item['count']
+                all_status[status]["count"] = item["count"]
 
         # Dados para o novo gráfico de coletas por setor
-        coletas_por_setor = TabColeta.objects.values(
-            'id_setor__nome',
-            'data'
-        ).annotate(
-            total=Count('id')
-        ).order_by('id_setor__nome', 'data')
+        coletas_por_setor = (
+            TabColeta.objects.values("id_setor__nome", "data")
+            .annotate(total=Count("id"))
+            .order_by("id_setor__nome", "data")
+        )
 
         # Organizar dados para o gráfico de linha
         setores_dados = {}
         datas = set()
 
         for coleta in coletas_por_setor:
-            setor = coleta['id_setor__nome'] or 'Não definido'
-            data = coleta['data'].strftime(
-                '%Y-%m-%d') if coleta['data'] else 'Não definido'
-            total = coleta['total']
+            setor = coleta["id_setor__nome"] or "Não definido"
+            data = (
+                coleta["data"].strftime("%Y-%m-%d")
+                if coleta["data"]
+                else "Não definido"
+            )
+            total = coleta["total"]
 
             if setor not in setores_dados:
                 setores_dados[setor] = {}
@@ -3354,15 +3429,21 @@ def new_home(request):
         series_data = []
 
         for setor, dados in setores_dados.items():
-            series_data.append({
-                'name': setor,
-                'data': [dados.get(data, 0) for data in datas_ordenadas]
-            })
+            series_data.append(
+                {
+                    "name": setor,
+                    "data": [dados.get(data, 0) for data in datas_ordenadas],
+                }
+            )
 
         # Preparar eventos do calendário
-        coletas = TabColeta.objects.select_related('status_id', 'id_setor').filter(
-            data__isnull=False  # Garantir que só pegaremos coletas com data
-        ).order_by('data')
+        coletas = (
+            TabColeta.objects.select_related("status_id", "id_setor")
+            .filter(
+                data__isnull=False  # Garantir que só pegaremos coletas com data
+            )
+            .order_by("data")
+        )
 
         calendar_events = []
 
@@ -3372,50 +3453,51 @@ def new_home(request):
             print(f"Processando coleta {coleta.id}:")  # Debug
             print(f"- Data: {coleta.data}")
             print(f"- Ordem de serviço: {coleta.ordem_servico}")
-            print(
-                f"- Setor: {coleta.id_setor.nome if coleta.id_setor else 'N/A'}")
+            print(f"- Setor: {coleta.id_setor.nome if coleta.id_setor else 'N/A'}")
 
             if coleta.data:
                 event = {
-                    'id': coleta.id,
-                    'title': f"{coleta.id_setor.nome if coleta.id_setor else 'N/A'}",
-                    'start': coleta.data.strftime('%Y-%m-%d'),
-                    'backgroundColor': coleta.status_id.cor if coleta.status_id else '#6c757d',
-                    'borderColor': coleta.status_id.cor if coleta.status_id else '#6c757d',
-                    'textColor': '#ffffff',
-                    'allDay': True
+                    "id": coleta.id,
+                    "title": f"{coleta.id_setor.nome if coleta.id_setor else 'N/A'}",
+                    "start": coleta.data.strftime("%Y-%m-%d"),
+                    "backgroundColor": coleta.status_id.cor
+                    if coleta.status_id
+                    else "#6c757d",
+                    "borderColor": coleta.status_id.cor
+                    if coleta.status_id
+                    else "#6c757d",
+                    "textColor": "#ffffff",
+                    "allDay": True,
                 }
                 calendar_events.append(event)
                 print(f"- Evento criado: {event}")  # Debug
             else:
-                print(f"- Coleta sem data definida")  # Debug
+                print("- Coleta sem data definida")  # Debug
 
         # Debug do JSON final
-        calendar_events_json = json.dumps(calendar_events, default=str)
+        # calendar_events_json = json.dumps(calendar_events, default=str)
         # print("JSON final dos eventos:", calendar_events_json)
 
         context = {
-            'total_coletas': total_coletas,
-            'coletas_pendentes': coletas_pendentes,
-            'coletas_finalizadas': coletas_finalizadas,
-            'coletas_esperando_resultados': coletas_esperando_resultados,
-            'chart_data': {
-                'labels': list(all_status.keys()),
-                'counts': [data['count'] for data in all_status.values()],
-                'colors': [data['cor'] for data in all_status.values()]
+            "total_coletas": total_coletas,
+            "coletas_pendentes": coletas_pendentes,
+            "coletas_finalizadas": coletas_finalizadas,
+            "coletas_esperando_resultados": coletas_esperando_resultados,
+            "chart_data": {
+                "labels": list(all_status.keys()),
+                "counts": [data["count"] for data in all_status.values()],
+                "colors": [data["cor"] for data in all_status.values()],
             },
-            'timeline_data': {
-                'labels': datas_ordenadas,
-                'series': series_data
-            },
-            'calendar_events': json.dumps(calendar_events, cls=DjangoJSONEncoder),
+            "timeline_data": {"labels": datas_ordenadas, "series": series_data},
+            "calendar_events": json.dumps(calendar_events, cls=DjangoJSONEncoder),
         }
 
-        return render(request, 'new_home.html', context)
+        return render(request, "new_home.html", context)
 
     except Exception as e:
         print(f"Erro na view new_home: {str(e)}")
         import traceback
+
         traceback.print_exc()  # Imprime o traceback completo
         messages.error(request, "Erro ao carregar o dashboard.")
-        return redirect('home')
+        return redirect("home")

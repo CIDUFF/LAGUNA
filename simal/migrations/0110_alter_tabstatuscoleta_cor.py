@@ -4,15 +4,20 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('simal', '0109_tabstatuscoleta_cor'),
+        ("simal", "0109_tabstatuscoleta_cor"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='tabstatuscoleta',
-            name='cor',
-            field=models.CharField(blank=True, default='#6c757d', help_text='Código hexadecimal da cor (ex: #FF0000 para vermelho)', max_length=50, null=True),
+            model_name="tabstatuscoleta",
+            name="cor",
+            field=models.CharField(
+                blank=True,
+                default="#6c757d",
+                help_text="Código hexadecimal da cor (ex: #FF0000 para vermelho)",
+                max_length=50,
+                null=True,
+            ),
         ),
     ]
