@@ -3508,10 +3508,10 @@ def dashboard_parametros(request):
     # Obtém todos os parâmetros ativos ordenados alfabeticamente pelo nome
     parametros = TabProdxparam.objects.filter(status=True).select_related('id_param').order_by('id_param__nome')
     
-    # Obtém todos os pontos ativos ordenados pelo id (ordem de pontos)
-    pontos = TabPonto.objects.filter(status=True).order_by('id')
+    # Obtém todos os pontos ordenados pelo id (ordem de pontos)
+    pontos = TabPonto.objects.all().order_by('id')
     
-    # Obtém todos os setores ativos ordenados pelo nome
+    # Obtém todos os setores ordenados pelo nome
     setores = TabSetor.objects.all().order_by('nome')
     
     # Processa seleção do usuário
