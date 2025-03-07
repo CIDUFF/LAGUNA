@@ -1,4 +1,5 @@
 from django.urls import path
+from .ninja_api import api
 from .apis import get_filtered_options
 from simal.views import (
     export_resultados_medidas_csv,
@@ -71,6 +72,7 @@ from simal.views import (
 
 urlpatterns = [
     path("", new_home, name="home"),  # Nova página inicial
+    path("api/", api.urls),
     # Rota antiga fica acessível aqui
     path("old_home/", home, name="old_home"),
     path("coleta/", coleta, name="coleta"),
