@@ -1065,11 +1065,11 @@ document.addEventListener('DOMContentLoaded', function() {
             // Atualiza o texto do tooltip para incluir o estado parcial
             let tooltipText = ponto.nome;
             if (ponto.formulario_preenchido) {
-                tooltipText += ' (Preenchido)';
+                tooltipText += '';
             } else if (ponto.parcialmente_preenchido) {
-                tooltipText += ' (Parcialmente preenchido)';
+                tooltipText += '';
             } else {
-                tooltipText += ' (Pendente)';
+                tooltipText += '';
             }
 
             var marker = L.marker([ponto.lat, ponto.lon], {icon: markerIcon})
