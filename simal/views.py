@@ -215,7 +215,7 @@ def home(request):
         weather_description_two_days_before = None
         gantt_div = None
 
-        if proxima_coleta:
+        if (proxima_coleta):
             percentual_checklist = (
                 ChecklistCampo.objects.filter(ordem_servico=proxima_coleta.id)
                 .values_list("progresso", flat=True)
@@ -2087,7 +2087,7 @@ def info_coleta(request, coleta_id):
         link_sistema = f"{settings.SITE_URL}/info_coleta/{coleta_id}"
 
         hoje = datetime.today()
-        if data_coleta < hoje:
+        if (data_coleta < hoje):
             mensagem = f"Foi criada uma coleta para a data de {data_coleta.strftime('%d/%m/%Y')} em {coleta.id_setor}, com a ordem de serviço {coleta.ordem_servico}, Observação: {coleta.observacao}.\n\nLink para acesso: {link_sistema}"
         else:
             mensagem = f"Será realizada uma nova coleta para a data de {data_coleta.strftime('%d/%m/%Y')} em {coleta.id_setor}, com a ordem de serviço {coleta.ordem_servico}. \n\nObservação: {coleta.observacao}.\n\nLink para acesso: {link_sistema}"
@@ -3505,8 +3505,20 @@ def new_home(request):
 
 @login_required
 def dashboard_parametros(request):
-    # Obtém todos os parâmetros ativos ordenados alfabeticamente pelo nome
-    parametros = TabProdxparam.objects.filter(status=True).select_related('id_param').order_by('id_param__nome')
+    # Obtém apenas parâmetros de bentos (frascos 5, 6, 7) e agrupa por nome
+    parametros_bentos = (TabProdxparam.objects
+        .filter(status=True, id_frasco_id__in=[5, 6, 7])
+        .select_related('id_param')
+        .values('id_param__nome', 'unidade')
+        .distinct()
+        .order_by('id_param__nome'))
+    
+    # Mantém os outros parâmetros para as outras abas, excluindo os frascos de bentos
+    parametros = (TabProdxparam.objects
+        .filter(status=True)
+        .exclude(id_frasco_id__in=[5, 6, 7])  # Exclui os frascos de bentos
+        .select_related('id_param')
+        .order_by('id_param__nome'))
     
     # Obtém todos os pontos ordenados pelo id (ordem de pontos)
     pontos = TabPonto.objects.all().order_by('id')
@@ -3518,10 +3530,11 @@ def dashboard_parametros(request):
     parametro_id = request.GET.get('parametro')
     ponto_id = request.GET.get('ponto')
     setor_id = request.GET.get('setor')
-    tipo_visualizacao = request.GET.get('tipo', 'ponto') # 'ponto' ou 'setor'
+    tipo_visualizacao = request.GET.get('tipo', 'ponto') # 'ponto', 'setor' ou 'bentos'
     
     dados_grafico = None
     dados_grafico_setor = None
+    dados_grafico_bentos = None
 
     if parametro_id:
         if tipo_visualizacao == 'ponto' and ponto_id:
@@ -3583,13 +3596,53 @@ def dashboard_parametros(request):
                     dados_grafico_setor['datas'].append(data)
                     dados_grafico_setor['valores'].append(round(media, 2))
 
+        elif tipo_visualizacao == 'bentos' and ponto_id:
+            # Filtra as medidas para os frascos de bentos para o parâmetro selecionado
+            medidas = TabMedida.objects.filter(
+                id_pp__id_param__nome=parametro_id,
+                id_envio__id_amostra__id_ponto_id=ponto_id,
+                id_envio__id_amostra__id_frasco_id__in=[5, 6, 7]
+            ).select_related(
+                'id_envio__id_amostra__id_coleta'
+            ).order_by('id_envio__id_amostra__id_coleta__data')
+
+            # Agrupa medidas por data para calcular médias
+            valores_por_data = {}
+            for medida in medidas:
+                data = medida.id_envio.id_amostra.id_coleta.data
+                if data and medida.input_valor:
+                    data_str = data.strftime('%Y-%m-%d')
+                    if data_str not in valores_por_data:
+                        valores_por_data[data_str] = {'soma': 0, 'count': 0}
+                    try:
+                        valor = float(medida.input_valor)
+                        valores_por_data[data_str]['soma'] += valor
+                        valores_por_data[data_str]['count'] += 1
+                    except (ValueError, TypeError):
+                        continue
+
+            # Prepara dados para o gráfico calculando a média
+            dados_grafico_bentos = {
+                'datas': [],
+                'valores': []
+            }
+
+            for data in sorted(valores_por_data.keys()):
+                dados = valores_por_data[data]
+                if dados['count'] > 0:
+                    media = dados['soma'] / dados['count']
+                    dados_grafico_bentos['datas'].append(data)
+                    dados_grafico_bentos['valores'].append(round(media, 2))
+
     context = {
         'parametros': parametros,
+        'parametros_bentos': parametros_bentos,  # Adiciona ao contexto
         'pontos': pontos,
         'setores': setores,
         'dados_grafico': dados_grafico,
         'dados_grafico_setor': dados_grafico_setor,
-        'parametro_selecionado': parametro_id,
+        'dados_grafico_bentos': dados_grafico_bentos,
+        'parametro_selecionado': parametro_id,  # Mudado de parametro_nome para parametro_id
         'ponto_selecionado': ponto_id,
         'setor_selecionado': setor_id,
         'tipo_visualizacao': tipo_visualizacao

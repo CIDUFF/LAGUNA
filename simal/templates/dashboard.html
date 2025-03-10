@@ -44,6 +44,10 @@
                     <a class="nav-link {% if tipo_visualizacao == 'setor' %}active{% endif %}" 
                        href="?tipo=setor">Por Setor</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if tipo_visualizacao == 'bentos' %}active{% endif %}" 
+                       href="?tipo=bentos">Bentos</a>
+                </li>
             </ul>
         </div>
         <div class="card-body">
@@ -54,11 +58,19 @@
                     <div class="col-md-5">
                         <select name="parametro" class="form-control" id="parametro">
                             <option value="">Selecione um parâmetro...</option>
-                            {% for param in parametros %}
-                                <option value="{{ param.id }}" {% if param.id|stringformat:"s" == parametro_selecionado %}selected{% endif %}>
-                                    {{ param.id_param.nome }} ({{ param.unidade }})
-                                </option>
-                            {% endfor %}
+                            {% if tipo_visualizacao == 'bentos' %}
+                                {% for param in parametros_bentos %}
+                                    <option value="{{ param.id_param__nome }}" {% if param.id_param__nome == parametro_selecionado %}selected{% endif %}>
+                                        {{ param.id_param__nome }} ({{ param.unidade }})
+                                    </option>
+                                {% endfor %}
+                            {% else %}
+                                {% for param in parametros %}
+                                    <option value="{{ param.id }}" {% if param.id|stringformat:"s" == parametro_selecionado %}selected{% endif %}>
+                                        {{ param.id_param.nome }} ({{ param.unidade }})
+                                    </option>
+                                {% endfor %}
+                            {% endif %}
                         </select>
                     </div>
                     
@@ -73,13 +85,24 @@
                             {% endfor %}
                         </select>
                     </div>
-                    {% else %}
+                    {% elif tipo_visualizacao == 'setor' %}
                     <div class="col-md-5">
                         <select name="setor" class="form-control" id="setor">
                             <option value="">Selecione um setor...</option>
                             {% for setor in setores %}
                                 <option value="{{ setor.id }}" {% if setor.id|stringformat:"s" == setor_selecionado %}selected{% endif %}>
                                     {{ setor.nome }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% else %}
+                    <div class="col-md-5">
+                        <select name="ponto" class="form-control" id="ponto">
+                            <option value="">Selecione um ponto...</option>
+                            {% for ponto in pontos %}
+                                <option value="{{ ponto.id }}" {% if ponto.id|stringformat:"s" == ponto_selecionado %}selected{% endif %}>
+                                    {{ ponto.nome }}
                                 </option>
                             {% endfor %}
                         </select>
@@ -97,9 +120,11 @@
                 <div id="grafico"></div>
             {% elif tipo_visualizacao == 'setor' and dados_grafico_setor %}
                 <div id="grafico-setor"></div>
+            {% elif tipo_visualizacao == 'bentos' and dados_grafico_bentos %}
+                <div id="grafico-bentos"></div>
             {% else %}
                 <div class="alert alert-info">
-                    Selecione um parâmetro e um {% if tipo_visualizacao == 'ponto' %}ponto{% else %}setor{% endif %} para visualizar o gráfico.
+                    Selecione um parâmetro e um {% if tipo_visualizacao == 'ponto' %}ponto{% elif tipo_visualizacao == 'setor' %}setor{% else %}ponto{% endif %} para visualizar o gráfico.
                 </div>
             {% endif %}
         </div>
@@ -166,6 +191,36 @@
     };
 
     Plotly.newPlot('grafico-setor', [dadosSetor], layoutSetor);
+</script>
+{% endif %}
+
+{% if tipo_visualizacao == 'bentos' and dados_grafico_bentos %}
+<script>
+    const dadosBentos = {
+        x: {{ dados_grafico_bentos.datas|safe }},
+        y: {{ dados_grafico_bentos.valores|safe }},
+        type: 'scatter',
+        mode: 'lines+markers',
+        name: 'Média de Bentos',
+        line: {
+            color: '#1f77b4'  // Cor azul para o gráfico
+        },
+        marker: {
+            color: '#1f77b4'
+        }
+    };
+
+    const layoutBentos = {
+        title: 'Média dos Parâmetros de Bentos ao Longo do Tempo',
+        xaxis: {
+            title: 'Data'
+        },
+        yaxis: {
+            title: '{{ parametro_selecionado.unidade }}'
+        }
+    };
+
+    Plotly.newPlot('grafico-bentos', [dadosBentos], layoutBentos);
 </script>
 {% endif %}
 {% endblock %}
