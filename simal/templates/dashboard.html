@@ -52,10 +52,10 @@
         </div>
         <div class="card-body">
             <!-- Formulário de seleção -->
-            <form method="get" class="mb-4">
+            <form method="get" class="mb-4" id="filtroForm">
                 <input type="hidden" name="tipo" value="{{ tipo_visualizacao }}">
                 <div class="row">
-                    <div class="col-md-5">
+                    <div class="col-md-6">
                         <select name="parametro" class="form-control" id="parametro">
                             <option value="">Selecione um parâmetro...</option>
                             {% if tipo_visualizacao == 'bentos' %}
@@ -75,7 +75,7 @@
                     </div>
                     
                     {% if tipo_visualizacao == 'ponto' %}
-                    <div class="col-md-5">
+                    <div class="col-md-6">
                         <select name="ponto" class="form-control" id="ponto">
                             <option value="">Selecione um ponto...</option>
                             {% for ponto in pontos %}
@@ -86,7 +86,7 @@
                         </select>
                     </div>
                     {% elif tipo_visualizacao == 'setor' %}
-                    <div class="col-md-5">
+                    <div class="col-md-6">
                         <select name="setor" class="form-control" id="setor">
                             <option value="">Selecione um setor...</option>
                             {% for setor in setores %}
@@ -97,7 +97,7 @@
                         </select>
                     </div>
                     {% else %}
-                    <div class="col-md-5">
+                    <div class="col-md-6">
                         <select name="ponto" class="form-control" id="ponto">
                             <option value="">Selecione um ponto...</option>
                             {% for ponto in pontos %}
@@ -108,10 +108,6 @@
                         </select>
                     </div>
                     {% endif %}
-                    
-                    <div class="col-md-2">
-                        <button type="submit" class="btn btn-primary w-100">Visualizar</button>
-                    </div>
                 </div>
             </form>
 
@@ -134,6 +130,31 @@
 <!-- Plotly.js -->
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
+<!-- Script para auto-submeter o formulário quando os filtros mudam -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Adiciona listener de evento para o select de parâmetro
+    document.getElementById('parametro').addEventListener('change', function() {
+        submitForm();
+    });
+
+    // Adiciona listener de evento para o select de ponto ou setor dependendo da aba
+    {% if tipo_visualizacao == 'ponto' or tipo_visualizacao == 'bentos' %}
+        document.getElementById('ponto').addEventListener('change', function() {
+            submitForm();
+        });
+    {% elif tipo_visualizacao == 'setor' %}
+        document.getElementById('setor').addEventListener('change', function() {
+            submitForm();
+        });
+    {% endif %}
+
+    function submitForm() {
+        document.getElementById('filtroForm').submit();
+    }
+});
+</script>
+
 {% if tipo_visualizacao == 'ponto' and dados_grafico %}
 <script>
     const dados = {
@@ -141,7 +162,7 @@
         y: {{ dados_grafico.valores|safe }},
         type: 'scatter',
         mode: 'lines+markers',
-        name: '{{ parametro_selecionado }}',
+        name: '{{ parametro_nome_display }}',
         line: {
             color: '#1f77b4'  // Cor azul para o gráfico por ponto
         },
@@ -156,7 +177,7 @@
             title: 'Data'
         },
         yaxis: {
-            title: '{{ parametro_selecionado.unidade }}'
+            title: '{{ parametro_nome_display }}'
         }
     };
 
@@ -186,7 +207,7 @@
             title: 'Data'
         },
         yaxis: {
-            title: '{{ parametro_selecionado.unidade }}'
+            title: '{{ parametro_nome_display }}'
         }
     };
 
@@ -217,7 +238,7 @@
             tickangle: -45  // Inclina as datas para melhor legibilidade
         },
         yaxis: {
-            title: '{{ parametro_selecionado.unidade }}'
+            title: '{{ parametro_nome_display }}'
         },
         bargap: 0.2,  // Ajusta o espaço entre as barras
         bargroupgap: 0.1  // Ajusta o espaço entre grupos de barras
