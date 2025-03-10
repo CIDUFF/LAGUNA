@@ -199,25 +199,28 @@
     const dadosBentos = {
         x: {{ dados_grafico_bentos.datas|safe }},
         y: {{ dados_grafico_bentos.valores|safe }},
-        type: 'scatter',
-        mode: 'lines+markers',
-        name: 'Média de Bentos',
-        line: {
-            color: '#1f77b4'  // Cor azul para o gráfico
-        },
+        type: 'bar',  // Alterado de 'scatter' para 'bar'
+        name: 'Bentos',
         marker: {
-            color: '#1f77b4'
+            color: '#1f77b4',  // Mantém a cor azul padrão
+            line: {
+                width: 1,
+                color: '#135999'  // Adiciona borda mais escura nas barras
+            }
         }
     };
 
     const layoutBentos = {
-        title: 'Média dos Parâmetros de Bentos ao Longo do Tempo',
+        title: 'Análise de Bentos ao Longo do Tempo',
         xaxis: {
-            title: 'Data'
+            title: 'Data',
+            tickangle: -45  // Inclina as datas para melhor legibilidade
         },
         yaxis: {
             title: '{{ parametro_selecionado.unidade }}'
-        }
+        },
+        bargap: 0.2,  // Ajusta o espaço entre as barras
+        bargroupgap: 0.1  // Ajusta o espaço entre grupos de barras
     };
 
     Plotly.newPlot('grafico-bentos', [dadosBentos], layoutBentos);
