@@ -3386,7 +3386,7 @@ def generate_sample_labels(request, coleta_id):
     try:
         # Abrir e converter a imagem
         watermark_img = Image.open(watermark_path)
-        if watermark_img.mode != "RGBA":
+        if (watermark_img.mode != "RGBA"):
             watermark_img = watermark_img.convert("RGBA")
 
         # Ajustar o tamanho da marca d'água para ser menor e proporcional
@@ -3654,6 +3654,9 @@ def new_home(request):
 
 @login_required
 def dashboard_parametros(request):
+    # Determina o tipo de visualização (ponto, setor ou bentos)
+    tipo_visualizacao = request.GET.get('tipo', 'ponto')  # 'ponto', 'setor' ou 'bentos'
+    
     # Obtém apenas parâmetros de bentos (frascos 5, 6, 7) e agrupa por nome
     parametros_bentos = (TabProdxparam.objects
         .filter(status=True, id_frasco_id__in=[5, 6, 7])
@@ -3675,11 +3678,59 @@ def dashboard_parametros(request):
     # Obtém todos os setores ordenados pelo nome
     setores = TabSetor.objects.all().order_by('nome')
     
+    # Verifica se há parâmetros na consulta
+    tem_parametros = 'parametro' in request.GET or 'ponto' in request.GET or 'setor' in request.GET
+    
+    # Se não há parâmetros na consulta, redirecionar com valores padrão
+    if not tem_parametros:
+        redirect_params = {}
+        
+        # Adicionar tipo de visualização à URL
+        redirect_params['tipo'] = tipo_visualizacao
+        
+        # Valores padrão para cada tipo de visualização
+        if tipo_visualizacao == 'ponto':
+            # Encontrar o parâmetro pH
+            ph_param = parametros.filter(id_param__nome__icontains='ph').first()
+            pt01 = pontos.filter(nome__iexact='Pt01').first() or pontos.first()
+            
+            if ph_param and pt01:
+                redirect_params['parametro'] = ph_param.id
+                redirect_params['ponto'] = pt01.id
+        
+        elif tipo_visualizacao == 'setor':
+            # Encontrar o parâmetro pH
+            ph_param = parametros.filter(id_param__nome__icontains='ph').first()
+            # Buscar especificamente o setor "Lagoa de Araçatiba"
+            setor_aracatiba = setores.filter(nome__icontains='araçatiba').first() or setores.filter(nome__icontains='aracatiba').first()
+            
+            if ph_param and setor_aracatiba:
+                redirect_params['parametro'] = ph_param.id
+                redirect_params['setor'] = setor_aracatiba.id
+            elif ph_param and setores.exists():
+                # Fallback para o primeiro setor se "Lagoa de Araçatiba" não for encontrado
+                redirect_params['parametro'] = ph_param.id
+                redirect_params['setor'] = setores.first().id
+        
+        elif tipo_visualizacao == 'bentos':
+            # Pegar os dois primeiros itens disponíveis para bentos
+            primeiro_parametro_bentos = parametros_bentos.first()
+            primeiro_ponto = pontos.first()
+            
+            if primeiro_parametro_bentos and primeiro_ponto:
+                redirect_params['parametro'] = primeiro_parametro_bentos['id_param__nome']
+                redirect_params['ponto'] = primeiro_ponto.id
+        
+        # Redirecionar apenas se tiver parâmetros para adicionar
+        if len(redirect_params) > 1:  # > 1 porque sempre terá pelo menos o 'tipo'
+            base_url = reverse('dashboard_parametros')
+            query_string = urllib.parse.urlencode(redirect_params)
+            return redirect(f"{base_url}?{query_string}")
+    
     # Processa seleção do usuário
     parametro_id = request.GET.get('parametro')
     ponto_id = request.GET.get('ponto')
     setor_id = request.GET.get('setor')
-    tipo_visualizacao = request.GET.get('tipo', 'ponto') # 'ponto', 'setor' ou 'bentos'
     
     dados_grafico = None
     dados_grafico_setor = None
@@ -3780,19 +3831,36 @@ def dashboard_parametros(request):
                     media = dados['soma'] / dados['count']
                     dados_grafico_bentos['datas'].append(data)
                     dados_grafico_bentos['valores'].append(round(media, 2))
+    
+    # Para exibir o nome correto do parâmetro no título
+    parametro_nome_display = None
+    if parametro_id:
+        if tipo_visualizacao == 'bentos':
+            # Para bentos, parametro_id já é o nome
+            parametro_nome_display = parametro_id
+        else:
+            # Para outros tipos, buscar o nome através do ID
+            try:
+                param = TabProdxparam.objects.get(id=parametro_id)
+                parametro_nome_display = param.id_param.nome
+            except:
+                parametro_nome_display = "Parâmetro desconhecido"
 
     context = {
         'parametros': parametros,
-        'parametros_bentos': parametros_bentos,  # Adiciona ao contexto
+        'parametros_bentos': parametros_bentos,
         'pontos': pontos,
         'setores': setores,
         'dados_grafico': dados_grafico,
         'dados_grafico_setor': dados_grafico_setor,
         'dados_grafico_bentos': dados_grafico_bentos,
-        'parametro_selecionado': parametro_id,  # Mudado de parametro_nome para parametro_id
+        'parametro_selecionado': parametro_id,
+        'parametro_nome_display': parametro_nome_display,  # Adicionado para mostrar o nome correto
         'ponto_selecionado': ponto_id,
         'setor_selecionado': setor_id,
         'tipo_visualizacao': tipo_visualizacao
     }
+    
+    return render(request, 'dashboard.html', context)
 
-    return render(request, "dashboard.html", context)
+# ...existing code...
