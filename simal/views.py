@@ -3505,8 +3505,8 @@ def new_home(request):
 
 @login_required
 def dashboard_parametros(request):
-    # Determina o tipo de visualização (ponto, setor ou bentos)
-    tipo_visualizacao = request.GET.get('tipo', 'ponto')  # 'ponto', 'setor' ou 'bentos'
+    # Determina o tipo de visualização (ponto, setor, bentos ou mapa)
+    tipo_visualizacao = request.GET.get('tipo', 'ponto')  # 'ponto', 'setor', 'bentos' ou 'mapa'
     
     # Obtém apenas parâmetros de bentos (frascos 5, 6, 7) e agrupa por nome
     parametros_bentos = (TabProdxparam.objects
@@ -3571,6 +3571,10 @@ def dashboard_parametros(request):
             if primeiro_parametro_bentos and primeiro_ponto:
                 redirect_params['parametro'] = primeiro_parametro_bentos['id_param__nome']
                 redirect_params['ponto'] = primeiro_ponto.id
+        
+        elif tipo_visualizacao == 'mapa':
+            # Para o mapa, não precisamos de parâmetros adicionais
+            pass
         
         # Redirecionar apenas se tiver parâmetros para adicionar
         if len(redirect_params) > 1:  # > 1 porque sempre terá pelo menos o 'tipo'
@@ -3699,6 +3703,18 @@ def dashboard_parametros(request):
             except:
                 parametro_nome_display = "Parâmetro desconhecido"
 
+    # Preparar dados do mapa
+    pontos_mapa = []
+    if tipo_visualizacao == 'mapa':
+        for ponto in pontos:
+            if ponto.lat and ponto.lon:  # Verifica se tem coordenadas
+                pontos_mapa.append({
+                    'nome': ponto.nome,
+                    'lat': float(ponto.lat),
+                    'lon': float(ponto.lon),
+                    'setor': ponto.id_setor.nome if ponto.id_setor else 'Não definido'
+                })
+
     context = {
         'parametros': parametros,
         'parametros_bentos': parametros_bentos,
@@ -3711,7 +3727,8 @@ def dashboard_parametros(request):
         'parametro_nome_display': parametro_nome_display,  # Adicionado para mostrar o nome correto
         'ponto_selecionado': ponto_id,
         'setor_selecionado': setor_id,
-        'tipo_visualizacao': tipo_visualizacao
+        'tipo_visualizacao': tipo_visualizacao,
+        'pontos_mapa': json.dumps(pontos_mapa),  # Adiciona os pontos do mapa ao contexto
     }
     
     return render(request, 'dashboard.html', context)
