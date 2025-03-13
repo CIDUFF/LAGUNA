@@ -21,7 +21,7 @@ from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.core.mail import send_mail
 from django.core.paginator import Paginator
 from django.db import connection, transaction
-from django.db.models import Q
+from django.db.models import Q, OuterRef, Subquery
 from django.forms import inlineformset_factory, modelformset_factory
 from django.http import FileResponse, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -3652,10 +3652,19 @@ def new_home(request):
         return redirect("home")
 
 
+
 @login_required
 def dashboard_parametros(request):
-    # Determina o tipo de visualização (ponto, setor, bentos ou mapa)
-    tipo_visualizacao = request.GET.get('tipo', 'ponto')  # 'ponto', 'setor', 'bentos' ou 'mapa'
+    tipo_visualizacao = request.GET.get('tipo', 'ponto')
+    
+    # Add campaign selection
+    campanhas = TabColeta.objects.all().order_by('-data')
+    campanha_id = request.GET.get('campanha')
+    
+    if campanha_id:
+        campanha_selecionada = TabColeta.objects.get(id=campanha_id)
+    else:
+        campanha_selecionada = campanhas.first()
     
     # Obtém apenas parâmetros de bentos (frascos 5, 6, 7) e agrupa por nome
     parametros_bentos = (TabProdxparam.objects
@@ -3853,14 +3862,49 @@ def dashboard_parametros(request):
     # Preparar dados do mapa
     pontos_mapa = []
     if tipo_visualizacao == 'mapa':
-        for ponto in pontos:
-            if ponto.lat and ponto.lon:  # Verifica se tem coordenadas
-                pontos_mapa.append({
-                    'nome': ponto.nome,
-                    'lat': float(ponto.lat),
-                    'lon': float(ponto.lon),
-                    'setor': ponto.id_setor.nome if ponto.id_setor else 'Não definido'
-                })
+        # Se um parâmetro foi selecionado, buscar as medidas mais recentes
+        if parametro_id:
+            # Modificar a subconsulta para filtrar por campanha
+            ultima_medicao = TabMedida.objects.filter(
+                id_pp_id=parametro_id,
+                id_envio__id_amostra__id_ponto=OuterRef('id'),
+                id_envio__id_amostra__id_coleta=campanha_selecionada
+            ).order_by('-id_envio__id_amostra__id_coleta__data').values('input_valor')[:1]
+
+            # Consulta principal com annotate para incluir o último valor medido
+            pontos_query = TabPonto.objects.filter(lat__isnull=False, lon__isnull=False).annotate(
+                ultimo_valor=Subquery(ultima_medicao)
+            )
+
+            for ponto in pontos_query:
+                if ponto.lat and ponto.lon:
+                    valor_numerico = None
+                    try:
+                        if ponto.ultimo_valor:
+                            valor_numerico = float(ponto.ultimo_valor)
+                    except (ValueError, TypeError):
+                        pass
+
+                    pontos_mapa.append({
+                        'nome': ponto.nome,
+                        'lat': float(ponto.lat),
+                        'lon': float(ponto.lon),
+                        'setor': ponto.id_setor.nome if ponto.id_setor else 'Não definido',
+                        'tem_valor': valor_numerico is not None and valor_numerico > 0,
+                        'valor': valor_numerico if valor_numerico is not None else 'Sem medição'
+                    })
+        else:
+            # Se não houver parâmetro selecionado, mostrar todos os pontos sem informação de valor
+            for ponto in pontos:
+                if ponto.lat and ponto.lon:
+                    pontos_mapa.append({
+                        'nome': ponto.nome,
+                        'lat': float(ponto.lat),
+                        'lon': float(ponto.lon),
+                        'setor': ponto.id_setor.nome if ponto.id_setor else 'Não definido',
+                        'tem_valor': None,
+                        'valor': 'Selecione um parâmetro'
+                    })
 
     context = {
         'parametros': parametros,
@@ -3876,6 +3920,8 @@ def dashboard_parametros(request):
         'setor_selecionado': setor_id,
         'tipo_visualizacao': tipo_visualizacao,
         'pontos_mapa': json.dumps(pontos_mapa),  # Adiciona os pontos do mapa ao contexto
+        'campanhas': campanhas,
+        'campanha_selecionada': campanha_selecionada,
     }
     
     return render(request, 'dashboard.html', context)
