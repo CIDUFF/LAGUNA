@@ -95,6 +95,29 @@
                             {% endif %}
                         </select>
                     </div>
+                    {% if tipo_visualizacao == 'setor' %}
+                        <div class="col-md-6">
+                            <select name="setor" class="form-control" id="setor">
+                                <option value="">Selecione um setor...</option>
+                                {% for setor in setores %}
+                                    <option value="{{ setor.id }}" {% if setor.id|stringformat:"s" == setor_selecionado %}selected{% endif %}>
+                                        {{ setor.nome }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    {% elif tipo_visualizacao == 'ponto' or tipo_visualizacao == 'bentos' %}
+                        <div class="col-md-6">
+                            <select name="ponto" class="form-control" id="ponto">
+                                <option value="">Selecione um ponto...</option>
+                                {% for ponto in pontos %}
+                                    <option value="{{ ponto.id }}" {% if ponto.id|stringformat:"s" == ponto_selecionado %}selected{% endif %}>
+                                        {{ ponto.nome }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    {% endif %}
                 </div>
             </form>
 
