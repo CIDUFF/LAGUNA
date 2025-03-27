@@ -172,25 +172,28 @@ document.addEventListener('DOMContentLoaded', function() {
     const dados = {
         x: {{ dados_grafico.datas|safe }},
         y: {{ dados_grafico.valores|safe }},
-        type: 'scatter',
-        mode: 'lines+markers',
+        type: 'bar',  // Mudado de 'scatter' para 'bar'
         name: '{{ parametro_nome_display }}',
-        line: {
-            color: '#1f77b4'  // Cor azul para o gráfico por ponto
-        },
         marker: {
-            color: '#1f77b4'
+            color: '#1f77b4',  // Mantém a cor azul
+            line: {
+                width: 1,
+                color: '#135999'  // Adiciona borda mais escura nas barras
+            }
         }
     };
 
     const layout = {
         title: 'Variação do Parâmetro ao Longo do Tempo',
         xaxis: {
-            title: 'Data'
+            title: 'Data',
+            tickangle: -45  // Inclina as datas para melhor legibilidade
         },
         yaxis: {
             title: '{{ parametro_nome_display }}'
-        }
+        },
+        bargap: 0.2,  // Ajusta o espaço entre as barras
+        bargroupgap: 0.1  // Ajusta o espaço entre grupos de barras
     };
 
     Plotly.newPlot('grafico', [dados], layout);
