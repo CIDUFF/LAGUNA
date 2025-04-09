@@ -3653,6 +3653,15 @@ def new_home(request):
 
 
 
+def convert_to_float(value):
+    """Helper function to convert values to float, handling 'ND' and other non-numeric values"""
+    try:
+        if value and value.upper() != 'ND':
+            return float(value)
+    except (ValueError, TypeError):
+        pass
+    return None
+
 @login_required
 def dashboard_parametros(request):
     tipo_visualizacao = request.GET.get('tipo', 'ponto')
@@ -3793,6 +3802,61 @@ def dashboard_parametros(request):
         except:
             parametro_nome_display = "Parâmetro desconhecido"
 
+    # Add logic for pre/post treatment comparison
+    dados_grafico_tratamento = None
+    if tipo_visualizacao == 'tratamento' and parametro_id and setor_id:
+        setor = TabSetor.objects.get(id=setor_id)
+        
+        # Define cutoff date based on sector
+        if 'araçatiba' in setor.nome.lower() or 'aracatiba' in setor.nome.lower():
+            cutoff_date = datetime(2021, 11, 1)
+        elif 'jacaroá' in setor.nome.lower() or 'jacaroa' in setor.nome.lower():
+            cutoff_date = datetime(2024, 4, 1)
+        else:
+            cutoff_date = None
+            
+        if cutoff_date:
+            # Get all points in the sector
+            pontos_setor = TabPonto.objects.filter(id_setor=setor).order_by('nome')
+            
+            dados_grafico_tratamento = {
+                'pontos': [],
+                'pre_tratamento': [],
+                'pos_tratamento': []
+            }
+            
+            for ponto in pontos_setor:
+                # Get measurements for this point
+                medidas_ponto = TabMedida.objects.filter(
+                    id_pp_id=parametro_id,
+                    id_envio__id_amostra__id_ponto=ponto
+                ).select_related('id_envio__id_amostra__id_coleta')
+                
+                # Calculate pre-treatment average
+                medidas_pre = medidas_ponto.filter(
+                    id_envio__id_amostra__id_coleta__data__lt=cutoff_date
+                )
+                valores_pre = [convert_to_float(m.input_valor) for m in medidas_pre if m.input_valor]
+                valores_pre = [v for v in valores_pre if v is not None]  # Filter out None values
+                media_pre = sum(valores_pre) / len(valores_pre) if valores_pre else None
+                
+                # Calculate post-treatment average
+                medidas_pos = medidas_ponto.filter(
+                    id_envio__id_amostra__id_coleta__data__gte=cutoff_date
+                )
+                valores_pos = [convert_to_float(m.input_valor) for m in medidas_pos if m.input_valor]
+                valores_pos = [v for v in valores_pos if v is not None]  # Filter out None values
+                media_pos = sum(valores_pos) / len(valores_pos) if valores_pos else None
+                
+                if media_pre is not None or media_pos is not None:
+                    dados_grafico_tratamento['pontos'].append(ponto.nome)
+                    dados_grafico_tratamento['pre_tratamento'].append(
+                        round(media_pre, 2) if media_pre is not None else None
+                    )
+                    dados_grafico_tratamento['pos_tratamento'].append(
+                        round(media_pos, 2) if media_pos is not None else None
+                    )
+
     context = {
         'parametros': parametros,
         'pontos': pontos,
@@ -3806,6 +3870,7 @@ def dashboard_parametros(request):
         'tipo_visualizacao': tipo_visualizacao,
         'campanhas': campanhas,
         'campanha_selecionada': campanha_selecionada,
+        'dados_grafico_tratamento': dados_grafico_tratamento,
     }
     
     return render(request, 'dashboard.html', context)
