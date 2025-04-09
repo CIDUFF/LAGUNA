@@ -113,18 +113,29 @@
                         </div>
                     {% endif %}
                 </div>
+                <div class="row mt-3">
+                    <div class="col-md-12">
+                        <button type="submit" class="btn btn-primary">Gerar Gráfico</button>
+                    </div>
+                </div>
             </form>
 
             <!-- Gráfico -->
-            {% if tipo_visualizacao == 'ponto' and dados_grafico %}
-                <div id="grafico"></div>
-            {% elif tipo_visualizacao == 'setor' and dados_grafico_setor %}
-                <div id="grafico-setor"></div>
-            {% elif tipo_visualizacao == 'tratamento' and dados_grafico_tratamento %}
-                <div id="grafico-tratamento"></div>
+            {% if request.GET.parametro %}  <!-- Only show graph if form was submitted -->
+                {% if tipo_visualizacao == 'ponto' and dados_grafico %}
+                    <div id="grafico"></div>
+                {% elif tipo_visualizacao == 'setor' and dados_grafico_setor %}
+                    <div id="grafico-setor"></div>
+                {% elif tipo_visualizacao == 'tratamento' and dados_grafico_tratamento %}
+                    <div id="grafico-tratamento"></div>
+                {% else %}
+                    <div class="alert alert-info">
+                        Nenhum dado encontrado para os filtros selecionados.
+                    </div>
+                {% endif %}
             {% else %}
                 <div class="alert alert-info">
-                    Selecione um parâmetro e um {% if tipo_visualizacao == 'ponto' %}ponto{% elif tipo_visualizacao == 'setor' %}setor{% else %}ponto{% endif %} para visualizar o gráfico.
+                    Selecione os filtros e clique em "Gerar Gráfico" para visualizar os dados.
                 </div>
             {% endif %}
         </div>
@@ -134,28 +145,10 @@
 <!-- Plotly.js -->
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
-<!-- Script para auto-submeter o formulário quando os filtros mudam -->
+<!-- Remove auto-submit script -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Adiciona listener de evento para o select de parâmetro
-    document.getElementById('parametro').addEventListener('change', function() {
-        submitForm();
-    });
-
-    // Adiciona listener de evento para o select de ponto ou setor dependendo da aba
-    {% if tipo_visualizacao == 'ponto' or tipo_visualizacao == 'bentos' %}
-        document.getElementById('ponto').addEventListener('change', function() {
-            submitForm();
-        });
-    {% elif tipo_visualizacao == 'setor' %}
-        document.getElementById('setor').addEventListener('change', function() {
-            submitForm();
-        });
-    {% endif %}
-
-    function submitForm() {
-        document.getElementById('filtroForm').submit();
-    }
+    // Remove event listeners for auto-submit
 });
 </script>
 
