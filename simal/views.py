@@ -3807,13 +3807,16 @@ def dashboard_parametros(request):
     if tipo_visualizacao == 'tratamento' and parametro_id and setor_id:
         setor = TabSetor.objects.get(id=setor_id)
         
-        # Define cutoff date based on sector
-        if 'araçatiba' in setor.nome.lower() or 'aracatiba' in setor.nome.lower():
+        # Define cutoff date based on sector ID
+        cutoff_date = None
+        if setor.id == 9:  # Araçatiba
             cutoff_date = datetime(2021, 11, 1)
-        elif 'jacaroá' in setor.nome.lower() or 'jacaroa' in setor.nome.lower():
+        elif setor.id == 3:  # Jacaroá
             cutoff_date = datetime(2024, 4, 1)
-        else:
-            cutoff_date = None
+        elif setor.id == 10:  # Spar
+            cutoff_date = datetime(2024, 4, 1)  # Ajuste esta data conforme necessário
+        elif setor.id == 4:  # Maricá
+            cutoff_date = datetime(2024, 4, 1)  # Ajuste esta data conforme necessário
             
         if cutoff_date:
             # Get all points in the sector
