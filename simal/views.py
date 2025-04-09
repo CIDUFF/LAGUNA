@@ -3666,22 +3666,14 @@ def dashboard_parametros(request):
     else:
         campanha_selecionada = campanhas.first()
     
-    # Obtém apenas parâmetros de bentos (frascos 5, 6, 7) e agrupa por nome
-    parametros_bentos = (TabProdxparam.objects
-        .filter(status=True, id_frasco_id__in=[5, 6, 7])
-        .select_related('id_param')
-        .values('id_param__nome', 'unidade')
-        .distinct()
-        .order_by('id_param__nome'))
-    
-    # Mantém os outros parâmetros para as outras abas, excluindo os frascos de bentos
+    # Mantém apenas os parâmetros regulares, excluindo os frascos de bentos
     parametros = (TabProdxparam.objects
         .filter(status=True)
-        .exclude(id_frasco_id__in=[5, 6, 7])  # Exclui os frascos de bentos
+        .exclude(id_frasco_id__in=[5, 6, 7])
         .select_related('id_param')
         .order_by('id_param__nome'))
     
-    # Obtém todos os pontos ordenados pelo id (ordem de pontos)
+    # Obtém todos os pontos ordenados pelo id
     pontos = TabPonto.objects.all().order_by('id')
     
     # Obtém todos os setores ordenados pelo nome
@@ -3721,19 +3713,6 @@ def dashboard_parametros(request):
                 redirect_params['parametro'] = ph_param.id
                 redirect_params['setor'] = setores.first().id
         
-        elif tipo_visualizacao == 'bentos':
-            # Pegar os dois primeiros itens disponíveis para bentos
-            primeiro_parametro_bentos = parametros_bentos.first()
-            primeiro_ponto = pontos.first()
-            
-            if primeiro_parametro_bentos and primeiro_ponto:
-                redirect_params['parametro'] = primeiro_parametro_bentos['id_param__nome']
-                redirect_params['ponto'] = primeiro_ponto.id
-        
-        elif tipo_visualizacao == 'mapa':
-            # Para o mapa, não precisamos de parâmetros adicionais
-            pass
-        
         # Redirecionar apenas se tiver parâmetros para adicionar
         if len(redirect_params) > 1:  # > 1 porque sempre terá pelo menos o 'tipo'
             base_url = reverse('dashboard_parametros')
@@ -3747,19 +3726,17 @@ def dashboard_parametros(request):
     
     dados_grafico = None
     dados_grafico_setor = None
-    dados_grafico_bentos = None
 
     if parametro_id:
-        if tipo_visualizacao == "ponto" and ponto_id:
-            # Lógica existente para visualização por ponto
-            medidas = (
-                TabMedida.objects.filter(
-                    id_pp_id=parametro_id, id_envio__id_amostra__id_ponto_id=ponto_id
-                )
-                .select_related("id_envio__id_amostra__id_coleta")
-                .order_by("id_envio__id_amostra__id_coleta__data")
-            )
-
+        if tipo_visualizacao == 'ponto' and ponto_id:
+            # Lógica para visualização por ponto
+            medidas = TabMedida.objects.filter(
+                id_pp_id=parametro_id,
+                id_envio__id_amostra__id_ponto_id=ponto_id
+            ).select_related(
+                'id_envio__id_amostra__id_coleta'
+            ).order_by('id_envio__id_amostra__id_coleta__data')
+            
             # Prepara dados para o gráfico
             dados_grafico = {"datas": [], "valores": []}
 
@@ -3770,8 +3747,8 @@ def dashboard_parametros(request):
                     )
                     dados_grafico["valores"].append(float(medida.input_valor))
 
-        elif tipo_visualizacao == "setor" and setor_id:
-            # Nova lógica para visualização por setor
+        elif tipo_visualizacao == 'setor' and setor_id:
+            # Lógica para visualização por setor
             medidas = TabMedida.objects.filter(
                 id_pp_id=parametro_id,
                 id_envio__id_amostra__id_ponto__id_setor=setor_id
@@ -3806,120 +3783,27 @@ def dashboard_parametros(request):
                     media = dados['soma'] / dados['count']
                     dados_grafico_setor['datas'].append(data)
                     dados_grafico_setor['valores'].append(round(media, 2))
-
-        elif tipo_visualizacao == 'bentos' and ponto_id:
-            # Filtra as medidas para os frascos de bentos para o parâmetro selecionado
-            medidas = TabMedida.objects.filter(
-                id_pp__id_param__nome=parametro_id,
-                id_envio__id_amostra__id_ponto_id=ponto_id,
-                id_envio__id_amostra__id_frasco_id__in=[5, 6, 7]
-            ).select_related(
-                'id_envio__id_amostra__id_coleta'
-            ).order_by('id_envio__id_amostra__id_coleta__data')
-
-            # Agrupa medidas por data para calcular médias
-            valores_por_data = {}
-            for medida in medidas:
-                data = medida.id_envio.id_amostra.id_coleta.data
-                if data and medida.input_valor:
-                    data_str = data.strftime('%Y-%m-%d')
-                    if data_str not in valores_por_data:
-                        valores_por_data[data_str] = {'soma': 0, 'count': 0}
-                    try:
-                        valor = float(medida.input_valor)
-                        valores_por_data[data_str]['soma'] += valor
-                        valores_por_data[data_str]['count'] += 1
-                    except (ValueError, TypeError):
-                        continue
-
-            # Prepara dados para o gráfico calculando a média
-            dados_grafico_bentos = {
-                'datas': [],
-                'valores': []
-            }
-
-            for data in sorted(valores_por_data.keys()):
-                dados = valores_por_data[data]
-                if dados['count'] > 0:
-                    media = dados['soma'] / dados['count']
-                    dados_grafico_bentos['datas'].append(data)
-                    dados_grafico_bentos['valores'].append(round(media, 2))
     
     # Para exibir o nome correto do parâmetro no título
     parametro_nome_display = None
     if parametro_id:
-        if tipo_visualizacao == 'bentos':
-            # Para bentos, parametro_id já é o nome
-            parametro_nome_display = parametro_id
-        else:
-            # Para outros tipos, buscar o nome através do ID
-            try:
-                param = TabProdxparam.objects.get(id=parametro_id)
-                parametro_nome_display = param.id_param.nome
-            except:
-                parametro_nome_display = "Parâmetro desconhecido"
-
-    # Preparar dados do mapa
-    pontos_mapa = []
-    if tipo_visualizacao == 'mapa':
-        # Se um parâmetro foi selecionado, buscar as medidas mais recentes
-        if parametro_id:
-            # Modificar a subconsulta para filtrar por campanha
-            ultima_medicao = TabMedida.objects.filter(
-                id_pp_id=parametro_id,
-                id_envio__id_amostra__id_ponto=OuterRef('id'),
-                id_envio__id_amostra__id_coleta=campanha_selecionada
-            ).order_by('-id_envio__id_amostra__id_coleta__data').values('input_valor')[:1]
-
-            # Consulta principal com annotate para incluir o último valor medido
-            pontos_query = TabPonto.objects.filter(lat__isnull=False, lon__isnull=False).annotate(
-                ultimo_valor=Subquery(ultima_medicao)
-            )
-
-            for ponto in pontos_query:
-                if ponto.lat and ponto.lon:
-                    valor_numerico = None
-                    try:
-                        if ponto.ultimo_valor:
-                            valor_numerico = float(ponto.ultimo_valor)
-                    except (ValueError, TypeError):
-                        pass
-
-                    pontos_mapa.append({
-                        'nome': ponto.nome,
-                        'lat': float(ponto.lat),
-                        'lon': float(ponto.lon),
-                        'setor': ponto.id_setor.nome if ponto.id_setor else 'Não definido',
-                        'tem_valor': valor_numerico is not None and valor_numerico > 0,
-                        'valor': valor_numerico if valor_numerico is not None else 'Sem medição'
-                    })
-        else:
-            # Se não houver parâmetro selecionado, mostrar todos os pontos sem informação de valor
-            for ponto in pontos:
-                if ponto.lat and ponto.lon:
-                    pontos_mapa.append({
-                        'nome': ponto.nome,
-                        'lat': float(ponto.lat),
-                        'lon': float(ponto.lon),
-                        'setor': ponto.id_setor.nome if ponto.id_setor else 'Não definido',
-                        'tem_valor': None,
-                        'valor': 'Selecione um parâmetro'
-                    })
+        try:
+            param = TabProdxparam.objects.get(id=parametro_id)
+            parametro_nome_display = param.id_param.nome
+        except:
+            parametro_nome_display = "Parâmetro desconhecido"
 
     context = {
         'parametros': parametros,
-        'parametros_bentos': parametros_bentos,
         'pontos': pontos,
         'setores': setores,
         'dados_grafico': dados_grafico,
         'dados_grafico_setor': dados_grafico_setor,
-        'dados_grafico_bentos': dados_grafico_bentos,
         'parametro_selecionado': parametro_id,
-        'parametro_nome_display': parametro_nome_display,  # Adicionado para mostrar o nome correto
+        'parametro_nome_display': parametro_nome_display,
         'ponto_selecionado': ponto_id,
         'setor_selecionado': setor_id,
         'tipo_visualizacao': tipo_visualizacao,
-        'pontos_mapa': json.dumps(pontos_mapa),  # Adiciona os pontos do mapa ao contexto
         'campanhas': campanhas,
         'campanha_selecionada': campanha_selecionada,
     }
