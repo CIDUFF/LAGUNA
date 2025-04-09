@@ -48,6 +48,10 @@
                     <a class="nav-link {% if tipo_visualizacao == 'setor' %}active{% endif %}" 
                        href="?tipo=setor">Por Setor</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if tipo_visualizacao == 'tratamento' %}active{% endif %}" 
+                       href="?tipo=tratamento">Pré/Pós Tratamento</a>
+                </li>
             </ul>
         </div>
         <div class="card-body">
@@ -96,6 +100,18 @@
                             </select>
                         </div>
                     {% endif %}
+                    {% if tipo_visualizacao == 'tratamento' %}
+                        <div class="col-md-6">
+                            <select name="setor" class="form-control" id="setor">
+                                <option value="">Selecione um setor...</option>
+                                {% for setor in setores %}
+                                    <option value="{{ setor.id }}" {% if setor.id|stringformat:"s" == setor_selecionado %}selected{% endif %}>
+                                        {{ setor.nome }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    {% endif %}
                 </div>
             </form>
 
@@ -104,6 +120,8 @@
                 <div id="grafico"></div>
             {% elif tipo_visualizacao == 'setor' and dados_grafico_setor %}
                 <div id="grafico-setor"></div>
+            {% elif tipo_visualizacao == 'tratamento' and dados_grafico_tratamento %}
+                <div id="grafico-tratamento"></div>
             {% else %}
                 <div class="alert alert-info">
                     Selecione um parâmetro e um {% if tipo_visualizacao == 'ponto' %}ponto{% elif tipo_visualizacao == 'setor' %}setor{% else %}ponto{% endif %} para visualizar o gráfico.
@@ -234,6 +252,46 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     Plotly.newPlot('grafico-bentos', [dadosBentos], layoutBentos);
+</script>
+{% endif %}
+
+{% if tipo_visualizacao == 'tratamento' and dados_grafico_tratamento %}
+<script>
+    const dadosTratamento = [{
+        x: {{ dados_grafico_tratamento.pontos|safe }},
+        y: {{ dados_grafico_tratamento.pre_tratamento|safe }},
+        type: 'bar',
+        name: 'Pré-tratamento',
+        marker: { color: '#ff7f0e' }
+    }, {
+        x: {{ dados_grafico_tratamento.pontos|safe }},
+        y: {{ dados_grafico_tratamento.pos_tratamento|safe }},
+        type: 'bar',
+        name: 'Pós-tratamento',
+        marker: { color: '#2ca02c' }
+    }];
+
+    const layoutTratamento = {
+        title: 'Comparação Pré/Pós Tratamento por Ponto',
+        barmode: 'group',
+        xaxis: {
+            title: 'Pontos de Coleta',
+            tickangle: -45
+        },
+        yaxis: {
+            title: '{{ parametro_nome_display }}'
+        },
+        legend: {
+            x: 0,
+            y: 1.2,
+            orientation: 'h'
+        },
+        margin: {
+            t: 100
+        }
+    };
+
+    Plotly.newPlot('grafico-tratamento', dadosTratamento, layoutTratamento);
 </script>
 {% endif %}
 
