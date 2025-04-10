@@ -3860,12 +3860,57 @@ def dashboard_parametros(request):
                         round(media_pos, 2) if media_pos is not None else None
                     )
 
+    # Add logic for seasonal comparison
+    dados_grafico_estacoes = None
+    if tipo_visualizacao == 'estacoes' and parametro_id and setor_id:
+        setor = TabSetor.objects.get(id=setor_id)
+        pontos_setor = TabPonto.objects.filter(id_setor=setor).order_by('nome')
+        
+        dados_grafico_estacoes = {
+            'pontos': [],
+            'estacao_chuvosa': [],
+            'estacao_seca': []
+        }
+        
+        for ponto in pontos_setor:
+            medidas = TabMedida.objects.filter(
+                id_pp_id=parametro_id,
+                id_envio__id_amostra__id_ponto=ponto
+            ).select_related('id_envio__id_amostra__id_coleta')
+            
+            # Estação chuvosa (abril a outubro)
+            medidas_chuvosa = medidas.filter(
+                id_envio__id_amostra__id_coleta__data__month__range=(4, 10)
+            )
+            valores_chuvosa = [convert_to_float(m.input_valor) for m in medidas_chuvosa if m.input_valor]
+            valores_chuvosa = [v for v in valores_chuvosa if v is not None]
+            media_chuvosa = sum(valores_chuvosa) / len(valores_chuvosa) if valores_chuvosa else None
+            
+            # Estação seca (novembro a março)
+            medidas_seca = medidas.filter(
+                id_envio__id_amostra__id_coleta__data__month__in=[11, 12, 1, 2, 3]
+            )
+            valores_seca = [convert_to_float(m.input_valor) for m in medidas_seca if m.input_valor]
+            valores_seca = [v for v in valores_seca if v is not None]
+            media_seca = sum(valores_seca) / len(valores_seca) if valores_seca else None
+            
+            if media_chuvosa is not None or media_seca is not None:
+                dados_grafico_estacoes['pontos'].append(ponto.nome)
+                dados_grafico_estacoes['estacao_chuvosa'].append(
+                    round(media_chuvosa, 2) if media_chuvosa is not None else None
+                )
+                dados_grafico_estacoes['estacao_seca'].append(
+                    round(media_seca, 2) if media_seca is not None else None
+                )
+
     context = {
         'parametros': parametros,
         'pontos': pontos,
         'setores': setores,
         'dados_grafico': dados_grafico,
         'dados_grafico_setor': dados_grafico_setor,
+        'dados_grafico_tratamento': dados_grafico_tratamento,
+        'dados_grafico_estacoes': dados_grafico_estacoes,  # Add to context
         'parametro_selecionado': parametro_id,
         'parametro_nome_display': parametro_nome_display,
         'ponto_selecionado': ponto_id,
@@ -3873,9 +3918,6 @@ def dashboard_parametros(request):
         'tipo_visualizacao': tipo_visualizacao,
         'campanhas': campanhas,
         'campanha_selecionada': campanha_selecionada,
-        'dados_grafico_tratamento': dados_grafico_tratamento,
     }
     
     return render(request, 'dashboard.html', context)
-
-# ...existing code...
