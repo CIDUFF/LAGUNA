@@ -143,6 +143,10 @@ from .models import (
 )
 from django.db.models import Count
 
+from .utils.iqa_calculator import calculate_iqa
+import pandas as pd
+import numpy as np
+
 # Configuração do logger
 logger = logging.getLogger(__name__)
 
@@ -3757,6 +3761,125 @@ def dashboard_parametros(request):
                     round(media_seca, 2) if media_seca is not None else None
                 )
 
+    # Add logic for IQA
+    dados_grafico_iqa = None
+    mapa_iqa = None
+    if tipo_visualizacao == 'iqa':
+        import folium
+        from folium import plugins
+        
+        parametros_iqa = [
+            "OD", "Escherichia coli", "DBOs", "Nitrogênio Total",
+            "Fosfato", "pH", "Turbidez", "TDS"
+        ]
+        
+        # Base query com todos os parâmetros do IQA
+        query_base = TabMedida.objects.filter(
+            id_pp__id_param__nome__in=parametros_iqa
+        ).select_related(
+            'id_envio__id_amostra__id_coleta',
+            'id_envio__id_amostra__id_ponto',
+            'id_pp__id_param'
+        )
+
+        # Aplicar filtro de campanha se selecionada
+        if campanha_selecionada:
+            dados_iqa = query_base.filter(
+                id_envio__id_amostra__id_coleta=campanha_selecionada
+            )
+        else:
+            dados_iqa = query_base
+
+        df = pd.DataFrame(dados_iqa.values(
+            'id_envio__id_amostra__id_coleta__data',
+            'id_envio__id_amostra__id_ponto__nome',
+            'id_envio__id_amostra__id_ponto__lat',
+            'id_envio__id_amostra__id_ponto__lon',
+            'id_envio__id_amostra__id_coleta__id_setor__nome',
+            'id_pp__id_param__nome',
+            'input_valor'
+        ))
+
+        # Convertendo input_valor para numérico
+        df['valor'] = pd.to_numeric(df['input_valor'], errors='coerce')
+        
+        df.columns = ['data', 'ponto', 'lat', 'lon', 'setor', 'parametro', 'valor_original', 'valor']
+
+        # Pivot table com todos os parâmetros necessários
+        df_pivot = df.pivot_table(
+            index=['data', 'ponto', 'lat', 'lon', 'setor'],
+            columns='parametro',
+            values='valor',
+            aggfunc='mean'
+        ).reset_index()
+
+        # Preencher valores ausentes com 0
+        df_pivot = df_pivot.fillna(0)
+
+        # Calcular IQA
+        df_pivot['IQA'] = df_pivot.apply(calculate_iqa, axis=1)
+
+        # Criar mapa centralizado na média das coordenadas
+        lat_medio = df_pivot['lat'].mean()
+        lon_medio = df_pivot['lon'].mean()
+        
+        mapa = folium.Map(
+            location=[lat_medio, lon_medio],
+            zoom_start=12,
+            tiles='CartoDB positron'
+        )
+
+        # Função para determinar a cor com base no IQA
+        def get_color(iqa):
+            if 90 < iqa <= 100: return '#4169E1'  # Azul royal
+            if 70 < iqa <= 90: return '#008000'    # Verde
+            if 50 < iqa <= 70: return '#FFFF00'    # Amarelo
+            if 25 < iqa <= 50: return '#FFA500'    # Laranja
+            return '#FF0000'                       # Vermelho
+
+        # Adicionar marcadores ao mapa
+        for idx, row in df_pivot.iterrows():
+            if not pd.isna(row['IQA']) and not pd.isna(row['lat']) and not pd.isna(row['lon']):
+                data_str = row['data'].strftime('%d/%m/%Y') if pd.notna(row['data']) else 'Data não disponível'
+                folium.CircleMarker(
+                    location=[row['lat'], row['lon']],
+                    radius=10,
+                    popup=f"""
+                        <b>Ponto:</b> {row['ponto']}<br>
+                        <b>Setor:</b> {row['setor']}<br>
+                        <b>Data:</b> {data_str}<br>
+                        <b>IQA:</b> {row['IQA']:.2f}
+                    """,
+                    color=get_color(row['IQA']),
+                    fill=True,
+                    fill_color=get_color(row['IQA'])
+                ).add_to(mapa)
+
+        # Adicionar legenda
+        legend_html = '''
+            <div style="position: fixed; bottom: 50px; left: 50px; z-index: 1000; background-color: white; padding: 10px; border: 2px solid grey; border-radius: 5px">
+            <p><strong>Índice de Qualidade da Água (IQA)</strong></p>
+            <p><span style="color: #4169E1;">●</span> Excelente (91-100)</p>
+            <p><span style="color: #008000;">●</span> Bom (71-90)</p>
+            <p><span style="color: #FFFF00;">●</span> Médio (51-70)</p>
+            <p><span style="color: #FFA500;">●</span> Ruim (26-50)</p>
+            <p><span style="color: #FF0000;">●</span> Muito Ruim (0-25)</p>
+            </div>
+        '''
+        mapa.get_root().html.add_child(folium.Element(legend_html))
+
+        # Salvar o mapa em HTML
+        mapa_iqa = mapa._repr_html_()
+
+        dados_grafico_iqa = {
+            'datas': df_pivot['data'].tolist(),
+            'pontos': df_pivot['ponto'].tolist(),
+            'valores': df_pivot['IQA'].tolist(),
+            'lat': df_pivot['lat'].tolist(),
+            'lon': df_pivot['lon'].tolist(),
+            'setores': df_pivot['setor'].tolist()
+        }
+
     context = {
         'parametros': parametros,
         'pontos': pontos,
@@ -3765,6 +3888,8 @@ def dashboard_parametros(request):
         'dados_grafico_setor': dados_grafico_setor,
         'dados_grafico_tratamento': dados_grafico_tratamento,
         'dados_grafico_estacoes': dados_grafico_estacoes,  # Add to context
+        'dados_grafico_iqa': dados_grafico_iqa,  # Add IQA data to context
+        'mapa_iqa': mapa_iqa,  # Add the map to context
         'parametro_selecionado': parametro_id,
         'parametro_nome_display': parametro_nome_display,
         'ponto_selecionado': ponto_id,

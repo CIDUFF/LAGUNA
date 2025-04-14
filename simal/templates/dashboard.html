@@ -56,6 +56,10 @@
                     <a class="nav-link {% if tipo_visualizacao == 'estacoes' %}active{% endif %}" 
                        href="?tipo=estacoes">Estações</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if tipo_visualizacao == 'iqa' %}active{% endif %}" 
+                       href="?tipo=iqa">IQA</a>
+                </li>
             </ul>
         </div>
         <div class="card-body">
@@ -63,6 +67,7 @@
             <form method="get" class="mb-4" id="filtroForm">
                 <input type="hidden" name="tipo" value="{{ tipo_visualizacao }}">
                 <div class="row">
+                    {% if tipo_visualizacao != 'iqa' %}
                     <div class="col-md-6">
                         <select name="parametro" class="form-control" id="parametro">
                             <option value="">Selecione um parâmetro...</option>
@@ -81,6 +86,7 @@
                             {% endif %}
                         </select>
                     </div>
+                    {% endif %}
                     {% if tipo_visualizacao == 'setor' %}
                         <div class="col-md-6">
                             <select name="setor" class="form-control" id="setor">
@@ -136,8 +142,34 @@
                 </div>
             </form>
 
+            <!-- Adicione isso próximo ao topo do template, antes do mapa -->
+            {% if tipo_visualizacao == 'iqa' %}
+            <div class="form-group mb-3">
+                <label for="campanha">Selecione a Campanha:</label>
+                <select class="form-control" id="campanha" name="campanha">
+                    <option value="">Todas as Campanhas</option>
+                    {% for campanha in campanhas %}
+                        <option value="{{ campanha.id }}" {% if campanha == campanha_selecionada %}selected{% endif %}>
+                            {{ campanha.ordem_servico }} - {{ campanha.data|date:"d/m/Y" }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <script>
+            document.getElementById('campanha').addEventListener('change', function() {
+                const urlParams = new URLSearchParams(window.location.search);
+                urlParams.set('campanha', this.value);
+                urlParams.set('tipo', 'iqa');
+                // Remove parameter from URL if it exists
+                urlParams.delete('parametro');
+                window.location.href = `${window.location.pathname}?${urlParams.toString()}`;
+            });
+            </script>
+            {% endif %}
+
             <!-- Gráfico -->
-            {% if request.GET.parametro %}  <!-- Only show graph if form was submitted -->
+            {% if request.GET.parametro or tipo_visualizacao == 'iqa' %}
                 {% if tipo_visualizacao == 'ponto' and dados_grafico %}
                     <div id="grafico"></div>
                 {% elif tipo_visualizacao == 'setor' and dados_grafico_setor %}
@@ -146,6 +178,10 @@
                     <div id="grafico-tratamento"></div>
                 {% elif tipo_visualizacao == 'estacoes' and dados_grafico_estacoes %}
                     <div id="grafico-estacoes"></div>
+                {% elif tipo_visualizacao == 'iqa' and mapa_iqa %}
+                    <div class="map-container" style="height: 600px;">
+                        {{ mapa_iqa|safe }}
+                    </div>
                 {% else %}
                     <div class="alert alert-info">
                         Nenhum dado encontrado para os filtros selecionados.
