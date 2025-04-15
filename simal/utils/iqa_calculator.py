@@ -2,14 +2,22 @@ import math
 import numpy as np
 
 def qi_ecoli(ecoli):
-    if ecoli >= 100000:
-        return 3
-    elif ecoli <= 10:
-        return 100 - 33 * math.log10(ecoli)
-    elif ecoli >= 5:
-        return 100 - 37.2 * math.log10(ecoli) + 3.60743 * (math.log10(ecoli) ** 2)
-    else:
-        return 3
+    try:
+        if not isinstance(ecoli, (int, float)) or ecoli < 0:
+            return "Dados incorretos"
+        if ecoli >= 100000:
+            return 3
+        elif ecoli <= 0:
+            return "Dados incorretos"
+        elif ecoli <= 10:
+            return max(0, 100 - 33 * math.log10(max(0.000001, ecoli)))
+        elif ecoli >= 5:
+            log_value = math.log10(max(0.000001, ecoli))
+            return max(0, 100 - 37.2 * log_value + 3.60743 * (log_value ** 2))
+        else:
+            return 3
+    except Exception as e:
+        return "Dados incorretos"
 
 def qi_dbo(dbo):
     if dbo == 0:
@@ -62,43 +70,69 @@ def qi_turbidez(turbidez):
     return 5
 
 def calculate_iqa(dados_ponto):
-    pesos = {
-        "OD": 0.17,
-        "Escherichia coli": 0.15,
-        "pH": 0.12, 
-        "DBOs": 0.10,
-        "Temperatura": 0.10,
-        "Nitrogênio Total": 0.10,
-        "Fosfato": 0.10,
-        "Turbidez": 0.08,
-        "TDS": 0.08
-    }
+    try:
+        pesos = {
+            "OD": 0.17,
+            "Escherichia coli": 0.15,
+            "pH": 0.12, 
+            "DBOs": 0.10,
+            "Temperatura": 0.10,
+            "Nitrogênio Total": 0.10,
+            "Fosfato": 0.10,
+            "Turbidez": 0.08,
+            "TDS": 0.08
+        }
 
-    parametros_qi = {
-        "OD": (qi_od, pesos["OD"]),
-        "Escherichia coli": (qi_ecoli, pesos["Escherichia coli"]),
-        "DBOs": (qi_dbo, pesos["DBOs"]), 
-        "Nitrogênio Total": (qi_nitrogenio, pesos["Nitrogênio Total"]),
-        "Fosfato": (qi_fosfato, pesos["Fosfato"]),
-        "pH": (qi_ph, pesos["pH"]),
-        "Turbidez": (qi_turbidez, pesos["Turbidez"]),
-        "TDS": (qi_tds, pesos["TDS"])
-    }
+        parametros_qi = {
+            "OD": (qi_od, pesos["OD"]),
+            "Escherichia coli": (qi_ecoli, pesos["Escherichia coli"]),
+            "DBOs": (qi_dbo, pesos["DBOs"]), 
+            "Nitrogênio Total": (qi_nitrogenio, pesos["Nitrogênio Total"]),
+            "Fosfato": (qi_fosfato, pesos["Fosfato"]),
+            "pH": (qi_ph, pesos["pH"]),
+            "Turbidez": (qi_turbidez, pesos["Turbidez"]),
+            "TDS": (qi_tds, pesos["TDS"])
+        }
 
-    iqa_total = 0
-    soma_pesos = 0
-    qi_temperatura = 93
+        iqa_total = 0
+        soma_pesos = 0
+        qi_temperatura = 93
 
-    for param, (func_qi, peso) in parametros_qi.items():
-        valor = dados_ponto.get(param)
-        if valor is not None and valor != "" and not np.isnan(valor):
-            qi_value = func_qi(float(valor))
-            if qi_value is not None:
-                iqa_total += qi_value * peso
-                soma_pesos += peso
+        for param, (func_qi, peso) in parametros_qi.items():
+            valor = dados_ponto.get(param)
+            if valor is not None and valor != "" and not pd.isna(valor):
+                try:
+                    # Convert value to float and ensure it's not a sequence
+                    if isinstance(valor, (str, list, tuple)):
+                        try:
+                            valor = float(valor)
+                        except (ValueError, TypeError):
+                            print(f"Warning: Could not convert {param} value '{valor}' to float")
+                            continue
+                    
+                    qi_value = func_qi(valor)
+                    if qi_value is not None and not isinstance(qi_value, str):
+                        try:
+                            qi_value = float(qi_value)
+                            iqa_total += qi_value * peso
+                            soma_pesos += peso
+                        except (ValueError, TypeError) as e:
+                            print(f"Error processing QI value for {param}: {e}")
+                            continue
+                except Exception as e:
+                    print(f"Error calculating QI for {param}: {e}")
+                    continue
 
-    # Adicionar temperatura
-    iqa_total += qi_temperatura * pesos["Temperatura"]
-    soma_pesos += pesos["Temperatura"]
+        # Adicionar temperatura
+        iqa_total += qi_temperatura * pesos["Temperatura"]
+        soma_pesos += pesos["Temperatura"]
 
-    return iqa_total / soma_pesos if soma_pesos > 0 else None
+        if soma_pesos == 0:
+            return "Dados insuficientes"
+
+        result = max(0, min(100, iqa_total / soma_pesos))
+        return result
+
+    except Exception as e:
+        print(f"Error in calculate_iqa: {str(e)}")
+        return "Erro no cálculo"
