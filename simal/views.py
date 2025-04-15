@@ -3790,94 +3790,148 @@ def dashboard_parametros(request):
         else:
             dados_iqa = query_base
 
-        df = pd.DataFrame(dados_iqa.values(
-            'id_envio__id_amostra__id_coleta__data',
-            'id_envio__id_amostra__id_ponto__nome',
-            'id_envio__id_amostra__id_ponto__lat',
-            'id_envio__id_amostra__id_ponto__lon',
-            'id_envio__id_amostra__id_coleta__id_setor__nome',
-            'id_pp__id_param__nome',
-            'input_valor'
-        ))
+        # Verificar se existem dados antes de criar o DataFrame
+        if dados_iqa.exists():
+            df = pd.DataFrame(list(dados_iqa.values(
+                'id_envio__id_amostra__id_coleta__data',
+                'id_envio__id_amostra__id_ponto__nome',
+                'id_envio__id_amostra__id_ponto__lat',
+                'id_envio__id_amostra__id_ponto__lon',
+                'id_envio__id_amostra__id_coleta__id_setor__nome',
+                'id_pp__id_param__nome',
+                'input_valor'
+            )))
 
-        # Convertendo input_valor para numérico
-        df['valor'] = pd.to_numeric(df['input_valor'], errors='coerce')
-        
-        df.columns = ['data', 'ponto', 'lat', 'lon', 'setor', 'parametro', 'valor_original', 'valor']
+            # Verificar se há dados válidos
+            if not df.empty:
+                # Convertendo input_valor para numérico
+                df['valor'] = pd.to_numeric(df['input_valor'], errors='coerce')
+                
+                df.columns = ['data', 'ponto', 'lat', 'lon', 'setor', 'parametro', 'valor_original', 'valor']
 
-        # Pivot table com todos os parâmetros necessários
-        df_pivot = df.pivot_table(
-            index=['data', 'ponto', 'lat', 'lon', 'setor'],
-            columns='parametro',
-            values='valor',
-            aggfunc='mean'
-        ).reset_index()
+                # Pivot table com todos os parâmetros necessários
+                df_pivot = df.pivot_table(
+                    index=['data', 'ponto', 'lat', 'lon', 'setor'],
+                    columns='parametro',
+                    values='valor',
+                    aggfunc='mean'
+                ).reset_index()
 
-        # Preencher valores ausentes com 0
-        df_pivot = df_pivot.fillna(0)
+                # Preencher valores ausentes com 0
+                df_pivot = df_pivot.fillna(0)
 
-        # Calcular IQA
-        df_pivot['IQA'] = df_pivot.apply(calculate_iqa, axis=1)
+                # Calcular IQA
+                df_pivot['IQA'] = df_pivot.apply(calculate_iqa, axis=1)
 
-        # Criar mapa centralizado na média das coordenadas
-        lat_medio = df_pivot['lat'].mean()
-        lon_medio = df_pivot['lon'].mean()
-        
-        mapa = folium.Map(
-            location=[lat_medio, lon_medio],
-            zoom_start=12,
-            tiles='CartoDB positron'
-        )
+                # Criar mapa centralizado na média das coordenadas
+                lat_medio = df_pivot['lat'].mean()
+                lon_medio = df_pivot['lon'].mean()
+                
+                mapa = folium.Map(
+                    location=[lat_medio, lon_medio],
+                    zoom_start=12,
+                    tiles='CartoDB positron'
+                )
 
-        # Função para determinar a cor com base no IQA
-        def get_color(iqa):
-            if 90 < iqa <= 100: return '#4169E1'  # Azul royal
-            if 70 < iqa <= 90: return '#008000'    # Verde
-            if 50 < iqa <= 70: return '#FFFF00'    # Amarelo
-            if 25 < iqa <= 50: return '#FFA500'    # Laranja
-            return '#FF0000'                       # Vermelho
+                # Função para determinar a cor com base no IQA
+                def get_color(iqa):
+                    if 90 < iqa <= 100: return '#4169E1'  # Azul royal
+                    if 70 < iqa <= 90: return '#008000'    # Verde
+                    if 50 < iqa <= 70: return '#FFFF00'    # Amarelo
+                    if 25 < iqa <= 50: return '#FFA500'    # Laranja
+                    return '#FF0000'                       # Vermelho
 
-        # Adicionar marcadores ao mapa
-        for idx, row in df_pivot.iterrows():
-            if not pd.isna(row['IQA']) and not pd.isna(row['lat']) and not pd.isna(row['lon']):
-                data_str = row['data'].strftime('%d/%m/%Y') if pd.notna(row['data']) else 'Data não disponível'
-                folium.CircleMarker(
-                    location=[row['lat'], row['lon']],
-                    radius=10,
-                    popup=f"""
-                        <b>Ponto:</b> {row['ponto']}<br>
-                        <b>Setor:</b> {row['setor']}<br>
-                        <b>Data:</b> {data_str}<br>
-                        <b>IQA:</b> {row['IQA']:.2f}
-                    """,
-                    color=get_color(row['IQA']),
-                    fill=True,
-                    fill_color=get_color(row['IQA'])
-                ).add_to(mapa)
+                # Adicionar marcadores ao mapa
+                for idx, row in df_pivot.iterrows():
+                    if not pd.isna(row['IQA']) and not pd.isna(row['lat']) and not pd.isna(row['lon']):
+                        data_str = row['data'].strftime('%d/%m/%Y') if pd.notna(row['data']) else 'Data não disponível'
+                        
+                        # Verifica se o IQA é uma string (mensagem de erro) ou número
+                        if isinstance(row['IQA'], str):
+                            popup_content = f"""
+                                <b>Ponto:</b> {row['ponto']}<br>
+                                <b>Setor:</b> {row['setor']}<br>
+                                <b>Data:</b> {data_str}<br>
+                                <b>IQA:</b> {row['IQA']}
+                            """
+                            color = '#808080'  # Cinza para indicar erro
+                        else:
+                            popup_content = f"""
+                                <b>Ponto:</b> {row['ponto']}<br>
+                                <b>Setor:</b> {row['setor']}<br>
+                                <b>Data:</b> {data_str}<br>
+                                <b>IQA:</b> {row['IQA']:.2f}
+                            """
+                            color = get_color(row['IQA'])
 
-        # Adicionar legenda
-        legend_html = '''
-            <div style="position: fixed; bottom: 50px; left: 50px; z-index: 1000; background-color: white; padding: 10px; border: 2px solid grey; border-radius: 5px">
-            <p><strong>Índice de Qualidade da Água (IQA)</strong></p>
-            <p><span style="color: #4169E1;">●</span> Excelente (91-100)</p>
-            <p><span style="color: #008000;">●</span> Bom (71-90)</p>
-            <p><span style="color: #FFFF00;">●</span> Médio (51-70)</p>
-            <p><span style="color: #FFA500;">●</span> Ruim (26-50)</p>
-            <p><span style="color: #FF0000;">●</span> Muito Ruim (0-25)</p>
-            </div>
-        '''
-        mapa.get_root().html.add_child(folium.Element(legend_html))
+                        folium.CircleMarker(
+                            location=[row['lat'], row['lon']],
+                            radius=10,
+                            popup=popup_content,
+                            color=color,
+                            fill=True,
+                            fill_color=color
+                        ).add_to(mapa)
+
+                # Atualizar a legenda para incluir a indicação de dados incorretos
+                legend_html = '''
+                    <div style="position: fixed; bottom: 50px; left: 50px; z-index: 1000; background-color: white; padding: 10px; border: 2px solid grey; border-radius: 5px">
+                    <p><strong>Índice de Qualidade da Água (IQA)</strong></p>
+                    <p><span style="color: #4169E1;">●</span> Excelente (91-100)</p>
+                    <p><span style="color: #008000;">●</span> Bom (71-90)</p>
+                    <p><span style="color: #FFFF00;">●</span> Médio (51-70)</p>
+                    <p><span style="color: #FFA500;">●</span> Ruim (26-50)</p>
+                    <p><span style="color: #FF0000;">●</span> Muito Ruim (0-25)</p>
+                    <p><span style="color: #808080;">●</span> Dados incorretos</p>
+                    </div>
+                '''
+                mapa.get_root().html.add_child(folium.Element(legend_html))
+
+            else:
+                # Criar mapa vazio com mensagem
+                mapa = folium.Map(
+                    location=[-22.9292, -42.8719],
+                    zoom_start=12,
+                    tiles='CartoDB positron'
+                )
+                folium.LayerControl().add_to(mapa)
+                
+                # Adicionar mensagem ao mapa
+                title_html = '''
+                    <h4 style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+                              background-color: white; padding: 10px; border-radius: 5px; z-index: 1000;">
+                        Não foram encontrados dados suficientes para calcular o IQA nesta campanha
+                    </h4>
+                '''
+                mapa.get_root().html.add_child(folium.Element(title_html))
+        else:
+            # Criar mapa vazio com mensagem
+            mapa = folium.Map(
+                location=[-22.9292, -42.8719],
+                zoom_start=12,
+                tiles='CartoDB positron'
+            )
+            folium.LayerControl().add_to(mapa)
+            
+            # Adicionar mensagem ao mapa
+            title_html = '''
+                <h4 style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+                          background-color: white; padding: 10px; border-radius: 5px; z-index: 1000;">
+                    Não foram encontradas medições para esta campanha
+                </h4>
+            '''
+            mapa.get_root().html.add_child(folium.Element(title_html))
 
         # Salvar o mapa em HTML
         mapa_iqa = mapa._repr_html_()
 
         dados_grafico_iqa = {
-            'datas': df_pivot['data'].tolist(),
-            'pontos': df_pivot['ponto'].tolist(),
-            'valores': df_pivot['IQA'].tolist(),
-            'lat': df_pivot['lat'].tolist(),
-            'lon': df_pivot['lon'].tolist(),
-            'setores': df_pivot['setor'].tolist()
+            'datas': df_pivot['data'].tolist() if 'df_pivot' in locals() else [],
+            'pontos': df_pivot['ponto'].tolist() if 'df_pivot' in locals() else [],
+            'valores': df_pivot['IQA'].tolist() if 'df_pivot' in locals() else [],
+            'lat': df_pivot['lat'].tolist() if 'df_pivot' in locals() else [],
+            'lon': df_pivot['lon'].tolist() if 'df_pivot' in locals() else [],
+            'setores': df_pivot['setor'].tolist() if 'df_pivot' in locals() else []
         }
 
     context = {
