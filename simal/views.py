@@ -3845,35 +3845,21 @@ def dashboard_parametros(request):
                 for idx, row in df_pivot.iterrows():
                     if not pd.isna(row['IQA']) and not pd.isna(row['lat']) and not pd.isna(row['lon']):
                         data_str = row['data'].strftime('%d/%m/%Y') if pd.notna(row['data']) else 'Data não disponível'
-                        
-                        # Verifica se o IQA é uma string (mensagem de erro) ou número
-                        if isinstance(row['IQA'], str):
-                            popup_content = f"""
-                                <b>Ponto:</b> {row['ponto']}<br>
-                                <b>Setor:</b> {row['setor']}<br>
-                                <b>Data:</b> {data_str}<br>
-                                <b>IQA:</b> {row['IQA']}
-                            """
-                            color = '#808080'  # Cinza para indicar erro
-                        else:
-                            popup_content = f"""
+                        folium.CircleMarker(
+                            location=[row['lat'], row['lon']],
+                            radius=10,
+                            popup=f"""
                                 <b>Ponto:</b> {row['ponto']}<br>
                                 <b>Setor:</b> {row['setor']}<br>
                                 <b>Data:</b> {data_str}<br>
                                 <b>IQA:</b> {row['IQA']:.2f}
-                            """
-                            color = get_color(row['IQA'])
-
-                        folium.CircleMarker(
-                            location=[row['lat'], row['lon']],
-                            radius=10,
-                            popup=popup_content,
-                            color=color,
+                            """,
+                            color=get_color(row['IQA']),
                             fill=True,
-                            fill_color=color
+                            fill_color=get_color(row['IQA'])
                         ).add_to(mapa)
 
-                # Atualizar a legenda para incluir a indicação de dados incorretos
+                # Adicionar legenda
                 legend_html = '''
                     <div style="position: fixed; bottom: 50px; left: 50px; z-index: 1000; background-color: white; padding: 10px; border: 2px solid grey; border-radius: 5px">
                     <p><strong>Índice de Qualidade da Água (IQA)</strong></p>
@@ -3882,7 +3868,6 @@ def dashboard_parametros(request):
                     <p><span style="color: #FFFF00;">●</span> Médio (51-70)</p>
                     <p><span style="color: #FFA500;">●</span> Ruim (26-50)</p>
                     <p><span style="color: #FF0000;">●</span> Muito Ruim (0-25)</p>
-                    <p><span style="color: #808080;">●</span> Dados incorretos</p>
                     </div>
                 '''
                 mapa.get_root().html.add_child(folium.Element(legend_html))
