@@ -4,11 +4,11 @@ import numpy as np
 def qi_ecoli(ecoli):
     try:
         if not isinstance(ecoli, (int, float)) or ecoli < 0:
-            return "Dados incorretos"
+            return None
         if ecoli >= 100000:
             return 3
         elif ecoli <= 0:
-            return "Dados incorretos"
+            return None	
         elif ecoli <= 10:
             return max(0, 100 - 33 * math.log10(max(0.000001, ecoli)))
         elif ecoli >= 5:
@@ -17,7 +17,7 @@ def qi_ecoli(ecoli):
         else:
             return 3
     except Exception as e:
-        return "Dados incorretos"
+        return None
 
 def qi_dbo(dbo):
     if dbo == 0:
@@ -100,10 +100,16 @@ def calculate_iqa(dados_ponto):
     for param, (func_qi, peso) in parametros_qi.items():
         valor = dados_ponto.get(param)
         if valor is not None and valor != "" and not np.isnan(valor):
-            qi_value = func_qi(float(valor))
-            if qi_value is not None:
-                iqa_total += qi_value * peso
-                soma_pesos += peso
+            try:
+                # Ensure valor is converted to float before calculations
+                numeric_valor = float(valor)
+                qi_value = func_qi(numeric_valor)
+                if qi_value is not None:
+                    iqa_total += float(qi_value) * peso
+                    soma_pesos += peso
+            except (ValueError, TypeError):
+                # Skip this parameter if conversion fails
+                continue
 
     # Adicionar temperatura
     iqa_total += qi_temperatura * pesos["Temperatura"]
