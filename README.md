@@ -72,6 +72,18 @@ Em tabelas que foram populadas com dump de dados de excel e outros sistemas, é 
 SELECT setval('nomedatabela_id_seq', (SELECT MAX(id) FROM nomedatabela)+1);
 ```
 
+Fazer um backup do BD do laguna pra um arquivo:
+
+pg_dump -c -U postgres laguna >laguna.sql
+
+Restaurar esse backup no banco laguna_homologacao:
+
+```sql
+psql -U postgres laguna_homologacao <laguna.sql
+```
+
+Esses comandos só podem ser rodados do prompt do ultron.
+
 
 <!-- sudo /etc/init.d/apache2 reload -->
 
