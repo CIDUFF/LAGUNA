@@ -24,6 +24,8 @@ class Ajuda(models.Model):
     email = models.EmailField(max_length=100, default="seuemail@email.com")
     pergunta = models.TextField(max_length=250)
     data = models.DateTimeField(auto_now_add=True)
+    anexo = models.FileField(
+        upload_to="media/anexo_ajuda", blank=True, null=True)
 
     def __str__(self):
         return f"{self.nome}"
