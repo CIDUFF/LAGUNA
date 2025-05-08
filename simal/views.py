@@ -1739,6 +1739,23 @@ def enviar_email_async(subject, message, from_email, recipient_list):
     except Exception as e:
         logger.error(f"Erro ao enviar email: {e}")
 
+def get_group_emails(group_name):
+    """Helper function to retrieve emails of users in a specific group."""
+    from django.contrib.auth.models import Group
+    try:
+        group = Group.objects.filter(name__iexact=group_name).first()
+        if not group:
+            raise Group.DoesNotExist
+        return [user.email for user in group.user_set.all() if user.email]
+    except Group.DoesNotExist:
+        logger.warning(f"Group '{group_name}' not found.")
+        return []
+
+def get_all_group_names():
+    """Helper function to retrieve all group names."""
+    from django.contrib.auth.models import Group
+    return [group.name for group in Group.objects.all()]
+
 
 @login_required
 def cadastro_coleta_view(request):
@@ -1758,11 +1775,11 @@ def cadastro_coleta_view(request):
             
             # Criar entradas na tabela TabChecklistColeta para cada item de checklist
             itens_checklist = TabItemChecklistColeta.objects.all()
-            for item in itens_checklist:
-                TabChecklistColeta.objects.create(
-                    id_coleta=coleta,
-                    item=item,
-                )
+            checklist_entries = [
+                TabChecklistColeta(id_coleta=coleta, item=item)
+                for item in itens_checklist
+            ]
+            TabChecklistColeta.objects.bulk_create(checklist_entries)
 
             # Enviar e-mail para todos os usuários do grupo "Coleta"
             subject = "Não responda - Coleta programada com sucesso"
@@ -1789,7 +1806,7 @@ def cadastro_coleta_view(request):
                 else:
                     messages.warning(request, "Coleta agendada com sucesso, mas os usuários do grupo de coleta não possuem e-mails cadastrados.")
             except Group.DoesNotExist:
-                messages.warning(request, f"Coleta agendada com sucesso, mas o grupo de coleta não foi encontrado. Grupos disponíveis: {', '.join([g.name for g in Group.objects.all()])}")
+                messages.warning(request, f"Coleta agendada com sucesso, mas o grupo de coleta não foi encontrado. Grupos disponíveis: {', '.join(get_all_group_names())}")
 
             return redirect("checklist_coleta", coleta_id=coleta.id)
     else:
@@ -3283,6 +3300,16 @@ def export_resultados_medidas_xlsx(request):
 
 @login_required
 def atualizar_status_coleta(request, coleta_id):
+    """
+    Updates the status of a specific coleta (collection) and logs the change.
+
+    Args:
+        request (HttpRequest): The HTTP request object containing POST data with the new status and reason.
+        coleta_id (int): The ID of the coleta to update.
+
+    Returns:
+        JsonResponse: A JSON response indicating success or failure of the operation.
+    """
     if request.method == "POST":
         try:
             coleta = TabColeta.objects.select_related(
@@ -3294,11 +3321,11 @@ def atualizar_status_coleta(request, coleta_id):
 
             # Debug
             print(f"Status atual: {coleta.status_id}")
-            print(f"Novo status ID: {novo_status.id}")
-            print(f"Motivo: {motivo}")
+            logger.debug(f"Novo status ID: {novo_status.id}")
+            logger.debug(f"Motivo: {motivo}")
 
             # Só faz alterações se realmente houver mudança
-            if novo_status.id != coleta.status_id.id:
+            if coleta.status_id is None or novo_status.id != coleta.status_id.id:
                 coleta.status_id = novo_status
                 coleta.atualizado_por = request.user
                 coleta.atualizado_em = timezone.now()
