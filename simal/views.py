@@ -1746,15 +1746,16 @@ def cadastro_coleta_view(request):
     if request.method == "POST":
         form = CadastroColetaForm(request.POST)
         if form.is_valid():
-            coleta = form.save(commit=False)  # Não salva ainda no banco
-            coleta.criado_por = request.user  # Atribui o usuário logado
-
+            coleta = form.save(commit=False)
+            coleta.criado_por = request.user
+            
             # Converter a data da string para datetime
             data_str = request.POST.get("data")
             if data_str:
                 coleta.data = datetime.strptime(data_str, "%Y-%m-%d")
-
-            coleta.save()  # Agora salva no banco
+                
+            coleta.save(usuario=request.user)
+            
             # Criar entradas na tabela TabChecklistColeta para cada item de checklist
             itens_checklist = TabItemChecklistColeta.objects.all()
             for item in itens_checklist:
@@ -1763,18 +1764,32 @@ def cadastro_coleta_view(request):
                     item=item,
                 )
 
-            # Enviar e-mail para o usuário
+            # Enviar e-mail para todos os usuários do grupo "Coleta"
             subject = "Não responda - Coleta programada com sucesso"
-            message = f"Olá {request.user.username},\n\nA coleta com a ordem de serviço {coleta.ordem_servico} foi criada com sucesso. \n\nAcesse o sistema em {settings.SITE_URL}/info_coleta/{coleta.id} para mais informações. \n\n Este é um e-mail automático, favor não responder."
-            recipient_list = [
-                request.user.email,
-            ]
-
-            # Iniciar thread para envio de email
-            Thread(
-                target=enviar_email_async,
-                args=(subject, message, settings.EMAIL_HOST_USER, recipient_list),
-            ).start()
+            message = f"Olá,\n\nA coleta com a ordem de serviço {coleta.ordem_servico} foi criada com sucesso por {request.user.username}. \n\nAcesse o sistema em {settings.SITE_URL}/info_coleta/{coleta.id} para mais informações. \n\n Este é um e-mail automático, favor não responder."
+            
+            # Alteração aqui: procurar pelo grupo sem diferenciar maiúsculas/minúsculas
+            from django.contrib.auth.models import Group
+            try:
+                # Usar iexact para busca insensível a maiúsculas/minúsculas
+                grupo_coleta = Group.objects.filter(name__iexact="coleta").first()
+                if not grupo_coleta:
+                    raise Group.DoesNotExist
+                    
+                usuarios_coleta = grupo_coleta.user_set.all()
+                recipient_list = [usuario.email for usuario in usuarios_coleta if usuario.email]
+                
+                if recipient_list:
+                    # Iniciar thread para envio de email
+                    Thread(
+                        target=enviar_email_async,
+                        args=(subject, message, settings.EMAIL_HOST_USER, recipient_list),
+                    ).start()
+                    messages.success(request, f"Coleta agendada com sucesso e notificações enviadas para {len(recipient_list)} membros da equipe de coleta.")
+                else:
+                    messages.warning(request, "Coleta agendada com sucesso, mas os usuários do grupo de coleta não possuem e-mails cadastrados.")
+            except Group.DoesNotExist:
+                messages.warning(request, f"Coleta agendada com sucesso, mas o grupo de coleta não foi encontrado. Grupos disponíveis: {', '.join([g.name for g in Group.objects.all()])}")
 
             return redirect("checklist_coleta", coleta_id=coleta.id)
     else:
@@ -2317,10 +2332,6 @@ def input_fisico_quimico(request, coleta_id, ponto_id):
     )
 
 
-# TODO: Implementar a view de input_lab
-@login_required
-def input_lab(request, coleta_id):
-    return
 
 
 @login_required
@@ -2431,8 +2442,7 @@ def lista_de_coletas(request):
 @login_required
 def update_coleta(request, id):
     coleta = get_object_or_404(TabColeta, id=id)
-    coleta_original = TabColeta.objects.get(
-        pk=coleta.pk)  # Cópia do estado original
+    coleta_original = TabColeta.objects.get(pk=coleta.pk)  # Cópia do estado original
 
     if request.method == "POST":
         form = CadastroColetaForm(request.POST, instance=coleta)
@@ -2500,9 +2510,35 @@ def update_coleta(request, id):
                     motivo=motivo,
                 )
 
-                # Mostra mensagem de sucesso com detalhes
-                messages.success(
-                    request, f"Coleta atualizada com sucesso! {motivo}")
+                # Notificar por e-mail se houver mudanças
+                subject = f"Coleta {coleta.ordem_servico} foi atualizada"
+                message = f"Olá,\n\nA coleta com ordem de serviço {coleta.ordem_servico} foi atualizada por {request.user.username}.\n\n"
+                message += f"Alterações realizadas:\n{', '.join(mudancas)}.\n\n"
+                message += f"Acesse o sistema em {settings.SITE_URL}/info_coleta/{coleta.id} para mais informações.\n\n"
+                message += "Este é um e-mail automático, favor não responder."
+                
+                # Usar o mesmo grupo "Coleta" para notificar alterações
+                from django.contrib.auth.models import Group
+                try:
+                    grupo_coleta = Group.objects.filter(name__iexact="coleta").first()
+                    if grupo_coleta:
+                        usuarios_coleta = grupo_coleta.user_set.all()
+                        recipient_list = [usuario.email for usuario in usuarios_coleta if usuario.email]
+                        
+                        if recipient_list:
+                            # Iniciar thread para envio de email
+                            Thread(
+                                target=enviar_email_async,
+                                args=(subject, message, settings.EMAIL_HOST_USER, recipient_list),
+                            ).start()
+                            messages.success(request, f"Coleta atualizada com sucesso! {motivo} Notificações enviadas para {len(recipient_list)} membros da equipe de coleta.")
+                        else:
+                            messages.success(request, f"Coleta atualizada com sucesso! {motivo} Nenhuma notificação enviada pois os membros do grupo não possuem e-mails cadastrados.")
+                    else:
+                        messages.success(request, f"Coleta atualizada com sucesso! {motivo} Grupo 'Coleta' não encontrado, notificações não foram enviadas.")
+                except Exception as e:
+                    logger.error(f"Erro ao enviar email de notificação de atualização: {e}")
+                    messages.success(request, f"Coleta atualizada com sucesso! {motivo} Erro ao enviar notificações por e-mail.")
             else:
                 messages.info(
                     request, "Nenhuma alteração detectada na coleta.")
@@ -3251,6 +3287,7 @@ def atualizar_status_coleta(request, coleta_id):
         try:
             coleta = TabColeta.objects.select_related(
                 "status_id").get(id=coleta_id)
+            status_antigo = coleta.status_id.status if coleta.status_id else "Não definido"
             novo_status = TabStatusColeta.objects.get(
                 id=request.POST.get("status"))
             motivo = request.POST.get("motivo")
@@ -3260,18 +3297,44 @@ def atualizar_status_coleta(request, coleta_id):
             print(f"Novo status ID: {novo_status.id}")
             print(f"Motivo: {motivo}")
 
-            coleta.status_id = novo_status
-            coleta.atualizado_por = request.user
-            coleta.atualizado_em = timezone.now()
-            coleta.save()
+            # Só faz alterações se realmente houver mudança
+            if novo_status.id != coleta.status_id.id:
+                coleta.status_id = novo_status
+                coleta.atualizado_por = request.user
+                coleta.atualizado_em = timezone.now()
+                coleta.save()
 
-            # Registra o log com o motivo
-            TabLogColeta.objects.create(
-                id_coleta=coleta,
-                acao=f"Status alterado para {novo_status.status}",
-                motivo=motivo,
-                usuario=request.user,
-            )
+                # Registra o log com o motivo
+                TabLogColeta.objects.create(
+                    id_coleta=coleta,
+                    acao=f"Status alterado para {novo_status.status}",
+                    motivo=motivo,
+                    usuario=request.user,
+                )
+
+                # Notificar por e-mail
+                subject = f"Status da coleta {coleta.ordem_servico} foi alterado"
+                message = f"Olá,\n\nO status da coleta com ordem de serviço {coleta.ordem_servico} foi alterado de '{status_antigo}' para '{novo_status.status}' por {request.user.username}.\n\n"
+                message += f"Motivo da alteração: {motivo}\n\n"
+                message += f"Acesse o sistema em {settings.SITE_URL}/info_coleta/{coleta.id} para mais informações.\n\n"
+                message += "Este é um e-mail automático, favor não responder."
+                
+                # Usar o mesmo grupo "Coleta" para notificar alterações
+                from django.contrib.auth.models import Group
+                try:
+                    grupo_coleta = Group.objects.filter(name__iexact="coleta").first()
+                    if grupo_coleta:
+                        usuarios_coleta = grupo_coleta.user_set.all()
+                        recipient_list = [usuario.email for usuario in usuarios_coleta if usuario.email]
+                        
+                        if recipient_list:
+                            # Iniciar thread para envio de email
+                            Thread(
+                                target=enviar_email_async,
+                                args=(subject, message, settings.EMAIL_HOST_USER, recipient_list),
+                            ).start()
+                except Exception as e:
+                    logger.error(f"Erro ao enviar email de notificação de alteração de status: {e}")
 
             return JsonResponse({"success": True})
 
