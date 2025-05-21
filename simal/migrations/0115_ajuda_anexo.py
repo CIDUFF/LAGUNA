@@ -4,15 +4,16 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('simal', '0114_alter_tablogmedida_id_medida'),
+        ("simal", "0114_alter_tablogmedida_id_medida"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='ajuda',
-            name='anexo',
-            field=models.FileField(blank=True, null=True, upload_to='media/anexo_ajuda'),
+            model_name="ajuda",
+            name="anexo",
+            field=models.FileField(
+                blank=True, null=True, upload_to="media/anexo_ajuda"
+            ),
         ),
     ]

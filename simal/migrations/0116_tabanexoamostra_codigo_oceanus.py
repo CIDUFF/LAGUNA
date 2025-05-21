@@ -4,15 +4,16 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('simal', '0115_ajuda_anexo'),
+        ("simal", "0115_ajuda_anexo"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='tabanexoamostra',
-            name='codigo_oceanus',
-            field=models.CharField(blank=True, max_length=50, null=True, verbose_name='Código Oceanus'),
+            model_name="tabanexoamostra",
+            name="codigo_oceanus",
+            field=models.CharField(
+                blank=True, max_length=50, null=True, verbose_name="Código Oceanus"
+            ),
         ),
     ]

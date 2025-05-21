@@ -256,6 +256,6 @@ urlpatterns = [
         generate_sample_labels,
         name="generate_sample_labels",
     ),
-    path('new_home/', new_home, name='new_home'),
-    path('dashboard/', dashboard_parametros, name='dashboard_parametros'),
+    path("new_home/", new_home, name="new_home"),
+    path("dashboard/", dashboard_parametros, name="dashboard_parametros"),
 ]

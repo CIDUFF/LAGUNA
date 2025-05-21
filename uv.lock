@@ -897,7 +897,7 @@ requires-dist = [
     { name = "debugpy", specifier = "==1.8.2" },
     { name = "decorator", specifier = "==5.1.1" },
     { name = "dill", specifier = "==0.3.8" },
-    { name = "django", specifier = "==5.1.8" },
+    { name = "django", specifier = ">=5.1.8" },
     { name = "django-allauth", specifier = "==0.62.0" },
     { name = "django-bootstrap-form", specifier = "==3.4" },
     { name = "django-bootstrap5", specifier = "==24.2" },
