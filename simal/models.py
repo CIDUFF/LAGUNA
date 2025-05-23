@@ -772,6 +772,8 @@ class TabMedida(models.Model):
     )
     valor = models.TextField(blank=True, null=True)
     input_valor = models.TextField(blank=True, null=True)
+    operador = models.TextField(blank=True, null=True)
+    err_valor = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return f"{self.valor}"
