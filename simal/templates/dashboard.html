@@ -32,6 +32,10 @@
 }
 </style>
 
+<!-- No cabeçalho do template, adicione os links do Leaflet -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
 <div class="container mt-4">
     <div class="card">
         <div class="card-header">
@@ -44,62 +48,148 @@
                     <a class="nav-link {% if tipo_visualizacao == 'setor' %}active{% endif %}" 
                        href="?tipo=setor">Por Setor</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if tipo_visualizacao == 'tratamento' %}active{% endif %}" 
+                       href="?tipo=tratamento">Pré/Pós Tratamento</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if tipo_visualizacao == 'estacoes' %}active{% endif %}" 
+                       href="?tipo=estacoes">Estações</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if tipo_visualizacao == 'iqa' %}active{% endif %}" 
+                       href="?tipo=iqa">IQA</a>
+                </li>
             </ul>
         </div>
         <div class="card-body">
             <!-- Formulário de seleção -->
-            <form method="get" class="mb-4">
+            <form method="get" class="mb-4" id="filtroForm">
                 <input type="hidden" name="tipo" value="{{ tipo_visualizacao }}">
                 <div class="row">
-                    <div class="col-md-5">
+                    {% if tipo_visualizacao != 'iqa' %}
+                    <div class="col-md-6">
                         <select name="parametro" class="form-control" id="parametro">
                             <option value="">Selecione um parâmetro...</option>
-                            {% for param in parametros %}
-                                <option value="{{ param.id }}" {% if param.id|stringformat:"s" == parametro_selecionado %}selected{% endif %}>
-                                    {{ param.id_param.nome }} ({{ param.unidade }})
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    
-                    {% if tipo_visualizacao == 'ponto' %}
-                    <div class="col-md-5">
-                        <select name="ponto" class="form-control" id="ponto">
-                            <option value="">Selecione um ponto...</option>
-                            {% for ponto in pontos %}
-                                <option value="{{ ponto.id }}" {% if ponto.id|stringformat:"s" == ponto_selecionado %}selected{% endif %}>
-                                    {{ ponto.nome }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    {% else %}
-                    <div class="col-md-5">
-                        <select name="setor" class="form-control" id="setor">
-                            <option value="">Selecione um setor...</option>
-                            {% for setor in setores %}
-                                <option value="{{ setor.id }}" {% if setor.id|stringformat:"s" == setor_selecionado %}selected{% endif %}>
-                                    {{ setor.nome }}
-                                </option>
-                            {% endfor %}
+                            {% if tipo_visualizacao == 'bentos' %}
+                                {% for param in parametros_bentos %}
+                                    <option value="{{ param.id_param__nome }}" {% if param.id_param__nome == parametro_selecionado %}selected{% endif %}>
+                                        {{ param.id_param__nome }} ({{ param.unidade }})
+                                    </option>
+                                {% endfor %}
+                            {% else %}
+                                {% for param in parametros %}
+                                    <option value="{{ param.id }}" {% if param.id|stringformat:"s" == parametro_selecionado %}selected{% endif %}>
+                                        {{ param.id_param.nome }} ({{ param.unidade }})
+                                    </option>
+                                {% endfor %}
+                            {% endif %}
                         </select>
                     </div>
                     {% endif %}
-                    
-                    <div class="col-md-2">
-                        <button type="submit" class="btn btn-primary w-100">Visualizar</button>
+                    {% if tipo_visualizacao == 'setor' %}
+                        <div class="col-md-6">
+                            <select name="setor" class="form-control" id="setor">
+                                <option value="">Selecione um setor...</option>
+                                {% for setor in setores %}
+                                    <option value="{{ setor.id }}" {% if setor.id|stringformat:"s" == setor_selecionado %}selected{% endif %}>
+                                        {{ setor.nome }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    {% elif tipo_visualizacao == 'ponto' or tipo_visualizacao == 'bentos' %}
+                        <div class="col-md-6">
+                            <select name="ponto" class="form-control" id="ponto">
+                                <option value="">Selecione um ponto...</option>
+                                {% for ponto in pontos %}
+                                    <option value="{{ ponto.id }}" {% if ponto.id|stringformat:"s" == ponto_selecionado %}selected{% endif %}>
+                                        {{ ponto.nome }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    {% endif %}
+                    {% if tipo_visualizacao == 'tratamento' %}
+                        <div class="col-md-6">
+                            <select name="setor" class="form-control" id="setor">
+                                <option value="">Selecione um setor...</option>
+                                {% for setor in setores %}
+                                    <option value="{{ setor.id }}" {% if setor.id|stringformat:"s" == setor_selecionado %}selected{% endif %}>
+                                        {{ setor.nome }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    {% endif %}
+                    {% if tipo_visualizacao == 'estacoes' %}
+                        <div class="col-md-6">
+                            <select name="setor" class="form-control" id="setor">
+                                <option value="">Selecione um setor...</option>
+                                {% for setor in setores %}
+                                    <option value="{{ setor.id }}" {% if setor.id|stringformat:"s" == setor_selecionado %}selected{% endif %}>
+                                        {{ setor.nome }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-12">
+                        <button type="submit" class="btn btn-primary">Gerar Gráfico</button>
                     </div>
                 </div>
             </form>
 
+            <!-- Adicione isso próximo ao topo do template, antes do mapa -->
+            {% if tipo_visualizacao == 'iqa' %}
+            <div class="form-group mb-3">
+                <label for="campanha">Selecione a Campanha:</label>
+                <select class="form-control" id="campanha" name="campanha">
+                    <option value="">Todas as Campanhas</option>
+                    {% for campanha in campanhas %}
+                        <option value="{{ campanha.id }}" {% if campanha == campanha_selecionada %}selected{% endif %}>
+                            {{ campanha.ordem_servico }} - {{ campanha.data|date:"d/m/Y" }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <script>
+            document.getElementById('campanha').addEventListener('change', function() {
+                const urlParams = new URLSearchParams(window.location.search);
+                urlParams.set('campanha', this.value);
+                urlParams.set('tipo', 'iqa');
+                // Remove parameter from URL if it exists
+                urlParams.delete('parametro');
+                window.location.href = `${window.location.pathname}?${urlParams.toString()}`;
+            });
+            </script>
+            {% endif %}
+
             <!-- Gráfico -->
-            {% if tipo_visualizacao == 'ponto' and dados_grafico %}
-                <div id="grafico"></div>
-            {% elif tipo_visualizacao == 'setor' and dados_grafico_setor %}
-                <div id="grafico-setor"></div>
+            {% if request.GET.parametro or tipo_visualizacao == 'iqa' %}
+                {% if tipo_visualizacao == 'ponto' and dados_grafico %}
+                    <div id="grafico"></div>
+                {% elif tipo_visualizacao == 'setor' and dados_grafico_setor %}
+                    <div id="grafico-setor"></div>
+                {% elif tipo_visualizacao == 'tratamento' and dados_grafico_tratamento %}
+                    <div id="grafico-tratamento"></div>
+                {% elif tipo_visualizacao == 'estacoes' and dados_grafico_estacoes %}
+                    <div id="grafico-estacoes"></div>
+                {% elif tipo_visualizacao == 'iqa' and mapa_iqa %}
+                    <div class="map-container" style="height: 600px;">
+                        {{ mapa_iqa|safe }}
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        Nenhum dado encontrado para os filtros selecionados.
+                    </div>
+                {% endif %}
             {% else %}
                 <div class="alert alert-info">
-                    Selecione um parâmetro e um {% if tipo_visualizacao == 'ponto' %}ponto{% else %}setor{% endif %} para visualizar o gráfico.
+                    Selecione os filtros e clique em "Gerar Gráfico" para visualizar os dados.
                 </div>
             {% endif %}
         </div>
@@ -109,30 +199,40 @@
 <!-- Plotly.js -->
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
+<!-- Remove auto-submit script -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Remove event listeners for auto-submit
+});
+</script>
+
 {% if tipo_visualizacao == 'ponto' and dados_grafico %}
 <script>
     const dados = {
         x: {{ dados_grafico.datas|safe }},
         y: {{ dados_grafico.valores|safe }},
-        type: 'scatter',
-        mode: 'lines+markers',
-        name: '{{ parametro_selecionado }}',
-        line: {
-            color: '#1f77b4'  // Cor azul para o gráfico por ponto
-        },
+        type: 'bar',  // Mudado de 'scatter' para 'bar'
+        name: '{{ parametro_nome_display }}',
         marker: {
-            color: '#1f77b4'
+            color: '#1f77b4',  // Mantém a cor azul
+            line: {
+                width: 1,
+                color: '#135999'  // Adiciona borda mais escura nas barras
+            }
         }
     };
 
     const layout = {
         title: 'Variação do Parâmetro ao Longo do Tempo',
         xaxis: {
-            title: 'Data'
+            title: 'Data',
+            tickangle: -45  // Inclina as datas para melhor legibilidade
         },
         yaxis: {
-            title: '{{ parametro_selecionado.unidade }}'
-        }
+            title: '{{ parametro_nome_display }}'
+        },
+        bargap: 0.2,  // Ajusta o espaço entre as barras
+        bargroupgap: 0.1  // Ajusta o espaço entre grupos de barras
     };
 
     Plotly.newPlot('grafico', [dados], layout);
@@ -161,11 +261,260 @@
             title: 'Data'
         },
         yaxis: {
-            title: '{{ parametro_selecionado.unidade }}'
+            title: '{{ parametro_nome_display }}'
         }
     };
 
     Plotly.newPlot('grafico-setor', [dadosSetor], layoutSetor);
+</script>
+{% endif %}
+
+{% if tipo_visualizacao == 'bentos' and dados_grafico_bentos %}
+<script>
+    const dadosBentos = {
+        x: {{ dados_grafico_bentos.datas|safe }},
+        y: {{ dados_grafico_bentos.valores|safe }},
+        type: 'bar',  // Alterado de 'scatter' para 'bar'
+        name: 'Bentos',
+        marker: {
+            color: '#1f77b4',  // Mantém a cor azul padrão
+            line: {
+                width: 1,
+                color: '#135999'  // Adiciona borda mais escura nas barras
+            }
+        }
+    };
+
+    const layoutBentos = {
+        title: 'Análise de Bentos ao Longo do Tempo',
+        xaxis: {
+            title: 'Data',
+            tickangle: -45  // Inclina as datas para melhor legibilidade
+        },
+        yaxis: {
+            title: '{{ parametro_nome_display }}'
+        },
+        bargap: 0.2,  // Ajusta o espaço entre as barras
+        bargroupgap: 0.1  // Ajusta o espaço entre grupos de barras
+    };
+
+    Plotly.newPlot('grafico-bentos', [dadosBentos], layoutBentos);
+</script>
+{% endif %}
+
+{% if tipo_visualizacao == 'tratamento' and dados_grafico_tratamento %}
+<script>
+    const dadosTratamento = [{
+        x: {{ dados_grafico_tratamento.pontos|safe }},
+        y: {{ dados_grafico_tratamento.pre_tratamento|safe }},
+        type: 'bar',
+        name: 'Pré-tratamento',
+        marker: { color: '#ff7f0e' }
+    }, {
+        x: {{ dados_grafico_tratamento.pontos|safe }},
+        y: {{ dados_grafico_tratamento.pos_tratamento|safe }},
+        type: 'bar',
+        name: 'Pós-tratamento',
+        marker: { color: '#2ca02c' }
+    }];
+
+    const layoutTratamento = {
+        title: 'Comparação Pré/Pós Tratamento por Ponto',
+        barmode: 'group',
+        xaxis: {
+            title: 'Pontos de Coleta',
+            tickangle: -45
+        },
+        yaxis: {
+            title: '{{ parametro_nome_display }}'
+        },
+        legend: {
+            x: 0,
+            y: 1.2,
+            orientation: 'h'
+        },
+        margin: {
+            t: 100
+        }
+    };
+
+    Plotly.newPlot('grafico-tratamento', dadosTratamento, layoutTratamento);
+</script>
+{% endif %}
+
+{% if tipo_visualizacao == 'estacoes' and dados_grafico_estacoes %}
+<script>
+    const dadosEstacoes = [{
+        x: {{ dados_grafico_estacoes.pontos|safe }},
+        y: {{ dados_grafico_estacoes.estacao_chuvosa|safe }},
+        type: 'bar',
+        name: 'Estação Chuvosa (Abr-Out)',
+        marker: { color: '#1f77b4' }  // Azul para estação chuvosa
+    }, {
+        x: {{ dados_grafico_estacoes.pontos|safe }},
+        y: {{ dados_grafico_estacoes.estacao_seca|safe }},
+        type: 'bar',
+        name: 'Estação Seca (Nov-Mar)',
+        marker: { color: '#ff7f0e' }  // Laranja para estação seca
+    }];
+
+    // Adiciona linhas de limite baseado no parâmetro
+    const parametroNome = '{{ parametro_nome_display|lower }}';
+    const setor = '{{ setor_selecionado }}';
+    const xVals = {{ dados_grafico_estacoes.pontos|safe }};
+    const yVals = Array(xVals.length).fill(null);
+
+    // Função para adicionar linhas de limite
+    function addLimitLines(param, isCanal) {
+        const limits = [];
+        
+        if (param.includes('ph')) {
+            if (isCanal) {
+                limits.push({y: 6, name: 'pH Mín (6)', color: 'red', dash: 'dash'});
+                limits.push({y: 9, name: 'pH Máx (9)', color: 'red', dash: 'dash'});
+            } else {
+                limits.push({y: 6.5, name: 'pH Mín (6.5)', color: 'red', dash: 'dash'});
+                limits.push({y: 8.5, name: 'pH Máx (8.5)', color: 'red', dash: 'dash'});
+            }
+        }
+        else if (param.includes('od')) {
+            limits.push({y: 6, name: 'OD Mín (6)', color: 'red', dash: 'dash'});
+        }
+        else if (param.includes('dbo')) {
+            limits.push({y: 3, name: 'DBO Máx (3)', color: 'red', dash: 'dash'});
+        }
+        else if (param.includes('turbidez')) {
+            limits.push({y: 40, name: 'Turbidez Máx (40)', color: 'red', dash: 'dash'});
+        }
+
+        return limits.map(limit => ({
+            x: xVals,
+            y: Array(xVals.length).fill(limit.y),
+            type: 'scatter',
+            mode: 'lines',
+            name: limit.name,
+            line: {
+                color: limit.color,
+                dash: limit.dash,
+                width: 2
+            }
+        }));
+    }
+
+    // Verifica se o setor é um canal
+    const isCanal = {{ setor_selecionado }} === '10' || {{ setor_selecionado }} === '4';  // IDs dos canais
+    const limitLines = addLimitLines(parametroNome, isCanal);
+    
+    // Adiciona as linhas de limite ao array de dados
+    dadosEstacoes.push(...limitLines);
+
+    const layoutEstacoes = {
+        title: 'Comparação entre Estações por Ponto',
+        barmode: 'group',
+        xaxis: {
+            title: 'Pontos de Coleta',
+            tickangle: -45
+        },
+        yaxis: {
+            title: '{{ parametro_nome_display }}'
+        },
+        legend: {
+            x: 0,
+            y: 1.2,
+            orientation: 'h'
+        },
+        margin: {
+            t: 100
+        }
+    };
+
+    Plotly.newPlot('grafico-estacoes', dadosEstacoes, layoutEstacoes);
+</script>
+{% endif %}
+
+{% if tipo_visualizacao == 'mapa' %}
+<script>
+    // Inicializa o mapa
+    var map = L.map('mapa').setView([-22.9292, -42.8719], 12);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Define ícones personalizados para os diferentes estados
+    var greenIcon = new L.Icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+        shadowSize: [41, 41]
+    });
+
+    var redIcon = new L.Icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+        shadowSize: [41, 41]
+    });
+
+    var blueIcon = new L.Icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+        shadowSize: [41, 41]
+    });
+
+    // Adiciona os pontos ao mapa
+    var pontos = {{ pontos_mapa|safe }};
+    var markers = {};
+
+    pontos.forEach(function(ponto) {
+        // Escolhe o ícone com base no valor
+        var icon;
+        var valorTexto = ponto.valor;
+        
+        if (ponto.tem_valor === null) {
+            icon = blueIcon; // Azul quando nenhum parâmetro está selecionado
+        } else if (ponto.tem_valor) {
+            icon = greenIcon; // Verde quando tem valor maior que zero
+        } else {
+            icon = redIcon; // Vermelho quando não tem valor ou valor zero
+        }
+
+        // Cria um marcador para cada ponto
+        var marker = L.marker([ponto.lat, ponto.lon], {icon: icon})
+            .bindPopup(`
+                <strong>${ponto.nome}</strong><br>
+                Setor: ${ponto.setor}<br>
+                Valor: ${valorTexto}
+            `);
+        
+        // Agrupa os marcadores por setor
+        if (!markers[ponto.setor]) {
+            markers[ponto.setor] = [];
+        }
+        markers[ponto.setor].push(marker);
+    });
+
+    // Adiciona os marcadores ao mapa
+    for (var setor in markers) {
+        var layerGroup = L.layerGroup(markers[setor]).addTo(map);
+    }
+
+    // Adiciona o evento de alteração do parâmetro
+    document.getElementById('parametro').addEventListener('change', function() {
+        document.getElementById('filtroForm').submit();
+    });
+
+    // Add campaign change event listener
+    document.getElementById('campanha').addEventListener('change', function() {
+        document.getElementById('filtroForm').submit();
+    });
 </script>
 {% endif %}
 {% endblock %}
