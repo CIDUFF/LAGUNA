@@ -2247,7 +2247,6 @@ def input_fisico_quimico(request, coleta_id, ponto_id):
                 )
             else:
                 return redirect("info_coleta", coleta_id=coleta_id)
-
     else:
         formset = MedidaFormSet(
             queryset=TabMedida.objects.filter(
@@ -2951,26 +2950,27 @@ def export_resultados_medidas_csv(request):
             query = query.filter(id_envio__id_amostra__id_coleta__data__lte=data_fim)
 
         response = HttpResponse(content_type="text/csv")
-        response["Content-Disposition"] = (
-            f'attachment; filename="resultados_medidas_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv"'
-        )
+        response["Content-Disposition"] = 'attachment; filename="resultados_coleta.csv"'
 
-        # Adicionar BOM para identificar arquivo como UTF-8
-        response.write("\ufeff".encode("utf-8"))
-
-        writer = csv.writer(response, delimiter=";", dialect="excel")
+        writer = csv.writer(response)
         writer.writerow(
             [
-                "Campanha",
-                "Coleta",
-                "Ordem Serviço",
-                "Data",
-                "Setor",
+                "Código Coleta",
+                "Hora Início",
+                "Hora Fim",
                 "Ponto",
-                "Etiqueta",
-                "Parâmetro",
-                "Valor",
-                "Unidade",
+                "Temperatura",
+                "pH",
+                "ORP",
+                "Condutividade",
+                "Turbidez",
+                "OD",
+                "OD %",
+                "TDS",
+                "Salinidade",
+                "Status",
+                "Check Amostras",
+                "Observações",
             ]
         )
 
@@ -3209,7 +3209,6 @@ def atualizar_status_coleta(request, coleta_id):
     return JsonResponse({"success": False, "error": "Método não permitido"}, status=405)
 
 
-@login_required
 @login_required
 def generate_sample_labels(request, coleta_id):
     coleta = TabColeta.objects.get(id=coleta_id)
@@ -3511,7 +3510,15 @@ def new_home(request):
 def convert_to_float(value):
     """Helper function to convert values to float, handling 'ND' and other non-numeric values"""
     try:
-        if value and value.upper() != 'ND':
+        if value is None:
+            return None
+            
+        # Se já for um float, retorna diretamente
+        if isinstance(value, (float, int)):
+            return float(value)
+            
+        # Se for uma string, verifica se não é 'ND'
+        if isinstance(value, str) and value.upper() != 'ND':
             return float(value)
     except (ValueError, TypeError):
         pass
@@ -3608,11 +3615,11 @@ def dashboard_parametros(request):
             }
             
             for medida in medidas:
-                if medida.input_valor and medida.id_envio.id_amostra.id_coleta.data:
+                if medida.valor and medida.id_envio.id_amostra.id_coleta.data:
                     dados_grafico['datas'].append(
                         medida.id_envio.id_amostra.id_coleta.data.strftime('%Y-%m-%d')
                     )
-                    dados_grafico['valores'].append(float(medida.input_valor))
+                    dados_grafico['valores'].append(float(medida.valor))
 
         elif tipo_visualizacao == 'setor' and setor_id:
             # Lógica para visualização por setor
@@ -3627,12 +3634,12 @@ def dashboard_parametros(request):
             valores_por_data = {}
             for medida in medidas:
                 data = medida.id_envio.id_amostra.id_coleta.data
-                if data and medida.input_valor:
+                if data and medida.valor:
                     data_str = data.strftime('%Y-%m-%d')
                     if data_str not in valores_por_data:
                         valores_por_data[data_str] = {'soma': 0, 'count': 0}
                     try:
-                        valor = float(medida.input_valor)
+                        valor = float(medida.valor)
                         valores_por_data[data_str]['soma'] += valor
                         valores_por_data[data_str]['count'] += 1
                     except (ValueError, TypeError):
@@ -3697,7 +3704,7 @@ def dashboard_parametros(request):
                 medidas_pre = medidas_ponto.filter(
                     id_envio__id_amostra__id_coleta__data__lt=cutoff_date
                 )
-                valores_pre = [convert_to_float(m.input_valor) for m in medidas_pre if m.input_valor]
+                valores_pre = [convert_to_float(m.valor) for m in medidas_pre if m.valor]
                 valores_pre = [v for v in valores_pre if v is not None]  # Filter out None values
                 media_pre = sum(valores_pre) / len(valores_pre) if valores_pre else None
                 
@@ -3705,7 +3712,7 @@ def dashboard_parametros(request):
                 medidas_pos = medidas_ponto.filter(
                     id_envio__id_amostra__id_coleta__data__gte=cutoff_date
                 )
-                valores_pos = [convert_to_float(m.input_valor) for m in medidas_pos if m.input_valor]
+                valores_pos = [convert_to_float(m.valor) for m in medidas_pos if m.valor]
                 valores_pos = [v for v in valores_pos if v is not None]  # Filter out None values
                 media_pos = sum(valores_pos) / len(valores_pos) if valores_pos else None
                 
@@ -3740,7 +3747,7 @@ def dashboard_parametros(request):
             medidas_chuvosa = medidas.filter(
                 id_envio__id_amostra__id_coleta__data__month__range=(4, 10)
             )
-            valores_chuvosa = [convert_to_float(m.input_valor) for m in medidas_chuvosa if m.input_valor]
+            valores_chuvosa = [convert_to_float(m.valor) for m in medidas_chuvosa if m.valor]
             valores_chuvosa = [v for v in valores_chuvosa if v is not None]
             media_chuvosa = sum(valores_chuvosa) / len(valores_chuvosa) if valores_chuvosa else None
             
@@ -3748,7 +3755,7 @@ def dashboard_parametros(request):
             medidas_seca = medidas.filter(
                 id_envio__id_amostra__id_coleta__data__month__in=[11, 12, 1, 2, 3]
             )
-            valores_seca = [convert_to_float(m.input_valor) for m in medidas_seca if m.input_valor]
+            valores_seca = [convert_to_float(m.valor) for m in medidas_seca if m.valor]
             valores_seca = [v for v in valores_seca if v is not None]
             media_seca = sum(valores_seca) / len(valores_seca) if valores_seca else None
             
@@ -3799,15 +3806,15 @@ def dashboard_parametros(request):
                 'id_envio__id_amostra__id_ponto__lon',
                 'id_envio__id_amostra__id_coleta__id_setor__nome',
                 'id_pp__id_param__nome',
-                'input_valor'
+                'valor'
             )))
 
             # Verificar se há dados válidos
             if not df.empty:
-                # Convertendo input_valor para numérico
-                df['valor'] = pd.to_numeric(df['input_valor'], errors='coerce')
+                # Convertendo valor para numérico
+                df['valor'] = pd.to_numeric(df['valor'], errors='coerce')
                 
-                df.columns = ['data', 'ponto', 'lat', 'lon', 'setor', 'parametro', 'valor_original', 'valor']
+                df.columns = ['data', 'ponto', 'lat', 'lon', 'setor', 'parametro', 'valor']
 
                 # Pivot table com todos os parâmetros necessários
                 df_pivot = df.pivot_table(
