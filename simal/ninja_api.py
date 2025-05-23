@@ -10,11 +10,9 @@ from simal.models import (
 api = NinjaAPI()
 
 
-
 @api.get("/coletas", response=List[ColetaSchema])
 def coletas(request):
     return TabColeta.objects.all()
-    
 
 
 # # @api.get("/ola")

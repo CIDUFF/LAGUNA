@@ -767,12 +767,17 @@ def ajuda(request):
         None
     """
     if request.method == "POST":
-        form = AjudaForm(request.POST)
+        form = AjudaForm(request.POST, request.FILES)
         if form.is_valid():
             nova_ajuda = Ajuda()  # Model
             nova_ajuda.nome = form.cleaned_data["nome"]
             nova_ajuda.email = form.cleaned_data["email"]
             nova_ajuda.pergunta = form.cleaned_data["pergunta"]
+
+            # Salvar o anexo se estiver presente
+            if form.cleaned_data.get("anexo"):
+                nova_ajuda.anexo = form.cleaned_data["anexo"]
+
             nova_ajuda.save()
 
             # Enviar e-mail para o administrador
@@ -1701,41 +1706,94 @@ def enviar_email_async(subject, message, from_email, recipient_list):
         logger.error(f"Erro ao enviar email: {e}")
 
 
+def get_group_emails(group_name):
+    """Helper function to retrieve emails of users in a specific group."""
+    from django.contrib.auth.models import Group
+
+    try:
+        group = Group.objects.filter(name__iexact=group_name).first()
+        if not group:
+            raise Group.DoesNotExist
+        return [user.email for user in group.user_set.all() if user.email]
+    except Group.DoesNotExist:
+        logger.warning(f"Group '{group_name}' not found.")
+        return []
+
+
+def get_all_group_names():
+    """Helper function to retrieve all group names."""
+    from django.contrib.auth.models import Group
+
+    return [group.name for group in Group.objects.all()]
+
+
 @login_required
 def cadastro_coleta_view(request):
     data_inicial = request.GET.get("date")
     if request.method == "POST":
         form = CadastroColetaForm(request.POST)
         if form.is_valid():
-            coleta = form.save(commit=False)  # Não salva ainda no banco
-            coleta.criado_por = request.user  # Atribui o usuário logado
+            coleta = form.save(commit=False)
+            coleta.criado_por = request.user
 
             # Converter a data da string para datetime
             data_str = request.POST.get("data")
             if data_str:
                 coleta.data = datetime.strptime(data_str, "%Y-%m-%d")
 
-            coleta.save()  # Agora salva no banco
+            coleta.save(usuario=request.user)
+
             # Criar entradas na tabela TabChecklistColeta para cada item de checklist
             itens_checklist = TabItemChecklistColeta.objects.all()
-            for item in itens_checklist:
-                TabChecklistColeta.objects.create(
-                    id_coleta=coleta,
-                    item=item,
-                )
-
-            # Enviar e-mail para o usuário
-            subject = "Não responda - Coleta programada com sucesso"
-            message = f"Olá {request.user.username},\n\nA coleta com a ordem de serviço {coleta.ordem_servico} foi criada com sucesso. \n\nAcesse o sistema em {settings.SITE_URL}/info_coleta/{coleta.id} para mais informações. \n\n Este é um e-mail automático, favor não responder."
-            recipient_list = [
-                request.user.email,
+            checklist_entries = [
+                TabChecklistColeta(id_coleta=coleta, item=item)
+                for item in itens_checklist
             ]
+            TabChecklistColeta.objects.bulk_create(checklist_entries)
 
-            # Iniciar thread para envio de email
-            Thread(
-                target=enviar_email_async,
-                args=(subject, message, settings.EMAIL_HOST_USER, recipient_list),
-            ).start()
+            # Enviar e-mail para todos os usuários do grupo "Coleta"
+            subject = "Não responda - Coleta programada com sucesso"
+            message = f"Olá,\n\nA coleta com a ordem de serviço {coleta.ordem_servico} foi criada com sucesso por {request.user.username}. \n\nAcesse o sistema em {settings.SITE_URL}/info_coleta/{coleta.id} para mais informações. \n\n Este é um e-mail automático, favor não responder."
+
+            # Alteração aqui: procurar pelo grupo sem diferenciar maiúsculas/minúsculas
+            from django.contrib.auth.models import Group
+
+            try:
+                # Usar iexact para busca insensível a maiúsculas/minúsculas
+                grupo_coleta = Group.objects.filter(name__iexact="coleta").first()
+                if not grupo_coleta:
+                    raise Group.DoesNotExist
+
+                usuarios_coleta = grupo_coleta.user_set.all()
+                recipient_list = [
+                    usuario.email for usuario in usuarios_coleta if usuario.email
+                ]
+
+                if recipient_list:
+                    # Iniciar thread para envio de email
+                    Thread(
+                        target=enviar_email_async,
+                        args=(
+                            subject,
+                            message,
+                            settings.EMAIL_HOST_USER,
+                            recipient_list,
+                        ),
+                    ).start()
+                    messages.success(
+                        request,
+                        f"Coleta agendada com sucesso e notificações enviadas para {len(recipient_list)} membros da equipe de coleta.",
+                    )
+                else:
+                    messages.warning(
+                        request,
+                        "Coleta agendada com sucesso, mas os usuários do grupo de coleta não possuem e-mails cadastrados.",
+                    )
+            except Group.DoesNotExist:
+                messages.warning(
+                    request,
+                    f"Coleta agendada com sucesso, mas o grupo de coleta não foi encontrado. Grupos disponíveis: {', '.join(get_all_group_names())}",
+                )
 
             return redirect("checklist_coleta", coleta_id=coleta.id)
     else:
@@ -2220,11 +2278,10 @@ def input_fisico_quimico(request, coleta_id, ponto_id):
             request.POST,
             request.FILES,
             queryset=TabMedida.objects.filter(
-                id_pp_id=parametro_id,
-                id_envio__id_amostra__id_ponto_id=ponto_id
-            ).select_related(
-                'id_envio__id_amostra__id_coleta'
-            ).order_by('id_envio__id_amostra__id_coleta__data')
+                id_pp_id=parametro_id, id_envio__id_amostra__id_ponto_id=ponto_id
+            )
+            .select_related("id_envio__id_amostra__id_coleta")
+            .order_by("id_envio__id_amostra__id_coleta__data"),
         )
 
         if formset.is_valid():
@@ -2266,12 +2323,6 @@ def input_fisico_quimico(request, coleta_id, ponto_id):
             "anexo_existente": anexo_existente,
         },
     )
-
-
-# TODO: Implementar a view de input_lab
-@login_required
-def input_lab(request, coleta_id):
-    return
 
 
 @login_required
@@ -2448,8 +2499,59 @@ def update_coleta(request, id):
                     motivo=motivo,
                 )
 
-                # Mostra mensagem de sucesso com detalhes
-                messages.success(request, f"Coleta atualizada com sucesso! {motivo}")
+                # Notificar por e-mail se houver mudanças
+                subject = f"Coleta {coleta.ordem_servico} foi atualizada"
+                message = f"Olá,\n\nA coleta com ordem de serviço {coleta.ordem_servico} foi atualizada por {request.user.username}.\n\n"
+                message += f"Alterações realizadas:\n{', '.join(mudancas)}.\n\n"
+                message += f"Acesse o sistema em {settings.SITE_URL}/info_coleta/{coleta.id} para mais informações.\n\n"
+                message += "Este é um e-mail automático, favor não responder."
+
+                # Usar o mesmo grupo "Coleta" para notificar alterações
+                from django.contrib.auth.models import Group
+
+                try:
+                    grupo_coleta = Group.objects.filter(name__iexact="coleta").first()
+                    if grupo_coleta:
+                        usuarios_coleta = grupo_coleta.user_set.all()
+                        recipient_list = [
+                            usuario.email
+                            for usuario in usuarios_coleta
+                            if usuario.email
+                        ]
+
+                        if recipient_list:
+                            # Iniciar thread para envio de email
+                            Thread(
+                                target=enviar_email_async,
+                                args=(
+                                    subject,
+                                    message,
+                                    settings.EMAIL_HOST_USER,
+                                    recipient_list,
+                                ),
+                            ).start()
+                            messages.success(
+                                request,
+                                f"Coleta atualizada com sucesso! {motivo} Notificações enviadas para {len(recipient_list)} membros da equipe de coleta.",
+                            )
+                        else:
+                            messages.success(
+                                request,
+                                f"Coleta atualizada com sucesso! {motivo} Nenhuma notificação enviada pois os membros do grupo não possuem e-mails cadastrados.",
+                            )
+                    else:
+                        messages.success(
+                            request,
+                            f"Coleta atualizada com sucesso! {motivo} Grupo 'Coleta' não encontrado, notificações não foram enviadas.",
+                        )
+                except Exception as e:
+                    logger.error(
+                        f"Erro ao enviar email de notificação de atualização: {e}"
+                    )
+                    messages.success(
+                        request,
+                        f"Coleta atualizada com sucesso! {motivo} Erro ao enviar notificações por e-mail.",
+                    )
             else:
                 messages.info(request, "Nenhuma alteração detectada na coleta.")
 
@@ -2840,11 +2942,6 @@ def resultados_todas_medidas(request):
                     "coleta_nome": coleta.nome if coleta.nome else "N/A",
                     "ordem_servico": coleta.ordem_servico,
                     # Corrigido aqui
-                    "data_coleta": coleta.data.strftime("%d/%m/%Y")
-                    if coleta.data
-                    else "N/A",
-                    "setor": coleta.id_setor.nome if coleta.id_setor else "N/A",
-                    "ponto": amostra.id_ponto.nome if amostra.id_ponto else "N/A",
                     "etiqueta": amostra.etiqueta,
                     "parametro": medida.id_pp.id_param.nome
                     if medida.id_pp and medida.id_pp.id_param
@@ -3176,29 +3273,80 @@ def export_resultados_medidas_xlsx(request):
 
 @login_required
 def atualizar_status_coleta(request, coleta_id):
+    """
+    Updates the status of a specific coleta (collection) and logs the change.
+
+    Args:
+        request (HttpRequest): The HTTP request object containing POST data with the new status and reason.
+        coleta_id (int): The ID of the coleta to update.
+
+    Returns:
+        JsonResponse: A JSON response indicating success or failure of the operation.
+    """
     if request.method == "POST":
         try:
             coleta = TabColeta.objects.select_related("status_id").get(id=coleta_id)
+            status_antigo = (
+                coleta.status_id.status if coleta.status_id else "Não definido"
+            )
             novo_status = TabStatusColeta.objects.get(id=request.POST.get("status"))
             motivo = request.POST.get("motivo")
 
             # Debug
             print(f"Status atual: {coleta.status_id}")
-            print(f"Novo status ID: {novo_status.id}")
-            print(f"Motivo: {motivo}")
+            logger.debug(f"Novo status ID: {novo_status.id}")
+            logger.debug(f"Motivo: {motivo}")
 
-            coleta.status_id = novo_status
-            coleta.atualizado_por = request.user
-            coleta.atualizado_em = timezone.now()
-            coleta.save()
+            # Só faz alterações se realmente houver mudança
+            if coleta.status_id is None or novo_status.id != coleta.status_id.id:
+                coleta.status_id = novo_status
+                coleta.atualizado_por = request.user
+                coleta.atualizado_em = timezone.now()
+                coleta.save()
 
-            # Registra o log com o motivo
-            TabLogColeta.objects.create(
-                id_coleta=coleta,
-                acao=f"Status alterado para {novo_status.status}",
-                motivo=motivo,
-                usuario=request.user,
-            )
+                # Registra o log com o motivo
+                TabLogColeta.objects.create(
+                    id_coleta=coleta,
+                    acao=f"Status alterado para {novo_status.status}",
+                    motivo=motivo,
+                    usuario=request.user,
+                )
+
+                # Notificar por e-mail
+                subject = f"Status da coleta {coleta.ordem_servico} foi alterado"
+                message = f"Olá,\n\nO status da coleta com ordem de serviço {coleta.ordem_servico} foi alterado de '{status_antigo}' para '{novo_status.status}' por {request.user.username}.\n\n"
+                message += f"Motivo da alteração: {motivo}\n\n"
+                message += f"Acesse o sistema em {settings.SITE_URL}/info_coleta/{coleta.id} para mais informações.\n\n"
+                message += "Este é um e-mail automático, favor não responder."
+
+                # Usar o mesmo grupo "Coleta" para notificar alterações
+                from django.contrib.auth.models import Group
+
+                try:
+                    grupo_coleta = Group.objects.filter(name__iexact="coleta").first()
+                    if grupo_coleta:
+                        usuarios_coleta = grupo_coleta.user_set.all()
+                        recipient_list = [
+                            usuario.email
+                            for usuario in usuarios_coleta
+                            if usuario.email
+                        ]
+
+                        if recipient_list:
+                            # Iniciar thread para envio de email
+                            Thread(
+                                target=enviar_email_async,
+                                args=(
+                                    subject,
+                                    message,
+                                    settings.EMAIL_HOST_USER,
+                                    recipient_list,
+                                ),
+                            ).start()
+                except Exception as e:
+                    logger.error(
+                        f"Erro ao enviar email de notificação de alteração de status: {e}"
+                    )
 
             return JsonResponse({"success": True})
 
@@ -3504,7 +3652,8 @@ def new_home(request):
 
         traceback.print_exc()  # Imprime o traceback completo
         messages.error(request, "Erro ao carregar o dashboard.")
-        return redirect('home')
+        return redirect("home")
+
 
 
 def convert_to_float(value):
@@ -3594,7 +3743,6 @@ def dashboard_parametros(request):
     parametro_id = request.GET.get('parametro')
     ponto_id = request.GET.get('ponto')
     setor_id = request.GET.get('setor')
-    
     dados_grafico = None
     dados_grafico_setor = None
 
@@ -3607,13 +3755,9 @@ def dashboard_parametros(request):
             ).select_related(
                 'id_envio__id_amostra__id_coleta'
             ).order_by('id_envio__id_amostra__id_coleta__data')
-            
             # Prepara dados para o gráfico
-            dados_grafico = {
-                'datas': [],
-                'valores': []
-            }
-            
+            dados_grafico = {"datas": [], "valores": []}
+
             for medida in medidas:
                 if medida.valor and medida.id_envio.id_amostra.id_coleta.data:
                     dados_grafico['datas'].append(
@@ -3629,7 +3773,6 @@ def dashboard_parametros(request):
             ).select_related(
                 'id_envio__id_amostra__id_coleta'
             ).order_by('id_envio__id_amostra__id_coleta__data')
-
             # Agrupa medidas por data e calcula média
             valores_por_data = {}
             for medida in medidas:
@@ -3637,7 +3780,7 @@ def dashboard_parametros(request):
                 if data and medida.valor:
                     data_str = data.strftime('%Y-%m-%d')
                     if data_str not in valores_por_data:
-                        valores_por_data[data_str] = {'soma': 0, 'count': 0}
+                        valores_por_data[data_str] = {"soma": 0, "count": 0}
                     try:
                         valor = float(medida.valor)
                         valores_por_data[data_str]['soma'] += valor
@@ -3646,10 +3789,7 @@ def dashboard_parametros(request):
                         continue
 
             # Calcula as médias e prepara dados para o gráfico
-            dados_grafico_setor = {
-                'datas': [],
-                'valores': []
-            }
+            dados_grafico_setor = {"datas": [], "valores": []}
 
             for data in sorted(valores_por_data.keys()):
                 dados = valores_por_data[data]
@@ -3944,5 +4084,5 @@ def dashboard_parametros(request):
         'campanhas': campanhas,
         'campanha_selecionada': campanha_selecionada,
     }
-    
-    return render(request, 'dashboard.html', context)
+
+    return render(request, "dashboard.html", context)

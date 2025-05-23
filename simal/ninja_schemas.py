@@ -7,4 +7,3 @@ class ColetaSchema(ModelSchema):
         model = TabColeta
         # Se quiser incluir todos os campos:
         model_fields = "__all__"
-

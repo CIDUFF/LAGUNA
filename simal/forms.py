@@ -510,12 +510,13 @@ class AjudaForm(forms.Form):
     nome = forms.CharField()
     email = forms.EmailField()
     pergunta = forms.CharField(widget=forms.Textarea, max_length=500, required=False)
+    anexo = forms.FileField(required=False, label="Anexar arquivo")
 
     def __init__(self, *args, **kwargs):
         super(AjudaForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.layout = Layout(
-            Fieldset("Formulário de Ajuda", "nome", "email", "pergunta"),
+            Fieldset("Formulário de Ajuda", "nome", "email", "pergunta", "anexo"),
             ButtonHolder(Submit("submit", "Enviar")),
         )
 
