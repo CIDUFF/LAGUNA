@@ -21,7 +21,7 @@ from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.core.mail import send_mail
 from django.core.paginator import Paginator
 from django.db import connection, transaction
-from django.db.models import Q, OuterRef, Subquery
+from django.db.models import Q
 from django.forms import inlineformset_factory, modelformset_factory
 from django.http import FileResponse, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -143,10 +143,6 @@ from .models import (
 )
 from django.db.models import Count
 
-from .utils.iqa_calculator import calculate_iqa
-import pandas as pd
-import numpy as np
-
 # Configuração do logger
 logger = logging.getLogger(__name__)
 
@@ -219,7 +215,7 @@ def home(request):
         weather_description_two_days_before = None
         gantt_div = None
 
-        if (proxima_coleta):
+        if proxima_coleta:
             percentual_checklist = (
                 ChecklistCampo.objects.filter(ordem_servico=proxima_coleta.id)
                 .values_list("progresso", flat=True)
@@ -2194,7 +2190,7 @@ def info_coleta(request, coleta_id):
         link_sistema = f"{settings.SITE_URL}/info_coleta/{coleta_id}"
 
         hoje = datetime.today()
-        if (data_coleta < hoje):
+        if data_coleta < hoje:
             mensagem = f"Foi criada uma coleta para a data de {data_coleta.strftime('%d/%m/%Y')} em {coleta.id_setor}, com a ordem de serviço {coleta.ordem_servico}, Observação: {coleta.observacao}.\n\nLink para acesso: {link_sistema}"
         else:
             mensagem = f"Será realizada uma nova coleta para a data de {data_coleta.strftime('%d/%m/%Y')} em {coleta.id_setor}, com a ordem de serviço {coleta.ordem_servico}. \n\nObservação: {coleta.observacao}.\n\nLink para acesso: {link_sistema}"
@@ -2352,6 +2348,7 @@ def input_fisico_quimico(request, coleta_id, ponto_id):
                 )
             else:
                 return redirect("info_coleta", coleta_id=coleta_id)
+
     else:
         formset = MedidaFormSet(
             queryset=TabMedida.objects.filter(
@@ -3116,27 +3113,26 @@ def export_resultados_medidas_csv(request):
                 id_envio__id_amostra__id_coleta__data__lte=data_fim)
 
         response = HttpResponse(content_type="text/csv")
-        response["Content-Disposition"] = 'attachment; filename="resultados_coleta.csv"'
+        response["Content-Disposition"] = (
+            f'attachment; filename="resultados_medidas_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv"'
+        )
 
-        writer = csv.writer(response)
+        # Adicionar BOM para identificar arquivo como UTF-8
+        response.write("\ufeff".encode("utf-8"))
+
+        writer = csv.writer(response, delimiter=";", dialect="excel")
         writer.writerow(
             [
-                "Código Coleta",
-                "Hora Início",
-                "Hora Fim",
+                "Campanha",
+                "Coleta",
+                "Ordem Serviço",
+                "Data",
+                "Setor",
                 "Ponto",
-                "Temperatura",
-                "pH",
-                "ORP",
-                "Condutividade",
-                "Turbidez",
-                "OD",
-                "OD %",
-                "TDS",
-                "Salinidade",
-                "Status",
-                "Check Amostras",
-                "Observações",
+                "Etiqueta",
+                "Parâmetro",
+                "Valor",
+                "Unidade",
             ]
         )
 
@@ -3437,6 +3433,7 @@ def atualizar_status_coleta(request, coleta_id):
 
 
 @login_required
+@login_required
 def generate_sample_labels(request, coleta_id):
     coleta = TabColeta.objects.get(id=coleta_id)
     amostras = TabAmostra.objects.filter(
@@ -3469,7 +3466,7 @@ def generate_sample_labels(request, coleta_id):
     try:
         # Abrir e converter a imagem
         watermark_img = Image.open(watermark_path)
-        if (watermark_img.mode != "RGBA"):
+        if watermark_img.mode != "RGBA":
             watermark_img = watermark_img.convert("RGBA")
 
         # Ajustar o tamanho da marca d'água para ser menor e proporcional
@@ -3739,143 +3736,74 @@ def new_home(request):
         return redirect("home")
 
 
-def convert_to_float(value):
-    """Helper function to convert values to float, handling 'ND' and other non-numeric values"""
-    try:
-        if value is None:
-            return None
-
-        # Se já for um float, retorna diretamente
-        if isinstance(value, (float, int)):
-            return float(value)
-
-        # Se for uma string, verifica se não é 'ND'
-        if isinstance(value, str) and value.upper() != 'ND':
-            return float(value)
-    except (ValueError, TypeError):
-        pass
-    return None
-
-
 @login_required
 def dashboard_parametros(request):
-    tipo_visualizacao = request.GET.get('tipo', 'ponto')
+    # Obtém todos os parâmetros ativos ordenados alfabeticamente pelo nome
+    parametros = (
+        TabProdxparam.objects.filter(status=True)
+        .select_related("id_param")
+        .order_by("id_param__nome")
+    )
 
-    # Add campaign selection
-    campanhas = TabColeta.objects.all().order_by('-data')
-    campanha_id = request.GET.get('campanha')
+    # Obtém todos os pontos ativos ordenados pelo id (ordem de pontos)
+    pontos = TabPonto.objects.filter(status=True).order_by("id")
 
-    if campanha_id:
-        campanha_selecionada = TabColeta.objects.get(id=campanha_id)
-    else:
-        campanha_selecionada = campanhas.first()
-
-    # Mantém apenas os parâmetros regulares, excluindo os frascos de bentos
-    parametros = (TabProdxparam.objects
-                  .filter(status=True)
-                  .exclude(id_frasco_id__in=[5, 6, 7])
-                  .select_related('id_param')
-                  .order_by('id_param__nome'))
-
-    # Obtém todos os pontos ordenados pelo id
-    pontos = TabPonto.objects.all().order_by('id')
-
-    # Obtém todos os setores ordenados pelo nome
-    setores = TabSetor.objects.all().order_by('nome')
-
-    # Verifica se há parâmetros na consulta
-    tem_parametros = 'parametro' in request.GET or 'ponto' in request.GET or 'setor' in request.GET
-
-    # Se não há parâmetros na consulta, redirecionar com valores padrão
-    if not tem_parametros:
-        redirect_params = {}
-
-        # Adicionar tipo de visualização à URL
-        redirect_params['tipo'] = tipo_visualizacao
-
-        # Valores padrão para cada tipo de visualização
-        if tipo_visualizacao == 'ponto':
-            # Encontrar o parâmetro pH
-            ph_param = parametros.filter(
-                id_param__nome__icontains='ph').first()
-            pt01 = pontos.filter(nome__iexact='Pt01').first() or pontos.first()
-
-            if ph_param and pt01:
-                redirect_params['parametro'] = ph_param.id
-                redirect_params['ponto'] = pt01.id
-
-        elif tipo_visualizacao == 'setor':
-            # Encontrar o parâmetro pH
-            ph_param = parametros.filter(
-                id_param__nome__icontains='ph').first()
-            # Buscar especificamente o setor "Lagoa de Araçatiba"
-            setor_aracatiba = setores.filter(nome__icontains='araçatiba').first(
-            ) or setores.filter(nome__icontains='aracatiba').first()
-
-            if ph_param and setor_aracatiba:
-                redirect_params['parametro'] = ph_param.id
-                redirect_params['setor'] = setor_aracatiba.id
-            elif ph_param and setores.exists():
-                # Fallback para o primeiro setor se "Lagoa de Araçatiba" não for encontrado
-                redirect_params['parametro'] = ph_param.id
-                redirect_params['setor'] = setores.first().id
-
-        # Redirecionar apenas se tiver parâmetros para adicionar
-        if len(redirect_params) > 1:  # > 1 porque sempre terá pelo menos o 'tipo'
-            base_url = reverse('dashboard_parametros')
-            query_string = urllib.parse.urlencode(redirect_params)
-            return redirect(f"{base_url}?{query_string}")
+    # Obtém todos os setores ativos ordenados pelo nome
+    setores = TabSetor.objects.all().order_by("nome")
 
     # Processa seleção do usuário
-    parametro_id = request.GET.get('parametro')
-    ponto_id = request.GET.get('ponto')
-    setor_id = request.GET.get('setor')
+    parametro_id = request.GET.get("parametro")
+    ponto_id = request.GET.get("ponto")
+    setor_id = request.GET.get("setor")
+    tipo_visualizacao = request.GET.get("tipo", "ponto")  # 'ponto' ou 'setor'
 
     dados_grafico = None
     dados_grafico_setor = None
 
     if parametro_id:
-        if tipo_visualizacao == 'ponto' and ponto_id:
-            # Lógica para visualização por ponto
-            medidas = TabMedida.objects.filter(
-                id_pp_id=parametro_id,
-                id_envio__id_amostra__id_ponto_id=ponto_id
-            ).select_related(
-                'id_envio__id_amostra__id_coleta'
-            ).order_by('id_envio__id_amostra__id_coleta__data')
+        if tipo_visualizacao == "ponto" and ponto_id:
+            # Lógica existente para visualização por ponto
+            medidas = (
+                TabMedida.objects.filter(
+                    id_pp_id=parametro_id, id_envio__id_amostra__id_ponto_id=ponto_id
+                )
+                .select_related("id_envio__id_amostra__id_coleta")
+                .order_by("id_envio__id_amostra__id_coleta__data")
+            )
 
             # Prepara dados para o gráfico
             dados_grafico = {"datas": [], "valores": []}
 
             for medida in medidas:
-                if medida.valor and medida.id_envio.id_amostra.id_coleta.data:
-                    dados_grafico['datas'].append(
-                        medida.id_envio.id_amostra.id_coleta.data.strftime(
-                            '%Y-%m-%d')
+                if medida.input_valor and medida.id_envio.id_amostra.id_coleta.data:
+                    dados_grafico["datas"].append(
+                        medida.id_envio.id_amostra.id_coleta.data.strftime("%Y-%m-%d")
                     )
-                    dados_grafico['valores'].append(float(medida.valor))
+                    dados_grafico["valores"].append(float(medida.input_valor))
 
-        elif tipo_visualizacao == 'setor' and setor_id:
-            # Lógica para visualização por setor
-            medidas = TabMedida.objects.filter(
-                id_pp_id=parametro_id,
-                id_envio__id_amostra__id_ponto__id_setor=setor_id
-            ).select_related(
-                'id_envio__id_amostra__id_coleta'
-            ).order_by('id_envio__id_amostra__id_coleta__data')
+        elif tipo_visualizacao == "setor" and setor_id:
+            # Nova lógica para visualização por setor
+            medidas = (
+                TabMedida.objects.filter(
+                    id_pp_id=parametro_id,
+                    id_envio__id_amostra__id_ponto__id_setor=setor_id,
+                )
+                .select_related("id_envio__id_amostra__id_coleta")
+                .order_by("id_envio__id_amostra__id_coleta__data")
+            )
 
-            # Agrupa medidas por data para calcular médias
+            # Agrupa medidas por data e calcula média
             valores_por_data = {}
             for medida in medidas:
                 data = medida.id_envio.id_amostra.id_coleta.data
-                if data and medida.valor:
-                    data_str = data.strftime('%Y-%m-%d')
+                if data and medida.input_valor:
+                    data_str = data.strftime("%Y-%m-%d")
                     if data_str not in valores_por_data:
                         valores_por_data[data_str] = {'soma': 0, 'count': 0}
                     try:
-                        valor = float(medida.valor)
-                        valores_por_data[data_str]['soma'] += valor
-                        valores_por_data[data_str]['count'] += 1
+                        valor = float(medida.input_valor)
+                        valores_por_data[data_str]["soma"] += valor
+                        valores_por_data[data_str]["count"] += 1
                     except (ValueError, TypeError):
                         continue
 
@@ -3887,316 +3815,21 @@ def dashboard_parametros(request):
 
             for data in sorted(valores_por_data.keys()):
                 dados = valores_por_data[data]
-                if dados['count'] > 0:
-                    media = dados['soma'] / dados['count']
-                    dados_grafico_setor['datas'].append(data)
-                    dados_grafico_setor['valores'].append(round(media, 2))
-
-    # Para exibir o nome correto do parâmetro no título
-    parametro_nome_display = None
-    if parametro_id:
-        try:
-            param = TabProdxparam.objects.get(id=parametro_id)
-            parametro_nome_display = param.id_param.nome
-        except:
-            parametro_nome_display = "Parâmetro desconhecido"
-
-    # Add logic for pre/post treatment comparison
-    dados_grafico_tratamento = None
-    if tipo_visualizacao == 'tratamento' and parametro_id and setor_id:
-        setor = TabSetor.objects.get(id=setor_id)
-
-        # Define cutoff date based on sector ID
-        cutoff_date = None
-        if setor.id == 9:  # Araçatiba
-            cutoff_date = datetime(2021, 11, 1)
-        elif setor.id == 3:  # Jacaroá
-            cutoff_date = datetime(2024, 4, 1)
-        elif setor.id == 10:  # Spar
-            # Ajuste esta data conforme necessário
-            cutoff_date = datetime(2024, 4, 1)
-        elif setor.id == 4:  # Maricá
-            # Ajuste esta data conforme necessário
-            cutoff_date = datetime(2024, 4, 1)
-
-        if cutoff_date:
-            # Get all points in the sector
-            pontos_setor = TabPonto.objects.filter(
-                id_setor=setor).order_by('nome')
-
-            dados_grafico_tratamento = {
-                'pontos': [],
-                'pre_tratamento': [],
-                'pos_tratamento': []
-            }
-
-            for ponto in pontos_setor:
-                # Get measurements for this point
-                medidas_ponto = TabMedida.objects.filter(
-                    id_pp_id=parametro_id,
-                    id_envio__id_amostra__id_ponto=ponto
-                ).select_related('id_envio__id_amostra__id_coleta')
-
-                # Calculate pre-treatment average
-                medidas_pre = medidas_ponto.filter(
-                    id_envio__id_amostra__id_coleta__data__lt=cutoff_date
-                )
-                valores_pre = [convert_to_float(m.valor)
-                               for m in medidas_pre if m.valor]
-                # Filter out None values
-                valores_pre = [v for v in valores_pre if v is not None]
-                media_pre = sum(valores_pre) / \
-                    len(valores_pre) if valores_pre else None
-
-                # Calculate post-treatment average
-                medidas_pos = medidas_ponto.filter(
-                    id_envio__id_amostra__id_coleta__data__gte=cutoff_date
-                )
-                valores_pos = [convert_to_float(m.valor)
-                               for m in medidas_pos if m.valor]
-                # Filter out None values
-                valores_pos = [v for v in valores_pos if v is not None]
-                media_pos = sum(valores_pos) / \
-                    len(valores_pos) if valores_pos else None
-
-                if media_pre is not None or media_pos is not None:
-                    dados_grafico_tratamento['pontos'].append(ponto.nome)
-                    dados_grafico_tratamento['pre_tratamento'].append(
-                        round(media_pre, 2) if media_pre is not None else None
-                    )
-                    dados_grafico_tratamento['pos_tratamento'].append(
-                        round(media_pos, 2) if media_pos is not None else None
-                    )
-
-    # Add logic for seasonal comparison
-    dados_grafico_estacoes = None
-    if tipo_visualizacao == 'estacoes' and parametro_id and setor_id:
-        setor = TabSetor.objects.get(id=setor_id)
-        pontos_setor = TabPonto.objects.filter(id_setor=setor).order_by('nome')
-
-        dados_grafico_estacoes = {
-            'pontos': [],
-            'estacao_chuvosa': [],
-            'estacao_seca': []
-        }
-
-        for ponto in pontos_setor:
-            medidas = TabMedida.objects.filter(
-                id_pp_id=parametro_id,
-                id_envio__id_amostra__id_ponto=ponto
-            ).select_related('id_envio__id_amostra__id_coleta')
-
-            # Estação chuvosa (abril a outubro)
-            medidas_chuvosa = medidas.filter(
-                id_envio__id_amostra__id_coleta__data__month__range=(4, 10)
-            )
-            valores_chuvosa = [convert_to_float(
-                m.valor) for m in medidas_chuvosa if m.valor]
-            valores_chuvosa = [v for v in valores_chuvosa if v is not None]
-            media_chuvosa = sum(valores_chuvosa) / \
-                len(valores_chuvosa) if valores_chuvosa else None
-
-            # Estação seca (novembro a março)
-            medidas_seca = medidas.filter(
-                id_envio__id_amostra__id_coleta__data__month__in=[
-                    11, 12, 1, 2, 3]
-            )
-            valores_seca = [convert_to_float(m.valor)
-                            for m in medidas_seca if m.valor]
-            valores_seca = [v for v in valores_seca if v is not None]
-            media_seca = sum(valores_seca) / \
-                len(valores_seca) if valores_seca else None
-
-            if media_chuvosa is not None or media_seca is not None:
-                dados_grafico_estacoes['pontos'].append(ponto.nome)
-                dados_grafico_estacoes['estacao_chuvosa'].append(
-                    round(media_chuvosa, 2) if media_chuvosa is not None else None
-                )
-                dados_grafico_estacoes['estacao_seca'].append(
-                    round(media_seca, 2) if media_seca is not None else None
-                )
-
-    # Add logic for IQA
-    dados_grafico_iqa = None
-    mapa_iqa = None
-    if tipo_visualizacao == 'iqa':
-        import folium
-        from folium import plugins
-
-        parametros_iqa = [
-            "OD", "Escherichia coli", "DBOs", "Nitrogênio Total",
-            "Fosfato", "pH", "Turbidez", "TDS"
-        ]
-
-        # Base query com todos os parâmetros do IQA
-        query_base = TabMedida.objects.filter(
-            id_pp__id_param__nome__in=parametros_iqa
-        ).select_related(
-            'id_envio__id_amostra__id_coleta',
-            'id_envio__id_amostra__id_ponto',
-            'id_pp__id_param'
-        )
-
-        # Aplicar filtro de campanha se selecionada
-        if campanha_selecionada:
-            dados_iqa = query_base.filter(
-                id_envio__id_amostra__id_coleta=campanha_selecionada
-            )
-        else:
-            dados_iqa = query_base
-
-        # Verificar se existem dados antes de criar o DataFrame
-        if dados_iqa.exists():
-            df = pd.DataFrame(list(dados_iqa.values(
-                'id_envio__id_amostra__id_coleta__data',
-                'id_envio__id_amostra__id_ponto__nome',
-                'id_envio__id_amostra__id_ponto__lat',
-                'id_envio__id_amostra__id_ponto__lon',
-                'id_envio__id_amostra__id_coleta__id_setor__nome',
-                'id_pp__id_param__nome',
-                'valor'
-            )))
-
-            # Verificar se há dados válidos
-            if not df.empty:
-                # Convertendo valor para numérico
-                df['valor'] = pd.to_numeric(df['valor'], errors='coerce')
-
-                df.columns = ['data', 'ponto', 'lat',
-                              'lon', 'setor', 'parametro', 'valor']
-
-                # Pivot table com todos os parâmetros necessários
-                df_pivot = df.pivot_table(
-                    index=['data', 'ponto', 'lat', 'lon', 'setor'],
-                    columns='parametro',
-                    values='valor',
-                    aggfunc='mean'
-                ).reset_index()
-
-                # Preencher valores ausentes com 0
-                df_pivot = df_pivot.fillna(0)
-
-                # Calcular IQA
-                df_pivot['IQA'] = df_pivot.apply(calculate_iqa, axis=1)
-
-                # Criar mapa centralizado na média das coordenadas
-                lat_medio = df_pivot['lat'].mean()
-                lon_medio = df_pivot['lon'].mean()
-
-                mapa = folium.Map(
-                    location=[lat_medio, lon_medio],
-                    zoom_start=12,
-                    tiles='CartoDB positron'
-                )
-
-                # Função para determinar a cor com base no IQA
-                def get_color(iqa):
-                    if 90 < iqa <= 100:
-                        return '#4169E1'  # Azul royal
-                    if 70 < iqa <= 90:
-                        return '#008000'    # Verde
-                    if 50 < iqa <= 70:
-                        return '#FFFF00'    # Amarelo
-                    if 25 < iqa <= 50:
-                        return '#FFA500'    # Laranja
-                    return '#FF0000'                       # Vermelho
-
-                # Adicionar marcadores ao mapa
-                for idx, row in df_pivot.iterrows():
-                    if not pd.isna(row['IQA']) and not pd.isna(row['lat']) and not pd.isna(row['lon']):
-                        data_str = row['data'].strftime(
-                            '%d/%m/%Y') if pd.notna(row['data']) else 'Data não disponível'
-                        folium.CircleMarker(
-                            location=[row['lat'], row['lon']],
-                            radius=10,
-                            popup=f"""
-                                <b>Ponto:</b> {row['ponto']}<br>
-                                <b>Setor:</b> {row['setor']}<br>
-                                <b>Data:</b> {data_str}<br>
-                                <b>IQA:</b> {row['IQA']:.2f}
-                            """,
-                            color=get_color(row['IQA']),
-                            fill=True,
-                            fill_color=get_color(row['IQA'])
-                        ).add_to(mapa)
-
-                # Adicionar legenda
-                legend_html = '''
-                    <div style="position: fixed; bottom: 50px; left: 50px; z-index: 1000; background-color: white; padding: 10px; border: 2px solid grey; border-radius: 5px">
-                    <p><strong>Índice de Qualidade da Água (IQA)</strong></p>
-                    <p><span style="color: #4169E1;">●</span> Excelente (91-100)</p>
-                    <p><span style="color: #008000;">●</span> Bom (71-90)</p>
-                    <p><span style="color: #FFFF00;">●</span> Médio (51-70)</p>
-                    <p><span style="color: #FFA500;">●</span> Ruim (26-50)</p>
-                    <p><span style="color: #FF0000;">●</span> Muito Ruim (0-25)</p>
-                    </div>
-                '''
-                mapa.get_root().html.add_child(folium.Element(legend_html))
-
-            else:
-                # Criar mapa vazio com mensagem
-                mapa = folium.Map(
-                    location=[-22.9292, -42.8719],
-                    zoom_start=12,
-                    tiles='CartoDB positron'
-                )
-                folium.LayerControl().add_to(mapa)
-
-                # Adicionar mensagem ao mapa
-                title_html = '''
-                    <h4 style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-                              background-color: white; padding: 10px; border-radius: 5px; z-index: 1000;">
-                        Não foram encontrados dados suficientes para calcular o IQA nesta campanha
-                    </h4>
-                '''
-                mapa.get_root().html.add_child(folium.Element(title_html))
-        else:
-            # Criar mapa vazio com mensagem
-            mapa = folium.Map(
-                location=[-22.9292, -42.8719],
-                zoom_start=12,
-                tiles='CartoDB positron'
-            )
-            folium.LayerControl().add_to(mapa)
-
-            # Adicionar mensagem ao mapa
-            title_html = '''
-                <h4 style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-                          background-color: white; padding: 10px; border-radius: 5px; z-index: 1000;">
-                    Não foram encontradas medições para esta campanha
-                </h4>
-            '''
-            mapa.get_root().html.add_child(folium.Element(title_html))
-
-        # Salvar o mapa em HTML
-        mapa_iqa = mapa._repr_html_()
-
-        dados_grafico_iqa = {
-            'datas': df_pivot['data'].tolist() if 'df_pivot' in locals() else [],
-            'pontos': df_pivot['ponto'].tolist() if 'df_pivot' in locals() else [],
-            'valores': df_pivot['IQA'].tolist() if 'df_pivot' in locals() else [],
-            'lat': df_pivot['lat'].tolist() if 'df_pivot' in locals() else [],
-            'lon': df_pivot['lon'].tolist() if 'df_pivot' in locals() else [],
-            'setores': df_pivot['setor'].tolist() if 'df_pivot' in locals() else []
-        }
+                if dados["count"] > 0:
+                    media = dados["soma"] / dados["count"]
+                    dados_grafico_setor["datas"].append(data)
+                    dados_grafico_setor["valores"].append(round(media, 2))
 
     context = {
-        'parametros': parametros,
-        'pontos': pontos,
-        'setores': setores,
-        'dados_grafico': dados_grafico,
-        'dados_grafico_setor': dados_grafico_setor,
-        'dados_grafico_tratamento': dados_grafico_tratamento,
-        'dados_grafico_estacoes': dados_grafico_estacoes,  # Add to context
-        'dados_grafico_iqa': dados_grafico_iqa,  # Add IQA data to context
-        'mapa_iqa': mapa_iqa,  # Add the map to context
-        'parametro_selecionado': parametro_id,
-        'parametro_nome_display': parametro_nome_display,
-        'ponto_selecionado': ponto_id,
-        'setor_selecionado': setor_id,
-        'tipo_visualizacao': tipo_visualizacao,
-        'campanhas': campanhas,
-        'campanha_selecionada': campanha_selecionada,
+        "parametros": parametros,
+        "pontos": pontos,
+        "setores": setores,
+        "dados_grafico": dados_grafico,
+        "dados_grafico_setor": dados_grafico_setor,
+        "parametro_selecionado": parametro_id,
+        "ponto_selecionado": ponto_id,
+        "setor_selecionado": setor_id,
+        "tipo_visualizacao": tipo_visualizacao,
     }
 
     return render(request, 'dashboard.html', context)
