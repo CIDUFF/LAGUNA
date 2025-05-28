@@ -942,7 +942,8 @@ class InputFisicoQuimicoForm(forms.ModelForm):
 
     class Meta:
         model = TabMedida
-        exclude = ["valor", "id_pp"]  # Excluir 'id_pp' para mantê-lo oculto
+        # Excluir 'id_pp' para mantê-lo oculto
+        exclude = ["valor", "id_pp", "err_valor", "operador"]
         fields = [
             "id_pp_hidden",
             "id_pp_display",
