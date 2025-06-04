@@ -3655,7 +3655,6 @@ def new_home(request):
         return redirect("home")
 
 
-
 def convert_to_float(value):
     """Helper function to convert values to float, handling 'ND' and other non-numeric values"""
     try:
@@ -3746,15 +3745,26 @@ def dashboard_parametros(request):
     dados_grafico = None
     dados_grafico_setor = None
 
+    # Adicionar estas variáveis para armazenar informações do ponto
+    setor_do_ponto = None
+    nome_do_ponto = None
+
     if parametro_id:
         if tipo_visualizacao == 'ponto' and ponto_id:
-            # Lógica para visualização por ponto
+            # Obtém informações sobre o ponto
+            ponto_obj = TabPonto.objects.filter(id=ponto_id).select_related('id_setor').first()
+            if ponto_obj:
+                setor_do_ponto = ponto_obj.id_setor.nome if ponto_obj.id_setor else "Setor não definido"
+                nome_do_ponto = ponto_obj.nome
+
+            # Lógica existente para visualização por ponto
             medidas = TabMedida.objects.filter(
                 id_pp_id=parametro_id,
                 id_envio__id_amostra__id_ponto_id=ponto_id
             ).select_related(
                 'id_envio__id_amostra__id_coleta'
             ).order_by('id_envio__id_amostra__id_coleta__data')
+            
             # Prepara dados para o gráfico
             dados_grafico = {"datas": [], "valores": []}
 
@@ -4083,6 +4093,8 @@ def dashboard_parametros(request):
         'tipo_visualizacao': tipo_visualizacao,
         'campanhas': campanhas,
         'campanha_selecionada': campanha_selecionada,
+        'setor_do_ponto': setor_do_ponto,
+        'nome_do_ponto': nome_do_ponto,
     }
 
     return render(request, "dashboard.html", context)
