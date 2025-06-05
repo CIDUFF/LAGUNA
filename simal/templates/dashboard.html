@@ -344,24 +344,61 @@ document.addEventListener('DOMContentLoaded', function() {
 
 {% if tipo_visualizacao == 'estacoes' and dados_grafico_estacoes %}
 <script>
-    const dadosEstacoes = [{
-        x: {{ dados_grafico_estacoes.pontos|safe }},
-        y: {{ dados_grafico_estacoes.estacao_chuvosa|safe }},
+    // Função auxiliar para verificar se um valor está fora dos limites
+    function isOutOfBounds(value, param, isCanal) {
+        if (value === null || value === undefined) return false;
+        
+        if (param.includes('ph')) {
+            if (isCanal) {
+                return value < 6 || value > 9;
+            } else {
+                return value < 6.5 || value > 8.5;
+            }
+        }
+        else if (param.includes('od')) {
+            return value < 6;
+        }
+        else if (param.includes('dbo')) {
+            return value > 3;
+        }
+        else if (param.includes('turbidez')) {
+            return value > 40;
+        }
+        return false;
+    }
+
+    const parametroNome = '{{ parametro_nome_display|lower }}';
+    const isCanal = {{ setor_selecionado }} === '10' || {{ setor_selecionado }} === '4';  // IDs dos canais
+    const pontos = {{ dados_grafico_estacoes.pontos|safe }};
+    const valoresChuvosa = {{ dados_grafico_estacoes.estacao_chuvosa|safe }};
+    const valoresSeca = {{ dados_grafico_estacoes.estacao_seca|safe }};
+    
+    // Preparar dados das barras com cores diferentes para valores fora dos limites
+    const dadosChuvosa = {
+        x: pontos,
+        y: valoresChuvosa,
         type: 'bar',
         name: 'Estação Chuvosa (Abr-Out)',
-        marker: { color: '#1f77b4' }  // Azul para estação chuvosa
-    }, {
-        x: {{ dados_grafico_estacoes.pontos|safe }},
-        y: {{ dados_grafico_estacoes.estacao_seca|safe }},
+        marker: {
+            color: valoresChuvosa.map(val => isOutOfBounds(val, parametroNome, isCanal) ? '#FF0000' : '#1f77b4')
+        }
+    };
+    
+    const dadosSeca = {
+        x: pontos,
+        y: valoresSeca,
         type: 'bar',
         name: 'Estação Seca (Nov-Mar)',
-        marker: { color: '#ff7f0e' }  // Laranja para estação seca
-    }];
+        marker: {
+            color: valoresSeca.map(val => isOutOfBounds(val, parametroNome, isCanal) ? '#FF0000' : '#DAA520')
+        }
+    };
 
-    // Adiciona linhas de limite baseado no parâmetro
-    const parametroNome = '{{ parametro_nome_display|lower }}';
-    const setor = '{{ setor_selecionado }}';
-    const xVals = {{ dados_grafico_estacoes.pontos|safe }};
+    // Criar array com todos os dados
+    const dadosEstacoes = [dadosChuvosa, dadosSeca];
+
+    // Adicionar linhas de limite baseado no parâmetro
+    const xVals = pontos;
     const yVals = Array(xVals.length).fill(null);
 
     // Função para adicionar linhas de limite
@@ -401,12 +438,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }));
     }
 
-    // Verifica se o setor é um canal
-    const isCanal = {{ setor_selecionado }} === '10' || {{ setor_selecionado }} === '4';  // IDs dos canais
-    const limitLines = addLimitLines(parametroNome, isCanal);
-    
-    // Adiciona as linhas de limite ao array de dados
-    dadosEstacoes.push(...limitLines);
+    // Adicionar as linhas de limite ao array de dados
+    dadosEstacoes.push(...addLimitLines(parametroNome, isCanal));
 
     const layoutEstacoes = {
         title: 'Comparação entre Estações por Ponto',
