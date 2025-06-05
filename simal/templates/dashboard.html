@@ -30,6 +30,27 @@
     border-bottom: none;
     opacity: 1; /* Aba ativa totalmente opaca */
 }
+
+/* Estilo para o painel de informações do ponto */
+.alert-info {
+    background-color: #e8f4f8;
+    border-left: 4px solid #17a2b8;
+    border-radius: 0;
+}
+
+.alert-info h5 {
+    color: #0c5460;
+    margin-bottom: 0;
+}
+
+.alert-info hr {
+    border-top-color: #17a2b8;
+    margin: 10px 0;
+}
+
+.alert-info strong {
+    color: #0c5460;
+}
 </style>
 
 <!-- No cabeçalho do template, adicione os links do Leaflet -->
@@ -204,6 +225,33 @@
                     Selecione os filtros e clique em "Gerar Gráfico" para visualizar os dados.
                 </div>
             {% endif %}
+
+            <!-- Adicione após o formulário de seleção, antes da div do gráfico -->
+            {% if tipo_visualizacao == 'ponto' and ponto_selecionado_info %}
+            <div class="legenda-fixa mt-3">
+                <div class="row">
+                    <div class="col-md-12">
+                        <h5>Informações do Ponto Selecionado</h5>
+                        <hr>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Nome do Ponto:</strong> {{ ponto_selecionado_info.nome }}</p>
+                        <p><strong>Setor:</strong> {{ ponto_selecionado_info.setor }}</p>
+                        {% if ponto_selecionado_info.descricao %}
+                        <p><strong>Descrição:</strong> {{ ponto_selecionado_info.descricao }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        {% if ponto_selecionado_info.latitude and ponto_selecionado_info.longitude %}
+                        <p><strong>Coordenadas:</strong> {{ ponto_selecionado_info.latitude }}, {{ ponto_selecionado_info.longitude }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
         </div>
     </div>
 </div>

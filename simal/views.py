@@ -3655,7 +3655,6 @@ def new_home(request):
         return redirect("home")
 
 
-
 def convert_to_float(value):
     """Helper function to convert values to float, handling 'ND' and other non-numeric values"""
     try:
@@ -3746,6 +3745,7 @@ def dashboard_parametros(request):
     setor_id = request.GET.get('setor')
     dados_grafico = None
     dados_grafico_setor = None
+    ponto_selecionado_info = None  # Informação adicional sobre o ponto selecionado
 
     if parametro_id:
         if tipo_visualizacao == 'ponto' and ponto_id:
@@ -3765,7 +3765,19 @@ def dashboard_parametros(request):
                         medida.id_envio.id_amostra.id_coleta.data.strftime('%Y-%m-%d')
                     )
                     dados_grafico['valores'].append(float(medida.valor))
-
+        
+            # Buscar informações do ponto selecionado, incluindo o setor
+            try:
+                ponto = TabPonto.objects.select_related('id_setor').get(id=ponto_id)
+                ponto_selecionado_info = {
+                    'nome': ponto.nome,
+                    'setor': ponto.id_setor.nome if ponto.id_setor else 'Sem setor definido',
+                    'descricao': ponto.observacao or '',
+                    'latitude': ponto.lat,
+                    'longitude': ponto.lon
+                }
+            except TabPonto.DoesNotExist:
+                ponto_selecionado_info = None
         elif tipo_visualizacao == 'setor' and setor_id:
             # Lógica para visualização por setor
             medidas = TabMedida.objects.filter(
@@ -4073,12 +4085,13 @@ def dashboard_parametros(request):
         'dados_grafico': dados_grafico,
         'dados_grafico_setor': dados_grafico_setor,
         'dados_grafico_tratamento': dados_grafico_tratamento,
-        'dados_grafico_estacoes': dados_grafico_estacoes,  # Add to context
-        'dados_grafico_iqa': dados_grafico_iqa,  # Add IQA data to context
-        'mapa_iqa': mapa_iqa,  # Add the map to context
+        'dados_grafico_estacoes': dados_grafico_estacoes,
+        'dados_grafico_iqa': dados_grafico_iqa,
+        'mapa_iqa': mapa_iqa,
         'parametro_selecionado': parametro_id,
         'parametro_nome_display': parametro_nome_display,
         'ponto_selecionado': ponto_id,
+        'ponto_selecionado_info': ponto_selecionado_info,  # Adicione esta linha
         'setor_selecionado': setor_id,
         'tipo_visualizacao': tipo_visualizacao,
         'campanhas': campanhas,
