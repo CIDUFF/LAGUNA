@@ -213,8 +213,11 @@
                         {{ mapa_iqa|safe }}
                     </div>
                 {% else %}
-                    <div class="alert alert-info">
-                        Nenhum dado encontrado para os filtros selecionados.
+                    <div class="alert alert-info alert-dismissible fade show" 
+                         style="position: sticky; top: 0; z-index: 1050; text-align: center; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>Atenção:</strong> Não existe dados para o setor selecionado.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fechar"></button>
                     </div>
                 {% endif %}
             {% else %}
