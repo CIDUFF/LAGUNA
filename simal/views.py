@@ -3971,12 +3971,11 @@ def dashboard_parametros(request):
                 df_pivot['IQA'] = df_pivot.apply(calculate_iqa, axis=1)
 
                 # Criar mapa centralizado na média das coordenadas
-                lat_medio = df_pivot['lat'].mean()
-                lon_medio = df_pivot['lon'].mean()
+                location=[-22.9292, -42.8719],  # Coordenadas fixas do sistema lagunar de Maricá
                 
                 mapa = folium.Map(
-                    location=[lat_medio, lon_medio],
-                    zoom_start=12,
+                    location=[-22.9292, -42.8719],
+                    zoom_start=13,
                     tiles='CartoDB positron'
                 )
 
