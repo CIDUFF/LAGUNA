@@ -377,25 +377,66 @@ document.addEventListener('DOMContentLoaded', function() {
 
 {% if tipo_visualizacao == 'estacoes' and dados_grafico_estacoes %}
 <script>
+    // Função para verificar se um valor está fora dos limites
+    function isOutOfRange(value, param, isCanal) {
+        if (value === null) return false;
+        
+        if (param.includes('ph')) {
+            const minPH = isCanal ? 6 : 6.5;
+            const maxPH = isCanal ? 9 : 8.5;
+            return (value < minPH || value > maxPH);
+        }
+        else if (param.includes('od')) {
+            return (value < 6);
+        }
+        else if (param.includes('dbo')) {
+            return (value > 3);
+        }
+        else if (param.includes('turbidez')) {
+            return (value > 40);
+        }
+        
+        return false;
+    }
+
+    const parametroNome = '{{ parametro_nome_display|lower }}';
+    const isCanal = {{ setor_selecionado }} === '10' || {{ setor_selecionado }} === '4';
+    
+    const pontosArray = {{ dados_grafico_estacoes.pontos|safe }};
+    const chuvosaArray = {{ dados_grafico_estacoes.estacao_chuvosa|safe }};
+    const secaArray = {{ dados_grafico_estacoes.estacao_seca|safe }};
+    
+    // Cores padrão
+    const corChuvosa = '#1f77b4';  // Azul
+    const corSeca = '#daa520';     // Amarelo escurecido (goldenrod)
+    const corAlerta = '#ff0000';   // Vermelho mais intenso para valores fora do limite
+    
+    // Preparar arrays de cores para cada barra
+    const chuvosaColors = chuvosaArray.map(valor => 
+        isOutOfRange(valor, parametroNome, isCanal) ? corAlerta : corChuvosa
+    );
+    
+    const secaColors = secaArray.map(valor => 
+        isOutOfRange(valor, parametroNome, isCanal) ? corAlerta : corSeca
+    );
+
     const dadosEstacoes = [{
-        x: {{ dados_grafico_estacoes.pontos|safe }},
-        y: {{ dados_grafico_estacoes.estacao_chuvosa|safe }},
+        x: pontosArray,
+        y: chuvosaArray,
         type: 'bar',
         name: 'Estação Chuvosa (Abr-Out)',
-        marker: { color: '#1f77b4' }  // Azul para estação chuvosa
+        marker: { 
+            color: chuvosaColors
+        }
     }, {
-        x: {{ dados_grafico_estacoes.pontos|safe }},
-        y: {{ dados_grafico_estacoes.estacao_seca|safe }},
+        x: pontosArray,
+        y: secaArray,
         type: 'bar',
         name: 'Estação Seca (Nov-Mar)',
-        marker: { color: '#ff7f0e' }  // Laranja para estação seca
+        marker: { 
+            color: secaColors
+        }
     }];
-
-    // Adiciona linhas de limite baseado no parâmetro
-    const parametroNome = '{{ parametro_nome_display|lower }}';
-    const setor = '{{ setor_selecionado }}';
-    const xVals = {{ dados_grafico_estacoes.pontos|safe }};
-    const yVals = Array(xVals.length).fill(null);
 
     // Função para adicionar linhas de limite
     function addLimitLines(param, isCanal) {
@@ -421,8 +462,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         return limits.map(limit => ({
-            x: xVals,
-            y: Array(xVals.length).fill(limit.y),
+            x: pontosArray,
+            y: Array(pontosArray.length).fill(limit.y),
             type: 'scatter',
             mode: 'lines',
             name: limit.name,
@@ -434,11 +475,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }));
     }
 
-    // Verifica se o setor é um canal
-    const isCanal = {{ setor_selecionado }} === '10' || {{ setor_selecionado }} === '4';  // IDs dos canais
     const limitLines = addLimitLines(parametroNome, isCanal);
-    
-    // Adiciona as linhas de limite ao array de dados
     dadosEstacoes.push(...limitLines);
 
     const layoutEstacoes = {
@@ -458,7 +495,19 @@ document.addEventListener('DOMContentLoaded', function() {
         },
         margin: {
             t: 100
-        }
+        },
+        annotations: [{
+            x: 0.5,
+            y: 1.05,
+            xref: 'paper',
+            yref: 'paper',
+            text: 'Obs: Barras em vermelho indicam valores fora dos limites de referência',
+            showarrow: false,
+            font: {
+                size: 12,
+                color: '#e74c3c'
+            }
+        }]
     };
 
     Plotly.newPlot('grafico-estacoes', dadosEstacoes, layoutEstacoes);
@@ -541,6 +590,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Adiciona o evento de alteração do parâmetro
     document.getElementById('parametro').addEventListener('change', function() {
+        document.getElementById('filtroForm').submit();
+    });
+
+    document.getElementById('setor').addEventListener('change', function() {
         document.getElementById('filtroForm').submit();
     });
 
