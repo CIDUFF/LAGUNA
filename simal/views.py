@@ -3690,6 +3690,7 @@ def dashboard_parametros(request):
     parametros = (TabProdxparam.objects
         .filter(status=True)
         .exclude(id_frasco_id__in=[5, 6, 7])
+        .exclude(id=151)  # Exclui o pH() com id 151
         .select_related('id_param')
         .order_by('id_param__nome'))
     
