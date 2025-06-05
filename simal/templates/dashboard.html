@@ -177,6 +177,12 @@
                 {% elif tipo_visualizacao == 'tratamento' %}
                     {% if dados_grafico_tratamento %}
                         <div id="grafico-tratamento"></div>
+                        <div class="legenda-fixa mt-3" style="padding: 15px; border: 1px solid #bee5eb; background-color: #d1ecf1; color: #0c5460; border-radius: 4px;">
+                            <h5>Legenda:</h5>
+                            <p><strong>Pré-tratamento nas lagoas e canais de Araçatiba:</strong> Antes de novembro de 2021.</p>
+                            <p><strong>Pré-tratamento nas lagoas e canais de Jacaroá:</strong> Antes de abril de 2024.</p>
+                            <p><strong>Pós-tratamento:</strong> Da data do pré até a data atual.</p>
+                        </div>
                     {% else %}
                         <div class="alert alert-warning">
                             <strong>Atenção:</strong> Não existem dados para o setor selecionado.
