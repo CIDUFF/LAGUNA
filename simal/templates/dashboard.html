@@ -100,9 +100,11 @@
                                 {% endfor %}
                             {% else %}
                                 {% for param in parametros %}
-                                    <option value="{{ param.id }}" {% if param.id|stringformat:"s" == parametro_selecionado %}selected{% endif %}>
-                                        {{ param.id_param.nome }} ({{ param.unidade }})
-                                    </option>
+                                    {% if param.id|stringformat:"s" != "151" %}
+                                        <option value="{{ param.id }}" {% if param.id|stringformat:"s" == parametro_selecionado %}selected{% endif %}>
+                                            {{ param.id_param.nome }} ({{ param.unidade }})
+                                        </option>
+                                    {% endif %}
                                 {% endfor %}
                             {% endif %}
                         </select>
