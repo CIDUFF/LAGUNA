@@ -174,8 +174,14 @@
                     <div id="grafico"></div>
                 {% elif tipo_visualizacao == 'setor' and dados_grafico_setor %}
                     <div id="grafico-setor"></div>
-                {% elif tipo_visualizacao == 'tratamento' and dados_grafico_tratamento %}
-                    <div id="grafico-tratamento"></div>
+                {% elif tipo_visualizacao == 'tratamento' %}
+                    {% if dados_grafico_tratamento %}
+                        <div id="grafico-tratamento"></div>
+                    {% else %}
+                        <div class="alert alert-warning">
+                            <strong>Atenção:</strong> Não existem dados para o setor selecionado.
+                        </div>
+                    {% endif %}
                 {% elif tipo_visualizacao == 'estacoes' and dados_grafico_estacoes %}
                     <div id="grafico-estacoes"></div>
                 {% elif tipo_visualizacao == 'iqa' and mapa_iqa %}
