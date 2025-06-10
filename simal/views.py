@@ -146,6 +146,9 @@ from django.db.models import Count
 from .utils.iqa_calculator import calculate_iqa
 import pandas as pd
 import numpy as np
+import folium
+import pandas as pd
+from folium import IFrame
 
 # Configuração do logger
 logger = logging.getLogger(__name__)
@@ -729,7 +732,7 @@ def cancelar_programacao(request, id):
     Returns:
         HttpResponse: O objeto HttpResponse que redireciona para a página 'coletas_agendas'
                       em caso de sucesso no cancelamento dos dados, ou permanece na mesma página
-                      com uma mensagem de aviso se a coleta já foi realizada ou iniciada.
+                      com uma mensagem de aviso se a coleta já foi iniciada ou realizada.
 
     Raises:
         Http404: Se a programação de coleta com o ID fornecido não existir.
@@ -3998,7 +4001,23 @@ def dashboard_parametros(request):
 
                 # Preencher valores ausentes com 0
                 df_pivot = df_pivot.fillna(0)
-
+                
+                # Lista de todos os parâmetros esperados
+                todos_parametros = list(parametros_iqa_ids.keys())
+                
+                # Para cada linha, registrar quais parâmetros estão presentes e quais estão ausentes
+                df_pivot['parametros_presentes'] = df_pivot.apply(
+                    lambda row: {param: row[param] if param in row and row[param] > 0 else None 
+                                 for param in todos_parametros}, 
+                    axis=1
+                )
+                
+                df_pivot['parametros_ausentes'] = df_pivot.apply(
+                    lambda row: [param for param in todos_parametros 
+                                 if param not in row or row[param] == 0], 
+                    axis=1
+                )
+                
                 # Calcular IQA
                 df_pivot['IQA'] = df_pivot.apply(calculate_iqa, axis=1)
 
@@ -4017,19 +4036,48 @@ def dashboard_parametros(request):
                     if 25 < iqa <= 50: return '#FFA500'    # Laranja
                     return '#FF0000'                       # Vermelho
 
-                # Adicionar marcadores ao mapa
+                # Adicionar marcadores ao mapa com informações detalhadas
                 for idx, row in df_pivot.iterrows():
                     if not pd.isna(row['IQA']) and not pd.isna(row['lat']) and not pd.isna(row['lon']):
                         data_str = row['data'].strftime('%d/%m/%Y') if pd.notna(row['data']) else 'Data não disponível'
+                        
+                        # Construir HTML para parâmetros presentes
+                        params_presentes_html = "<h6>Parâmetros utilizados:</h6><ul>"
+                        for param, valor in row['parametros_presentes'].items():
+                            if valor is not None:
+                                params_presentes_html += f"<li><b>{param}:</b> {valor:.2f}</li>"
+                        params_presentes_html += "</ul>"
+                        
+                        # Construir HTML para parâmetros ausentes
+                        params_ausentes_html = ""
+                        if row['parametros_ausentes']:
+                            params_ausentes_html = "<h6>Parâmetros não encontrados:</h6><ul>"
+                            for param in row['parametros_ausentes']:
+                                params_ausentes_html += f"<li>{param}</li>"
+                            params_ausentes_html += "</ul>"
+                        
+                        # Popup completo com informações detalhadas
+                        popup_html = f"""
+                        <div style="min-width: 200px;">
+                            <h5>Detalhes do IQA</h5>
+                            <p><b>Ponto:</b> {row['ponto']}<br>
+                            <b>Setor:</b> {row['setor']}<br>
+                            <b>Data:</b> {data_str}<br>
+                            <b>IQA:</b> {row['IQA']:.2f}</p>
+                            {params_presentes_html}
+                            {params_ausentes_html}
+                        </div>
+                        """
+                        
+                        # Usar IFrame para melhor formatação do popup
+                        iframe = folium.IFrame(html=popup_html, width=300, height=300)
+                        popup = folium.Popup(iframe, max_width=300)
+                        
                         folium.CircleMarker(
                             location=[row['lat'], row['lon']],
                             radius=10,
-                            popup=f"""
-                                <b>Ponto:</b> {row['ponto']}<br>
-                                <b>Setor:</b> {row['setor']}<br>
-                                <b>Data:</b> {data_str}<br>
-                                <b>IQA:</b> {row['IQA']:.2f}
-                            """,
+                            popup=popup,
+                            tooltip=f"IQA: {row['IQA']:.2f} - {row['ponto']}",
                             color=get_color(row['IQA']),
                             fill=True,
                             fill_color=get_color(row['IQA'])
@@ -4060,7 +4108,7 @@ def dashboard_parametros(request):
                 title_html = '''
                     <h4 style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
                               background-color: white; padding: 10px; border-radius: 5px; z-index: 1000;">
-                        Não foram encontrados dados suficientes para calcular o IQA nesta campanha
+                        Não foram encontrados dados suficientes dos parâmetros necessários para calcular o IQA nesta campanha
                     </h4>
                 '''
                 mapa.get_root().html.add_child(folium.Element(title_html))
