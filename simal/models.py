@@ -893,6 +893,8 @@ class TabProdxparam(models.Model):
     )
     id_ppativacao = models.BigIntegerField(blank=True, null=True)
     status = models.BooleanField("Status", default=True, blank=True, null=True)
+    ordem_visualizacao = models.IntegerField(
+        default=999, null=True, blank=True, help_text="Define a ordem de exibição do parâmetro (menor = primeiro).")
 
     def __str__(self):
         return f'{self.nome} - {self.unidade or ""}'
