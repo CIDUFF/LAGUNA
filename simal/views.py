@@ -2357,8 +2357,9 @@ def input_fisico_quimico(request, coleta_id, ponto_id):
             queryset=TabMedida.objects.filter(
                 id_envio__id_amostra__id_coleta=coleta_id,
                 id_envio__id_amostra__id_ponto=ponto_id,
-                id_envio__id_amostra__id_frasco=1,
-            )
+                id_envio__id_amostra__id_frasco=1,  # Frasco 1 para físico-químico
+            ).select_related('id_pp', 'id_pp__id_param')
+            .order_by('id_pp__ordem_visualizacao', 'id_pp__id_param__nome') # ORDENAÇÃO ATUALIZADA
         )
 
     return render(
@@ -2709,7 +2710,7 @@ def input_laboratorio(request, coleta_id, ponto_id, frasco_id):
     medidas = (
         TabMedida.objects.filter(id_envio=envio).select_related(
             "id_envio", "id_pp", "id_pp__id_param"
-        )
+        ).order_by('id_pp__ordem_visualizacao', 'id_pp__id_param__nome') # ORDENAÇÃO ATUALIZADA
         if envio
         else TabMedida.objects.none()
     )
@@ -3739,7 +3740,6 @@ def new_home(request):
         return redirect("home")
 
 
-
 def convert_to_float(value):
     """Helper function to convert values to float, handling 'ND' and other non-numeric values"""
     try:
@@ -3931,7 +3931,7 @@ def dashboard_parametros(request):
                 medidas_pre = medidas_ponto.filter(
                     id_envio__id_amostra__id_coleta__data__lt=cutoff_date
                 )
-                valores_pre = [convert_to_float(m.valor) for m in medidas_pre if m.valor]
+                valores_pre = [convert_to_float(medida.valor) for medida in medidas_pre if medida.valor]
                 valores_pre = [v for v in valores_pre if v is not None]  # Filter out None values
                 media_pre = sum(valores_pre) / len(valores_pre) if valores_pre else None
                 
@@ -3939,7 +3939,7 @@ def dashboard_parametros(request):
                 medidas_pos = medidas_ponto.filter(
                     id_envio__id_amostra__id_coleta__data__gte=cutoff_date
                 )
-                valores_pos = [convert_to_float(m.valor) for m in medidas_pos if m.valor]
+                valores_pos = [convert_to_float(medida.valor) for medida in medidas_pos if medida.valor]
                 valores_pos = [v for v in valores_pos if v is not None]  # Filter out None values
                 media_pos = sum(valores_pos) / len(valores_pos) if valores_pos else None
                 
@@ -3974,7 +3974,7 @@ def dashboard_parametros(request):
             medidas_chuvosa = medidas.filter(
                 id_envio__id_amostra__id_coleta__data__month__range=(4, 10)
             )
-            valores_chuvosa = [convert_to_float(m.valor) for m in medidas_chuvosa if m.valor]
+            valores_chuvosa = [convert_to_float(medida.valor) for medida in medidas_chuvosa if medida.valor]
             valores_chuvosa = [v for v in valores_chuvosa if v is not None]
             media_chuvosa = sum(valores_chuvosa) / len(valores_chuvosa) if valores_chuvosa else None
             
@@ -3982,7 +3982,7 @@ def dashboard_parametros(request):
             medidas_seca = medidas.filter(
                 id_envio__id_amostra__id_coleta__data__month__in=[11, 12, 1, 2, 3]
             )
-            valores_seca = [convert_to_float(m.valor) for m in medidas_seca if m.valor]
+            valores_seca = [convert_to_float(medida.valor) for medida in medidas_seca if medida.valor]
             valores_seca = [v for v in valores_seca if v is not None]
             media_seca = sum(valores_seca) / len(valores_seca) if valores_seca else None
             
