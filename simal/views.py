@@ -3676,6 +3676,15 @@ def convert_to_float(value):
 def dashboard_parametros(request):
     tipo_visualizacao = request.GET.get('tipo', 'ponto')
     
+    # Initialize variables that might not be set in all code paths
+    dados_grafico_iqa = None
+    mapa_iqa = None
+    dados_grafico = None
+    dados_grafico_setor = None
+    dados_grafico_tratamento = None
+    dados_grafico_estacoes = None
+    ponto_selecionado_info = None
+    
     # Add campaign selection
     campanhas = TabColeta.objects.all().order_by('-data')
     campanha_id = request.GET.get('campanha')
@@ -3921,25 +3930,31 @@ def dashboard_parametros(request):
                     round(media_seca, 2) if media_seca is not None else None
                 )
 
-    # Add logic for IQA
-    dados_grafico_iqa = None
-    mapa_iqa = None
+    # Bloco de código específico para o cálculo do IQA
+    import folium
+    from folium.plugins import marker_cluster
     if tipo_visualizacao == 'iqa':
-        import folium
         from folium import plugins
         
-        parametros_iqa = [
-            "OD", "Escherichia coli", "DBOs", "Nitrogênio Total",
-            "Fosfato", "pH", "Turbidez", "TDS"
-        ]
+        # Mapeamento dos IDs específicos para os parâmetros do IQA
+        parametros_iqa_ids = {
+            "OD": 167,
+            "Escherichia coli": 26,
+            "DBOs": 24, 
+            "Nitrogênio Total": 41,
+            "Fosfato": 61,
+            "pH": 44,
+            "Turbidez": 55,
+            "TDS": 51
+        }
         
-        # Base query com todos os parâmetros do IQA
+        # Base query utilizando os IDs específicos dos parâmetros
         query_base = TabMedida.objects.filter(
-            id_pp__id_param__nome__in=parametros_iqa
+            id_pp_id__in=parametros_iqa_ids.values()
         ).select_related(
             'id_envio__id_amostra__id_coleta',
             'id_envio__id_amostra__id_ponto',
-            'id_pp__id_param'
+            'id_pp'
         )
 
         # Aplicar filtro de campanha se selecionada
@@ -3958,7 +3973,7 @@ def dashboard_parametros(request):
                 'id_envio__id_amostra__id_ponto__lat',
                 'id_envio__id_amostra__id_ponto__lon',
                 'id_envio__id_amostra__id_coleta__id_setor__nome',
-                'id_pp__id_param__nome',
+                'id_pp_id',
                 'valor'
             )))
 
@@ -3967,7 +3982,11 @@ def dashboard_parametros(request):
                 # Convertendo valor para numérico
                 df['valor'] = pd.to_numeric(df['valor'], errors='coerce')
                 
-                df.columns = ['data', 'ponto', 'lat', 'lon', 'setor', 'parametro', 'valor']
+                # Mapear os id_pp para os nomes dos parâmetros
+                id_to_param_name = {v: k for k, v in parametros_iqa_ids.items()}
+                df['parametro'] = df['id_pp_id'].map(id_to_param_name)
+                
+                df.columns = ['data', 'ponto', 'lat', 'lon', 'setor', 'id_param', 'valor', 'parametro']
 
                 # Pivot table com todos os parâmetros necessários
                 df_pivot = df.pivot_table(
@@ -3984,10 +4003,8 @@ def dashboard_parametros(request):
                 df_pivot['IQA'] = df_pivot.apply(calculate_iqa, axis=1)
 
                 # Criar mapa centralizado na média das coordenadas
-                location=[-22.9292, -42.8719],  # Coordenadas fixas do sistema lagunar de Maricá
-                
                 mapa = folium.Map(
-                    location=[-22.9292, -42.8719],
+                    location=[-22.9292, -42.8719],  # Coordenadas fixas do sistema lagunar de Maricá
                     zoom_start=13,
                     tiles='CartoDB positron'
                 )
@@ -4030,7 +4047,6 @@ def dashboard_parametros(request):
                     </div>
                 '''
                 mapa.get_root().html.add_child(folium.Element(legend_html))
-
             else:
                 # Criar mapa vazio com mensagem
                 mapa = folium.Map(
