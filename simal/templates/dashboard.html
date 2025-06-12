@@ -44,7 +44,7 @@
 }
 
 .alert-info hr {
-    border-top-color: #17a2b8;
+   
     margin: 10px 0;
 }
 
@@ -312,20 +312,75 @@ document.addEventListener('DOMContentLoaded', function() {
         },
         marker: {
             color: '#1f77b4'
-        }
+        },
+        hovertemplate: 'Data: %{x}<br>Média: %{y:.2f}<br><extra></extra>'
     };
 
+    // Preparar dados para as barras de pontos individuais
+    const todosPontos = {{ dados_grafico_setor.todos_pontos|safe }};
+    const pontosPorData = {{ dados_grafico_setor.pontos_data|safe }};
+    const datas = {{ dados_grafico_setor.datas|safe }};
+    
+    // Gerar uma paleta de cores para os pontos
+    function generateColors(numColors) {
+        const colors = [];
+        for (let i = 0; i < numColors; i++) {
+            const hue = (i * 360 / numColors) % 360;
+            colors.push(`hsl(${hue}, 70%, 50%)`);
+        }
+        return colors;
+    }
+    
+    const coresPontos = generateColors(todosPontos.length);
+    
+    // Criar uma trace para cada ponto
+    const tracesBarras = todosPontos.map((ponto, index) => {
+        const xValues = [];
+        const yValues = [];
+        
+        datas.forEach((data, dataIndex) => {
+            const valorPonto = pontosPorData[dataIndex][ponto] || null;
+            if (valorPonto !== null) {
+                xValues.push(data);
+                yValues.push(valorPonto);
+            }
+        });
+        
+        return {
+            x: xValues,
+            y: yValues,
+            type: 'bar',
+            name: ponto,
+            marker: { 
+                color: coresPontos[index % coresPontos.length],
+                opacity: 0.7
+            },
+            hovertemplate: 'Ponto: ' + ponto + '<br>Data: %{x}<br>Valor: %{y:.2f}<br><extra></extra>'
+        };
+    });
+    
+    // Combinar a linha de média com as barras de pontos
+    const todosDados = [dadosSetor, ...tracesBarras];
+
     const layoutSetor = {
-        title: 'Média do Parâmetro no Setor ao Longo do Tempo',
+        title: 'Média do Parâmetro no Setor ao Longo do Tempo com Pontos Individuais',
         xaxis: {
-            title: 'Data'
+            title: 'Data',
+            tickangle: -45
         },
         yaxis: {
             title: '{{ parametro_nome_display }}'
-        }
+        },
+        legend: {
+            orientation: 'h',
+            y: -0.2
+        },
+        barmode: 'group',  // Agrupar barras por data
+        bargap: 0.15,      // Espaçamento entre grupos de barras
+        bargroupgap: 0.1   // Espaçamento entre barras do mesmo grupo
     };
 
-    Plotly.newPlot('grafico-setor', [dadosSetor], layoutSetor);
+    Plotly.newPlot('grafico-setor', todosDados, layoutSetor);
 </script>
 {% endif %}
 

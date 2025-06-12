@@ -2866,6 +2866,11 @@ def resultados_todas_medidas(request):
             )
         if ponto:
             query = query.filter(id_envio__id_amostra__id_ponto__nome__icontains=ponto)
+        if coleta:
+            # Adicionar esta linha
+            query = query.filter(
+                id_envio__id_amostra__id_coleta__nome__icontains=coleta
+            )
 
         # Modificar a busca de coletas para incluir nulos
         coletas = list(
@@ -3035,7 +3040,6 @@ def export_resultados_medidas_csv(request):
         if ponto:
             query = query.filter(id_envio__id_amostra__id_ponto__nome__icontains=ponto)
         if coleta:
-            # Adicionar esta linha
             query = query.filter(
                 id_envio__id_amostra__id_coleta__nome__icontains=coleta
             )
@@ -3579,7 +3583,7 @@ def new_home(request):
             setores_dados[setor][data] = total
             datas.add(data)
 
-        # Converter para formato do gráfico
+        # Converte para formato do gráfico
         datas_ordenadas = sorted(list(datas))
         series_data = []
 
@@ -3796,25 +3800,55 @@ def dashboard_parametros(request):
                 id_pp_id=parametro_id,
                 id_envio__id_amostra__id_ponto__id_setor=setor_id
             ).select_related(
-                'id_envio__id_amostra__id_coleta'
+                'id_envio__id_amostra__id_coleta',
+                'id_envio__id_amostra__id_ponto'  # Adicionado seleção do ponto
             ).order_by('id_envio__id_amostra__id_coleta__data')
+            
             # Agrupa medidas por data e calcula média
             valores_por_data = {}
+            # Novo: armazena dados de cada ponto por data
+            pontos_por_data = {}
+            
             for medida in medidas:
                 data = medida.id_envio.id_amostra.id_coleta.data
+                ponto = medida.id_envio.id_amostra.id_ponto.nome
+                
                 if data and medida.valor:
                     data_str = data.strftime('%Y-%m-%d')
+                    
+                    # Para médias
                     if data_str not in valores_por_data:
                         valores_por_data[data_str] = {"soma": 0, "count": 0}
+                    
+                    # Para pontos individuais
+                    if data_str not in pontos_por_data:
+                        pontos_por_data[data_str] = {}
+                        
                     try:
                         valor = float(medida.valor)
                         valores_por_data[data_str]['soma'] += valor
                         valores_por_data[data_str]['count'] += 1
+                        
+                        # Armazena o valor do ponto específico
+                        pontos_por_data[data_str][ponto] = valor
                     except (ValueError, TypeError):
                         continue
 
             # Calcula as médias e prepara dados para o gráfico
-            dados_grafico_setor = {"datas": [], "valores": []}
+            dados_grafico_setor = {
+                "datas": [],
+                "valores": [],
+                "pontos_data": [],  # Lista de dicionários {ponto: valor} para cada data
+                "todos_pontos": []  # Lista com nomes de todos os pontos encontrados
+            }
+            
+            # Coletar todos os nomes de pontos únicos
+            todos_pontos = set()
+            for data_pontos in pontos_por_data.values():
+                for ponto in data_pontos.keys():
+                    todos_pontos.add(ponto)
+            
+            dados_grafico_setor['todos_pontos'] = sorted(list(todos_pontos))
 
             for data in sorted(valores_por_data.keys()):
                 dados = valores_por_data[data]
@@ -3822,6 +3856,9 @@ def dashboard_parametros(request):
                     media = dados['soma'] / dados['count']
                     dados_grafico_setor['datas'].append(data)
                     dados_grafico_setor['valores'].append(round(media, 2))
+                    
+                    # Adiciona os dados de pontos individuais para esta data
+                    dados_grafico_setor['pontos_data'].append(pontos_por_data[data])
     
     # Para exibir o nome correto do parâmetro no título
     parametro_nome_display = None
