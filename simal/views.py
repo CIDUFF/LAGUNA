@@ -4030,10 +4030,10 @@ def dashboard_parametros(request):
 
                 # Função para determinar a cor com base no IQA
                 def get_color(iqa):
-                    if 90 < iqa <= 100: return '#4169E1'  # Azul royal
-                    if 70 < iqa <= 90: return '#008000'    # Verde
-                    if 50 < iqa <= 70: return '#FFFF00'    # Amarelo
-                    if 25 < iqa <= 50: return '#FFA500'    # Laranja
+                    if 79 < iqa <= 100: return '#4169E1'  # Azul royal
+                    if 51 < iqa <= 79: return '#008000'    # Verde
+                    if 36 < iqa <= 51: return '#FFFF00'    # Amarelo
+                    if 19 < iqa <= 36: return '#FFA500'    # Laranja
                     return '#FF0000'                       # Vermelho
 
                 # Adicionar marcadores ao mapa com informações detalhadas
@@ -4087,11 +4087,11 @@ def dashboard_parametros(request):
                 legend_html = '''
                     <div style="position: fixed; bottom: 50px; left: 50px; z-index: 1000; background-color: white; padding: 10px; border: 2px solid grey; border-radius: 5px">
                     <p><strong>Índice de Qualidade da Água (IQA)</strong></p>
-                    <p><span style="color: #4169E1;">●</span> Excelente (91-100)</p>
-                    <p><span style="color: #008000;">●</span> Bom (71-90)</p>
-                    <p><span style="color: #FFFF00;">●</span> Médio (51-70)</p>
-                    <p><span style="color: #FFA500;">●</span> Ruim (26-50)</p>
-                    <p><span style="color: #FF0000;">●</span> Muito Ruim (0-25)</p>
+                    <p><span style="color: #4169E1;">●</span> Ótima (80-100)</p>
+                    <p><span style="color: #008000;">●</span> Boa (52-79)</p>
+                    <p><span style="color: #FFFF00;">●</span> Regular (37-51)</p>
+                    <p><span style="color: #FFA500;">●</span> Ruim (20-36)</p>
+                    <p><span style="color: #FF0000;">●</span> Muito Ruim (0-19)</p>
                     </div>
                 '''
                 mapa.get_root().html.add_child(folium.Element(legend_html))
