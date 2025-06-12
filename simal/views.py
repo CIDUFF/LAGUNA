@@ -4033,8 +4033,8 @@ def dashboard_parametros(request):
                     if 79 < iqa <= 100: return '#4169E1'  # Azul royal
                     if 51 < iqa <= 79: return '#008000'    # Verde
                     if 36 < iqa <= 51: return '#FFFF00'    # Amarelo
-                    if 19 < iqa <= 36: return '#FFA500'    # Laranja
-                    return '#FF0000'                       # Vermelho
+                    if 19 < iqa <= 36: return "#FF0000"    # Laranja
+                    return "#8400FF"                       # Vermelho
 
                 # Adicionar marcadores ao mapa com informações detalhadas
                 for idx, row in df_pivot.iterrows():
