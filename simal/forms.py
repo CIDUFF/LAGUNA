@@ -644,6 +644,7 @@ class LocaisForm(forms.ModelForm):
         )
 
 
+#Alterando o Forms para colocar os campos de cadastro de setores como obrigatórios.
 class SetorForm(forms.ModelForm):
     class Meta:
         model = TabSetor
@@ -658,6 +659,10 @@ class SetorForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(SetorForm, self).__init__(*args, **kwargs)
+        for name, field in self.fields.items():
+            field.required = True
+            
+
         self.helper = FormHelper()
         self.helper.layout = Layout(
             Fieldset(
