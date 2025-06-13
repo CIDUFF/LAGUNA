@@ -827,11 +827,11 @@ class TabPonto(models.Model):
         "TabSetor",
         on_delete=models.CASCADE,
         db_column="id_setor",
-        blank=True,
-        null=True,
+        blank=False,
+        null=False,
     )
     id_local = models.ForeignKey(
-        TabLocal, on_delete=models.CASCADE, db_column="id_local", blank=True, null=True
+        TabLocal, on_delete=models.CASCADE, db_column="id_local", blank=False, null=False
     )
     nome = models.CharField(blank=True, null=True)
     modalidade = models.CharField(blank=True, null=True)
@@ -916,7 +916,7 @@ class TabSerieClassificacao(models.Model):
         managed = True
         db_table = "tab_serie_classificacao"
 
-
+#Alterando o modelo para colocar os campos de cadastro de setores como obrigatórios.
 class TabSetor(models.Model):
     id = models.BigAutoField(primary_key=True)
     nome = models.CharField(blank=True, null=True)
@@ -924,12 +924,12 @@ class TabSetor(models.Model):
         "TabLocal",
         on_delete=models.CASCADE,
         db_column="id_local",
-        blank=True,
-        null=True,
+        blank=False,
+        null=False,
     )
     lon = models.FloatField(blank=True, null=True)
     lat = models.FloatField(blank=True, null=True)
-    abreviatura = models.CharField(max_length=50, blank=True, unique=False)
+    abreviatura = models.CharField(max_length=50, blank=True, unique=True)
 
     def __str__(self):
         return f"{self.nome}"
