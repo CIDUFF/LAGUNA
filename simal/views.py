@@ -3004,6 +3004,7 @@ def resultados_todas_medidas(request):
             medidas = paginator.page(1)
 
         # Processar resultados de forma mais eficiente
+        # Popular a lista de resultados
         resultados = []
         for medida in medidas:
             try:
@@ -3022,6 +3023,12 @@ def resultados_todas_medidas(request):
                     else "N/A",
                     "valor": medida.input_valor if medida.input_valor else "Não medido",
                     "unidade": medida.id_pp.unidade if medida.id_pp else "",
+                    "data_coleta": coleta.data.strftime(
+                        "%d/%m/%Y") if coleta.data else "N/A",
+                    "setor": coleta.id_setor.nome
+                    if coleta.id_setor else "N/A",
+                    "ponto": amostra.id_ponto.nome
+                    if amostra.id_ponto else "N/A",
                 }
                 resultados.append(resultado)
             except Exception as e:
