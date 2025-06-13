@@ -46,9 +46,9 @@ class ResultadosColetaFilter(FilterSet):
 
 # @lazy_filter
 class PontoFilter(FilterSet):
-    codigo = ChoiceFilter(field_name="nome", lookup_expr="exact", label="Ponto")
-    setor = ChoiceFilter(field_name="id_setor", lookup_expr="exact", label="Setor")
-    status = ChoiceFilter(field_name="status", lookup_expr="exact", label="Status")
+    codigo = ChoiceFilter(field_name="nome", lookup_expr="exact", label="Ponto", empty_label="Selecione um Ponto")
+    setor = ChoiceFilter(field_name="id_setor", lookup_expr="exact", label="Setor", empty_label="Selecione um Setor")
+    status = ChoiceFilter(field_name="status", lookup_expr="exact", label="Status", empty_label="Selecione um Status")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -68,9 +68,9 @@ class PontoFilter(FilterSet):
 # @lazy_filter
 class SetorFilter(FilterSet):
     abreviatura = ChoiceFilter(
-        field_name="abreviatura", lookup_expr="exact", label="Setor"
+        field_name="abreviatura", lookup_expr="exact", label="Setor", empty_label="Selecione um Setor"
     )
-    local = ChoiceFilter(field_name="id_local", lookup_expr="exact", label="Local")
+    local = ChoiceFilter(field_name="id_local", lookup_expr="exact", label="Local", empty_label="Selecione um Local")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -88,7 +88,7 @@ class SetorFilter(FilterSet):
 
 # @lazy_filter
 class LocalFilter(FilterSet):
-    codigo = ChoiceFilter(field_name="nome", lookup_expr="exact", label="Local")
+    codigo = ChoiceFilter(field_name="nome", lookup_expr="exact", label="Local", empty_label="Selecione um Local")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
