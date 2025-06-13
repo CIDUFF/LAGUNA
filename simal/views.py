@@ -2927,6 +2927,7 @@ def resultados_todas_medidas(request):
                 id_envio__id_amostra__id_coleta__id_setor__nome__icontains=setor
             )
         if ponto:
+          
             query = query.filter(id_envio__id_amostra__id_ponto__nome__icontains=ponto)
         if coleta:
             # Adicionar esta linha
@@ -3902,6 +3903,7 @@ def dashboard_parametros(request):
                     
                     # Para médias
                     if data_str not in valores_por_data:
+
                         valores_por_data[data_str] = {"soma": 0, "count": 0}
                     
                     # Para pontos individuais
@@ -3920,6 +3922,7 @@ def dashboard_parametros(request):
 
             # Calcula as médias e prepara dados para o gráfico
             dados_grafico_setor = {
+
                 "datas": [],
                 "valores": [],
                 "pontos_data": [],  # Lista de dicionários {ponto: valor} para cada data
@@ -3933,6 +3936,7 @@ def dashboard_parametros(request):
                     todos_pontos.add(ponto)
             
             dados_grafico_setor['todos_pontos'] = sorted(list(todos_pontos))
+
 
             for data in sorted(valores_por_data.keys()):
                 dados = valores_por_data[data]
@@ -4143,9 +4147,11 @@ def dashboard_parametros(request):
                 df_pivot['IQA'] = df_pivot.apply(calculate_iqa, axis=1)
 
                 # Criar mapa centralizado na média das coordenadas
+
                 mapa = folium.Map(
                     location=[-22.9292, -42.8719],  # Coordenadas fixas do sistema lagunar de Maricá
                     zoom_start=13,
+
                     tiles='CartoDB positron'
                 )
 
