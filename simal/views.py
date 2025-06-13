@@ -2326,10 +2326,11 @@ def input_fisico_quimico(request, coleta_id, ponto_id):
             request.POST,
             request.FILES,
             queryset=TabMedida.objects.filter(
-                id_pp_id=parametro_id, id_envio__id_amostra__id_ponto_id=ponto_id
-            )
-            .select_related("id_envio__id_amostra__id_coleta")
-            .order_by("id_envio__id_amostra__id_coleta__data"),
+                id_envio__id_amostra__id_coleta=coleta_id,
+                id_envio__id_amostra__id_ponto=ponto_id,
+                id_envio__id_amostra__id_frasco=1,  # Frasco 1 para físico-químico
+            ).select_related('id_pp', 'id_pp__id_param')
+            .order_by('id_pp__ordem_visualizacao', 'id_pp__id_param__nome'),
         )
 
         if formset.is_valid():
