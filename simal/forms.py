@@ -707,8 +707,15 @@ class PontoForm(forms.ModelForm):
             "status": "Ponto ativo?",
         }
 
+    # Definindo obrigatoriedade nos campos
     def __init__(self, *args, **kwargs):
         super(PontoForm, self).__init__(*args, **kwargs)
+        
+        
+        self.fields["id_setor"].required = True
+        self.fields["id_local"].required = True
+        self.fields["lat"].required = True
+        self.fields["lon"].required = True
         self.helper = FormHelper()
         self.helper.layout = Layout(
             Fieldset(
