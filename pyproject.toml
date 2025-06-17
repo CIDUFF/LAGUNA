@@ -3,7 +3,7 @@ name = "laguna"
 version = "0.1.0"
 description = "LAGUNA - Laboratório Avançado para Gerenciamento, Uso e Análise de Amostras"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.10.12"
 
 dependencies = [
     "asgiref==3.8.1",
