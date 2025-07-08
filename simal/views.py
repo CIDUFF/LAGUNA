@@ -3716,33 +3716,23 @@ def new_home(request):
 
         calendar_events = []
 
-        print("Total de coletas encontradas:", coletas.count())  # Debug
 
         for coleta in coletas:
-            print(f"Processando coleta {coleta.id}:")  # Debug
-            print(f"- Data: {coleta.data}")
-            print(f"- Ordem de serviço: {coleta.ordem_servico}")
-            print(
-                f"- Setor: {coleta.id_setor.nome if coleta.id_setor else 'N/A'}")
+            event = {
+                "id": coleta.id,
+                "title": f"{coleta.id_setor.nome if coleta.id_setor else 'N/A'}",
+                "start": coleta.data.strftime("%Y-%m-%d"),
+                "backgroundColor": coleta.status_id.cor
+                if coleta.status_id
+                else "#6c757d",
+                "borderColor": coleta.status_id.cor
+                if coleta.status_id
+                else "#6c757d",
+                "textColor": "#ffffff",
+                "allDay": True,
+            }
+            calendar_events.append(event)
 
-            if coleta.data:
-                event = {
-                    "id": coleta.id,
-                    "title": f"{coleta.id_setor.nome if coleta.id_setor else 'N/A'}",
-                    "start": coleta.data.strftime("%Y-%m-%d"),
-                    "backgroundColor": coleta.status_id.cor
-                    if coleta.status_id
-                    else "#6c757d",
-                    "borderColor": coleta.status_id.cor
-                    if coleta.status_id
-                    else "#6c757d",
-                    "textColor": "#ffffff",
-                    "allDay": True,
-                }
-                calendar_events.append(event)
-                print(f"- Evento criado: {event}")  # Debug
-            else:
-                print("- Coleta sem data definida")  # Debug
 
         # Debug do JSON final
         # calendar_events_json = json.dumps(calendar_events, default=str)
