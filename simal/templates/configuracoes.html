@@ -1,6 +1,43 @@
 {% extends 'base/base_site.html' %} {% load static %} {% load django_tables2 %}
 {% load django_bootstrap5 %} {% load crispy_forms_tags %} {% block content %}
 
+
+<style>
+/* Override máximo para o botão Limpar dos filtros de Parâmetros e Produto x Parâmetro */
+.card-body form .btn.btn-outline-secondary,
+.card-body form .btn.btn-outline-secondary:active,
+.card-body form .btn.btn-outline-secondary:focus,
+.card-body form .btn.btn-outline-secondary:visited,
+.card-body form .btn.btn-outline-secondary:focus-visible,
+.card-body form .btn.btn-outline-secondary:target,
+.card-body form .btn.btn-outline-secondary[aria-pressed="true"],
+.card-body form a.btn.btn-outline-secondary,
+.card-body form a.btn.btn-outline-secondary:active,
+.card-body form a.btn.btn-outline-secondary:focus,
+.card-body form a.btn.btn-outline-secondary:visited,
+.card-body form a.btn.btn-outline-secondary:focus-visible,
+.card-body form a.btn.btn-outline-secondary:target,
+.card-body form a.btn.btn-outline-secondary[aria-pressed="true"] {
+  background-color: #fff !important;
+  color: #6c757d !important;
+  border-color: #6c757d !important;
+  box-shadow: none !important;
+  outline: none !important;
+  text-shadow: none !important;
+  filter: none !important;
+  text-decoration: none !important;
+  font-weight: 500 !important;
+  z-index: 2 !important;
+}
+.card-body form .btn.btn-outline-secondary:hover,
+.card-body form a.btn.btn-outline-secondary:hover {
+  background-color: #f8f9fa !important;
+  color: #6c757d !important;
+  border-color: #6c757d !important;
+  text-decoration: none !important;
+}
+</style>
+
 <div class="container-fluid px-4 py-3 mb-4">
   <!-- Cabeçalho -->
   <div class="row g-3 mb-4">
@@ -208,6 +245,22 @@
               <div class="tab-content">
                 <!-- Aba de visualização -->
                 <div class="tab-pane fade show active" id="{{ tab_id }}-list">
+                  {# Filtro para Parâmetros #}
+                  {% if tab_id == "tab_param" %}
+                  <form method="get" class="mb-3 d-flex align-items-center" autocomplete="off">
+                    <input type="text" name="nome_parametro" class="form-control me-2" placeholder="Buscar por nome..." value="{{ nome_parametro|default:'' }}">
+                    <button type="submit" class="btn btn-outline-primary me-2">Buscar</button>
+                    <a href="?" class="btn btn-outline-secondary">Limpar</a>
+                  </form>
+                  {% endif %}
+                  {# Filtro para Produto x Parâmetro #}
+                  {% if tab_id == "tab_prodxparam" %}
+                  <form method="get" class="mb-3 d-flex align-items-center" autocomplete="off">
+                    <input type="text" name="nome_prodxparam" class="form-control me-2" placeholder="Buscar por nome..." value="{{ nome_prodxparam|default:'' }}">
+                    <button type="submit" class="btn btn-outline-primary me-2">Buscar</button>
+                    <a href="?" class="btn btn-outline-secondary">Limpar</a>
+                  </form>
+                  {% endif %}
                   <div class="table-responsive">{% render_table table %}</div>
                 </div>
                 <!-- Aba de cadastro -->
@@ -338,6 +391,41 @@
       margin: 0.25rem;
     }
   }
+
+  /* Força o estilo do botão Limpar, cobrindo todos os estados e aumentando a especificidade */
+  .card-body form .btn.btn-outline-secondary,
+  .card-body form .btn.btn-outline-secondary:active,
+  .card-body form .btn.btn-outline-secondary:focus,
+  .card-body form .btn.btn-outline-secondary:visited,
+  .card-body form .btn.btn-outline-secondary:focus-visible,
+  .card-body form .btn.btn-outline-secondary:target,
+  .card-body form .btn.btn-outline-secondary[aria-pressed="true"],
+  .card-body form a.btn.btn-outline-secondary,
+  .card-body form a.btn.btn-outline-secondary:active,
+  .card-body form a.btn.btn-outline-secondary:focus,
+  .card-body form a.btn.btn-outline-secondary:visited,
+  .card-body form a.btn.btn-outline-secondary:focus-visible,
+  .card-body form a.btn.btn-outline-secondary:target,
+  .card-body form a.btn.btn-outline-secondary[aria-pressed="true"] {
+    background-color: #fff !important;
+    color: #6c757d !important;
+    border-color: #6c757d !important;
+    box-shadow: none !important;
+    outline: none !important;
+    text-shadow: none !important;
+    filter: none !important;
+    text-decoration: none !important;
+    font-weight: 500 !important;
+    z-index: 2 !important;
+  }
+  .card-body form .btn.btn-outline-secondary:hover,
+  .card-body form a.btn.btn-outline-secondary:hover {
+    background-color: #f8f9fa !important;
+    color: #6c757d !important;
+    border-color: #6c757d !important;
+    text-decoration: none !important;
+  }
+
 </style>
 
 <script>
