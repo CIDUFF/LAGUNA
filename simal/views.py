@@ -1534,6 +1534,21 @@ def configuracoes_view(request):
                     request, "Por favor, corrija os erros no formulário.")
         return redirect("configuracoes")
 
+
+    # Captura os parâmetros de busca do GET
+    nome_parametro = request.GET.get('nome_parametro', '')
+    nome_prodxparam = request.GET.get('nome_prodxparam', '')
+
+    # Filtra o queryset de parâmetros
+    param_queryset = TabParam.objects.all()
+    if nome_parametro:
+        param_queryset = param_queryset.filter(nome__icontains=nome_parametro)
+
+    # Filtra o queryset de Produto x Parâmetro
+    prodxparam_queryset = TabProdxparam.objects.all()
+    if nome_prodxparam:
+        prodxparam_queryset = prodxparam_queryset.filter(nome__icontains=nome_prodxparam)
+
     param_form = ParametroForm()
     frasco_form = TabFrascoForm()
     equipe_form = TabEquipeForm()
@@ -1545,13 +1560,13 @@ def configuracoes_view(request):
     email_form = EmailForm()
     status_coleta_form = StatusColetaForm()
 
-    # Instanciar as tabelas
-    table_parametro = ParametroTable(TabParam.objects.all())
+    # Instanciar as tabelas, usando os querysets filtrados
+    table_parametro = ParametroTable(param_queryset)
     table_frasco = FrascoTable(TabFrasco.objects.all())
     table_equipe = EquipeTable(TabEquipe.objects.all())
     table_laboratorio = LaboratorioTable(TabLaboratorio.objects.all())
     table_produto = ProdutoTable(TabProduto.objects.all())
-    table_prodxparam = ProdxparamTable(TabProdxparam.objects.all())
+    table_prodxparam = ProdxparamTable(prodxparam_queryset)
     table_serie_classificacao = SerieClassificacaoTable(
         TabSerieClassificacao.objects.all()
     )
@@ -1608,8 +1623,11 @@ def configuracoes_view(request):
         ),
     ]
 
+
     context = {
         "tabs": tabs,
+        "nome_parametro": nome_parametro,
+        "nome_prodxparam": nome_prodxparam,
         # ... outros itens do contexto ...
     }
 
