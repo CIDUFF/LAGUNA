@@ -139,6 +139,10 @@
                                     {% endif %}
                                     <input type="file" name="anexo" id="anexo" class="form-control">
                                 </div>
+                                <div class="mb-3">
+                                    <label for="codigo_oceanus_anexo" class="form-label">Código Oceanus</label>
+                                    <input type="text" name="codigo_oceanus_anexo" id="codigo_oceanus_anexo" class="form-control" maxlength="50" value="{% if anexo_existente %}{{ anexo_existente.codigo_oceanus }}{% endif %}">
+                                </div>
                                 
                                 <div class="mb-3">
                                     <label for="observacao_anexo" class="form-label">Observações</label>

@@ -2745,11 +2745,11 @@ def input_laboratorio(request, coleta_id, ponto_id, frasco_id):
         id_envio__id_amostra__id_frasco=frasco_id,
     ).first()
 
-    # Se encontrou um anexo, verifica se tem arquivo ou observação
+    # Se encontrou um anexo, verifica se tem arquivo, observação ou código oceanus
     if anexo_query:
         anexo_existente = anexo_query
-        # Se não tem arquivo nem observação, deleta o registro
-        if not anexo_existente.anexo and not anexo_existente.observacao:
+        # Se não tem arquivo, nem observação, nem código oceanus, deleta o registro
+        if not (anexo_existente.anexo or anexo_existente.observacao or anexo_existente.codigo_oceanus):
             anexo_existente.delete()
             anexo_existente = None
 
@@ -2873,18 +2873,20 @@ def handle_anexo(request, envio):
     """
     anexo_existente = TabAnexoAmostra.objects.filter(id_envio=envio).first()
 
-    # Verifica se há novo anexo ou observação
+    # Verifica se há novo anexo, observação ou código oceanus
     tem_novo_anexo = bool(request.FILES.get("anexo"))
     tem_nova_observacao = bool(request.POST.get("observacao_anexo"))
+    tem_novo_codigo = bool(request.POST.get("codigo_oceanus_anexo"))
 
     # Se tem novo conteúdo
-    if tem_novo_anexo or tem_nova_observacao:
+    if tem_novo_anexo or tem_nova_observacao or tem_novo_codigo:
+        codigo_oceanus = request.POST.get("codigo_oceanus_anexo", "")
         if anexo_existente:
             # Atualiza anexo existente
             if tem_novo_anexo:
                 anexo_existente.anexo = request.FILES["anexo"]
-            anexo_existente.observacao = request.POST.get(
-                "observacao_anexo", "")
+            anexo_existente.observacao = request.POST.get("observacao_anexo", "")
+            anexo_existente.codigo_oceanus = codigo_oceanus
             anexo_existente.save()
         else:
             # Cria novo anexo
@@ -2892,9 +2894,10 @@ def handle_anexo(request, envio):
                 id_envio=envio,
                 anexo=request.FILES.get("anexo"),
                 observacao=request.POST.get("observacao_anexo", ""),
+                codigo_oceanus=codigo_oceanus,
             )
     # Se não tem novo conteúdo e existe um anexo vazio
-    elif anexo_existente and not (anexo_existente.anexo or anexo_existente.observacao):
+    elif anexo_existente and not (anexo_existente.anexo or anexo_existente.observacao or anexo_existente.codigo_oceanus):
         anexo_existente.delete()
         anexo_existente = None
 
@@ -2919,6 +2922,9 @@ def resultados_todas_medidas(request):
         data_inicio = request.GET.get("data_inicio", "")
         data_fim = request.GET.get("data_fim", "")
 
+        # Filtro adicional: Código Oceanus
+        codigo_oceanus = sanitize_param(request.GET.get("codigo_oceanus", ""))
+
         # Query base otimizada
         query = TabMedida.objects.select_related(
             "id_envio__id_amostra__id_coleta",
@@ -2935,6 +2941,12 @@ def resultados_todas_medidas(request):
         if data_fim:
             query = query.filter(
                 id_envio__id_amostra__id_coleta__data__lte=data_fim)
+
+        # Filtro por Código Oceanus (via anexo relacionado)
+        if codigo_oceanus:
+            from simal.models import TabAnexoAmostra
+            anexos_ids = TabAnexoAmostra.objects.filter(codigo_oceanus__icontains=codigo_oceanus).values_list('id_envio', flat=True)
+            query = query.filter(id_envio__in=anexos_ids)
 
         # Aplicar os mesmos filtros
         if campanha:
@@ -3025,29 +3037,31 @@ def resultados_todas_medidas(request):
         # Processar resultados de forma mais eficiente
         # Popular a lista de resultados
         resultados = []
+        from simal.models import TabAnexoAmostra
         for medida in medidas:
             try:
                 amostra = medida.id_envio.id_amostra
                 coleta = amostra.id_coleta
+                # Busca o anexo relacionado ao envio
+                anexo = TabAnexoAmostra.objects.filter(id_envio=medida.id_envio).first()
+                anexo_nome = ""
+                if anexo and anexo.anexo:
+                    anexo_nome = anexo.anexo.name.split("/")[-1]
                 resultado = {
-                    "campanha_nome": coleta.id_campanha.nome
-                    if coleta.id_campanha
-                    else "N/A",
+                    "codigo_oceanus": anexo.codigo_oceanus if anexo else "",
+                    "observacao_anexo": anexo.observacao if anexo else "",
+                    "anexo_url": anexo.anexo.url if anexo and anexo.anexo else "",
+                    "anexo_nome": anexo_nome,
+                    "campanha_nome": coleta.id_campanha.nome if coleta.id_campanha else "N/A",
                     "coleta_nome": coleta.nome if coleta.nome else "N/A",
                     "ordem_servico": coleta.ordem_servico,
-                    # Corrigido aqui
                     "etiqueta": amostra.etiqueta,
-                    "parametro": medida.id_pp.id_param.nome
-                    if medida.id_pp and medida.id_pp.id_param
-                    else "N/A",
+                    "parametro": medida.id_pp.id_param.nome if medida.id_pp and medida.id_pp.id_param else "N/A",
                     "valor": medida.input_valor if medida.input_valor else "Não medido",
                     "unidade": medida.id_pp.unidade if medida.id_pp else "",
-                    "data_coleta": coleta.data.strftime(
-                        "%d/%m/%Y") if coleta.data else "N/A",
-                    "setor": coleta.id_setor.nome
-                    if coleta.id_setor else "N/A",
-                    "ponto": amostra.id_ponto.nome
-                    if amostra.id_ponto else "N/A",
+                    "data_coleta": coleta.data.strftime("%d/%m/%Y") if coleta.data else "N/A",
+                    "setor": coleta.id_setor.nome if coleta.id_setor else "N/A",
+                    "ponto": amostra.id_ponto.nome if amostra.id_ponto else "N/A",
                 }
                 resultados.append(resultado)
             except Exception as e:
@@ -3080,11 +3094,12 @@ def resultados_todas_medidas(request):
                 "setor": setor,
                 "ponto": ponto,
                 "coleta": coleta,
-                "data_inicio": data_inicio,  # Adicionar data_inicio ao contexto
-                "data_fim": data_fim,  # Adicionar data_fim ao contexto
+                "data_inicio": data_inicio,
+                "data_fim": data_fim,
+                "codigo_oceanus": codigo_oceanus,
             },
-            "per_page_choices": PER_PAGE_CHOICES,  # Adiciona as opções ao contexto
-            "current_per_page": per_page,  # Adiciona o valor atual
+            "per_page_choices": PER_PAGE_CHOICES,
+            "current_per_page": per_page,
         }
 
         return render(request, "resultados_todas_medidas.html", context)
@@ -3106,13 +3121,19 @@ def export_resultados_medidas_csv(request):
                 return param.strip()
             return ""
 
+
         campanha = sanitize_param(request.GET.get("campanha", ""))
         setor = sanitize_param(request.GET.get("setor", ""))
         ponto = sanitize_param(request.GET.get("ponto", ""))
-        coleta = sanitize_param(request.GET.get(
-            "coleta", ""))  # Adicionar esta linha
+        coleta = sanitize_param(request.GET.get("coleta", ""))
+        codigo_oceanus = sanitize_param(request.GET.get("codigo_oceanus", ""))
+        data_inicio = request.GET.get("data_inicio")
+        data_fim = request.GET.get("data_fim")
 
-        # Query base otimizada
+        filtros_aplicados = any([
+            campanha, setor, ponto, coleta, codigo_oceanus, data_inicio, data_fim
+        ])
+
         query = TabMedida.objects.select_related(
             "id_envio__id_amostra__id_coleta",
             "id_envio__id_amostra__id_ponto",
@@ -3121,33 +3142,32 @@ def export_resultados_medidas_csv(request):
             "id_pp__id_param",
         )
 
-        # Aplicar os mesmos filtros
-        if campanha:
-            query = query.filter(
-                id_envio__id_amostra__id_coleta__id_campanha__nome__icontains=campanha
-            )
-        if setor:
-            query = query.filter(
-                id_envio__id_amostra__id_coleta__id_setor__nome__icontains=setor
-            )
-        if ponto:
-            query = query.filter(
-                id_envio__id_amostra__id_ponto__nome__icontains=ponto)
-        if coleta:
-            query = query.filter(
-                id_envio__id_amostra__id_coleta__nome__icontains=coleta
-            )
-
-        # Adicionar filtros de data
-        data_inicio = request.GET.get("data_inicio")
-        data_fim = request.GET.get("data_fim")
-
-        if data_inicio:
-            query = query.filter(
-                id_envio__id_amostra__id_coleta__data__gte=data_inicio)
-        if data_fim:
-            query = query.filter(
-                id_envio__id_amostra__id_coleta__data__lte=data_fim)
+        if filtros_aplicados:
+            if campanha:
+                query = query.filter(
+                    id_envio__id_amostra__id_coleta__id_campanha__nome__icontains=campanha
+                )
+            if setor:
+                query = query.filter(
+                    id_envio__id_amostra__id_coleta__id_setor__nome__icontains=setor
+                )
+            if ponto:
+                query = query.filter(
+                    id_envio__id_amostra__id_ponto__nome__icontains=ponto)
+            if coleta:
+                query = query.filter(
+                    id_envio__id_amostra__id_coleta__nome__icontains=coleta
+                )
+            if codigo_oceanus:
+                from simal.models import TabAnexoAmostra
+                anexos_ids = TabAnexoAmostra.objects.filter(codigo_oceanus__icontains=codigo_oceanus).values_list('id_envio', flat=True)
+                query = query.filter(id_envio__in=anexos_ids)
+            if data_inicio:
+                query = query.filter(
+                    id_envio__id_amostra__id_coleta__data__gte=data_inicio)
+            if data_fim:
+                query = query.filter(
+                    id_envio__id_amostra__id_coleta__data__lte=data_fim)
 
         response = HttpResponse(content_type="text/csv")
         response["Content-Disposition"] = 'attachment; filename="resultados_coleta.csv"'
@@ -3155,31 +3175,28 @@ def export_resultados_medidas_csv(request):
         writer = csv.writer(response)
         writer.writerow(
             [
-                "Código Coleta",
-                "Hora Início",
-                "Hora Fim",
+                "Campanha",
+                "Coleta",
+                "Ordem Serviço",
+                "Data",
+                "Setor",
                 "Ponto",
-                "Temperatura",
-                "pH",
-                "ORP",
-                "Condutividade",
-                "Turbidez",
-                "OD",
-                "OD %",
-                "TDS",
-                "Salinidade",
-                "Status",
-                "Check Amostras",
-                "Observações",
+                "Etiqueta",
+                "Parâmetro",
+                "Valor",
+                "Unidade",
+                "Código Oceanus",
             ]
         )
 
         # Processar resultados de forma otimizada
+        from simal.models import TabAnexoAmostra
         batch_size = 1000
         for medida in query.iterator(chunk_size=batch_size):
             try:
                 amostra = medida.id_envio.id_amostra
                 coleta = amostra.id_coleta
+                anexo = TabAnexoAmostra.objects.filter(id_envio=medida.id_envio).first()
                 row = [
                     str(coleta.id_campanha.nome if coleta.id_campanha else "N/A"),
                     str(coleta.nome if coleta.nome else "N/A"),
@@ -3195,6 +3212,7 @@ def export_resultados_medidas_csv(request):
                     ),
                     str(medida.input_valor if medida.input_valor else "Não medido"),
                     str(medida.id_pp.unidade if medida.id_pp else ""),
+                    str(anexo.codigo_oceanus) if anexo and anexo.codigo_oceanus else "",
                 ]
                 writer.writerow(row)
             except Exception as e:
@@ -3218,12 +3236,19 @@ def export_resultados_medidas_xlsx(request):
         def sanitize_param(param):
             return param.strip() if param else ""
 
+
         campanha = sanitize_param(request.GET.get("campanha", ""))
         setor = sanitize_param(request.GET.get("setor", ""))
         ponto = sanitize_param(request.GET.get("ponto", ""))
         coleta = sanitize_param(request.GET.get("coleta", ""))
+        codigo_oceanus = sanitize_param(request.GET.get("codigo_oceanus", ""))
+        data_inicio = request.GET.get("data_inicio")
+        data_fim = request.GET.get("data_fim")
 
-        # Query base otimizada
+        filtros_aplicados = any([
+            campanha, setor, ponto, coleta, codigo_oceanus, data_inicio, data_fim
+        ])
+
         query = TabMedida.objects.select_related(
             "id_envio__id_amostra__id_coleta",
             "id_envio__id_amostra__id_ponto",
@@ -3232,33 +3257,32 @@ def export_resultados_medidas_xlsx(request):
             "id_pp__id_param",
         )
 
-        # Aplicar filtros
-        if campanha:
-            query = query.filter(
-                id_envio__id_amostra__id_coleta__id_campanha__nome__icontains=campanha
-            )
-        if setor:
-            query = query.filter(
-                id_envio__id_amostra__id_coleta__id_setor__nome__icontains=setor
-            )
-        if ponto:
-            query = query.filter(
-                id_envio__id_amostra__id_ponto__nome__icontains=ponto)
-        if coleta:
-            query = query.filter(
-                id_envio__id_amostra__id_coleta__nome__icontains=coleta
-            )
-
-        # Adicionar filtros de data
-        data_inicio = request.GET.get("data_inicio")
-        data_fim = request.GET.get("data_fim")
-
-        if data_inicio:
-            query = query.filter(
-                id_envio__id_amostra__id_coleta__data__gte=data_inicio)
-        if data_fim:
-            query = query.filter(
-                id_envio__id_amostra__id_coleta__data__lte=data_fim)
+        if filtros_aplicados:
+            if campanha:
+                query = query.filter(
+                    id_envio__id_amostra__id_coleta__id_campanha__nome__icontains=campanha
+                )
+            if setor:
+                query = query.filter(
+                    id_envio__id_amostra__id_coleta__id_setor__nome__icontains=setor
+                )
+            if ponto:
+                query = query.filter(
+                    id_envio__id_amostra__id_ponto__nome__icontains=ponto)
+            if coleta:
+                query = query.filter(
+                    id_envio__id_amostra__id_coleta__nome__icontains=coleta
+                )
+            if codigo_oceanus:
+                from simal.models import TabAnexoAmostra
+                anexos_ids = TabAnexoAmostra.objects.filter(codigo_oceanus__icontains=codigo_oceanus).values_list('id_envio', flat=True)
+                query = query.filter(id_envio__in=anexos_ids)
+            if data_inicio:
+                query = query.filter(
+                    id_envio__id_amostra__id_coleta__data__gte=data_inicio)
+            if data_fim:
+                query = query.filter(
+                    id_envio__id_amostra__id_coleta__data__lte=data_fim)
 
         wb = Workbook()
         ws = wb.active
@@ -3276,6 +3300,7 @@ def export_resultados_medidas_xlsx(request):
             "Parâmetro",
             "Valor",
             "Unidade",
+            "Código Oceanus",
         ]
 
         # Estilo para cabeçalho
@@ -3291,64 +3316,25 @@ def export_resultados_medidas_xlsx(request):
             cell.fill = header_fill
 
         # Preencher dados
+        from simal.models import TabAnexoAmostra
         row = 2
         batch_size = 1000
         for medida in query.iterator(chunk_size=batch_size):
             try:
                 amostra = medida.id_envio.id_amostra
                 coleta = amostra.id_coleta
-
-                ws.cell(
-                    row=row,
-                    column=1,
-                    value=str(
-                        coleta.id_campanha.nome if coleta.id_campanha else "N/A"),
-                )
-                ws.cell(
-                    row=row, column=2, value=str(coleta.nome if coleta.nome else "N/A")
-                )
+                anexo = TabAnexoAmostra.objects.filter(id_envio=medida.id_envio).first()
+                ws.cell(row=row, column=1, value=str(coleta.id_campanha.nome if coleta.id_campanha else "N/A"))
+                ws.cell(row=row, column=2, value=str(coleta.nome if coleta.nome else "N/A"))
                 ws.cell(row=row, column=3, value=str(coleta.ordem_servico))
-                ws.cell(
-                    row=row,
-                    column=4,
-                    value=coleta.data.strftime(
-                        "%d/%m/%Y") if coleta.data else "N/A",
-                )
-                ws.cell(
-                    row=row,
-                    column=5,
-                    value=str(
-                        coleta.id_setor.nome if coleta.id_setor else "N/A"),
-                )
-                ws.cell(
-                    row=row,
-                    column=6,
-                    value=str(
-                        amostra.id_ponto.nome if amostra.id_ponto else "N/A"),
-                )
+                ws.cell(row=row, column=4, value=coleta.data.strftime("%d/%m/%Y") if coleta.data else "N/A")
+                ws.cell(row=row, column=5, value=str(coleta.id_setor.nome if coleta.id_setor else "N/A"))
+                ws.cell(row=row, column=6, value=str(amostra.id_ponto.nome if amostra.id_ponto else "N/A"))
                 ws.cell(row=row, column=7, value=str(amostra.etiqueta))
-                ws.cell(
-                    row=row,
-                    column=8,
-                    value=str(
-                        medida.id_pp.id_param.nome
-                        if medida.id_pp and medida.id_pp.id_param
-                        else "N/A"
-                    ),
-                )
-                ws.cell(
-                    row=row,
-                    column=9,
-                    value=str(
-                        medida.input_valor if medida.input_valor else "Não medido"
-                    ),
-                )
-                ws.cell(
-                    row=row,
-                    column=10,
-                    value=str(medida.id_pp.unidade if medida.id_pp else ""),
-                )
-
+                ws.cell(row=row, column=8, value=str(medida.id_pp.id_param.nome if medida.id_pp and medida.id_pp.id_param else "N/A"))
+                ws.cell(row=row, column=9, value=str(medida.input_valor if medida.input_valor else "Não medido"))
+                ws.cell(row=row, column=10, value=str(medida.id_pp.unidade if medida.id_pp else ""))
+                ws.cell(row=row, column=11, value=str(anexo.codigo_oceanus) if anexo and anexo.codigo_oceanus else "")
                 row += 1
             except Exception as e:
                 logger.error(f"Erro ao processar medida {medida.id}: {str(e)}")

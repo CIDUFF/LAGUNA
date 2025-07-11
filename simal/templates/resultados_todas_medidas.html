@@ -98,6 +98,10 @@
                                 <label class="form-label">Data Final</label>
                                 <input type="date" name="data_fim" class="form-control auto-submit" value="{{ filtros.data_fim|default:'' }}">
                             </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Código Oceanus</label>
+                                <input type="text" name="codigo_oceanus" class="form-control auto-submit" value="{{ filtros.codigo_oceanus|default:'' }}" placeholder="Buscar Código Oceanus">
+                            </div>
                             <div class="col-12">
                                 <a href="{% url 'resultados_todas_medidas' %}" class="btn btn-outline-secondary btn-animated" style="color: #6c757d; border-color: #6c757d; background-color: transparent;">
                                     <i class="bi bi-x-circle me-2"></i>Limpar Filtros
@@ -144,6 +148,7 @@
                                     <th>Parâmetro</th>
                                     <th>Valor</th>
                                     <th>Unidade</th>
+                                    <th>Código Oceanus</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -159,6 +164,7 @@
                                     <td>{{ resultado.parametro }}</td>
                                     <td>{{ resultado.valor }}</td>
                                     <td>{{ resultado.unidade }}</td>
+                <td>{{ resultado.codigo_oceanus }}</td>
                                 </tr>
                                 {% empty %}
                                 <tr>

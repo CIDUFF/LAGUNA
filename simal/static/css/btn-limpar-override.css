@@ -1,0 +1,33 @@
+/* Override máximo para o botão Limpar dos filtros de Parâmetros e Produto x Parâmetro */
+.card-body form .btn.btn-outline-secondary,
+.card-body form .btn.btn-outline-secondary:active,
+.card-body form .btn.btn-outline-secondary:focus,
+.card-body form .btn.btn-outline-secondary:visited,
+.card-body form .btn.btn-outline-secondary:focus-visible,
+.card-body form .btn.btn-outline-secondary:target,
+.card-body form .btn.btn-outline-secondary[aria-pressed="true"],
+.card-body form a.btn.btn-outline-secondary,
+.card-body form a.btn.btn-outline-secondary:active,
+.card-body form a.btn.btn-outline-secondary:focus,
+.card-body form a.btn.btn-outline-secondary:visited,
+.card-body form a.btn.btn-outline-secondary:focus-visible,
+.card-body form a.btn.btn-outline-secondary:target,
+.card-body form a.btn.btn-outline-secondary[aria-pressed="true"] {
+  background-color: #fff !important;
+  color: #6c757d !important;
+  border-color: #6c757d !important;
+  box-shadow: none !important;
+  outline: none !important;
+  text-shadow: none !important;
+  filter: none !important;
+  text-decoration: none !important;
+  font-weight: 500 !important;
+  z-index: 2 !important;
+}
+.card-body form .btn.btn-outline-secondary:hover,
+.card-body form a.btn.btn-outline-secondary:hover {
+  background-color: #f8f9fa !important;
+  color: #6c757d !important;
+  border-color: #6c757d !important;
+  text-decoration: none !important;
+}
