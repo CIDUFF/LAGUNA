@@ -68,6 +68,7 @@ from simal.views import (
     export_resultados_medidas_xlsx,
     atualizar_status_coleta,
     generate_sample_labels,
+    process_dbo_pdfs,
 )
 
 
@@ -258,4 +259,9 @@ urlpatterns = [
     ),
     path("new_home/", new_home, name="new_home"),
     path("dashboard/", dashboard_parametros, name="dashboard_parametros"),
+    path(
+        "process_dbo_pdfs/<int:coleta_id>/<int:ponto_id>/<int:frasco_id>/",
+        process_dbo_pdfs,
+        name="process_dbo_pdfs",
+    ),
 ]

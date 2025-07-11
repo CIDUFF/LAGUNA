@@ -146,6 +146,10 @@ from django.db.models import Count
 from .utils.iqa_calculator import calculate_iqa
 import pandas as pd
 import numpy as np
+import json
+import requests
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 
 # Configuração do logger
 logger = logging.getLogger(__name__)
@@ -3655,7 +3659,6 @@ def new_home(request):
         return redirect("home")
 
 
-
 def convert_to_float(value):
     """Helper function to convert values to float, handling 'ND' and other non-numeric values"""
     try:
@@ -4008,7 +4011,7 @@ def dashboard_parametros(request):
 
                 # Adicionar legenda
                 legend_html = '''
-                    <div style="position: fixed; bottom: 50px; left: 50px; z-index: 1000; background-color: white; padding: 10px; border: 2px solid grey; border-radius: 5px">
+                    <div style="position: fixed; bottom: 50px; left: 50px; z-index: 1000; background-color: white; padding: 10px; border:  2px solid grey; border-radius: 5px">
                     <p><strong>Índice de Qualidade da Água (IQA)</strong></p>
                     <p><span style="color: #4169E1;">●</span> Excelente (91-100)</p>
                     <p><span style="color: #008000;">●</span> Bom (71-90)</p>
@@ -4086,3 +4089,80 @@ def dashboard_parametros(request):
     }
 
     return render(request, "dashboard.html", context)
+
+
+@login_required
+@csrf_exempt
+def process_dbo_pdfs(request, coleta_id, ponto_id, frasco_id):
+    """
+    Endpoint para processar múltiplos PDFs de laudos DBO.
+    """
+    if request.method != 'POST' or frasco_id != 9:  # Apenas para Frasco 9 (DBO)
+        return JsonResponse({'error': 'Método não permitido ou frasco inválido'}, status=400)
+    
+    if not request.FILES:
+        return JsonResponse({'error': 'Nenhum arquivo enviado'}, status=400)
+    
+    results = []
+    errors = []
+    
+    # Log detalhado para debug
+    print(f"Recebidos {len(request.FILES)} arquivos para processamento")
+    
+    # URL do serviço de extração de PDF (pode ser configurada em settings.py)
+    extraction_service_url = 'http://localhost:8080/extract/'
+    
+    for file_name, file in request.FILES.items():
+        try:
+            print(f"Processando arquivo: {file.name}")
+            
+            # Enviar arquivo para o serviço de extração
+            files = {'file': (file.name, file, 'application/pdf')}
+            response = requests.post(extraction_service_url, files=files)
+            
+            print(f"Resposta do serviço de extração: {response.status_code}")
+            
+            if response.status_code != 200:
+                error_msg = f"Erro ao processar o arquivo '{file.name}': Serviço retornou código {response.status_code}"
+                errors.append(error_msg)
+                print(error_msg)
+                continue
+            
+            data = response.json()
+            print(f"Dados extraídos: {data}")
+            
+            # Validar dados básicos
+            if not data.get('identificacao_do_ponto'):
+                error_msg = f"Erro ao processar o arquivo '{file.name}': Ponto não identificado"
+                errors.append(error_msg)
+                print(error_msg)
+                continue
+                
+            # Verificar se DBO foi extraído
+            if not data.get('dbo') or not data['dbo'].get('Resultados'):
+                error_msg = f"Erro ao processar o arquivo '{file.name}': Valor de DBO não encontrado"
+                errors.append(error_msg)
+                print(error_msg)
+                continue
+            
+            # Adicionar ao resultado
+            results.append({
+                'ponto': data['identificacao_do_ponto'].strip(),
+                'parametro': 'DBO',
+                'valor': data['dbo']['Resultados']
+            })
+            
+        except Exception as e:
+            error_msg = f"Erro ao processar o arquivo '{file.name}': {str(e)}"
+            errors.append(error_msg)
+            print(error_msg)
+            import traceback
+            print(traceback.format_exc())
+    
+    response_data = {
+        'success': len(results) > 0,
+        'results': results,
+        'errors': errors
+    }
+    print(f"Resposta final: {response_data}")
+    return JsonResponse(response_data)
