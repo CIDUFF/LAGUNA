@@ -1030,6 +1030,7 @@ class TabAnexoAmostra(models.Model):
         upload_to="anexos_amostras/", null=True, blank=True)
     ordem = models.IntegerField(default=0)  # Novo campo para ordenar anexos
     observacao = models.TextField(blank=True, null=True)
+    codigo_oceanus = models.CharField("Código Oceanus", max_length=50, blank=True, null=True)
     atualizado_em = models.DateTimeField(auto_now=True, blank=True, null=True)
     criado_em = models.DateTimeField(auto_now_add=True, blank=True, null=True)
 
@@ -1041,10 +1042,10 @@ class TabAnexoAmostra(models.Model):
         return f"Anexo da amostra {self.id_amostra}"
 
     def save(self, *args, **kwargs):
-        # Se não houver anexo e não houver observação, não salva
-        if not self.anexo and not self.observacao:
-            return
-        super().save(*args, **kwargs)
+        # Só salva se houver anexo, observação ou código_oceanus
+        if self.anexo or self.observacao or self.codigo_oceanus:
+            super().save(*args, **kwargs)
+        # Caso contrário, não salva (não cria registro vazio)
 
 
 class MetadadosPonto(models.Model):
