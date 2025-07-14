@@ -2,7 +2,6 @@
 {% load crispy_forms_tags %}
 {% block title %}Formulário Físico-Químico{% endblock %}
 {% block content %}
-{% if user.is_authenticated %}
 <div class="container mt-4">
     <div class="row mb-3 mb-md-4">
         <div class="col">
@@ -224,61 +223,131 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Elementos do DOM
     const btnUploadPdf = document.getElementById('btnUploadPdf');
-    const pdfModal = new bootstrap.Modal(document.getElementById('pdfUploadModal'));
+    const pdfModal = document.getElementById('pdfUploadModal') ? 
+        new bootstrap.Modal(document.getElementById('pdfUploadModal')) : null;
     const pdfFilesInput = document.getElementById('pdfFiles');
     const btnProcessPdfs = document.getElementById('btnProcessPdfs');
     const btnProcessPdfsText = document.getElementById('btnProcessPdfsText');
     const btnProcessPdfsSpinner = document.getElementById('btnProcessPdfsSpinner');
-    const pdfUploadAlert = document.getElementById('pdfUploadAlert');
-    const pdfUploadMessage = document.getElementById('pdfUploadMessage');
-    const pdfProcessingResult = document.getElementById('pdfProcessingResult');
-    const pdfProcessingMessage = document.getElementById('pdfProcessingMessage');
     
-    // Abrir modal de upload
+    if (!btnUploadPdf || !pdfModal) return;
+    
+    // ADICIONAR ESTE TRECHO: Configurar a abertura do modal quando o botão for clicado
     btnUploadPdf.addEventListener('click', function() {
         pdfModal.show();
-        pdfUploadAlert.classList.add('d-none');
+        // Limpar arquivos anteriores e mensagens
         pdfFilesInput.value = '';
+        const alertElement = document.getElementById('pdfUploadAlert');
+        if (alertElement) alertElement.classList.add('d-none');
     });
     
-    // Processar PDFs
+    // Função para preencher valores no formulário - versão corrigida
+    function preencherFormulario(resultados) {
+        console.log("Tentando preencher o formulário com:", resultados);
+        
+        if (!resultados || !resultados.length) {
+            console.warn("Nenhum resultado para preencher");
+            return 0;
+        }
+        
+        // Obter todos os campos de input do formulário em ordem
+        const inputFields = Array.from(document.querySelectorAll('.inlineform input[type="number"], .inlineform input[type="text"]:not([readonly])'));
+        
+        if (inputFields.length < 3) {
+            console.error("Não foram encontrados campos suficientes no formulário");
+            return 0;
+        }
+        
+        console.log("Campos encontrados:", inputFields.length);
+        
+        // Extrair e organizar os valores por parâmetro
+        let valorDBO = null;
+        let valorEscherichia = null;
+        let valorDQO = null;
+        
+        // Primeiro passo: extrair os valores do objeto results
+        resultados.forEach(result => {
+            const parametro = result.parametro.toLowerCase();
+            const valor = result.valor;
+            
+            // Normalizar valor (remover vírgulas)
+            const valorFormatado = valor.toString().replace(/,/g, '.');
+            
+            if (parametro.includes('dbo')) {
+                valorDBO = valorFormatado;
+                console.log("Valor DBO extraído:", valorDBO);
+            } else if (parametro.includes('escherichia') || parametro.includes('coli')) {
+                valorEscherichia = valorFormatado;
+                console.log("Valor Escherichia coli extraído:", valorEscherichia);
+            } else if (parametro.includes('dqo')) {
+                valorDQO = valorFormatado;
+                console.log("Valor DQO extraído:", valorDQO);
+            }
+        });
+        
+        let preenchidos = 0;
+        
+        // Segundo passo: preencher os campos na ordem correta
+        // Ordem garantida: 0=DBOs, 1=Escherichia coli, 2=DQO
+        
+        // Campo 1: DBOs (índice 0)
+        if (valorDBO && inputFields[0]) {
+            inputFields[0].value = valorDBO;
+            inputFields[0].dispatchEvent(new Event('input', { bubbles: true }));
+            inputFields[0].dispatchEvent(new Event('change', { bubbles: true }));
+            console.log("Campo DBOs preenchido com:", valorDBO);
+            preenchidos++;
+        }
+        
+        // Campo 2: Escherichia coli (índice 1)
+        if (valorEscherichia && inputFields[1]) {
+            inputFields[1].value = valorEscherichia;
+            inputFields[1].dispatchEvent(new Event('input', { bubbles: true }));
+            inputFields[1].dispatchEvent(new Event('change', { bubbles: true }));
+            console.log("Campo Escherichia coli preenchido com:", valorEscherichia);
+            preenchidos++;
+        }
+        
+        // Campo 3: DQO (índice 2)
+        if (valorDQO && inputFields[2]) {
+            inputFields[2].value = valorDQO;
+            inputFields[2].dispatchEvent(new Event('input', { bubbles: true }));
+            inputFields[2].dispatchEvent(new Event('change', { bubbles: true }));
+            console.log("Campo DQO preenchido com:", valorDQO);
+            preenchidos++;
+        }
+        
+        return preenchidos;
+    }
+    
+    // Processar PDFs quando o botão for clicado
     btnProcessPdfs.addEventListener('click', function() {
         const files = pdfFilesInput.files;
         if (files.length === 0) {
-            pdfUploadAlert.classList.remove('d-none');
-            pdfUploadAlert.classList.remove('alert-info');
-            pdfUploadAlert.classList.add('alert-danger');
-            pdfUploadMessage.textContent = 'Selecione pelo menos um arquivo PDF.';
+            alert('Selecione pelo menos um arquivo PDF.');
             return;
         }
         
-        // Iniciar processamento
+        // Mostrar indicador de carregamento
         btnProcessPdfsText.textContent = 'Processando...';
         btnProcessPdfsSpinner.classList.remove('d-none');
         btnProcessPdfs.disabled = true;
-        pdfUploadAlert.classList.add('d-none');
         
-        // Desabilitar os campos do formulário durante o processamento
-        const formInputs = document.querySelectorAll('input[type="number"]');
-        formInputs.forEach(input => {
-            input.disabled = true;
-        });
-        
-        // Criar FormData e adicionar os arquivos
+        // Criar FormData e adicionar arquivos
         const formData = new FormData();
         for (let i = 0; i < files.length; i++) {
             formData.append(`pdf_${i}`, files[i]);
         }
         
-        // Obter CSRF token
-        const csrftoken = getCookie('csrftoken');
+        // Obter token CSRF
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
         
         // Enviar requisição para o backend
         fetch(`/process_dbo_pdfs/{{ coleta.id }}/{{ ponto.id }}/{{ frasco.id }}/`, {
             method: 'POST',
             body: formData,
             headers: {
-                'X-CSRFToken': csrftoken
+                'X-CSRFToken': csrfToken
             }
         })
         .then(response => {
@@ -288,282 +357,37 @@ document.addEventListener('DOMContentLoaded', function() {
             return response.json();
         })
         .then(data => {
-            // Reabilitar os campos do formulário
-            formInputs.forEach(input => {
-                input.disabled = false;
-            });
+            console.log("Resposta recebida:", data);
             
-            // Adicionar logs de depuração
-            console.log("Resposta da API:", data);
-            
-            // Processar resposta
             if (data.success) {
-                // Preencher os campos do formulário com os dados extraídos
-                let preenchidos = 0;
-                
-                if (data.results && data.results.length > 0) {
-                    console.log(`Recebidos ${data.results.length} resultados para processamento`);
-                    
-                    // Para cada resultado retornado pelo backend
-                    data.results.forEach(result => {
-                        console.log(`Processando resultado: ponto=${result.ponto}, parametro=${result.parametro}, valor=${result.valor}`);
-                        
-                        // Tentar preencher o campo correspondente diretamente com o ponto extraído
-                        const campoPreenchido = preencherCampoPorPonto(result.ponto, result.valor);
-                        
-                        if (campoPreenchido) {
-                            console.log(`Campo preenchido com sucesso para ${result.ponto}`);
-                            preenchidos++;
-                        } else {
-                            console.warn(`Não foi possível encontrar um campo para o ponto ${result.ponto}`);
-                        }
-                    });
-                } else {
-                    console.warn("Nenhum resultado recebido do backend");
-                }
+                // Usar a nova função para preencher o formulário
+                const preenchidos = preencherFormulario(data.results);
                 
                 // Fechar o modal
                 pdfModal.hide();
                 
-                // Mostrar mensagem de sucesso ou aviso
-                pdfProcessingResult.classList.remove('d-none');
-                
+                // Mostrar mensagem de sucesso
                 if (preenchidos > 0) {
-                    pdfProcessingResult.classList.remove('alert-danger');
-                    pdfProcessingResult.classList.add('alert-success');
-                    pdfProcessingMessage.textContent = `Dados importados com sucesso! ${preenchidos} campos foram preenchidos.`;
+                    alert(`${preenchidos} campos foram preenchidos com sucesso!`);
                 } else {
-                    pdfProcessingResult.classList.remove('alert-success');
-                    pdfProcessingResult.classList.add('alert-warning');
-                    pdfProcessingMessage.textContent = `Os dados foram processados, mas nenhum campo foi preenchido. Verifique se os pontos nos PDFs correspondem aos pontos do formulário.`;
-                }
-                
-                // Ocultar a mensagem após alguns segundos
-                setTimeout(() => {
-                    pdfProcessingResult.classList.add('d-none');
-                }, 5000);
-                
-                console.log(`Processamento concluído: ${preenchidos} campos preenchidos de ${data.results?.length || 0} resultados.`);
-                
-                if (data.errors && data.errors.length > 0) {
-                    console.warn("Alguns erros ocorreram durante o processamento:", data.errors);
+                    alert('Os dados foram processados, mas nenhum campo foi preenchido.');
                 }
             } else {
-                // Mostrar erros
-                pdfUploadAlert.classList.remove('d-none');
-                pdfUploadAlert.classList.remove('alert-info');
-                pdfUploadAlert.classList.add('alert-danger');
-                pdfUploadMessage.textContent = data.errors ? data.errors.join('. ') : 'Erro desconhecido ao processar os PDFs';
+                alert(data.errors ? data.errors.join('. ') : 'Erro desconhecido ao processar os PDFs');
             }
         })
         .catch(error => {
-            console.error('Erro no processamento de PDFs:', error);
-            pdfUploadAlert.classList.remove('d-none');
-            pdfUploadAlert.classList.remove('alert-info');
-            pdfUploadAlert.classList.add('alert-danger');
-            pdfUploadMessage.textContent = 'Erro ao processar os PDFs: ' + error.message;
+            console.error('Erro:', error);
+            alert('Erro ao processar PDFs: ' + error.message);
         })
         .finally(() => {
-            // Resetar o estado do botão
+            // Restaurar estado do botão
             btnProcessPdfsText.textContent = 'Processar PDFs';
             btnProcessPdfsSpinner.classList.add('d-none');
             btnProcessPdfs.disabled = false;
-            
-            // Reabilitar os campos do formulário se não tiver sido feito ainda
-            formInputs.forEach(input => {
-                input.disabled = false;
-            });
         });
     });
-    
-    // Função para normalizar o ID do ponto (P1, P01, Ponto 1, etc -> P1)
-    function normalizarPonto(pontoString) {
-        if (!pontoString) return null;
-        
-        // Remove espaços e caracteres não alfanuméricos
-        const ponto = pontoString.trim().toUpperCase();
-        console.log(`Normalizando ponto: "${pontoString}" -> "${ponto}"`);
-        
-        // Vários padrões possíveis para identificar pontos
-        if (ponto.match(/^P\d+$/)) {
-            // Já está no formato P1, P2, etc.
-            console.log(`Ponto já está normalizado: ${ponto}`);
-            return ponto;
-        } else if (ponto.match(/^P0\d+$/)) {
-            // Formato P01, P02 - remover o zero
-            const num = parseInt(ponto.substring(1), 10);
-            console.log(`Ponto normalizado de P0X: P${num}`);
-            return `P${num}`;
-        } else {
-            // Outros formatos - extrair números
-            const numeros = ponto.match(/\d+/g);
-            if (!numeros || numeros.length === 0) {
-                console.log(`Não foi possível extrair número do ponto: ${ponto}`);
-                return null;
-            }
-            
-            console.log(`Ponto extraído de string: P${parseInt(numeros[0])}`);
-            return `P${parseInt(numeros[0])}`;
-        }
-    }
-    
-    // Função para encontrar e preencher os campos do formulário
-    function preencherCampoPorPonto(ponto, valor) {
-        if (!ponto) return false;
-        
-        console.log(`Tentando preencher ponto: "${ponto}" com valor: ${valor}`);
-        
-        let preenchido = false;
-        const pontoUpper = ponto.toString().toUpperCase();
-        
-        // Estratégia 1: Buscar por IDs e names que contenham o ponto
-        const inputsCampos = document.querySelectorAll('input[type="number"]');
-        
-        inputsCampos.forEach(input => {
-            if (preenchido) return; // Se já preencheu, pular
-            
-            const inputId = (input.id || '').toUpperCase();
-            const inputName = (input.name || '').toUpperCase();
-            
-            // Verificar se o input está relacionado a DBO
-            const isDboField = inputId.includes('DBO') || inputName.includes('DBO') || 
-                              (input.labels && Array.from(input.labels).some(label => 
-                                  label.textContent.toUpperCase().includes('DBO')));
-            
-            if (!isDboField) return; // Só processar campos de DBO
-            
-            const tr = input.closest('tr');
-            const trText = tr ? tr.textContent.toUpperCase() : '';
-            
-            console.log(`Verificando campo: id=${inputId}, name=${inputName}, texto da linha=${trText.substring(0, 50)}...`);
-            
-            // Verificar se o ponto está presente
-            const pontoEncontrado = inputId.includes(pontoUpper) || 
-                                   inputName.includes(pontoUpper) || 
-                                   trText.includes(pontoUpper);
-            
-            if (pontoEncontrado) {
-                console.log(`ENCONTRADO! Preenchendo campo ${inputId || inputName} com valor ${valor}`);
-                
-                // Preencher o campo
-                input.value = valor;
-                
-                // Disparar eventos para garantir que o framework reconheça a alteração
-                input.dispatchEvent(new Event('input', { bubbles: true }));
-                input.dispatchEvent(new Event('change', { bubbles: true }));
-                input.focus();
-                input.blur();
-                
-                preenchido = true;
-            }
-        });
-        
-        // Estratégia 2: Se não encontrou, buscar por texto nas células da tabela
-        if (!preenchido) {
-            console.log(`Estratégia 1 falhou. Tentando estratégia 2 para ponto: ${pontoUpper}`);
-            
-            const celulas = document.querySelectorAll('td, th, label');
-            celulas.forEach(celula => {
-                if (preenchido) return;
-                
-                const celulaText = (celula.textContent || '').toUpperCase();
-                
-                // Verificar se a célula contém o ponto e menciona DBO
-                if (celulaText.includes(pontoUpper) && celulaText.includes('DBO')) {
-                    console.log(`Encontrada célula com texto "${celulaText}" para ponto`);
-                    
-                    // Procurar o input mais próximo
-                    let inputAlvo = celula.querySelector('input[type="number"]');
-                    
-                    if (!inputAlvo && celula.nextElementSibling) {
-                        inputAlvo = celula.nextElementSibling.querySelector('input[type="number"]');
-                    }
-                    
-                    if (!inputAlvo) {
-                        const tr = celula.closest('tr');
-                        if (tr) {
-                            inputAlvo = tr.querySelector('input[type="number"]');
-                        }
-                    }
-                    
-                    if (inputAlvo) {
-                        console.log(`ENCONTRADO (estratégia 2)! Preenchendo campo próximo à célula com valor ${valor}`);
-                        inputAlvo.value = valor;
-                        inputAlvo.dispatchEvent(new Event('input', { bubbles: true }));
-                        inputAlvo.dispatchEvent(new Event('change', { bubbles: true }));
-                        inputAlvo.focus();
-                        inputAlvo.blur();
-                        preenchido = true;
-                    }
-                }
-            });
-        }
-        
-        // Estratégia 3: Busca mais ampla por campos de DBO vazios
-        if (!preenchido) {
-            console.log(`Estratégias anteriores falharam. Tentando busca ampla por DBO`);
-            
-            document.querySelectorAll('input[type="number"]').forEach(input => {
-                if (preenchido) return;
-                
-                const inputLabel = input.labels && input.labels.length > 0 
-                    ? (input.labels[0].textContent || '').toUpperCase()
-                    : '';
-                const placeholder = (input.placeholder || '').toUpperCase();
-                const inputId = (input.id || '').toUpperCase();
-                const inputName = (input.name || '').toUpperCase();
-                
-                // Verificar se é um campo de DBO
-                if ((inputLabel.includes('DBO') || placeholder.includes('DBO') || 
-                     inputId.includes('DBO') || inputName.includes('DBO')) && 
-                    !input.disabled && !input.readOnly && !input.value) {
-                    
-                    console.log(`ENCONTRADO (estratégia 3)! Preenchendo campo de DBO genérico com valor ${valor}`);
-                    input.value = valor;
-                    input.dispatchEvent(new Event('input', { bubbles: true }));
-                    input.dispatchEvent(new Event('change', { bubbles: true }));
-                    input.focus();
-                    input.blur();
-                    preenchido = true;
-                }
-            });
-        }
-        
-        return preenchido;
-    }
-    
-    // Função para obter o cookie CSRF
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
 });
 </script>
-{% endif %}
-<!-- Fim dos scripts específicos -->
-
-{% else %}
-<div class="container mt-5">
-    <div class="card border-0 rounded-4 shadow-sm p-5 text-center">
-        <i class="bi bi-person-lock display-1 text-primary mb-3"></i>
-        <h1>Olá, visitante</h1>
-        <p class="lead mb-4">Faça login para acessar o sistema</p>
-        <div>
-            <a href="{% url 'account_login' %}" class="btn btn-primary btn-lg rounded-pill">
-                <i class="bi bi-box-arrow-in-right me-2"></i>Entrar no Sistema
-            </a>
-        </div>
-    </div>
-</div>
 {% endif %}
 {% endblock %}
