@@ -4144,35 +4144,35 @@ def process_dbo_pdfs(request, coleta_id, ponto_id, frasco_id):
             try:
                 response = requests.post(extraction_service_url, files=files, timeout=30)
             except requests.exceptions.RequestException as e:
-                error_msg = f"Erro na requisição ao serviço de extração: {str(e)}"
+                error_msg = f"Este PDF não é referente ao laudo Oceanus"
                 errors.append(error_msg)
-                print(error_msg)
+                print(f"Erro na requisição ao serviço de extração: {str(e)}")
                 continue
             
             print(f"Resposta do serviço de extração: {response.status_code}")
             
             if response.status_code != 200:
-                error_msg = f"Erro ao processar o arquivo '{file.name}': Serviço retornou código {response.status_code}"
+                error_msg = f"Este PDF não é referente ao laudo Oceanus"
                 errors.append(error_msg)
-                print(error_msg)
+                print(f"Erro ao processar o arquivo '{file.name}': Serviço retornou código {response.status_code}")
                 continue
             
             # Tentar parsear o JSON da resposta
             try:
                 data = response.json()
             except json.JSONDecodeError:
-                error_msg = f"Resposta inválida do serviço de extração para '{file.name}'"
+                error_msg = f"Este PDF não é referente ao laudo Oceanus"
                 errors.append(error_msg)
-                print(error_msg)
+                print(f"Resposta inválida do serviço de extração para '{file.name}'")
                 continue
                 
             print(f"Dados extraídos: {data}")
             
             # Verificar se a resposta contém dados
             if not data:
-                error_msg = f"O serviço de extração não retornou dados para '{file.name}'"
+                error_msg = f"Este PDF não é referente ao laudo Oceanus"
                 errors.append(error_msg)
-                print(error_msg)
+                print(f"O serviço de extração não retornou dados para '{file.name}'")
                 continue
             
             # Validar dados básicos - mais flexível na busca do ponto
@@ -4183,9 +4183,9 @@ def process_dbo_pdfs(request, coleta_id, ponto_id, frasco_id):
                     break
             
             if not ponto_info:
-                error_msg = f"Não foi possível identificar o ponto no arquivo '{file.name}'"
+                error_msg = f"Este PDF não é referente ao laudo Oceanus"
                 errors.append(error_msg)
-                print(error_msg)
+                print(f"Não foi possível identificar o ponto no arquivo '{file.name}'")
                 continue
             
             # Verificar se o ponto do PDF corresponde ao ponto atual
@@ -4344,14 +4344,14 @@ def process_dbo_pdfs(request, coleta_id, ponto_id, frasco_id):
                                 resultados_encontrados = True
                 
                 if not resultados_encontrados:
-                    error_msg = f"Nenhum parâmetro relevante (DBO, DQO, E. coli) encontrado no arquivo '{file.name}'"
+                    error_msg = f"Este PDF não é referente ao laudo Oceanus"
                     errors.append(error_msg)
-                    print(error_msg)
+                    print(f"Nenhum parâmetro relevante (DBO, DQO, E. coli) encontrado no arquivo '{file.name}'")
             
         except Exception as e:
-            error_msg = f"Erro ao processar o arquivo '{file.name}': {str(e)}"
+            error_msg = f"Este PDF não é referente ao laudo Oceanus"
             errors.append(error_msg)
-            print(error_msg)
+            print(f"Erro ao processar o arquivo '{file.name}': {str(e)}")
             import traceback
             print(traceback.format_exc())
     
