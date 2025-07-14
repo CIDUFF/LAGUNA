@@ -241,7 +241,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (alertElement) alertElement.classList.add('d-none');
     });
     
-    // Função para preencher valores no formulário - versão corrigida
+    // Função aprimorada para preencher o formulário usando seletores mais específicos
     function preencherFormulario(resultados) {
         console.log("Tentando preencher o formulário com:", resultados);
         
@@ -250,70 +250,83 @@ document.addEventListener('DOMContentLoaded', function() {
             return 0;
         }
         
-        // Obter todos os campos de input do formulário em ordem
-        const inputFields = Array.from(document.querySelectorAll('.inlineform input[type="number"], .inlineform input[type="text"]:not([readonly])'));
+        // Obter os campos de input por seus IDs específicos (mais confiável)
+        const inputDBO = document.getElementById('id_form-0-input_valor');    // DBO
+        const inputEcoli = document.getElementById('id_form-1-input_valor');  // E. coli
+        const inputDQO = document.getElementById('id_form-2-input_valor');    // DQO
         
-        if (inputFields.length < 3) {
-            console.error("Não foram encontrados campos suficientes no formulário");
+        console.log("Campos identificados:", {
+            "DBO": inputDBO ? "Encontrado" : "Não encontrado",
+            "E.coli": inputEcoli ? "Encontrado" : "Não encontrado",
+            "DQO": inputDQO ? "Encontrado" : "Não encontrado"
+        });
+        
+        if (!inputDBO && !inputEcoli && !inputDQO) {
+            console.warn("Não foi possível encontrar os campos de input necessários");
             return 0;
         }
         
-        console.log("Campos encontrados:", inputFields.length);
+        // Mapear valores por tipo de parâmetro
+        let valores = {
+            dbo: null,
+            dqo: null,
+            ecoli: null
+        };
         
-        // Extrair e organizar os valores por parâmetro
-        let valorDBO = null;
-        let valorEscherichia = null;
-        let valorDQO = null;
-        
-        // Primeiro passo: extrair os valores do objeto results
+        // Extrair valores do resultado
         resultados.forEach(result => {
-            const parametro = result.parametro.toLowerCase();
-            const valor = result.valor;
+            if (!result || !result.parametro) return;
             
-            // Normalizar valor (remover vírgulas)
-            const valorFormatado = valor.toString().replace(/,/g, '.');
+            const parametro = result.parametro.toLowerCase().trim();
+            let valor = result.valor;
             
-            if (parametro.includes('dbo')) {
-                valorDBO = valorFormatado;
-                console.log("Valor DBO extraído:", valorDBO);
-            } else if (parametro.includes('escherichia') || parametro.includes('coli')) {
-                valorEscherichia = valorFormatado;
-                console.log("Valor Escherichia coli extraído:", valorEscherichia);
-            } else if (parametro.includes('dqo')) {
-                valorDQO = valorFormatado;
-                console.log("Valor DQO extraído:", valorDQO);
+            // Converter valor para formato numérico adequado
+            if (typeof valor === 'string') {
+                valor = valor.replace(/,/g, '.').trim();
+            }
+            
+            console.log(`Processando parâmetro: ${parametro} = ${valor}`);
+            
+            // Mapeamento dos parâmetros
+            if (parametro.includes('dbo') || parametro.includes('demanda bioquímica')) {
+                valores.dbo = valor;
+            } 
+            else if (parametro.includes('dqo') || parametro.includes('demanda química')) {
+                valores.dqo = valor;
+            }
+            else if (parametro.includes('escherichia') || parametro.includes('coli') || parametro.includes('e. coli')) {
+                valores.ecoli = valor;
             }
         });
         
+        console.log("Valores extraídos:", valores);
+        
         let preenchidos = 0;
         
-        // Segundo passo: preencher os campos na ordem correta
-        // Ordem garantida: 0=DBOs, 1=Escherichia coli, 2=DQO
-        
-        // Campo 1: DBOs (índice 0)
-        if (valorDBO && inputFields[0]) {
-            inputFields[0].value = valorDBO;
-            inputFields[0].dispatchEvent(new Event('input', { bubbles: true }));
-            inputFields[0].dispatchEvent(new Event('change', { bubbles: true }));
-            console.log("Campo DBOs preenchido com:", valorDBO);
+        // Preencher DBO
+        if (valores.dbo && inputDBO) {
+            inputDBO.value = valores.dbo;
+            inputDBO.dispatchEvent(new Event('input', { bubbles: true }));
+            inputDBO.dispatchEvent(new Event('change', { bubbles: true }));
+            console.log("Campo DBO preenchido com:", valores.dbo);
             preenchidos++;
         }
         
-        // Campo 2: Escherichia coli (índice 1)
-        if (valorEscherichia && inputFields[1]) {
-            inputFields[1].value = valorEscherichia;
-            inputFields[1].dispatchEvent(new Event('input', { bubbles: true }));
-            inputFields[1].dispatchEvent(new Event('change', { bubbles: true }));
-            console.log("Campo Escherichia coli preenchido com:", valorEscherichia);
+        // Preencher Escherichia coli
+        if (valores.ecoli && inputEcoli) {
+            inputEcoli.value = valores.ecoli;
+            inputEcoli.dispatchEvent(new Event('input', { bubbles: true }));
+            inputEcoli.dispatchEvent(new Event('change', { bubbles: true }));
+            console.log("Campo E. coli preenchido com:", valores.ecoli);
             preenchidos++;
         }
         
-        // Campo 3: DQO (índice 2)
-        if (valorDQO && inputFields[2]) {
-            inputFields[2].value = valorDQO;
-            inputFields[2].dispatchEvent(new Event('input', { bubbles: true }));
-            inputFields[2].dispatchEvent(new Event('change', { bubbles: true }));
-            console.log("Campo DQO preenchido com:", valorDQO);
+        // Preencher DQO
+        if (valores.dqo && inputDQO) {
+            inputDQO.value = valores.dqo;
+            inputDQO.dispatchEvent(new Event('input', { bubbles: true }));
+            inputDQO.dispatchEvent(new Event('change', { bubbles: true }));
+            console.log("Campo DQO preenchido com:", valores.dqo);
             preenchidos++;
         }
         
