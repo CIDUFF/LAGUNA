@@ -4183,9 +4183,10 @@ def process_dbo_pdfs(request, coleta_id, ponto_id, frasco_id):
                     break
             
             if not ponto_info:
-                # Ignorar a verificação de ponto para garantir o processamento
-                print(f"AVISO: Ponto não identificado, mas continuando processamento")
-                ponto_info = "Não identificado"
+                error_msg = f"Não foi possível identificar o ponto no arquivo '{file.name}'"
+                errors.append(error_msg)
+                print(error_msg)
+                continue
             
             # Verificar se o ponto do PDF corresponde ao ponto atual
             ponto_pdf = str(ponto_info).strip().upper()
@@ -4193,9 +4194,15 @@ def process_dbo_pdfs(request, coleta_id, ponto_id, frasco_id):
             
             print(f"Comparando pontos - PDF: '{ponto_pdf}' vs Atual: '{ponto_atual_upper}'")
             
-            # Verificação mais flexível de equivalência de pontos (opcional)
-            # Para garantir o processamento, estamos definindo forced_match como True
-            forced_match = True
+            # Verificação mais rigorosa de equivalência de pontos
+            # Apenas processar se o ponto do PDF corresponder ao ponto atual
+            if ponto_pdf != ponto_atual_upper and not (
+                ponto_pdf in ponto_atual_upper or ponto_atual_upper in ponto_pdf
+            ):
+                error_msg = f"O ponto no arquivo '{file.name}' ({ponto_pdf}) não corresponde ao ponto selecionado ({ponto_atual_upper})"
+                errors.append(error_msg)
+                print(error_msg)
+                continue
             
             # Função para extrair valores numéricos de diferentes formatos
             def extrair_valor_numerico(valor_bruto):
