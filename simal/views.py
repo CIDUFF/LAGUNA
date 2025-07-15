@@ -4097,11 +4097,14 @@ def process_dbo_pdfs(request, coleta_id, ponto_id, frasco_id):
     """
     Endpoint para processar múltiplos PDFs de laudos DBO, DQO e E. coli para o Frasco 9.
     Extrai os valores e retorna para preenchimento automático do formulário.
+    Também salva os arquivos PDF em uma pasta específica para referência futura.
     """
     # Adicionar importação do módulo re
     import re
     import json
     import requests
+    import os
+    from datetime import datetime
     
     if request.method != 'POST' or frasco_id != 9:  # Apenas para Frasco 9
         return JsonResponse({'error': 'Método não permitido ou frasco inválido'}, status=400)
@@ -4116,12 +4119,18 @@ def process_dbo_pdfs(request, coleta_id, ponto_id, frasco_id):
     except TabPonto.DoesNotExist:
         return JsonResponse({'error': 'Ponto não encontrado'}, status=400)
     
+    # Criar diretório para salvar os PDFs, se não existir
+    upload_dir = os.path.join(settings.MEDIA_ROOT, 'laudos_pdf', f'coleta_{coleta_id}', f'ponto_{ponto_id}')
+    os.makedirs(upload_dir, exist_ok=True)
+    
     results = []
     errors = []
+    saved_files = []
     
     # Log detalhado para debug
     print(f"Ponto atual da página: {ponto_atual_nome} (ID: {ponto_id})")
     print(f"Recebidos {len(request.FILES)} arquivos para processamento")
+    print(f"Os arquivos serão salvos em: {upload_dir}")
     
     # URL do serviço de extração de PDF - usando configuração do settings.py se disponível
     extraction_service_url = getattr(settings, 'PDF_EXTRACTION_SERVICE_URL', 'http://localhost:8080/extract/')
@@ -4136,6 +4145,24 @@ def process_dbo_pdfs(request, coleta_id, ponto_id, frasco_id):
                 errors.append(error_msg)
                 print(error_msg)
                 continue
+            
+            # Gerar nome único para o arquivo
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            file_name_cleaned = file.name.replace(' ', '_')
+            unique_filename = f"{timestamp}_{file_name_cleaned}"
+            file_path = os.path.join(upload_dir, unique_filename)
+            
+            # Salvar o arquivo
+            with open(file_path, 'wb+') as destination:
+                for chunk in file.chunks():
+                    destination.write(chunk)
+            
+            saved_files.append({
+                'original_name': file.name,
+                'saved_path': file_path
+            })
+            
+            print(f"Arquivo salvo em: {file_path}")
                 
             # Enviar arquivo para o serviço de extração
             files = {'file': (file.name, file, 'application/pdf')}
@@ -4277,7 +4304,8 @@ def process_dbo_pdfs(request, coleta_id, ponto_id, frasco_id):
                         'ponto': ponto_atual_nome,
                         'parametro': 'DBO',
                         'valor': dbo_valor_limpo,
-                        'arquivo': file.name
+                        'arquivo': file.name,
+                        'arquivo_salvo': file_path
                     })
                     print(f"Dados DBO adicionados: valor={dbo_valor_limpo}")
             
@@ -4292,7 +4320,8 @@ def process_dbo_pdfs(request, coleta_id, ponto_id, frasco_id):
                         'ponto': ponto_atual_nome,
                         'parametro': 'DQO',
                         'valor': dqo_valor_limpo,
-                        'arquivo': file.name
+                        'arquivo': file.name,
+                        'arquivo_salvo': file_path
                     })
                     print(f"Dados DQO adicionados: valor={dqo_valor_limpo}")
             
@@ -4308,7 +4337,8 @@ def process_dbo_pdfs(request, coleta_id, ponto_id, frasco_id):
                         'ponto': ponto_atual_nome,
                         'parametro': 'Escherichia coli',
                         'valor': ecoli_valor_limpo,
-                        'arquivo': file.name
+                        'arquivo': file.name,
+                        'arquivo_salvo': file_path
                     })
                     print(f"Dados E. coli adicionados: valor={ecoli_valor_limpo}")
             
@@ -4338,7 +4368,8 @@ def process_dbo_pdfs(request, coleta_id, ponto_id, frasco_id):
                                     'ponto': ponto_atual_nome,
                                     'parametro': param_deduzido,
                                     'valor': valor_limpo,
-                                    'arquivo': file.name
+                                    'arquivo': file.name,
+                                    'arquivo_salvo': file_path
                                 })
                                 print(f"Dados {param_deduzido} adicionados pelo método alternativo: valor={valor_limpo}")
                                 resultados_encontrados = True
@@ -4359,7 +4390,8 @@ def process_dbo_pdfs(request, coleta_id, ponto_id, frasco_id):
         'success': len(results) > 0,
         'results': results,
         'errors': errors,
-        'ponto_atual': ponto_atual_nome
+        'ponto_atual': ponto_atual_nome,
+        'saved_files': saved_files
     }
     print(f"Resposta final: {response_data}")
     return JsonResponse(response_data)
