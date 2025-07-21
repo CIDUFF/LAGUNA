@@ -2,7 +2,6 @@
 {% load crispy_forms_tags %}
 {% block title %}Formulário Físico-Químico{% endblock %}
 {% block content %}
-{% if user.is_authenticated %}
 <div class="container mt-4">
     <div class="row mb-3 mb-md-4">
         <div class="col">
@@ -106,11 +105,58 @@
         <div class="col-12 col-md-8">
             <div class="card border-0 rounded-4 shadow-sm hover-shadow">
                 <div class="card-header bg-gradient border-0 rounded-top-4" style="background-color: #4895ef;">
-                    <h5 class="card-title mb-0 text-white">
-                        <i class="bi bi-input-cursor-text me-2"></i>Dados da Análise
-                    </h5>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0 text-white">
+                            <i class="bi bi-input-cursor-text me-2"></i>Dados da Análise
+                        </h5>
+                        
+                        <!-- Botão para upload de PDFs - só exibir para o Frasco 9 (DBO) -->
+                        {% if frasco.id == 9 %}
+                        <button type="button" class="btn btn-light btn-sm rounded-pill" id="btnUploadPdf" 
+                                data-bs-toggle="tooltip" title="Anexar laudos PDF para preenchimento automático">
+                            <i class="bi bi-file-earmark-pdf me-1"></i>Anexar Laudos PDF
+                        </button>
+                        {% endif %}
+                    </div>
                 </div>
                 <div class="card-body p-3 p-md-4">
+                    {% if frasco.id == 9 %}
+                    <!-- Modal para upload de PDFs -->
+                    <div class="modal fade" id="pdfUploadModal" tabindex="-1" aria-labelledby="pdfUploadModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="pdfUploadModalLabel">Anexar Laudos PDF</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="mb-3">
+                                        <label for="pdfFiles" class="form-label">Selecione os arquivos PDF</label>
+                                        <input class="form-control" type="file" id="pdfFiles" accept=".pdf" multiple>
+                                        <div class="form-text">Você pode selecionar múltiplos arquivos PDF.</div>
+                                    </div>
+                                    <div id="pdfUploadAlert" class="alert alert-info d-none">
+                                        <span id="pdfUploadMessage"></span>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                    <button type="button" class="btn btn-primary" id="btnProcessPdfs">
+                                        <span id="btnProcessPdfsText">Processar PDFs</span>
+                                        <span id="btnProcessPdfsSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Alerta para feedback do processamento -->
+                    <div id="pdfProcessingResult" class="alert alert-success d-none mb-3">
+                        <i class="bi bi-check-circle me-2"></i>
+                        <span id="pdfProcessingMessage"></span>
+                    </div>
+                    {% endif %}
+                    
                     <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
                         {% csrf_token %}
                         {{ formset.management_form|crispy }}
@@ -175,114 +221,190 @@
     </div>
 </div>
 
-<style>
-.hover-shadow {
-    transition: all 0.3s ease;
-}
-.hover-shadow:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
-}
-
-@media (max-width: 768px) {
-    .card {
-        margin-bottom: 1rem;
-    }
-    
-    .form-control, .form-select {
-        font-size: 16px; /* Evita zoom em inputs no iOS */
-    }
-    
-    .btn {
-        padding: 0.8rem 1.5rem;
-        width: 100%;
-        margin-bottom: 0.5rem;
-    }
-    
-    .display-6 {
-        font-size: 1.5rem;
-    }
-    
-    .card-body {
-        padding: 1rem;
-    }
-}
-
-/* Melhoria no touch target para dispositivos móveis */
-@media (hover: none) {
-    .btn, 
-    .form-control,
-    .form-select {
-        min-height: 44px;
-    }
-    
-    .dropdown-item {
-        padding-top: 0.75rem;
-        padding-bottom: 0.75rem;
-    }
-}
-</style>
-
+<!-- Scripts específicos para processamento de PDF do DBO -->
+{% if frasco.id == 9 %}
 <script>
-// Adicionar validação de formulário
 document.addEventListener('DOMContentLoaded', function() {
-    const forms = document.querySelectorAll('.needs-validation');
+    // Elementos do DOM
+    const btnUploadPdf = document.getElementById('btnUploadPdf');
+    const pdfModal = document.getElementById('pdfUploadModal') ? 
+        new bootstrap.Modal(document.getElementById('pdfUploadModal')) : null;
+    const pdfFilesInput = document.getElementById('pdfFiles');
+    const btnProcessPdfs = document.getElementById('btnProcessPdfs');
+    const btnProcessPdfsText = document.getElementById('btnProcessPdfsText');
+    const btnProcessPdfsSpinner = document.getElementById('btnProcessPdfsSpinner');
     
-    Array.from(forms).forEach(form => {
-        form.addEventListener('submit', event => {
-            if (!form.checkValidity()) {
-                event.preventDefault();
-                event.stopPropagation();
-            }
-            form.classList.add('was-validated');
-        }, false);
+    if (!btnUploadPdf || !pdfModal) return;
+    
+    // ADICIONAR ESTE TRECHO: Configurar a abertura do modal quando o botão for clicado
+    btnUploadPdf.addEventListener('click', function() {
+        pdfModal.show();
+        // Limpar arquivos anteriores e mensagens
+        pdfFilesInput.value = '';
+        const alertElement = document.getElementById('pdfUploadAlert');
+        if (alertElement) alertElement.classList.add('d-none');
     });
-
-    // Adiciona formatação e validação para inputs numéricos
-    const numericInputs = document.querySelectorAll('input[type="number"]');
-    numericInputs.forEach(input => {
-        // Define atributos para aceitar até 5 casas decimais
-        input.setAttribute('step', '0.00001');
-        input.setAttribute('pattern', '^-?\\d*\\.?\\d{0,5}$');
+    
+    // Função aprimorada para preencher o formulário usando seletores mais específicos
+    function preencherFormulario(resultados) {
+        console.log("Tentando preencher o formulário com:", resultados);
         
-        // Validação em tempo real
-        input.addEventListener('input', function(e) {
-            let value = e.target.value;
-            // Permite o sinal de menos e valores vazios
-            if (value !== '' && value !== '-') {
-                // Remove qualquer caractere inválido exceto números, ponto decimal e sinal de menos
-                value = value.replace(/[^\d.-]/g, '');
-                // Garante apenas um sinal de menos no início
-                value = value.replace(/--+/g, '-');
-                if (value.lastIndexOf('-') > 0) {
-                    value = value.replace(/-/g, '');
-                    value = '-' + value;
-                }
-                // Limita a 5 casas decimais
-                const parts = value.split('.');
-                if (parts.length > 1 && parts[1].length > 5) {
-                    parts[1] = parts[1].substring(0, 5);
-                    value = parts.join('.');
-                }
-                e.target.value = value;
+        if (!resultados || !resultados.length) {
+            console.warn("Nenhum resultado para preencher");
+            return 0;
+        }
+        
+        // Obter os campos de input por seus IDs específicos (mais confiável)
+        const inputDBO = document.getElementById('id_form-0-input_valor');    // DBO
+        const inputEcoli = document.getElementById('id_form-1-input_valor');  // E. coli
+        const inputDQO = document.getElementById('id_form-2-input_valor');    // DQO
+        
+        console.log("Campos identificados:", {
+            "DBO": inputDBO ? "Encontrado" : "Não encontrado",
+            "E.coli": inputEcoli ? "Encontrado" : "Não encontrado",
+            "DQO": inputDQO ? "Encontrado" : "Não encontrado"
+        });
+        
+        if (!inputDBO && !inputEcoli && !inputDQO) {
+            console.warn("Não foi possível encontrar os campos de input necessários");
+            return 0;
+        }
+        
+        // Mapear valores por tipo de parâmetro
+        let valores = {
+            dbo: null,
+            dqo: null,
+            ecoli: null
+        };
+        
+        // Extrair valores do resultado
+        resultados.forEach(result => {
+            if (!result || !result.parametro) return;
+            
+            const parametro = result.parametro.toLowerCase().trim();
+            let valor = result.valor;
+            
+            // Converter valor para formato numérico adequado
+            if (typeof valor === 'string') {
+                valor = valor.replace(/,/g, '.').trim();
             }
+            
+            console.log(`Processando parâmetro: ${parametro} = ${valor}`);
+            
+            // Mapeamento dos parâmetros
+            if (parametro.includes('dbo') || parametro.includes('demanda bioquímica')) {
+                valores.dbo = valor;
+            } 
+            else if (parametro.includes('dqo') || parametro.includes('demanda química')) {
+                valores.dqo = valor;
+            }
+            else if (parametro.includes('escherichia') || parametro.includes('coli') || parametro.includes('e. coli')) {
+                valores.ecoli = valor;
+            }
+        });
+        
+        console.log("Valores extraídos:", valores);
+        
+        let preenchidos = 0;
+        
+        // Preencher DBO
+        if (valores.dbo && inputDBO) {
+            inputDBO.value = valores.dbo;
+            inputDBO.dispatchEvent(new Event('input', { bubbles: true }));
+            inputDBO.dispatchEvent(new Event('change', { bubbles: true }));
+            console.log("Campo DBO preenchido com:", valores.dbo);
+            preenchidos++;
+        }
+        
+        // Preencher Escherichia coli
+        if (valores.ecoli && inputEcoli) {
+            inputEcoli.value = valores.ecoli;
+            inputEcoli.dispatchEvent(new Event('input', { bubbles: true }));
+            inputEcoli.dispatchEvent(new Event('change', { bubbles: true }));
+            console.log("Campo E. coli preenchido com:", valores.ecoli);
+            preenchidos++;
+        }
+        
+        // Preencher DQO
+        if (valores.dqo && inputDQO) {
+            inputDQO.value = valores.dqo;
+            inputDQO.dispatchEvent(new Event('input', { bubbles: true }));
+            inputDQO.dispatchEvent(new Event('change', { bubbles: true }));
+            console.log("Campo DQO preenchido com:", valores.dqo);
+            preenchidos++;
+        }
+        
+        return preenchidos;
+    }
+    
+    // Processar PDFs quando o botão for clicado
+    btnProcessPdfs.addEventListener('click', function() {
+        const files = pdfFilesInput.files;
+        if (files.length === 0) {
+            alert('Selecione pelo menos um arquivo PDF.');
+            return;
+        }
+        
+        // Mostrar indicador de carregamento
+        btnProcessPdfsText.textContent = 'Processando...';
+        btnProcessPdfsSpinner.classList.remove('d-none');
+        btnProcessPdfs.disabled = true;
+        
+        // Criar FormData e adicionar arquivos
+        const formData = new FormData();
+        for (let i = 0; i < files.length; i++) {
+            formData.append(`pdf_${i}`, files[i]);
+        }
+        
+        // Obter token CSRF
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        
+        // Enviar requisição para o backend
+        fetch(`/process_dbo_pdfs/{{ coleta.id }}/{{ ponto.id }}/{{ frasco.id }}/`, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': csrfToken
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Erro ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log("Resposta recebida:", data);
+            
+            if (data.success) {
+                // Usar a nova função para preencher o formulário
+                const preenchidos = preencherFormulario(data.results);
+                
+                // Fechar o modal
+                pdfModal.hide();
+                
+                // Mostrar mensagem de sucesso
+                if (preenchidos > 0) {
+                    alert(`${preenchidos} campos foram preenchidos com sucesso!`);
+                } else {
+                    alert('Os dados foram processados, mas nenhum campo foi preenchido.');
+                }
+            } else {
+                alert(data.errors ? data.errors.join('. ') : 'Erro desconhecido ao processar os PDFs');
+            }
+        })
+        .catch(error => {
+            console.error('Erro:', error);
+            alert('Erro ao processar PDFs: ' + error.message);
+        })
+        .finally(() => {
+            // Restaurar estado do botão
+            btnProcessPdfsText.textContent = 'Processar PDFs';
+            btnProcessPdfsSpinner.classList.add('d-none');
+            btnProcessPdfs.disabled = false;
         });
     });
 });
 </script>
-
-{% else %}
-<div class="container mt-5">
-    <div class="card border-0 rounded-4 shadow-sm p-5 text-center">
-        <i class="bi bi-person-lock display-1 text-primary mb-3"></i>
-        <h1>Olá, visitante</h1>
-        <p class="lead mb-4">Faça login para acessar o sistema</p>
-        <div>
-            <a href="{% url 'account_login' %}" class="btn btn-primary btn-lg rounded-pill">
-                <i class="bi bi-box-arrow-in-right me-2"></i>Entrar no Sistema
-            </a>
-        </div>
-    </div>
-</div>
 {% endif %}
 {% endblock %}
