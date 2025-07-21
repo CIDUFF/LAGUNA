@@ -173,3 +173,6 @@ Comandos de Arquivos Estáticos
 collectstatic: Coleta arquivos estáticos em um único local.
 findstatic: Encontra arquivos estáticos.
 runserver: Executa o servidor de desenvolvimento.
+
+# leitor pdf
+O leitor de pdf esta rodando na porta 8041
