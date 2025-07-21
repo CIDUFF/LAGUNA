@@ -76,6 +76,7 @@ local_settings.py
 /media/**/*.gif
 /media/**/*.svg
 
+*.sql
 
 # Celery
 celerybeat-schedule
@@ -100,3 +101,4 @@ reload_apache.txt
 laguna.dump
 backup_laguna.json
 output.pdf
+laguna.sql

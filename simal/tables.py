@@ -355,7 +355,13 @@ class PontoTable(tables.Table):
         ),
         attrs={"a": {"class": "btn btn-sm btn-outline-primary rounded-pill"}},
     )
-
+    
+    # Definindo o nome da coluna de exibição de Setor e Local
+    id_local = tables.Column(verbose_name="Local")
+    id_setor = tables.Column(verbose_name="Setor")
+    lat= tables.Column(verbose_name="Latitude")
+    lon = tables.Column(verbose_name="Longitude")
+    
     class Meta:
         model = TabPonto
         template_name = "tables/bootstrap5.html"

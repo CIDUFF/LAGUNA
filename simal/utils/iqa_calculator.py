@@ -21,7 +21,7 @@ def qi_ecoli(ecoli):
 
 def qi_dbo(dbo):
     if dbo == 0:
-        return 100
+        return None
     qi_calculado = -30.1 * math.log(dbo) + 103.45
     if qi_calculado > 100:
         return 100
@@ -95,7 +95,8 @@ def calculate_iqa(dados_ponto):
 
     iqa_total = 0
     soma_pesos = 0
-    qi_temperatura = 93
+    qi_temperatura = 93 # Temperatura padrão para o cálculo do IQA
+    
 
     for param, (func_qi, peso) in parametros_qi.items():
         valor = dados_ponto.get(param)

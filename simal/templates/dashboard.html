@@ -30,6 +30,27 @@
     border-bottom: none;
     opacity: 1; /* Aba ativa totalmente opaca */
 }
+
+/* Estilo para o painel de informações do ponto */
+.alert-info {
+    background-color: #e8f4f8;
+    border-left: 4px solid #17a2b8;
+    border-radius: 0;
+}
+
+.alert-info h5 {
+    color: #0c5460;
+    margin-bottom: 0;
+}
+
+.alert-info hr {
+   
+    margin: 10px 0;
+}
+
+.alert-info strong {
+    color: #0c5460;
+}
 </style>
 
 <!-- No cabeçalho do template, adicione os links do Leaflet -->
@@ -174,8 +195,20 @@
                     <div id="grafico"></div>
                 {% elif tipo_visualizacao == 'setor' and dados_grafico_setor %}
                     <div id="grafico-setor"></div>
-                {% elif tipo_visualizacao == 'tratamento' and dados_grafico_tratamento %}
-                    <div id="grafico-tratamento"></div>
+                {% elif tipo_visualizacao == 'tratamento' %}
+                    {% if dados_grafico_tratamento %}
+                        <div id="grafico-tratamento"></div>
+                        <div class="legenda-fixa mt-3" style="padding: 15px; border: 1px solid #bee5eb; background-color: #d1ecf1; color: #0c5460; border-radius: 4px;">
+                            <h5>Legenda:</h5>
+                            <p><strong>Pré-tratamento nas lagoas e canais de Araçatiba:</strong> Antes de novembro de 2021.</p>
+                            <p><strong>Pré-tratamento nas lagoas e canais de Jacaroá:</strong> Antes de abril de 2024.</p>
+                            <p><strong>Pós-tratamento:</strong> Da data do pré até a data atual.</p>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning">
+                            <strong>Atenção:</strong> Não existem dados para o setor selecionado.
+                        </div>
+                    {% endif %}
                 {% elif tipo_visualizacao == 'estacoes' and dados_grafico_estacoes %}
                     <div id="grafico-estacoes"></div>
                 {% elif tipo_visualizacao == 'iqa' and mapa_iqa %}
@@ -192,6 +225,33 @@
                     Selecione os filtros e clique em "Gerar Gráfico" para visualizar os dados.
                 </div>
             {% endif %}
+
+            <!-- Adicione após o formulário de seleção, antes da div do gráfico -->
+            {% if tipo_visualizacao == 'ponto' and ponto_selecionado_info %}
+            <div class="legenda-fixa mt-3">
+                <div class="row">
+                    <div class="col-md-12">
+                        <h5>Informações do Ponto Selecionado</h5>
+                        <hr>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Nome do Ponto:</strong> {{ ponto_selecionado_info.nome }}</p>
+                        <p><strong>Setor:</strong> {{ ponto_selecionado_info.setor }}</p>
+                        {% if ponto_selecionado_info.descricao %}
+                        <p><strong>Descrição:</strong> {{ ponto_selecionado_info.descricao }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        {% if ponto_selecionado_info.latitude and ponto_selecionado_info.longitude %}
+                        <p><strong>Coordenadas:</strong> {{ ponto_selecionado_info.latitude }}, {{ ponto_selecionado_info.longitude }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
         </div>
     </div>
 </div>
@@ -252,20 +312,75 @@ document.addEventListener('DOMContentLoaded', function() {
         },
         marker: {
             color: '#1f77b4'
-        }
+        },
+        hovertemplate: 'Data: %{x}<br>Média: %{y:.2f}<br><extra></extra>'
     };
 
+    // Preparar dados para as barras de pontos individuais
+    const todosPontos = {{ dados_grafico_setor.todos_pontos|safe }};
+    const pontosPorData = {{ dados_grafico_setor.pontos_data|safe }};
+    const datas = {{ dados_grafico_setor.datas|safe }};
+    
+    // Gerar uma paleta de cores para os pontos
+    function generateColors(numColors) {
+        const colors = [];
+        for (let i = 0; i < numColors; i++) {
+            const hue = (i * 360 / numColors) % 360;
+            colors.push(`hsl(${hue}, 70%, 50%)`);
+        }
+        return colors;
+    }
+    
+    const coresPontos = generateColors(todosPontos.length);
+    
+    // Criar uma trace para cada ponto
+    const tracesBarras = todosPontos.map((ponto, index) => {
+        const xValues = [];
+        const yValues = [];
+        
+        datas.forEach((data, dataIndex) => {
+            const valorPonto = pontosPorData[dataIndex][ponto] || null;
+            if (valorPonto !== null) {
+                xValues.push(data);
+                yValues.push(valorPonto);
+            }
+        });
+        
+        return {
+            x: xValues,
+            y: yValues,
+            type: 'bar',
+            name: ponto,
+            marker: { 
+                color: coresPontos[index % coresPontos.length],
+                opacity: 0.7
+            },
+            hovertemplate: 'Ponto: ' + ponto + '<br>Data: %{x}<br>Valor: %{y:.2f}<br><extra></extra>'
+        };
+    });
+    
+    // Combinar a linha de média com as barras de pontos
+    const todosDados = [dadosSetor, ...tracesBarras];
+
     const layoutSetor = {
-        title: 'Média do Parâmetro no Setor ao Longo do Tempo',
+        title: 'Média do Parâmetro no Setor ao Longo do Tempo com Pontos Individuais',
         xaxis: {
-            title: 'Data'
+            title: 'Data',
+            tickangle: -45
         },
         yaxis: {
             title: '{{ parametro_nome_display }}'
-        }
+        },
+        legend: {
+            orientation: 'h',
+            y: -0.2
+        },
+        barmode: 'group',  // Agrupar barras por data
+        bargap: 0.15,      // Espaçamento entre grupos de barras
+        bargroupgap: 0.1   // Espaçamento entre barras do mesmo grupo
     };
 
-    Plotly.newPlot('grafico-setor', [dadosSetor], layoutSetor);
+    Plotly.newPlot('grafico-setor', todosDados, layoutSetor);
 </script>
 {% endif %}
 
@@ -344,24 +459,61 @@ document.addEventListener('DOMContentLoaded', function() {
 
 {% if tipo_visualizacao == 'estacoes' and dados_grafico_estacoes %}
 <script>
-    const dadosEstacoes = [{
-        x: {{ dados_grafico_estacoes.pontos|safe }},
-        y: {{ dados_grafico_estacoes.estacao_chuvosa|safe }},
+    // Função auxiliar para verificar se um valor está fora dos limites
+    function isOutOfBounds(value, param, isCanal) {
+        if (value === null || value === undefined) return false;
+        
+        if (param.includes('ph')) {
+            if (isCanal) {
+                return value < 6 || value > 9;
+            } else {
+                return value < 6.5 || value > 8.5;
+            }
+        }
+        else if (param.includes('od')) {
+            return value < 6;
+        }
+        else if (param.includes('dbo')) {
+            return value > 3;
+        }
+        else if (param.includes('turbidez')) {
+            return value > 40;
+        }
+        return false;
+    }
+
+    const parametroNome = '{{ parametro_nome_display|lower }}';
+    const isCanal = {{ setor_selecionado }} === '10' || {{ setor_selecionado }} === '4';  // IDs dos canais
+    const pontos = {{ dados_grafico_estacoes.pontos|safe }};
+    const valoresChuvosa = {{ dados_grafico_estacoes.estacao_chuvosa|safe }};
+    const valoresSeca = {{ dados_grafico_estacoes.estacao_seca|safe }};
+    
+    // Preparar dados das barras com cores diferentes para valores fora dos limites
+    const dadosChuvosa = {
+        x: pontos,
+        y: valoresChuvosa,
         type: 'bar',
         name: 'Estação Chuvosa (Abr-Out)',
-        marker: { color: '#1f77b4' }  // Azul para estação chuvosa
-    }, {
-        x: {{ dados_grafico_estacoes.pontos|safe }},
-        y: {{ dados_grafico_estacoes.estacao_seca|safe }},
+        marker: {
+            color: valoresChuvosa.map(val => isOutOfBounds(val, parametroNome, isCanal) ? '#FF0000' : '#1f77b4')
+        }
+    };
+    
+    const dadosSeca = {
+        x: pontos,
+        y: valoresSeca,
         type: 'bar',
         name: 'Estação Seca (Nov-Mar)',
-        marker: { color: '#ff7f0e' }  // Laranja para estação seca
-    }];
+        marker: {
+            color: valoresSeca.map(val => isOutOfBounds(val, parametroNome, isCanal) ? '#FF0000' : '#DAA520')
+        }
+    };
 
-    // Adiciona linhas de limite baseado no parâmetro
-    const parametroNome = '{{ parametro_nome_display|lower }}';
-    const setor = '{{ setor_selecionado }}';
-    const xVals = {{ dados_grafico_estacoes.pontos|safe }};
+    // Criar array com todos os dados
+    const dadosEstacoes = [dadosChuvosa, dadosSeca];
+
+    // Adicionar linhas de limite baseado no parâmetro
+    const xVals = pontos;
     const yVals = Array(xVals.length).fill(null);
 
     // Função para adicionar linhas de limite
@@ -401,12 +553,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }));
     }
 
-    // Verifica se o setor é um canal
-    const isCanal = {{ setor_selecionado }} === '10' || {{ setor_selecionado }} === '4';  // IDs dos canais
-    const limitLines = addLimitLines(parametroNome, isCanal);
-    
-    // Adiciona as linhas de limite ao array de dados
-    dadosEstacoes.push(...limitLines);
+    // Adicionar as linhas de limite ao array de dados
+    dadosEstacoes.push(...addLimitLines(parametroNome, isCanal));
 
     const layoutEstacoes = {
         title: 'Comparação entre Estações por Ponto',
