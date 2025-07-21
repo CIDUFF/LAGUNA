@@ -262,4 +262,4 @@ LOGIN_REDIRECT_URL = "/"
 # (será configurado manualmente no servidor)
 
 # Configuração para o serviço de extração de PDFs
-PDF_EXTRACTION_SERVICE_URL = 'http://localhost:8080/extract/'
+PDF_EXTRACTION_SERVICE_URL = 'http://localhost:8041/extract/'
