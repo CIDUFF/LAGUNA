@@ -4124,7 +4124,7 @@ def process_dbo_pdfs(request, coleta_id, ponto_id, frasco_id):
     print(f"Recebidos {len(request.FILES)} arquivos para processamento")
     
     # URL do serviço de extração de PDF - usando configuração do settings.py se disponível
-    extraction_service_url = getattr(settings, 'PDF_EXTRACTION_SERVICE_URL', 'http://localhost:8080/extract/')
+    extraction_service_url = getattr(settings, 'PDF_EXTRACTION_SERVICE_URL', 'http://localhost:8041/extract/')
     
     for file_name, file in request.FILES.items():
         try:
