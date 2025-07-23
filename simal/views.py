@@ -3774,14 +3774,38 @@ def dashboard_parametros(request):
                 id_pp_id=parametro_id,
                 id_envio__id_amostra__id_ponto__id_setor=setor_id
             ).select_related(
-                'id_envio__id_amostra__id_coleta'
+                'id_envio__id_amostra__id_coleta',
+                'id_envio__id_amostra__id_ponto'
             ).order_by('id_envio__id_amostra__id_coleta__data')
+            
             # Agrupa medidas por data e calcula média
             valores_por_data = {}
+            
+            # Coletar dados dos pontos individuais
+            pontos_data = {}  # Dicionário de dados por data
+            todos_pontos = set()  # Conjunto de todos os pontos
+    
+            
             for medida in medidas:
                 data = medida.id_envio.id_amostra.id_coleta.data
+                ponto_nome = medida.id_envio.id_amostra.id_ponto.nome
                 if data and medida.valor:
                     data_str = data.strftime('%Y-%m-%d')
+                    
+                    # Adicionar ponto ao conjunto de todos os pontos
+                    todos_pontos.add(ponto_nome)
+                    
+                    # Inicializar dicionário para esta data se não existir
+                    if data_str not in pontos_data:
+                        pontos_data[data_str] = {}
+                    
+                    # Adicionar valor para este ponto nesta data
+                    try:
+                        valor = float(medida.valor)
+                        pontos_data[data_str][ponto_nome] = valor
+                    except (ValueError, TypeError):
+                        continue
+                    
                     if data_str not in valores_por_data:
                         valores_por_data[data_str] = {"soma": 0, "count": 0}
                     try:
@@ -3791,8 +3815,13 @@ def dashboard_parametros(request):
                     except (ValueError, TypeError):
                         continue
 
-            # Calcula as médias e prepara dados para o gráfico
-            dados_grafico_setor = {"datas": [], "valores": []}
+         # Calcula as médias e prepara dados para o gráfico
+            dados_grafico_setor = {
+                "datas": [], 
+                "valores": [],
+                "todos_pontos": list(todos_pontos),
+                "pontos_data": []
+            }
 
             for data in sorted(valores_por_data.keys()):
                 dados = valores_por_data[data]
@@ -3800,6 +3829,8 @@ def dashboard_parametros(request):
                     media = dados['soma'] / dados['count']
                     dados_grafico_setor['datas'].append(data)
                     dados_grafico_setor['valores'].append(round(media, 2))
+                    # Adicionar dados de pontos individuais para esta data
+                    dados_grafico_setor['pontos_data'].append(pontos_data.get(data, {}))
     
     # Para exibir o nome correto do parâmetro no título
     parametro_nome_display = None

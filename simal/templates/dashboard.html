@@ -332,6 +332,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     const coresPontos = generateColors(todosPontos.length);
+
+    // Verificar se temos todos os dados necessários
+    if (!todosPontos || !pontosPorData || !datas || todosPontos.length === 0) {
+        console.error("Dados insuficientes para criar o gráfico por setor");
+        // Adicionar uma mensagem de erro no DOM se necessário
+        document.getElementById('grafico-setor').innerHTML = 
+            '<div class="alert alert-warning">Não há dados suficientes para exibir o gráfico.</div>';
+}
+
     
     // Criar uma trace para cada ponto
     const tracesBarras = todosPontos.map((ponto, index) => {
