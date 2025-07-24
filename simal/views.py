@@ -1497,12 +1497,18 @@ def configuracoes_view(request):
             if form.is_valid():
                 try:
                     form.save()
-                    messages.success(request, "Novo registro criado com sucesso.")
+                    messages.success(
+                        request, "Novo registro criado com sucesso.")
                 except Exception as e:
                     messages.error(request, f"Erro ao salvar: {str(e)}")
             else:
-                messages.error(request, "Por favor, corrija os erros no formulário.")
+                messages.error(
+                    request, "Por favor, corrija os erros no formulário.")
         return redirect("configuracoes")
+
+    # Filtros de busca
+    nome_parametro = request.GET.get('nome_parametro', '')
+    nome_prodxparam = request.GET.get('nome_prodxparam', '')
 
     param_form = ParametroForm()
     frasco_form = TabFrascoForm()
@@ -1515,13 +1521,28 @@ def configuracoes_view(request):
     email_form = EmailForm()
     status_coleta_form = StatusColetaForm()
 
+    # Obter dados para as tabelas
+    param_data = TabParam.objects.all()
+    prodxparam_data = TabProdxparam.objects.all()
+
+    # Aplicar filtros
+    if nome_parametro:
+        param_data = param_data.filter(nome__icontains=nome_parametro)
+
+    if nome_prodxparam:
+        prodxparam_data = prodxparam_data.filter(
+            Q(id_produto__nome__icontains=nome_prodxparam) |
+            Q(id_param__nome__icontains=nome_prodxparam) |
+            Q(unidade__icontains=nome_prodxparam)
+        )
+
     # Instanciar as tabelas
-    table_parametro = ParametroTable(TabParam.objects.all())
+    table_parametro = ParametroTable(param_data)
     table_frasco = FrascoTable(TabFrasco.objects.all())
     table_equipe = EquipeTable(TabEquipe.objects.all())
     table_laboratorio = LaboratorioTable(TabLaboratorio.objects.all())
     table_produto = ProdutoTable(TabProduto.objects.all())
-    table_prodxparam = ProdxparamTable(TabProdxparam.objects.all())
+    table_prodxparam = ProdxparamTable(prodxparam_data)
     table_serie_classificacao = SerieClassificacaoTable(
         TabSerieClassificacao.objects.all()
     )
@@ -1532,12 +1553,15 @@ def configuracoes_view(request):
     table_status_coleta = StatusColetaTable(TabStatusColeta.objects.all())
 
     # Configurar a paginação das tabelas
-    RequestConfig(request, paginate={"per_page": 25}).configure(table_parametro)
+    RequestConfig(request, paginate={"per_page": 25}).configure(
+        table_parametro)
     RequestConfig(request, paginate={"per_page": 25}).configure(table_frasco)
     RequestConfig(request, paginate={"per_page": 25}).configure(table_equipe)
-    RequestConfig(request, paginate={"per_page": 25}).configure(table_laboratorio)
+    RequestConfig(request, paginate={"per_page": 25}).configure(
+        table_laboratorio)
     RequestConfig(request, paginate={"per_page": 25}).configure(table_produto)
-    RequestConfig(request, paginate={"per_page": 25}).configure(table_prodxparam)
+    RequestConfig(request, paginate={"per_page": 25}).configure(
+        table_prodxparam)
     RequestConfig(request, paginate={"per_page": 25}).configure(
         table_serie_classificacao
     )
@@ -1552,7 +1576,8 @@ def configuracoes_view(request):
         ("tab_equipe", equipe_form, table_equipe, "Equipes"),
         ("tab_laboratorio", laboratorio_form, table_laboratorio, "Laboratórios"),
         ("tab_produto", produto_form, table_produto, "Produtos"),
-        ("tab_prodxparam", prodxparam_form, table_prodxparam, "Produto x Parâmetro"),
+        ("tab_prodxparam", prodxparam_form,
+         table_prodxparam, "Produto x Parâmetro"),
         (
             "tab_serie_classificacao",
             serie_classificacao_form,
@@ -1576,7 +1601,8 @@ def configuracoes_view(request):
 
     context = {
         "tabs": tabs,
-        # ... outros itens do contexto ...
+        "nome_parametro": nome_parametro,
+        "nome_prodxparam": nome_prodxparam,
     }
 
     # Renderizar o template com os formulários e tabelas
@@ -2653,11 +2679,11 @@ def input_laboratorio(request, coleta_id, ponto_id, frasco_id):
 
     envio = TabEnvio.objects.filter(id_amostra=amostra).first() if amostra else None
 
-    # Get medidas for this envio
+    # Get medidas for this envio with proper ordering using ordem_visualizacao
     medidas = (
-        TabMedida.objects.filter(id_envio=envio).select_related(
-            "id_envio", "id_pp", "id_pp__id_param"
-        )
+        TabMedida.objects.filter(id_envio=envio)
+        .select_related("id_envio", "id_pp", "id_pp__id_param")
+        .order_by("id_pp__ordem_visualizacao", "id_pp__id_param__nome")  # Adicionar esta ordenação
         if envio
         else TabMedida.objects.none()
     )
@@ -2758,13 +2784,8 @@ def input_laboratorio(request, coleta_id, ponto_id, frasco_id):
             else None
         )
     except (ValueError, IndexError):
-        return None
-
-    # Calcular progresso
-    # total_pontos = len(todos_pontos)
-    # progresso = (
-    #     ((ponto_atual_index + 1) / total_pontos * 100) if total_pontos > 0 else 0
-    # )
+        ponto_anterior = None
+        ponto_proximo = None
 
     return render(
         request,

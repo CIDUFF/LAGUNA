@@ -42,6 +42,8 @@ local_settings.py
 # Não ignorar a pasta media
 !/media
 
+*.sql
+
 # Ignorar arquivos específicos apenas dentro da pasta media
 /media/*.pdf
 /media/*.doc
@@ -101,4 +103,5 @@ reload_apache.txt
 laguna.dump
 backup_laguna.json
 output.pdf
+laguna.sql
 laguna.sql
