@@ -4005,14 +4005,22 @@ def dashboard_parametros(request):
                 df_pivot['IQA'] = df_pivot.apply(calculate_iqa, axis=1)
 
                 # Criar mapa centralizado na média das coordenadas
-                lat_medio = df_pivot['lat'].mean()
-                lon_medio = df_pivot['lon'].mean()
+                if not df_pivot.empty and df_pivot['lat'].notna().any() and df_pivot['lon'].notna().any():
+                    lat_medio = df_pivot['lat'].mean()
+                    lon_medio = df_pivot['lon'].mean()
+                else:
+                    lat_medio = -22.9292  # Coordenada padrão (Maricá)
+                    lon_medio = -42.8719  # Coordenada padrão (Maricá)
                 
                 mapa = folium.Map(
                     location=[lat_medio, lon_medio],
                     zoom_start=12,
                     tiles='CartoDB positron'
                 )
+
+                # Verificar se existem pontos com IQA calculado
+                pontos_com_iqa = df_pivot[df_pivot['IQA'].notna()]
+                
 
                 # Função para determinar a cor com base no IQA
                 def get_color(iqa):
@@ -4021,20 +4029,40 @@ def dashboard_parametros(request):
                     if 50 < iqa <= 70: return '#FFFF00'    # Amarelo
                     if 25 < iqa <= 50: return '#FFA500'    # Laranja
                     return '#FF0000'                       # Vermelho
-
+            if not pontos_com_iqa.empty:
                 # Adicionar marcadores ao mapa
                 for idx, row in df_pivot.iterrows():
                     if not pd.isna(row['IQA']) and not pd.isna(row['lat']) and not pd.isna(row['lon']):
                         data_str = row['data'].strftime('%d/%m/%Y') if pd.notna(row['data']) else 'Data não disponível'
+                        
+                                                # Criar listas de parâmetros presentes e ausentes para este ponto
+                        parametros_presentes = []
+                        parametros_ausentes = []
+                        
+                        for param in parametros_iqa:
+                            if param in df_pivot.columns and row[param] > 0:
+                                parametros_presentes.append(f"{param}: {row[param]}")
+                            else:
+                                parametros_ausentes.append(param)
+                        
+                        # Montar HTML para o popup com informações dos parâmetros
+                        popup_html = f"""
+                            <b>Ponto:</b> {row['ponto']}<br>
+                            <b>Setor:</b> {row['setor']}<br>
+                            <b>Data:</b> {data_str}<br>
+                            <b>IQA:</b> {row['IQA']:.2f}<br>
+                            <hr>
+                            <b>Parâmetros utilizados:</b><br>
+                            {"<br>".join(parametros_presentes) if parametros_presentes else "Nenhum"}<br>
+                            <hr>
+                            <b>Parâmetros ausentes:</b><br>
+                            {"<br>".join(parametros_ausentes) if parametros_ausentes else "Nenhum"}
+                        """
+                        
                         folium.CircleMarker(
                             location=[row['lat'], row['lon']],
                             radius=10,
-                            popup=f"""
-                                <b>Ponto:</b> {row['ponto']}<br>
-                                <b>Setor:</b> {row['setor']}<br>
-                                <b>Data:</b> {data_str}<br>
-                                <b>IQA:</b> {row['IQA']:.2f}
-                            """,
+                            popup=folium.Popup(popup_html, max_width=300),
                             color=get_color(row['IQA']),
                             fill=True,
                             fill_color=get_color(row['IQA'])
