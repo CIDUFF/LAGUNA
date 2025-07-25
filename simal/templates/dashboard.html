@@ -81,6 +81,10 @@
                     <a class="nav-link {% if tipo_visualizacao == 'iqa' %}active{% endif %}" 
                        href="?tipo=iqa">IQA</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if tipo_visualizacao == 'tempo' %}active{% endif %}" 
+                       href="?tipo=tempo">Por Tempo</a>
+                </li>
             </ul>
         </div>
         <div class="card-body">
@@ -155,6 +159,18 @@
                             </select>
                         </div>
                     {% endif %}
+                    {% if tipo_visualizacao == 'tempo' %}
+                        <div class="col-md-6">
+                            <select name="setor" class="form-control" id="setor">
+                                <option value="">Selecione um setor...</option>
+                                {% for setor in setores %}
+                                    <option value="{{ setor.id }}" {% if setor.id|stringformat:"s" == setor_selecionado %}selected{% endif %}>
+                                        {{ setor.nome }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    {% endif %}
                 </div>
                 <div class="row mt-3">
                     <div class="col-md-12">
@@ -215,6 +231,8 @@
                     <div class="map-container" style="height: 600px;">
                         {{ mapa_iqa|safe }}
                     </div>
+                {% elif tipo_visualizacao == 'tempo' and dados_grafico_tempo %}
+                    <div id="grafico-tempo"></div>
                 {% else %}
                     <div class="alert alert-info">
                         Nenhum dado encontrado para os filtros selecionados.
@@ -586,6 +604,40 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     Plotly.newPlot('grafico-estacoes', dadosEstacoes, layoutEstacoes);
+</script>
+{% endif %}
+
+{% if tipo_visualizacao == 'tempo' and dados_grafico_tempo %}
+<script>
+    // Script para o gráfico por tempo
+    const dadosTempo = {
+        x: {{ dados_grafico_tempo.datas|safe }},
+        y: {{ dados_grafico_tempo.valores|safe }},
+        type: 'scatter',
+        mode: 'lines+markers',
+        name: '{{ parametro_nome_display }}',
+        line: {
+            color: '#1f77b4',
+            width: 3
+        },
+        marker: {
+            size: 8,
+            color: '#1f77b4'
+        }
+    };
+
+    const layoutTempo = {
+        title: 'Evolução do Parâmetro ao Longo do Tempo',
+        xaxis: {
+            title: 'Data',
+            tickangle: -45
+        },
+        yaxis: {
+            title: '{{ parametro_nome_display }}'
+        }
+    };
+
+    Plotly.newPlot('grafico-tempo', [dadosTempo], layoutTempo);
 </script>
 {% endif %}
 

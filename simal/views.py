@@ -3735,6 +3735,20 @@ def dashboard_parametros(request):
                 # Fallback para o primeiro setor se "Lagoa de Araçatiba" não for encontrado
                 redirect_params['parametro'] = ph_param.id
                 redirect_params['setor'] = setores.first().id
+                
+                # Nova lógica para o tipo 'tempo'
+        elif tipo_visualizacao == 'tempo':
+            # Encontrar o parâmetro pH
+            ph_param = parametros.filter(id_param__nome__icontains='ph').first()
+            # Buscar especificamente o setor "Lagoa de Araçatiba"
+            setor_aracatiba = setores.filter(nome__icontains='araçatiba').first() or setores.filter(nome__icontains='aracatiba').first()
+            
+            if ph_param and setor_aracatiba:
+                redirect_params['parametro'] = ph_param.id
+                redirect_params['setor'] = setor_aracatiba.id
+            elif ph_param and setores.exists():
+                redirect_params['parametro'] = ph_param.id
+                redirect_params['setor'] = setores.first().id    
         
         # Redirecionar apenas se tiver parâmetros para adicionar
         if len(redirect_params) > 1:  # > 1 porque sempre terá pelo menos o 'tipo'
@@ -3748,6 +3762,7 @@ def dashboard_parametros(request):
     setor_id = request.GET.get('setor')
     dados_grafico = None
     dados_grafico_setor = None
+    dados_grafico_tempo = None
 
     if parametro_id:
         if tipo_visualizacao == 'ponto' and ponto_id:
@@ -3831,6 +3846,47 @@ def dashboard_parametros(request):
                     dados_grafico_setor['valores'].append(round(media, 2))
                     # Adicionar dados de pontos individuais para esta data
                     dados_grafico_setor['pontos_data'].append(pontos_data.get(data, {}))
+                    
+                # Nova lógica para visualização "Por Tempo"
+        elif tipo_visualizacao == 'tempo' and setor_id and parametro_id:
+            # Buscar medidas para este setor e parâmetro ao longo do tempo
+            medidas = TabMedida.objects.filter(
+                id_pp_id=parametro_id,
+                id_envio__id_amostra__id_ponto__id_setor=setor_id
+            ).select_related(
+                'id_envio__id_amostra__id_coleta'
+            ).order_by('id_envio__id_amostra__id_coleta__data')
+            
+            # Agrupar medidas por data e calcular a média
+            valores_por_data = {}
+            
+            for medida in medidas:
+                data = medida.id_envio.id_amostra.id_coleta.data
+                if data and medida.valor:
+                    data_str = data.strftime('%Y-%m-%d')
+                    
+                    if data_str not in valores_por_data:
+                        valores_por_data[data_str] = {"soma": 0, "count": 0}
+                    
+                    try:
+                        valor = float(medida.valor)
+                        valores_por_data[data_str]['soma'] += valor
+                        valores_por_data[data_str]['count'] += 1
+                    except (ValueError, TypeError):
+                        continue
+            
+            # Calcular médias e preparar dados para o gráfico
+            dados_grafico_tempo = {
+                "datas": [],
+                "valores": []
+            }
+            
+            for data in sorted(valores_por_data.keys()):
+                dados = valores_por_data[data]
+                if dados['count'] > 0:
+                    media = dados['soma'] / dados['count']
+                    dados_grafico_tempo['datas'].append(data)
+                    dados_grafico_tempo['valores'].append(round(media, 2))
     
     # Para exibir o nome correto do parâmetro no título
     parametro_nome_display = None
@@ -4148,6 +4204,7 @@ def dashboard_parametros(request):
         'dados_grafico_estacoes': dados_grafico_estacoes,  # Add to context
         'dados_grafico_iqa': dados_grafico_iqa,  # Add IQA data to context
         'mapa_iqa': mapa_iqa,  # Add the map to context
+        'dados_grafico_tempo': dados_grafico_tempo,
         'parametro_selecionado': parametro_id,
         'parametro_nome_display': parametro_nome_display,
         'ponto_selecionado': ponto_id,
