@@ -3954,15 +3954,25 @@ def dashboard_parametros(request):
             "Fosfato", "pH", "Turbidez", "TDS"
         ]
         
-        # Base query com todos os parâmetros do IQA
+        # Find the specific OD parameter from TabProdxparam that measures % (percentage)
+        od_percentage_param = TabProdxparam.objects.filter(
+            id_param__nome="OD",
+            unidade__icontains="%"  # Filter for the percentage unit
+        ).first()
+        
+        # Base query with IQA parameters but filter OD specifically
         query_base = TabMedida.objects.filter(
-            id_pp__id_param__nome__in=parametros_iqa
+            Q(id_pp__id_param__nome__in=[
+                "Escherichia coli", "DBOs", "Nitrogênio Total",
+                "Fosfato", "pH", "Turbidez", "TDS"
+            ]) | 
+            Q(id_pp=od_percentage_param)  # Only include the specific OD percentage parameter
         ).select_related(
             'id_envio__id_amostra__id_coleta',
             'id_envio__id_amostra__id_ponto',
             'id_pp__id_param'
         )
-
+        
         # Aplicar filtro de campanha se selecionada
         if campanha_selecionada:
             dados_iqa = query_base.filter(
