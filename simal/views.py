@@ -3885,18 +3885,27 @@ def dashboard_parametros(request):
                 'pre_tratamento': [],
                 '2022': [],
                 '2023': [],
-                # Criar entradas para cada mês de 2024
+                # Meses de 2024
                 'Jan2024': [], 'Fev2024': [], 'Mar2024': [], 'Abr2024': [], 
-                'Mai2024': [], 'Jun2024': [], 'Jul2024': []
+                'Mai2024': [], 'Jun2024': [], 'Jul2024': [], 'Ago2024': [],
+                'Set2024': [], 'Out2024': [], 'Nov2024': [], 'Dez2024': [],
+                # Meses de 2025
+                'Jan2025': [], 'Fev2025': [], 'Mar2025': [], 'Abr2025': [],
+                'Mai2025': [], 'Jun2025': []
             }
             
-            # Verificar quais períodos têm dados
+            # Atualizar a verificação de períodos com dados
             periodos_com_dados = {
                 'pre_tratamento': False,
                 '2022': False,
                 '2023': False,
+                # Meses de 2024
                 'Jan2024': False, 'Fev2024': False, 'Mar2024': False, 'Abr2024': False,
-                'Mai2024': False, 'Jun2024': False, 'Jul2024': False
+                'Mai2024': False, 'Jun2024': False, 'Jul2024': False, 'Ago2024': False,
+                'Set2024': False, 'Out2024': False, 'Nov2024': False, 'Dez2024': False,
+                # Meses de 2025
+                'Jan2025': False, 'Fev2025': False, 'Mar2025': False, 'Abr2025': False,
+                'Mai2025': False, 'Jun2025': False
             }
             
             # Para cada ponto, calcular as médias por período
@@ -3942,10 +3951,27 @@ def dashboard_parametros(request):
                     # Calcular médias para cada mês de 2024
                     for month, month_name in [
                         (1, 'Jan2024'), (2, 'Fev2024'), (3, 'Mar2024'), 
-                        (4, 'Abr2024'), (5, 'Mai2024'), (6, 'Jun2024'), (7, 'Jul2024')
+                        (4, 'Abr2024'), (5, 'Mai2024'), (6, 'Jun2024'), (7, 'Jul2024'), (8, 'Ago2024'),
+                        (9, 'Set2024'), (10, 'Out2024'), (11, 'Nov2024'), (12, 'Dez2024')
                     ]:
                         medidas_mes = medidas_ponto.filter(
                             id_envio__id_amostra__id_coleta__data__year=2024,
+                            id_envio__id_amostra__id_coleta__data__month=month
+                        )
+                        valores_mes = [convert_to_float(m.valor) for m in medidas_mes if m.valor]
+                        valores_mes = [v for v in valores_mes if v is not None]
+                        media_mes = sum(valores_mes) / len(valores_mes) if valores_mes else None
+                        dados_tempo_por_ponto[month_name].append(round(media_mes, 2) if media_mes is not None else None)
+                        if media_mes is not None:
+                            periodos_com_dados[month_name] = True
+                            
+                    # Calcular médias para os meses de 2025 (até junho)
+                    for month, month_name in [
+                        (1, 'Jan2025'), (2, 'Fev2025'), (3, 'Mar2025'),
+                        (4, 'Abr2025'), (5, 'Mai2025'), (6, 'Jun2025')
+                    ]:
+                        medidas_mes = medidas_ponto.filter(
+                            id_envio__id_amostra__id_coleta__data__year=2025,
                             id_envio__id_amostra__id_coleta__data__month=month
                         )
                         valores_mes = [convert_to_float(m.valor) for m in medidas_mes if m.valor]
@@ -3965,7 +3991,7 @@ def dashboard_parametros(request):
             if periodos_ausentes:
                 mensagem_periodos_ausentes = f"Não há dados disponíveis para os seguintes períodos: {', '.join(periodos_ausentes)}"
             
-            # Atualizar a variável dados_grafico_tempo com os novos dados
+            # Atualizar a variável dados_grafico_tempo com os novos períodos
             dados_grafico_tempo = {
                 'pontos': dados_tempo_por_ponto['pontos'],
                 'periodos': {
@@ -3984,6 +4010,7 @@ def dashboard_parametros(request):
                         'valores': dados_tempo_por_ponto['2023'],
                         'tem_dados': periodos_com_dados['2023']
                     },
+                    # Meses de 2024
                     'Jan2024': {
                         'nome': 'Jan/2024',
                         'valores': dados_tempo_por_ponto['Jan2024'],
@@ -4018,6 +4045,62 @@ def dashboard_parametros(request):
                         'nome': 'Jul/2024',
                         'valores': dados_tempo_por_ponto['Jul2024'],
                         'tem_dados': periodos_com_dados['Jul2024']
+                    },
+                    'Ago2024': {
+                        'nome': 'Ago/2024',
+                        'valores': dados_tempo_por_ponto['Ago2024'],
+                        'tem_dados': periodos_com_dados['Ago2024']
+                    },
+                    'Set2024': {
+                        'nome': 'Set/2024',
+                        'valores': dados_tempo_por_ponto['Set2024'],
+                        'tem_dados': periodos_com_dados['Set2024']
+                    },
+                    'Out2024': {
+                        'nome': 'Out/2024',
+                        'valores': dados_tempo_por_ponto['Out2024'],
+                        'tem_dados': periodos_com_dados['Out2024']
+                    },
+                    'Nov2024': {
+                        'nome': 'Nov/2024',
+                        'valores': dados_tempo_por_ponto['Nov2024'],
+                        'tem_dados': periodos_com_dados['Nov2024']
+                    },
+                    'Dez2024': {
+                        'nome': 'Dez/2024',
+                        'valores': dados_tempo_por_ponto['Dez2024'],
+                        'tem_dados': periodos_com_dados['Dez2024']
+                    },
+                    # Meses de 2025
+                    'Jan2025': {
+                        'nome': 'Jan/2025',
+                        'valores': dados_tempo_por_ponto['Jan2025'],
+                        'tem_dados': periodos_com_dados['Jan2025']
+                    },
+                    'Fev2025': {
+                        'nome': 'Fev/2025',
+                        'valores': dados_tempo_por_ponto['Fev2025'],
+                        'tem_dados': periodos_com_dados['Fev2025']
+                    },
+                    'Mar2025': {
+                        'nome': 'Mar/2025',
+                        'valores': dados_tempo_por_ponto['Mar2025'],
+                        'tem_dados': periodos_com_dados['Mar2025']
+                    },
+                    'Abr2025': {
+                        'nome': 'Abr/2025',
+                        'valores': dados_tempo_por_ponto['Abr2025'],
+                        'tem_dados': periodos_com_dados['Abr2025']
+                    },
+                    'Mai2025': {
+                        'nome': 'Mai/2025',
+                        'valores': dados_tempo_por_ponto['Mai2025'],
+                        'tem_dados': periodos_com_dados['Mai2025']
+                    },
+                    'Jun2025': {
+                        'nome': 'Jun/2025',
+                        'valores': dados_tempo_por_ponto['Jun2025'],
+                        'tem_dados': periodos_com_dados['Jun2025']
                     }
                 },
                 'tem_dados': tem_dados,
