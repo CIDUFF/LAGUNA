@@ -3756,6 +3756,20 @@ def dashboard_parametros(request):
                 # Fallback para o primeiro setor se "Lagoa de Araçatiba" não for encontrado
                 redirect_params['parametro'] = ph_param.id
                 redirect_params['setor'] = setores.first().id
+                
+                # Nova lógica para o tipo 'tempo'
+        elif tipo_visualizacao == 'tempo':
+            # Encontrar o parâmetro pH
+            ph_param = parametros.filter(id_param__nome__icontains='ph').first()
+            # Buscar especificamente o setor "Lagoa de Araçatiba"
+            setor_aracatiba = setores.filter(nome__icontains='araçatiba').first() or setores.filter(nome__icontains='aracatiba').first()
+            
+            if ph_param and setor_aracatiba:
+                redirect_params['parametro'] = ph_param.id
+                redirect_params['setor'] = setor_aracatiba.id
+            elif ph_param and setores.exists():
+                redirect_params['parametro'] = ph_param.id
+                redirect_params['setor'] = setores.first().id    
         
         # Redirecionar apenas se tiver parâmetros para adicionar
         if len(redirect_params) > 1:  # > 1 porque sempre terá pelo menos o 'tipo'
@@ -3769,6 +3783,7 @@ def dashboard_parametros(request):
     setor_id = request.GET.get('setor')
     dados_grafico = None
     dados_grafico_setor = None
+    dados_grafico_tempo = None
 
     if parametro_id:
         if tipo_visualizacao == 'ponto' and ponto_id:
@@ -3795,14 +3810,38 @@ def dashboard_parametros(request):
                 id_pp_id=parametro_id,
                 id_envio__id_amostra__id_ponto__id_setor=setor_id
             ).select_related(
-                'id_envio__id_amostra__id_coleta'
+                'id_envio__id_amostra__id_coleta',
+                'id_envio__id_amostra__id_ponto'
             ).order_by('id_envio__id_amostra__id_coleta__data')
+            
             # Agrupa medidas por data e calcula média
             valores_por_data = {}
+            
+            # Coletar dados dos pontos individuais
+            pontos_data = {}  # Dicionário de dados por data
+            todos_pontos = set()  # Conjunto de todos os pontos
+    
+            
             for medida in medidas:
                 data = medida.id_envio.id_amostra.id_coleta.data
+                ponto_nome = medida.id_envio.id_amostra.id_ponto.nome
                 if data and medida.valor:
                     data_str = data.strftime('%Y-%m-%d')
+                    
+                    # Adicionar ponto ao conjunto de todos os pontos
+                    todos_pontos.add(ponto_nome)
+                    
+                    # Inicializar dicionário para esta data se não existir
+                    if data_str not in pontos_data:
+                        pontos_data[data_str] = {}
+                    
+                    # Adicionar valor para este ponto nesta data
+                    try:
+                        valor = float(medida.valor)
+                        pontos_data[data_str][ponto_nome] = valor
+                    except (ValueError, TypeError):
+                        continue
+                    
                     if data_str not in valores_por_data:
                         valores_por_data[data_str] = {"soma": 0, "count": 0}
                     try:
@@ -3812,8 +3851,13 @@ def dashboard_parametros(request):
                     except (ValueError, TypeError):
                         continue
 
-            # Calcula as médias e prepara dados para o gráfico
-            dados_grafico_setor = {"datas": [], "valores": []}
+         # Calcula as médias e prepara dados para o gráfico
+            dados_grafico_setor = {
+                "datas": [], 
+                "valores": [],
+                "todos_pontos": list(todos_pontos),
+                "pontos_data": []
+            }
 
             for data in sorted(valores_por_data.keys()):
                 dados = valores_por_data[data]
@@ -3821,6 +3865,268 @@ def dashboard_parametros(request):
                     media = dados['soma'] / dados['count']
                     dados_grafico_setor['datas'].append(data)
                     dados_grafico_setor['valores'].append(round(media, 2))
+                    # Adicionar dados de pontos individuais para esta data
+                    dados_grafico_setor['pontos_data'].append(pontos_data.get(data, {}))
+                    
+                # Nova lógica para visualização "Por Tempo"
+        # Dentro da função dashboard_parametros, modifique a lógica para tipo_visualizacao == 'tempo'
+        elif tipo_visualizacao == 'tempo' and setor_id and parametro_id:
+            # Buscar medidas para este setor e parâmetro
+            medidas = TabMedida.objects.filter(
+                id_pp_id=parametro_id,
+                id_envio__id_amostra__id_ponto__id_setor=setor_id
+            ).select_related(
+                'id_envio__id_amostra__id_coleta',
+                'id_envio__id_amostra__id_ponto'
+            ).order_by('id_envio__id_amostra__id_coleta__data')
+            
+            # Definir data de corte para "pré-tratamento"
+            setor = TabSetor.objects.get(id=setor_id)
+            pre_tratamento_cutoff = None
+            
+            # Define cutoff date based on sector ID
+            if setor.id == 9:  # Araçatiba
+                pre_tratamento_cutoff = datetime(2021, 11, 1)
+            elif setor.id == 3:  # Jacaroá
+                pre_tratamento_cutoff = datetime(2024, 4, 1)
+            elif setor.id == 10:  # Spar
+                pre_tratamento_cutoff = datetime(2024, 4, 1)
+            elif setor.id == 4:  # Maricá
+                pre_tratamento_cutoff = datetime(2024, 4, 1)
+            else:
+                # Para outros setores, usar uma data padrão
+                pre_tratamento_cutoff = datetime(2022, 1, 1)
+            
+            # Obter todos os pontos do setor
+            pontos_do_setor = TabPonto.objects.filter(id_setor=setor_id, status=True).order_by('nome')
+            
+            # Estrutura para armazenar os dados agrupados
+            dados_tempo_por_ponto = {
+                'pontos': [],
+                'pre_tratamento': [],
+                '2022': [],
+                '2023': [],
+                # Meses de 2024
+                'Jan2024': [], 'Fev2024': [], 'Mar2024': [], 'Abr2024': [], 
+                'Mai2024': [], 'Jun2024': [], 'Jul2024': [], 'Ago2024': [],
+                'Set2024': [], 'Out2024': [], 'Nov2024': [], 'Dez2024': [],
+                # Meses de 2025
+                'Jan2025': [], 'Fev2025': [], 'Mar2025': [], 'Abr2025': [],
+                'Mai2025': [], 'Jun2025': []
+            }
+            
+            # Atualizar a verificação de períodos com dados
+            periodos_com_dados = {
+                'pre_tratamento': False,
+                '2022': False,
+                '2023': False,
+                # Meses de 2024
+                'Jan2024': False, 'Fev2024': False, 'Mar2024': False, 'Abr2024': False,
+                'Mai2024': False, 'Jun2024': False, 'Jul2024': False, 'Ago2024': False,
+                'Set2024': False, 'Out2024': False, 'Nov2024': False, 'Dez2024': False,
+                # Meses de 2025
+                'Jan2025': False, 'Fev2025': False, 'Mar2025': False, 'Abr2025': False,
+                'Mai2025': False, 'Jun2025': False
+            }
+            
+            # Para cada ponto, calcular as médias por período
+            for ponto in pontos_do_setor:
+                # Filtrar medidas para este ponto específico
+                medidas_ponto = medidas.filter(id_envio__id_amostra__id_ponto=ponto)
+                
+                if medidas_ponto.exists():
+                    # Adicionar o ponto à lista
+                    dados_tempo_por_ponto['pontos'].append(ponto.nome)
+                    
+                    # Calcular média para pré-tratamento
+                    medidas_pre = medidas_ponto.filter(id_envio__id_amostra__id_coleta__data__lt=pre_tratamento_cutoff)
+                    valores_pre = [convert_to_float(m.valor) for m in medidas_pre if m.valor]
+                    valores_pre = [v for v in valores_pre if v is not None]
+                    media_pre = sum(valores_pre) / len(valores_pre) if valores_pre else None
+                    dados_tempo_por_ponto['pre_tratamento'].append(round(media_pre, 2) if media_pre is not None else None)
+                    if media_pre is not None:
+                        periodos_com_dados['pre_tratamento'] = True
+                    
+                    # Calcular média para 2022
+                    medidas_2022 = medidas_ponto.filter(
+                        id_envio__id_amostra__id_coleta__data__year=2022
+                    )
+                    valores_2022 = [convert_to_float(m.valor) for m in medidas_2022 if m.valor]
+                    valores_2022 = [v for v in valores_2022 if v is not None]
+                    media_2022 = sum(valores_2022) / len(valores_2022) if valores_2022 else None
+                    dados_tempo_por_ponto['2022'].append(round(media_2022, 2) if media_2022 is not None else None)
+                    if media_2022 is not None:
+                        periodos_com_dados['2022'] = True
+                    
+                    # Calcular média para 2023
+                    medidas_2023 = medidas_ponto.filter(
+                        id_envio__id_amostra__id_coleta__data__year=2023
+                    )
+                    valores_2023 = [convert_to_float(m.valor) for m in medidas_2023 if m.valor]
+                    valores_2023 = [v for v in valores_2023 if v is not None]
+                    media_2023 = sum(valores_2023) / len(valores_2023) if valores_2023 else None
+                    dados_tempo_por_ponto['2023'].append(round(media_2023, 2) if media_2023 is not None else None)
+                    if media_2023 is not None:
+                        periodos_com_dados['2023'] = True
+                    
+                    # Calcular médias para cada mês de 2024
+                    for month, month_name in [
+                        (1, 'Jan2024'), (2, 'Fev2024'), (3, 'Mar2024'), 
+                        (4, 'Abr2024'), (5, 'Mai2024'), (6, 'Jun2024'), (7, 'Jul2024'), (8, 'Ago2024'),
+                        (9, 'Set2024'), (10, 'Out2024'), (11, 'Nov2024'), (12, 'Dez2024')
+                    ]:
+                        medidas_mes = medidas_ponto.filter(
+                            id_envio__id_amostra__id_coleta__data__year=2024,
+                            id_envio__id_amostra__id_coleta__data__month=month
+                        )
+                        valores_mes = [convert_to_float(m.valor) for m in medidas_mes if m.valor]
+                        valores_mes = [v for v in valores_mes if v is not None]
+                        media_mes = sum(valores_mes) / len(valores_mes) if valores_mes else None
+                        dados_tempo_por_ponto[month_name].append(round(media_mes, 2) if media_mes is not None else None)
+                        if media_mes is not None:
+                            periodos_com_dados[month_name] = True
+                            
+                    # Calcular médias para os meses de 2025 (até junho)
+                    for month, month_name in [
+                        (1, 'Jan2025'), (2, 'Fev2025'), (3, 'Mar2025'),
+                        (4, 'Abr2025'), (5, 'Mai2025'), (6, 'Jun2025')
+                    ]:
+                        medidas_mes = medidas_ponto.filter(
+                            id_envio__id_amostra__id_coleta__data__year=2025,
+                            id_envio__id_amostra__id_coleta__data__month=month
+                        )
+                        valores_mes = [convert_to_float(m.valor) for m in medidas_mes if m.valor]
+                        valores_mes = [v for v in valores_mes if v is not None]
+                        media_mes = sum(valores_mes) / len(valores_mes) if valores_mes else None
+                        dados_tempo_por_ponto[month_name].append(round(media_mes, 2) if media_mes is not None else None)
+                        if media_mes is not None:
+                            periodos_com_dados[month_name] = True
+                
+            # Verificar se há algum dado disponível
+            tem_dados = any(periodos_com_dados.values())
+            
+            # Formatar mensagens sobre dados ausentes
+            periodos_ausentes = [periodo for periodo, tem_dados in periodos_com_dados.items() if not tem_dados]
+            mensagem_periodos_ausentes = None
+            
+            if periodos_ausentes:
+                mensagem_periodos_ausentes = f"Não há dados disponíveis para os seguintes períodos: {', '.join(periodos_ausentes)}"
+            
+            # Atualizar a variável dados_grafico_tempo com os novos períodos
+            dados_grafico_tempo = {
+                'pontos': dados_tempo_por_ponto['pontos'],
+                'periodos': {
+                    'pre_tratamento': {
+                        'nome': 'Pré-tratamento',
+                        'valores': dados_tempo_por_ponto['pre_tratamento'],
+                        'tem_dados': periodos_com_dados['pre_tratamento']
+                    },
+                    '2022': {
+                        'nome': '2022',
+                        'valores': dados_tempo_por_ponto['2022'],
+                        'tem_dados': periodos_com_dados['2022']
+                    },
+                    '2023': {
+                        'nome': '2023',
+                        'valores': dados_tempo_por_ponto['2023'],
+                        'tem_dados': periodos_com_dados['2023']
+                    },
+                    # Meses de 2024
+                    'Jan2024': {
+                        'nome': 'Jan/2024',
+                        'valores': dados_tempo_por_ponto['Jan2024'],
+                        'tem_dados': periodos_com_dados['Jan2024']
+                    },
+                    'Fev2024': {
+                        'nome': 'Fev/2024',
+                        'valores': dados_tempo_por_ponto['Fev2024'],
+                        'tem_dados': periodos_com_dados['Fev2024']
+                    },
+                    'Mar2024': {
+                        'nome': 'Mar/2024',
+                        'valores': dados_tempo_por_ponto['Mar2024'],
+                        'tem_dados': periodos_com_dados['Mar2024']
+                    },
+                    'Abr2024': {
+                        'nome': 'Abr/2024',
+                        'valores': dados_tempo_por_ponto['Abr2024'],
+                        'tem_dados': periodos_com_dados['Abr2024']
+                    },
+                    'Mai2024': {
+                        'nome': 'Mai/2024',
+                        'valores': dados_tempo_por_ponto['Mai2024'],
+                        'tem_dados': periodos_com_dados['Mai2024']
+                    },
+                    'Jun2024': {
+                        'nome': 'Jun/2024',
+                        'valores': dados_tempo_por_ponto['Jun2024'],
+                        'tem_dados': periodos_com_dados['Jun2024']
+                    },
+                    'Jul2024': {
+                        'nome': 'Jul/2024',
+                        'valores': dados_tempo_por_ponto['Jul2024'],
+                        'tem_dados': periodos_com_dados['Jul2024']
+                    },
+                    'Ago2024': {
+                        'nome': 'Ago/2024',
+                        'valores': dados_tempo_por_ponto['Ago2024'],
+                        'tem_dados': periodos_com_dados['Ago2024']
+                    },
+                    'Set2024': {
+                        'nome': 'Set/2024',
+                        'valores': dados_tempo_por_ponto['Set2024'],
+                        'tem_dados': periodos_com_dados['Set2024']
+                    },
+                    'Out2024': {
+                        'nome': 'Out/2024',
+                        'valores': dados_tempo_por_ponto['Out2024'],
+                        'tem_dados': periodos_com_dados['Out2024']
+                    },
+                    'Nov2024': {
+                        'nome': 'Nov/2024',
+                        'valores': dados_tempo_por_ponto['Nov2024'],
+                        'tem_dados': periodos_com_dados['Nov2024']
+                    },
+                    'Dez2024': {
+                        'nome': 'Dez/2024',
+                        'valores': dados_tempo_por_ponto['Dez2024'],
+                        'tem_dados': periodos_com_dados['Dez2024']
+                    },
+                    # Meses de 2025
+                    'Jan2025': {
+                        'nome': 'Jan/2025',
+                        'valores': dados_tempo_por_ponto['Jan2025'],
+                        'tem_dados': periodos_com_dados['Jan2025']
+                    },
+                    'Fev2025': {
+                        'nome': 'Fev/2025',
+                        'valores': dados_tempo_por_ponto['Fev2025'],
+                        'tem_dados': periodos_com_dados['Fev2025']
+                    },
+                    'Mar2025': {
+                        'nome': 'Mar/2025',
+                        'valores': dados_tempo_por_ponto['Mar2025'],
+                        'tem_dados': periodos_com_dados['Mar2025']
+                    },
+                    'Abr2025': {
+                        'nome': 'Abr/2025',
+                        'valores': dados_tempo_por_ponto['Abr2025'],
+                        'tem_dados': periodos_com_dados['Abr2025']
+                    },
+                    'Mai2025': {
+                        'nome': 'Mai/2025',
+                        'valores': dados_tempo_por_ponto['Mai2025'],
+                        'tem_dados': periodos_com_dados['Mai2025']
+                    },
+                    'Jun2025': {
+                        'nome': 'Jun/2025',
+                        'valores': dados_tempo_por_ponto['Jun2025'],
+                        'tem_dados': periodos_com_dados['Jun2025']
+                    }
+                },
+                'tem_dados': tem_dados,
+                'mensagem_periodos_ausentes': mensagem_periodos_ausentes
+            }
     
     # Para exibir o nome correto do parâmetro no título
     parametro_nome_display = None
@@ -3944,15 +4250,25 @@ def dashboard_parametros(request):
             "Fosfato", "pH", "Turbidez", "TDS"
         ]
         
-        # Base query com todos os parâmetros do IQA
+        # Find the specific OD parameter from TabProdxparam that measures % (percentage)
+        od_percentage_param = TabProdxparam.objects.filter(
+            id_param__nome="OD",
+            unidade__icontains="%"  # Filter for the percentage unit
+        ).first()
+        
+        # Base query with IQA parameters but filter OD specifically
         query_base = TabMedida.objects.filter(
-            id_pp__id_param__nome__in=parametros_iqa
+            Q(id_pp__id_param__nome__in=[
+                "Escherichia coli", "DBOs", "Nitrogênio Total",
+                "Fosfato", "pH", "Turbidez", "TDS"
+            ]) | 
+            Q(id_pp=od_percentage_param)  # Only include the specific OD percentage parameter
         ).select_related(
             'id_envio__id_amostra__id_coleta',
             'id_envio__id_amostra__id_ponto',
             'id_pp__id_param'
         )
-
+        
         # Aplicar filtro de campanha se selecionada
         if campanha_selecionada:
             dados_iqa = query_base.filter(
@@ -3995,14 +4311,22 @@ def dashboard_parametros(request):
                 df_pivot['IQA'] = df_pivot.apply(calculate_iqa, axis=1)
 
                 # Criar mapa centralizado na média das coordenadas
-                lat_medio = df_pivot['lat'].mean()
-                lon_medio = df_pivot['lon'].mean()
+                if not df_pivot.empty and df_pivot['lat'].notna().any() and df_pivot['lon'].notna().any():
+                    lat_medio = df_pivot['lat'].mean()
+                    lon_medio = df_pivot['lon'].mean()
+                else:
+                    lat_medio = -22.9292  # Coordenada padrão (Maricá)
+                    lon_medio = -42.8719  # Coordenada padrão (Maricá)
                 
                 mapa = folium.Map(
                     location=[lat_medio, lon_medio],
                     zoom_start=12,
                     tiles='CartoDB positron'
                 )
+
+                # Verificar se existem pontos com IQA calculado
+                pontos_com_iqa = df_pivot[df_pivot['IQA'].notna()]
+                
 
                 # Função para determinar a cor com base no IQA
                 def get_color(iqa):
@@ -4011,20 +4335,40 @@ def dashboard_parametros(request):
                     if 50 < iqa <= 70: return '#FFFF00'    # Amarelo
                     if 25 < iqa <= 50: return '#FFA500'    # Laranja
                     return '#FF0000'                       # Vermelho
-
+            if not pontos_com_iqa.empty:
                 # Adicionar marcadores ao mapa
                 for idx, row in df_pivot.iterrows():
                     if not pd.isna(row['IQA']) and not pd.isna(row['lat']) and not pd.isna(row['lon']):
                         data_str = row['data'].strftime('%d/%m/%Y') if pd.notna(row['data']) else 'Data não disponível'
+                        
+                                                # Criar listas de parâmetros presentes e ausentes para este ponto
+                        parametros_presentes = []
+                        parametros_ausentes = []
+                        
+                        for param in parametros_iqa:
+                            if param in df_pivot.columns and row[param] > 0:
+                                parametros_presentes.append(f"{param}: {row[param]}")
+                            else:
+                                parametros_ausentes.append(param)
+                        
+                        # Montar HTML para o popup com informações dos parâmetros
+                        popup_html = f"""
+                            <b>Ponto:</b> {row['ponto']}<br>
+                            <b>Setor:</b> {row['setor']}<br>
+                            <b>Data:</b> {data_str}<br>
+                            <b>IQA:</b> {row['IQA']:.2f}<br>
+                            <hr>
+                            <b>Parâmetros utilizados:</b><br>
+                            {"<br>".join(parametros_presentes) if parametros_presentes else "Nenhum"}<br>
+                            <hr>
+                            <b>Parâmetros ausentes:</b><br>
+                            {"<br>".join(parametros_ausentes) if parametros_ausentes else "Nenhum"}
+                        """
+                        
                         folium.CircleMarker(
                             location=[row['lat'], row['lon']],
                             radius=10,
-                            popup=f"""
-                                <b>Ponto:</b> {row['ponto']}<br>
-                                <b>Setor:</b> {row['setor']}<br>
-                                <b>Data:</b> {data_str}<br>
-                                <b>IQA:</b> {row['IQA']:.2f}
-                            """,
+                            popup=folium.Popup(popup_html, max_width=300),
                             color=get_color(row['IQA']),
                             fill=True,
                             fill_color=get_color(row['IQA'])
@@ -4100,6 +4444,7 @@ def dashboard_parametros(request):
         'dados_grafico_estacoes': dados_grafico_estacoes,  # Add to context
         'dados_grafico_iqa': dados_grafico_iqa,  # Add IQA data to context
         'mapa_iqa': mapa_iqa,  # Add the map to context
+        'dados_grafico_tempo': dados_grafico_tempo,
         'parametro_selecionado': parametro_id,
         'parametro_nome_display': parametro_nome_display,
         'ponto_selecionado': ponto_id,
@@ -4109,6 +4454,26 @@ def dashboard_parametros(request):
         'campanha_selecionada': campanha_selecionada,
     }
 
+    # Dentro da função dashboard_parametros, antes do return render()
+    import json
+    from django.core.serializers.json import DjangoJSONEncoder
+
+    # Preparar dados do gráfico para serialização segura no template
+    if dados_grafico_tempo:
+        dados_grafico_tempo['pontos_json'] = json.dumps(dados_grafico_tempo['pontos'])
+        
+        # Serializa periodos para JSON
+        periodos_json = {}
+        for periodo_key, periodo_data in dados_grafico_tempo['periodos'].items():
+            periodos_json[periodo_key] = {
+                'nome': periodo_data['nome'],
+                'valores': periodo_data['valores'],
+                'tem_dados': periodo_data['tem_dados']
+            }
+        dados_grafico_tempo['periodos_json'] = json.dumps(periodos_json)
+        
+        dados_grafico_tempo['tem_dados_json'] = json.dumps(dados_grafico_tempo['tem_dados'])
+    
     return render(request, "dashboard.html", context)
 
 

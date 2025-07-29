@@ -81,6 +81,10 @@
                     <a class="nav-link {% if tipo_visualizacao == 'iqa' %}active{% endif %}" 
                        href="?tipo=iqa">IQA</a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if tipo_visualizacao == 'tempo' %}active{% endif %}" 
+                       href="?tipo=tempo">Por Tempo</a>
+                </li>
             </ul>
         </div>
         <div class="card-body">
@@ -155,6 +159,18 @@
                             </select>
                         </div>
                     {% endif %}
+                    {% if tipo_visualizacao == 'tempo' %}
+                        <div class="col-md-6">
+                            <select name="setor" class="form-control" id="setor">
+                                <option value="">Selecione um setor...</option>
+                                {% for setor in setores %}
+                                    <option value="{{ setor.id }}" {% if setor.id|stringformat:"s" == setor_selecionado %}selected{% endif %}>
+                                        {{ setor.nome }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    {% endif %}
                 </div>
                 <div class="row mt-3">
                     <div class="col-md-12">
@@ -215,6 +231,8 @@
                     <div class="map-container" style="height: 600px;">
                         {{ mapa_iqa|safe }}
                     </div>
+                {% elif tipo_visualizacao == 'tempo' and dados_grafico_tempo %}
+                    <div id="grafico-tempo"></div>
                 {% else %}
                     <div class="alert alert-info">
                         Nenhum dado encontrado para os filtros selecionados.
@@ -332,6 +350,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     const coresPontos = generateColors(todosPontos.length);
+
+    // Verificar se temos todos os dados necessários
+    if (!todosPontos || !pontosPorData || !datas || todosPontos.length === 0) {
+        console.error("Dados insuficientes para criar o gráfico por setor");
+        // Adicionar uma mensagem de erro no DOM se necessário
+        document.getElementById('grafico-setor').innerHTML = 
+            '<div class="alert alert-warning">Não há dados suficientes para exibir o gráfico.</div>';
+}
+
     
     // Criar uma trace para cada ponto
     const tracesBarras = todosPontos.map((ponto, index) => {
@@ -578,6 +605,131 @@ document.addEventListener('DOMContentLoaded', function() {
 
     Plotly.newPlot('grafico-estacoes', dadosEstacoes, layoutEstacoes);
 </script>
+{% endif %}
+
+{% if tipo_visualizacao == 'tempo' and dados_grafico_tempo %}
+<script>
+    // Script para o gráfico por tempo com barras agrupadas por período
+    try {
+        // Usar os dados serializados em JSON
+        const pontos = {{ dados_grafico_tempo.pontos_json|safe }};
+        const periodos = {{ dados_grafico_tempo.periodos_json|safe }};
+        const temDados = {{ dados_grafico_tempo.tem_dados_json|default:"false"|safe }};
+        const mensagemPeriodosAusentes = "{{ dados_grafico_tempo.mensagem_periodos_ausentes|escapejs|default:'' }}";
+        
+        console.log("Pontos:", pontos);
+        console.log("Períodos:", periodos);
+        console.log("Tem dados:", temDados);
+        
+        // Verificar se há dados
+        if (!temDados || pontos.length === 0) {
+            document.getElementById('grafico-tempo').innerHTML = 
+                '<div class="alert alert-warning">Não há dados disponíveis para o parâmetro selecionado.</div>';
+        } else {
+            // Criar array de traces para cada período
+            const traces = [];
+            const cores = {
+                'pre_tratamento': '#ff7f0e',  // Laranja
+                '2022': '#2ca02c',            // Verde
+                '2023': '#1f77b4',            // Azul
+                // Meses de 2024
+                'Jan2024': '#9467bd',         // Roxo
+                'Fev2024': '#d62728',         // Vermelho
+                'Mar2024': '#8c564b',         // Marrom
+                'Abr2024': '#e377c2',         // Rosa
+                'Mai2024': '#7f7f7f',         // Cinza
+                'Jun2024': '#bcbd22',         // Amarelo esverdeado
+                'Jul2024': '#17becf',         // Azul claro
+                'Ago2024': '#ff9896',         // Vermelho claro
+                'Set2024': '#c5b0d5',         // Roxo claro
+                'Out2024': '#c49c94',         // Marrom claro
+                'Nov2024': '#f7b6d2',         // Rosa claro
+                'Dez2024': '#c7c7c7',         // Cinza claro
+                // Meses de 2025
+                'Jan2025': '#98df8a',         // Verde claro
+                'Fev2025': '#aec7e8',         // Azul claro
+                'Mar2025': '#ffbb78',         // Laranja claro
+                'Abr2025': '#9edae5',         // Azul turquesa
+                'Mai2025': '#dbdb8d',         // Amarelo claro
+                'Jun2025': '#ff9896'          // Vermelho claro
+            };
+            
+            // Adicionar trace para cada período que tem dados
+            Object.keys(periodos).forEach(periodo => {
+                if (periodos[periodo].tem_dados) {
+                    traces.push({
+                        x: pontos,
+                        y: periodos[periodo].valores,
+                        type: 'bar',
+                        name: periodos[periodo].nome,
+                        marker: {
+                            color: cores[periodo]
+                        }
+                    });
+                }
+            });
+            
+            if (traces.length > 0) {
+                const layout = {
+                    title: 'Evolução do Parâmetro por Ponto ao Longo do Tempo',
+                    barmode: 'group',
+                    xaxis: {
+                        title: 'Pontos de Coleta',
+                        tickangle: -45
+                    },
+                    yaxis: {
+                        title: '{{ parametro_nome_display }}'
+                    },
+                    legend: {
+                        orientation: 'h',
+                        yanchor: 'bottom',
+                        y: -0.3,
+                        xanchor: 'center',
+                        x: 0.5
+                    },
+                    margin: {
+                        b: 150  // Aumentar margem inferior para acomodar a legenda horizontal
+                    }
+                };
+                
+                Plotly.newPlot('grafico-tempo', traces, layout);
+                
+                // Exibir mensagem sobre períodos sem dados, se houver
+                if (mensagemPeriodosAusentes) {
+                    const mensagemDiv = document.createElement('div');
+                    mensagemDiv.className = 'alert alert-info mt-3';
+                    mensagemDiv.innerHTML = `<strong>Nota:</strong> ${mensagemPeriodosAusentes}`;
+                    document.getElementById('grafico-tempo').after(mensagemDiv);
+                }
+            } else {
+                document.getElementById('grafico-tempo').innerHTML = 
+                    '<div class="alert alert-warning">Não há dados suficientes para exibir o gráfico.</div>';
+            }
+        }
+    } catch (error) {
+        console.error("Erro ao renderizar gráfico:", error);
+        document.getElementById('grafico-tempo').innerHTML = 
+            '<div class="alert alert-danger">Erro ao renderizar o gráfico: ' + error.message + '</div>';
+    }
+</script>
+
+<div class="legenda-fixa mt-3" style="padding: 15px; border: 1px solid #bee5eb; background-color: #d1ecf1; color: #0c5460; border-radius: 4px;">
+    <h5>Legenda:</h5>
+    <p><strong>Pré-tratamento:</strong> 
+        {% if setor_selecionado == '9' %}
+            Antes de novembro de 2021 (Araçatiba).
+        {% elif setor_selecionado == '3' %}
+            Antes de abril de 2024 (Jacaroá).
+        {% elif setor_selecionado == '10' %}
+            Antes de abril de 2024 (Spar).
+        {% elif setor_selecionado == '4' %}
+            Antes de abril de 2024 (Maricá).
+        {% else %}
+            Antes de janeiro de 2022.
+        {% endif %}
+    </p>
+    <p>Este gráfico mostra a evolução do parâmetro selecionado ao longo do tempo, permitindo comparar valores entre diferentes períodos para cada ponto do setor.</p>
+</div>
 {% endif %}
 
 {% if tipo_visualizacao == 'mapa' %}
