@@ -959,7 +959,7 @@ class InputFisicoQuimicoForm(forms.ModelForm):
     )
 
     id_pp_display = forms.CharField(
-        label="Parâmetro - unidade",
+        label="Parâmetro",
         required=False,
         widget=forms.TextInput(attrs={"readonly": True, "disabled": True}),
     )
@@ -993,7 +993,12 @@ class InputFisicoQuimicoForm(forms.ModelForm):
         super(InputFisicoQuimicoForm, self).__init__(*args, **kwargs)
         if self.instance and self.instance.id_pp:
             self.fields["id_pp_hidden"].initial = self.instance.id_pp
-            self.fields["id_pp_display"].initial = self.instance.id_pp
+            # Modificar aqui para incluir a série classificação
+            parametro = self.instance.id_pp
+            serie_classificacao = parametro.id_serie.nome if parametro.id_serie else "Sem série"
+            unidade = parametro.unidade if parametro.unidade else "Sem unidade"
+            display_text = f"{parametro.nome} ({unidade} - {serie_classificacao})"
+            self.fields["id_pp_display"].initial = display_text
         else:
             self.fields["id_pp_display"].initial = "N/A"
 

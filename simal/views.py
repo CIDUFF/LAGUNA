@@ -2743,6 +2743,15 @@ def input_laboratorio(request, coleta_id, ponto_id, frasco_id):
         if medida.id_pp:
             form.parametro = medida.id_pp.id_param.nome
             form.unidade = medida.id_pp.unidade
+            # Adicionar informação da série classificação
+            form.serie_classificacao = medida.id_pp.id_serie.nome if medida.id_pp.id_serie else "Sem série"
+
+            # Atualizar o campo de exibição com série classificação
+            parametro = medida.id_pp
+            serie_classificacao = parametro.id_serie.nome if parametro.id_serie else "Sem série"
+            unidade = parametro.unidade if parametro.unidade else "Sem unidade"
+            display_text = f"{parametro.nome} ({unidade} - {serie_classificacao})"
+            form.fields["id_pp_display"].initial = display_text
 
     # Get existing attachments with proper ordering
     anexos_existentes = (
