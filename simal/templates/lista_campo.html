@@ -55,8 +55,12 @@
                             </div>
                         </div>
                     </div>
-                    <!-- Botão Voltar movido para aqui -->
-                    <div class="mt-4">
+                    <!-- Botões -->
+                    <div class="mt-4 d-flex flex-column gap-2">
+                        <a href="{% url 'export_frasco_resultados_xlsx' coleta.id frasco.id %}" 
+                           class="btn btn-primary w-100 rounded-pill">
+                            <i class="bi bi-file-earmark-excel me-2"></i>Exportar Resultados
+                        </a>
                         <a href="{% url 'info_coleta' coleta.id %}" class="btn btn-secondary w-100 rounded-pill">
                             <i class="bi bi-arrow-left me-2"></i>Voltar
                         </a>
@@ -75,14 +79,6 @@
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
-                        <!-- Adicionado botão de exportação aqui -->
-                        <div class="d-flex justify-content-end mb-3">
-                            <a href="{% url 'export_frasco_resultados_xlsx' coleta.id frasco.id %}" 
-                               class="btn btn-primary rounded-pill">
-                                <i class="bi bi-file-earmark-excel me-2"></i>Exportar Resultados para Excel
-                            </a>
-                        </div>
-
                         {% render_table table %}
                         <script>
                             document.addEventListener('DOMContentLoaded', function() {
