@@ -150,6 +150,12 @@ import json
 import requests
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from openpyxl import Workbook
+from openpyxl.styles import Font, PatternFill
+from openpyxl.utils import get_column_letter
+from django.http import HttpResponse
+import logging
+
 
 # Configuração do logger
 logger = logging.getLogger(__name__)
@@ -4363,3 +4369,110 @@ def process_dbo_pdfs(request, coleta_id, ponto_id, frasco_id):
     }
     print(f"Resposta final: {response_data}")
     return JsonResponse(response_data)
+
+@login_required
+def export_frasco_resultados_xlsx(request, coleta_id, frasco_id):
+    """
+    Exporta os resultados de um frasco específico para Excel
+    """
+    try:
+        # Obter os dados da coleta e frasco
+        coleta = get_object_or_404(TabColeta, id=coleta_id)
+        frasco = get_object_or_404(TabFrasco, id=frasco_id)
+        
+        # Query para obter todas as amostras e medidas associadas
+        amostras = TabAmostra.objects.filter(
+            id_coleta=coleta,
+            id_frasco=frasco
+        ).select_related('id_ponto').order_by('id_ponto__nome')
+        
+        # Criar um novo workbook e worksheet
+        wb = Workbook()
+        ws = wb.active
+        ws.title = f"Resultados {frasco.nome}"
+        
+        # Criar cabeçalho com informações da coleta
+        ws['A1'] = "Informações da Coleta"
+        ws['A1'].font = Font(bold=True, size=14)
+        
+        # Detalhes da coleta
+        ws['A3'] = "Ordem de Serviço:"
+        ws['B3'] = coleta.ordem_servico
+        ws['A4'] = "Data da Coleta:"
+        ws['B4'] = coleta.data.strftime('%d/%m/%Y') if coleta.data else "N/A"
+        ws['A5'] = "Setor:"
+        ws['B5'] = str(coleta.id_setor)
+        ws['A6'] = "Frasco:"
+        ws['B6'] = frasco.nome
+        
+        # Aplicar estilo nos cabeçalhos
+        for cell in [ws['A3'], ws['A4'], ws['A5'], ws['A6']]:
+            cell.font = Font(bold=True)
+        
+        # Cabeçalho da tabela de resultados
+        row = 8
+        headers = ["Ponto", "Parâmetro", "Valor", "Unidade"]
+        
+        # Aplicar cabeçalho da tabela
+        for col, header in enumerate(headers, 1):
+            cell = ws.cell(row=row, column=col, value=header)
+            cell.font = Font(bold=True)
+            cell.fill = PatternFill(start_color="CCCCCC", end_color="CCCCCC", fill_type="solid")
+        
+        row += 1
+        
+        # Preencher os dados das amostras e medidas
+        for amostra in amostras:
+            envio = TabEnvio.objects.filter(id_amostra=amostra).first()
+            if not envio:
+                continue
+                
+            medidas = TabMedida.objects.filter(
+                id_envio=envio
+            ).select_related('id_pp', 'id_pp__id_param').order_by('id_pp__ordem_visualizacao')
+            
+            ponto_nome = amostra.id_ponto.nome
+            
+            for medida in medidas:
+                if not medida.id_pp or not medida.id_pp.id_param:
+                    continue
+                    
+                parametro = medida.id_pp.id_param.nome
+                valor = medida.input_valor if medida.input_valor else "Não medido"
+                unidade = medida.id_pp.unidade if medida.id_pp else ""
+                
+                ws.cell(row=row, column=1, value=ponto_nome)
+                ws.cell(row=row, column=2, value=parametro)
+                ws.cell(row=row, column=3, value=valor)
+                ws.cell(row=row, column=4, value=unidade)
+                
+                row += 1
+        
+        # Ajustar largura das colunas
+        for col in ws.columns:
+            max_length = 0
+            column_letter = get_column_letter(col[0].column)
+            
+            for cell in col:
+                if cell.value:
+                    cell_length = len(str(cell.value))
+                    if cell_length > max_length:
+                        max_length = cell_length
+            
+            adjusted_width = max_length + 2
+            ws.column_dimensions[column_letter].width = adjusted_width
+        
+        # Preparar a resposta HTTP
+        response = HttpResponse(
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        response["Content-Disposition"] = f'attachment; filename="resultados_{coleta.ordem_servico}_{frasco.nome}.xlsx"'
+        
+        # Salvar o arquivo
+        wb.save(response)
+        return response
+        
+    except Exception as e:
+        logger.error(f"Erro ao exportar resultados do frasco: {str(e)}")
+        messages.error(request, "Erro ao exportar os resultados. Por favor, tente novamente.")
+        return redirect("lista_campo_frasco", coleta_id=coleta_id, frasco_id=frasco_id)
