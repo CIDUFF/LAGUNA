@@ -155,6 +155,7 @@ from openpyxl.styles import Font, PatternFill
 from openpyxl.utils import get_column_letter
 from django.http import HttpResponse
 import logging
+from openpyxl.styles import Font, PatternFill, Alignment
 
 
 # Configuração do logger
@@ -4373,29 +4374,26 @@ def process_dbo_pdfs(request, coleta_id, ponto_id, frasco_id):
 @login_required
 def export_frasco_resultados_xlsx(request, coleta_id, frasco_id):
     """
-    Exporta os resultados de um frasco específico para Excel
+    Exporta os resultados de um frasco específico para Excel com formato tabular horizontal
     """
     try:
         # Obter os dados da coleta e frasco
         coleta = get_object_or_404(TabColeta, id=coleta_id)
         frasco = get_object_or_404(TabFrasco, id=frasco_id)
         
-        # Query para obter todas as amostras e medidas associadas
-        amostras = TabAmostra.objects.filter(
-            id_coleta=coleta,
-            id_frasco=frasco
-        ).select_related('id_ponto').order_by('id_ponto__nome')
-        
         # Criar um novo workbook e worksheet
         wb = Workbook()
         ws = wb.active
         ws.title = f"Resultados {frasco.nome}"
         
-        # Criar cabeçalho com informações da coleta
-        ws['A1'] = "Informações da Coleta"
+        # Adicionar título principal
+        ws.merge_cells('A1:N1')
+        ws['A1'] = f"Resultados da Coleta - {frasco.nome}"
         ws['A1'].font = Font(bold=True, size=14)
+        ws['A1'].alignment = Alignment(horizontal='center')
         
-        # Detalhes da coleta
+        # Adicionar informações da coleta
+        row = 3
         ws['A3'] = "Ordem de Serviço:"
         ws['B3'] = coleta.ordem_servico
         ws['A4'] = "Data da Coleta:"
@@ -4405,48 +4403,104 @@ def export_frasco_resultados_xlsx(request, coleta_id, frasco_id):
         ws['A6'] = "Frasco:"
         ws['B6'] = frasco.nome
         
-        # Aplicar estilo nos cabeçalhos
+        # Aplicar estilo às células de informação
         for cell in [ws['A3'], ws['A4'], ws['A5'], ws['A6']]:
             cell.font = Font(bold=True)
         
-        # Cabeçalho da tabela de resultados
-        row = 8
-        headers = ["Ponto", "Parâmetro", "Valor", "Unidade"]
+        # Pular linhas para começar a tabela
+        row = 9
         
-        # Aplicar cabeçalho da tabela
-        for col, header in enumerate(headers, 1):
-            cell = ws.cell(row=row, column=col, value=header)
-            cell.font = Font(bold=True)
-            cell.fill = PatternFill(start_color="CCCCCC", end_color="CCCCCC", fill_type="solid")
+        # Obter todos os pontos da coleta
+        pontos = TabAmostra.objects.filter(
+            id_coleta=coleta,
+            id_frasco=frasco
+        ).values_list('id_ponto', flat=True).distinct()
         
-        row += 1
+        pontos = TabPonto.objects.filter(id__in=pontos).order_by('nome')
         
-        # Preencher os dados das amostras e medidas
-        for amostra in amostras:
-            envio = TabEnvio.objects.filter(id_amostra=amostra).first()
-            if not envio:
-                continue
+        # Obter todos os parâmetros para este frasco
+        params = []
+        
+        # Buscar as primeiras medidas para identificar quais parâmetros existem
+        primeira_amostra = TabAmostra.objects.filter(
+            id_coleta=coleta, 
+            id_frasco=frasco
+        ).first()
+        
+        if primeira_amostra:
+            envio = TabEnvio.objects.filter(id_amostra=primeira_amostra).first()
+            if envio:
+                medidas = TabMedida.objects.filter(
+                    id_envio=envio
+                ).select_related('id_pp', 'id_pp__id_param').order_by('id_pp__ordem_visualizacao')
                 
-            medidas = TabMedida.objects.filter(
-                id_envio=envio
-            ).select_related('id_pp', 'id_pp__id_param').order_by('id_pp__ordem_visualizacao')
+                for medida in medidas:
+                    if medida.id_pp and medida.id_pp.id_param:
+                        params.append({
+                            'id': medida.id_pp.id_param.id,
+                            'nome': medida.id_pp.id_param.nome,
+                            'ordem': medida.id_pp.ordem_visualizacao,
+                            'unidade': medida.id_pp.unidade
+                        })
+        
+        # Cabeçalho com pontos
+        col = 2
+        ws.cell(row=row, column=1, value="Parâmetro")
+        
+        # Adicionar cada ponto como cabeçalho de coluna
+        for ponto in pontos:
+            ws.cell(row=row, column=col, value=f"PT {ponto.id}")
+            ws.cell(row=row, column=col).font = Font(bold=True)
+            ws.cell(row=row, column=col).alignment = Alignment(horizontal='center')
+            ws.cell(row=row, column=col).fill = PatternFill(start_color="CCCCCC", end_color="CCCCCC", fill_type="solid")
+            col += 1
             
-            ponto_nome = amostra.id_ponto.nome
+        # Estilizar a célula "Parâmetro"
+        ws.cell(row=row, column=1).font = Font(bold=True)
+        ws.cell(row=row, column=1).fill = PatternFill(start_color="CCCCCC", end_color="CCCCCC", fill_type="solid")
+        
+        # Para cada parâmetro, adicionar uma linha
+        for param in params:
+            row += 1
+            ws.cell(row=row, column=1, value=param['nome'])
+            ws.cell(row=row, column=1).font = Font(bold=True)
             
-            for medida in medidas:
-                if not medida.id_pp or not medida.id_pp.id_param:
-                    continue
-                    
-                parametro = medida.id_pp.id_param.nome
-                valor = medida.input_valor if medida.input_valor else "Não medido"
-                unidade = medida.id_pp.unidade if medida.id_pp else ""
+            # Para cada ponto, buscar o valor do parâmetro
+            col = 2
+            for ponto in pontos:
+                # Buscar a amostra para este ponto e frasco
+                amostra = TabAmostra.objects.filter(
+                    id_coleta=coleta, 
+                    id_frasco=frasco,
+                    id_ponto=ponto.id
+                ).first()
                 
-                ws.cell(row=row, column=1, value=ponto_nome)
-                ws.cell(row=row, column=2, value=parametro)
-                ws.cell(row=row, column=3, value=valor)
-                ws.cell(row=row, column=4, value=unidade)
+                valor = "ND"  # Valor padrão se não encontrado
                 
-                row += 1
+                if amostra:
+                    envio = TabEnvio.objects.filter(id_amostra=amostra).first()
+                    if envio:
+                        medida = TabMedida.objects.filter(
+                            id_envio=envio,
+                            id_pp__id_param__id=param['id']
+                        ).first()
+                        
+                        if medida and medida.input_valor:
+                            valor = medida.input_valor
+                
+                ws.cell(row=row, column=col, value=valor)
+                ws.cell(row=row, column=col).alignment = Alignment(horizontal='center')
+                col += 1
+        
+        # Adicionar legenda de unidades
+        row += 2
+        ws.cell(row=row, column=1, value="Unidades:")
+        ws.cell(row=row, column=1).font = Font(bold=True)
+        
+        for param in params:
+            row += 1
+            if 'unidade' in param and param['unidade']:
+                ws.cell(row=row, column=1, value=f"{param['nome']}: {param['unidade']}")
         
         # Ajustar largura das colunas
         for col in ws.columns:
