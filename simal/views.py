@@ -150,6 +150,13 @@ import json
 import requests
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from openpyxl import Workbook
+from openpyxl.styles import Font, PatternFill
+from openpyxl.utils import get_column_letter
+from django.http import HttpResponse
+import logging
+from openpyxl.styles import Font, PatternFill, Alignment
+
 
 # Configuração do logger
 logger = logging.getLogger(__name__)
@@ -4758,3 +4765,163 @@ def process_dbo_pdfs(request, coleta_id, ponto_id, frasco_id):
     }
     print(f"Resposta final: {response_data}")
     return JsonResponse(response_data)
+
+@login_required
+def export_frasco_resultados_xlsx(request, coleta_id, frasco_id):
+    """
+    Exporta os resultados de um frasco específico para Excel com formato tabular horizontal
+    """
+    try:
+        # Obter os dados da coleta e frasco
+        coleta = get_object_or_404(TabColeta, id=coleta_id)
+        frasco = get_object_or_404(TabFrasco, id=frasco_id)
+        
+        # Criar um novo workbook e worksheet
+        wb = Workbook()
+        ws = wb.active
+        ws.title = f"Resultados {frasco.nome}"
+        
+        # Adicionar título principal
+        ws.merge_cells('A1:N1')
+        ws['A1'] = f"Resultados da Coleta - {frasco.nome}"
+        ws['A1'].font = Font(bold=True, size=14)
+        ws['A1'].alignment = Alignment(horizontal='center')
+        
+        # Adicionar informações da coleta
+        row = 3
+        ws['A3'] = "Ordem de Serviço:"
+        ws['B3'] = coleta.ordem_servico
+        ws['A4'] = "Data da Coleta:"
+        ws['B4'] = coleta.data.strftime('%d/%m/%Y') if coleta.data else "N/A"
+        ws['A5'] = "Setor:"
+        ws['B5'] = str(coleta.id_setor)
+        ws['A6'] = "Frasco:"
+        ws['B6'] = frasco.nome
+        
+        # Aplicar estilo às células de informação
+        for cell in [ws['A3'], ws['A4'], ws['A5'], ws['A6']]:
+            cell.font = Font(bold=True)
+        
+        # Pular linhas para começar a tabela
+        row = 9
+        
+        # Obter todos os pontos da coleta
+        pontos = TabAmostra.objects.filter(
+            id_coleta=coleta,
+            id_frasco=frasco
+        ).values_list('id_ponto', flat=True).distinct()
+        
+        pontos = TabPonto.objects.filter(id__in=pontos).order_by('nome')
+        
+        # Obter todos os parâmetros para este frasco
+        params = []
+        
+        # Buscar as primeiras medidas para identificar quais parâmetros existem
+        primeira_amostra = TabAmostra.objects.filter(
+            id_coleta=coleta, 
+            id_frasco=frasco
+        ).first()
+        
+        if primeira_amostra:
+            envio = TabEnvio.objects.filter(id_amostra=primeira_amostra).first()
+            if envio:
+                medidas = TabMedida.objects.filter(
+                    id_envio=envio
+                ).select_related('id_pp', 'id_pp__id_param').order_by('id_pp__ordem_visualizacao')
+                
+                for medida in medidas:
+                    if medida.id_pp and medida.id_pp.id_param:
+                        params.append({
+                            'id': medida.id_pp.id_param.id,
+                            'nome': medida.id_pp.id_param.nome,
+                            'ordem': medida.id_pp.ordem_visualizacao,
+                            'unidade': medida.id_pp.unidade
+                        })
+        
+        # Cabeçalho com pontos
+        col = 2
+        ws.cell(row=row, column=1, value="Parâmetro")
+        
+        # Adicionar cada ponto como cabeçalho de coluna
+        for ponto in pontos:
+            ws.cell(row=row, column=col, value=f"PT {ponto.id}")
+            ws.cell(row=row, column=col).font = Font(bold=True)
+            ws.cell(row=row, column=col).alignment = Alignment(horizontal='center')
+            ws.cell(row=row, column=col).fill = PatternFill(start_color="CCCCCC", end_color="CCCCCC", fill_type="solid")
+            col += 1
+            
+        # Estilizar a célula "Parâmetro"
+        ws.cell(row=row, column=1).font = Font(bold=True)
+        ws.cell(row=row, column=1).fill = PatternFill(start_color="CCCCCC", end_color="CCCCCC", fill_type="solid")
+        
+        # Para cada parâmetro, adicionar uma linha
+        for param in params:
+            row += 1
+            ws.cell(row=row, column=1, value=param['nome'])
+            ws.cell(row=row, column=1).font = Font(bold=True)
+            
+            # Para cada ponto, buscar o valor do parâmetro
+            col = 2
+            for ponto in pontos:
+                # Buscar a amostra para este ponto e frasco
+                amostra = TabAmostra.objects.filter(
+                    id_coleta=coleta, 
+                    id_frasco=frasco,
+                    id_ponto=ponto.id
+                ).first()
+                
+                valor = "ND"  # Valor padrão se não encontrado
+                
+                if amostra:
+                    envio = TabEnvio.objects.filter(id_amostra=amostra).first()
+                    if envio:
+                        medida = TabMedida.objects.filter(
+                            id_envio=envio,
+                            id_pp__id_param__id=param['id']
+                        ).first()
+                        
+                        if medida and medida.input_valor:
+                            valor = medida.input_valor
+                
+                ws.cell(row=row, column=col, value=valor)
+                ws.cell(row=row, column=col).alignment = Alignment(horizontal='center')
+                col += 1
+        
+        # Adicionar legenda de unidades
+        row += 2
+        ws.cell(row=row, column=1, value="Unidades:")
+        ws.cell(row=row, column=1).font = Font(bold=True)
+        
+        for param in params:
+            row += 1
+            if 'unidade' in param and param['unidade']:
+                ws.cell(row=row, column=1, value=f"{param['nome']}: {param['unidade']}")
+        
+        # Ajustar largura das colunas
+        for col in ws.columns:
+            max_length = 0
+            column_letter = get_column_letter(col[0].column)
+            
+            for cell in col:
+                if cell.value:
+                    cell_length = len(str(cell.value))
+                    if cell_length > max_length:
+                        max_length = cell_length
+            
+            adjusted_width = max_length + 2
+            ws.column_dimensions[column_letter].width = adjusted_width
+        
+        # Preparar a resposta HTTP
+        response = HttpResponse(
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        response["Content-Disposition"] = f'attachment; filename="resultados_{coleta.ordem_servico}_{frasco.nome}.xlsx"'
+        
+        # Salvar o arquivo
+        wb.save(response)
+        return response
+        
+    except Exception as e:
+        logger.error(f"Erro ao exportar resultados do frasco: {str(e)}")
+        messages.error(request, "Erro ao exportar os resultados. Por favor, tente novamente.")
+        return redirect("lista_campo_frasco", coleta_id=coleta_id, frasco_id=frasco_id)
