@@ -1,5 +1,46 @@
-# pylint: disable=protected-access,no-member
-# Django imports
+# ================= FUNÇÃO AUXILIAR DE ENVIO DE EMAIL =================
+def enviar_email_relatorio_coleta(coleta, arquivo_excel, usuario):
+    """
+    Envia o relatório Excel da coleta por e-mail para o usuário logado.
+    """
+    from django.core.mail import EmailMessage
+    from django.conf import settings
+
+    if not usuario.email:
+        logger.warning("Usuário sem e-mail cadastrado. Não foi possível enviar o relatório.")
+        return
+
+    subject = f"Relatório Pós-Coleta - {coleta}"
+    # Monta o link para a página de informações da coleta
+    link_sistema = f"{settings.SITE_URL}/info_coleta/{coleta.id}"
+    codigo_coleta = getattr(coleta, 'codigo_coleta', coleta.id)
+    body = (
+        f"Olá,\n\nSegue em anexo o relatório pós-coleta.\n\n"
+        f"Código da Coleta: {codigo_coleta}\n"
+        f"Acesse as informações completas da coleta neste link: {link_sistema}\n\n"
+        f"Este é um e-mail automático, favor não responder."
+    )
+    email = EmailMessage(
+        subject=subject,
+        body=body,
+        from_email=getattr(settings, "DEFAULT_FROM_EMAIL", None),
+        to=[usuario.email,],
+    )
+    email.attach(
+        f"relatorio_coleta_{coleta.id}.xlsx",
+        arquivo_excel.getvalue(),
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
+    try:
+        email.send(fail_silently=False)
+        logger.info(f"Relatório pós-coleta enviado para {usuario.email}.")
+    except Exception as e:
+        logger.error(f"Erro ao enviar relatório pós-coleta: {e}")
+# ================= IMPORTS =================
+import io
+
+# ================= IMPORTS =================
+import io
 import csv
 import json
 import logging
@@ -18,7 +59,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.forms import PasswordChangeForm
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
-from django.core.mail import send_mail
+from django.core.mail import send_mail, EmailMessage
 from django.core.paginator import Paginator
 from django.db import connection, transaction
 from django.db.models import Q, OuterRef, Subquery
@@ -39,51 +80,113 @@ from reportlab.lib.utils import ImageReader
 from io import BytesIO
 from PIL import Image
 
-
 from django_tables2 import RequestConfig
 import urllib.parse
 
-from .filters import (
-    CampoFilter,
-    ProgramaColetaFilter,
-    ResultadosColetaFilter,
-    SetorFilter,
-    PontoFilter,
-    LocalFilter,
+from .models import TabAmostra, TabEnvio, TabMedida
+from .services import gerar_etiquetas, get_weather_description
+from .tables import (
+    EmailTable,
+    StatusColetaTable,
+    TabColetaTable,
+    TopCampanhas,
+    ColetaCampoTable,
+    ResultadosColetaTable,
+    ProgramaColetaTable,
+    LaboratoriosTable,
+    SetorTable,
+    PontoTable,
+    LocalTable,
+    TipoParametroTable,
+    ParametroTable,
+    FrascoTable,
+    EquipeTable,
+    LaboratorioTable,
+    ProdutoTable,
+    ProdxparamTable,
+    SerieClassificacaoTable,
+    TipoItemChecklistColetaTable,
+    ListaCampoTable,
 )
+from .models import (
+    EmailTemplate,
+    MetadadosPonto,
+    TabAnexoAmostra,
+    TabLogColeta,
+    TabStatusColeta,
+    TipoParametro,
+)
+
 from .forms import (
     CustomUserCreationForm,
     ColetaCampo,
-    EmailForm,
     MetadadosCampoForm,
+    ProgramaColetaForm,
     AjudaForm,
     IniciarCampanhaForm,
     ChecklistCampoForm,
-    ProgramaColetaForm,
     LaboratorioForm,
     AnaliseForm,
     LocaisForm,
     SetorForm,
     PontoForm,
     ParametroForm,
-    TabEquipeForm,
+    UnidadeMedidaForm,
+    TipoParametroForm,
     TabFrascoForm,
+    TabEquipeForm,
     TabLaboratorioForm,
     TabProdutoForm,
     TabProdxParamForm,
     TabSerieClassificacaoForm,
-    UnidadeMedidaForm,
-    TipoParametroForm,
     CadastroItemChecklistColetaForm,
-    ChecklistColetaForm,
+    EmailForm,
+    StatusColetaForm,
+    DetalhesUsuarioForm,
     CadastroCampanhaForm,
     CadastroColetaForm,
-    DetalhesUsuarioForm,
+    ChecklistColetaForm,
     InputFisicoQuimicoForm,
-    StatusColetaForm,
 )
-from .services import gerar_etiquetas, get_weather_description
+from .filters import *
 
+# ================= FUNÇÕES AUXILIARES =================
+# Alteração para o card 359
+def gerar_relatorio_excel_por_coleta(coleta, id_frasco=1):
+    """
+    Alteração para o card 359
+    Função agora parametrizável: exporta dados do frasco informado (padrão: 1 - Sonda)
+    Gera um arquivo Excel com todos os dados em uma única aba, incluindo o nome do ponto como coluna.
+    Exporta apenas dados do frasco especificado (padrão: 1 - Sonda).
+    Usa openpyxl como engine, não requer xlsxwriter.
+    """
+    output = io.BytesIO()
+    writer = pd.ExcelWriter(output, engine='openpyxl')
+
+    amostras = TabAmostra.objects.filter(id_coleta=coleta, id_frasco=id_frasco)
+    dados = []
+    # Alteração para o card 359: inclusão da coluna 'Série de Classificação' na exportação
+    for amostra in amostras:
+        ponto_nome = amostra.id_ponto.nome if amostra.id_ponto else ''
+        envios = TabEnvio.objects.filter(id_amostra=amostra)
+        for envio in envios:
+            medidas = TabMedida.objects.filter(id_envio=envio)
+            for medida in medidas:
+                dados.append({
+                    'Ponto': ponto_nome,
+                    'Parâmetro': medida.id_pp.id_param.nome if medida.id_pp and medida.id_pp.id_param else '',
+                    'Valor': medida.input_valor,
+                    'Unidade': medida.id_pp.unidade if medida.id_pp else '',
+                    'Série de Classificação': medida.id_pp.id_serie.nome if medida.id_pp and medida.id_pp.id_serie else '',
+                    'Observação': getattr(medida, 'observacao', ''),
+                    'Código Oceanus': getattr(medida, 'codigo_oceanus', ''),
+                    'Data': getattr(medida, 'data_medida', ''),
+                })
+    df = pd.DataFrame(dados)
+    df.to_excel(writer, sheet_name="Resultados", index=False)
+    writer.close()
+    output.seek(0)
+    return output
 from .tables import (
     EmailTable,
     StatusColetaTable,
@@ -2294,6 +2397,10 @@ def input_fisico_quimico(request, coleta_id, ponto_id):
     coleta = get_object_or_404(TabColeta, id=coleta_id)
     ponto = get_object_or_404(TabPonto, id=ponto_id, status=True)
 
+
+    # Busca parametro_id do GET (ou defina um valor padrão se necessário)
+    parametro_id = request.GET.get('parametro')
+
     # Busca anexo existente
     anexo_existente = None
     anexo_query = TabAnexoAmostra.objects.filter(
@@ -2671,6 +2778,10 @@ def input_laboratorio(request, coleta_id, ponto_id, frasco_id):
     """
     View para entrada de dados laboratoriais
     """
+
+    # Importa os modelos necessários para toda a função
+    from simal.models import TabAmostra, TabEnvio, TabProdxparam, TabMedida
+
     MedidaFormSet = modelformset_factory(
         TabMedida, form=InputFisicoQuimicoForm, extra=0, fields="__all__"
     )
@@ -2711,6 +2822,9 @@ def input_laboratorio(request, coleta_id, ponto_id, frasco_id):
             anexo_existente.delete()
             anexo_existente = None
 
+    # Importa os modelos necessários para a verificação de frasco completo
+    from simal.models import TabAmostra, TabEnvio, TabProdxparam, TabMedida
+
     if request.method == "POST":
         formset = MedidaFormSet(request.POST, request.FILES, queryset=medidas)
         if formset.is_valid():
@@ -2725,6 +2839,54 @@ def input_laboratorio(request, coleta_id, ponto_id, frasco_id):
                 handle_anexo(request, primeiro_envio)
 
             messages.success(request, "Dados salvos com sucesso!")
+
+            # Sempre verifica se o frasco está completo após salvar os dados
+            coleta_obj = envio.id_amostra.id_coleta if envio and envio.id_amostra else None
+            frasco_atual = frasco
+            print(f"Verificando se o frasco {frasco_atual.id} da coleta está completo...") #Debug
+            # Recupera todos os pontos esperados para a coleta
+            pontos_esperados = set(TabPonto.objects.filter(id_setor=coleta_obj.id_setor, status=True).values_list('id', flat=True)) if coleta_obj else set()
+            amostras_frasco = TabAmostra.objects.filter(id_coleta=coleta_obj, id_frasco=frasco_atual)
+            pontos_amostrados = set(amostras_frasco.values_list('id_ponto', flat=True))
+            frasco_completo = True
+            # Verifica se todos os pontos esperados têm amostra para este frasco
+            if pontos_esperados != pontos_amostrados:
+                frasco_completo = False
+                print(f"Faltam amostras para alguns pontos do frasco {frasco_atual.id}. Esperados: {pontos_esperados}, encontrados: {pontos_amostrados}")
+            else:
+                # Só verifica medidas se todas as amostras existem
+                for amostra in amostras_frasco:
+                    envios = TabEnvio.objects.filter(id_amostra=amostra)
+                    for envio_f in envios:
+                        id_frasco_f = envio_f.id_amostra.id_frasco
+                        id_produto_f = getattr(envio_f.id_amostra, 'id_produto', None)
+                        if not id_frasco_f or not id_produto_f:
+                            continue
+                        parametros = TabProdxparam.objects.filter(
+                            id_frasco=id_frasco_f,
+                            id_produto=id_produto_f,
+                            status=True
+                        )
+                        for parametro in parametros:
+                            medida_qs = TabMedida.objects.filter(
+                                id_envio=envio_f, id_pp=parametro
+                            ).exclude(input_valor__isnull=True).exclude(input_valor__exact="")
+                            if not medida_qs.exists():
+                                frasco_completo = False
+                                print(f"Faltando medida para amostra {amostra.id}, envio {envio_f.id}, frasco {id_frasco_f.id}, produto {id_produto_f.id}, parâmetro {parametro.id} ({parametro.id_param.nome})")
+                                break
+                        if not frasco_completo:
+                            break
+                    if not frasco_completo:
+                        break
+            # Só envia e-mail se o botão Salvar foi clicado E o frasco atual estiver completo para todos os pontos
+            if coleta_obj and "salvar" in request.POST:
+                if coleta_obj.is_completa_frasco(frasco_atual.id):
+                    print(f"Frasco {frasco_atual.id} da coleta {coleta_obj.id} completo! Gerando relatório e enviando e-mail...") #Debug
+                    arquivo_excel = gerar_relatorio_excel_por_coleta(coleta_obj, id_frasco=frasco_atual.id)
+                    enviar_email_relatorio_coleta(coleta_obj, arquivo_excel, request.user)
+                else:
+                    print(f"Frasco {frasco_atual.id} da coleta {coleta_obj.id} ainda não está completo. Não será gerado relatório.") #Debug
 
             # Find next point
             proximo_ponto = TabPonto.objects.filter(
@@ -2787,6 +2949,8 @@ def input_laboratorio(request, coleta_id, ponto_id, frasco_id):
                 p.tem_dados = False
         else:
             p.tem_dados = False
+    
+    # A geração do relatório e envio de e-mail agora só ocorre no POST quando o botão 'Salvar' é clicado
 
     # Encontrar índice do ponto atual e pontos anterior/próximo
     try:
@@ -2803,6 +2967,8 @@ def input_laboratorio(request, coleta_id, ponto_id, frasco_id):
         ponto_anterior = None
         ponto_proximo = None
 
+
+
     return render(
         request,
         "input_laboratorio.html",
@@ -2818,6 +2984,7 @@ def input_laboratorio(request, coleta_id, ponto_id, frasco_id):
             "todos_pontos": todos_pontos,
         },
     )
+    
 
 
 def handle_anexo(request, envio):
@@ -3617,7 +3784,7 @@ def new_home(request):
             setores_dados[setor][data] = total
             datas.add(data)
 
-        # Converter para formato do gráfico
+        # Converte para formato do gráfico
         datas_ordenadas = sorted(list(datas))
         series_data = []
 
@@ -3865,7 +4032,7 @@ def dashboard_parametros(request):
                         valores_por_data[data_str]['soma'] += valor
                         valores_por_data[data_str]['count'] += 1
                     except (ValueError, TypeError):
-                        continue
+                                               continue
 
          # Calcula as médias e prepara dados para o gráfico
             dados_grafico_setor = {
@@ -3906,49 +4073,36 @@ def dashboard_parametros(request):
             elif setor.id == 3:  # Jacaroá
                 pre_tratamento_cutoff = datetime(2024, 4, 1)
             elif setor.id == 10:  # Spar
-                pre_tratamento_cutoff = datetime(2024, 4, 1)
+                pre_tratamento_cutoff = datetime(2024, 4, 1)  # Ajuste esta data conforme necessário
             elif setor.id == 4:  # Maricá
-                pre_tratamento_cutoff = datetime(2024, 4, 1)
+                pre_tratamento_cutoff = datetime(2024, 4, 1)  # Ajuste esta data conforme necessário
             else:
                 # Para outros setores, usar uma data padrão
                 pre_tratamento_cutoff = datetime(2022, 1, 1)
             
             # Obter todos os pontos do setor
-            pontos_do_setor = TabPonto.objects.filter(id_setor=setor_id, status=True).order_by('nome')
+            pontos_do_setor = TabPonto.objects.filter(id_setor=setor).order_by('nome')
             
             # Estrutura para armazenar os dados agrupados
             dados_tempo_por_ponto = {
                 'pontos': [],
                 'pre_tratamento': [],
-                '2022': [],
-                '2023': [],
-                # Meses de 2024
-                'Jan2024': [], 'Fev2024': [], 'Mar2024': [], 'Abr2024': [], 
-                'Mai2024': [], 'Jun2024': [], 'Jul2024': [], 'Ago2024': [],
-                'Set2024': [], 'Out2024': [], 'Nov2024': [], 'Dez2024': [],
-                # Meses de 2025
-                'Jan2025': [], 'Fev2025': [], 'Mar2025': [], 'Abr2025': [],
-                'Mai2025': [], 'Jun2025': []
+                'pos_tratamento': []
             }
             
             # Atualizar a verificação de períodos com dados
             periodos_com_dados = {
                 'pre_tratamento': False,
-                '2022': False,
-                '2023': False,
-                # Meses de 2024
-                'Jan2024': False, 'Fev2024': False, 'Mar2024': False, 'Abr2024': False,
-                'Mai2024': False, 'Jun2024': False, 'Jul2024': False, 'Ago2024': False,
-                'Set2024': False, 'Out2024': False, 'Nov2024': False, 'Dez2024': False,
-                # Meses de 2025
-                'Jan2025': False, 'Fev2025': False, 'Mar2025': False, 'Abr2025': False,
-                'Mai2025': False, 'Jun2025': False
+                'pos_tratamento': False
             }
             
             # Para cada ponto, calcular as médias por período
             for ponto in pontos_do_setor:
                 # Filtrar medidas para este ponto específico
-                medidas_ponto = medidas.filter(id_envio__id_amostra__id_ponto=ponto)
+                medidas_ponto = TabMedida.objects.filter(
+                    id_pp_id=parametro_id,
+                    id_envio__id_amostra__id_ponto=ponto
+                ).select_related('id_envio__id_amostra__id_coleta')
                 
                 if medidas_ponto.exists():
                     # Adicionar o ponto à lista
@@ -3963,60 +4117,14 @@ def dashboard_parametros(request):
                     if media_pre is not None:
                         periodos_com_dados['pre_tratamento'] = True
                     
-                    # Calcular média para 2022
-                    medidas_2022 = medidas_ponto.filter(
-                        id_envio__id_amostra__id_coleta__data__year=2022
-                    )
-                    valores_2022 = [convert_to_float(m.valor) for m in medidas_2022 if m.valor]
-                    valores_2022 = [v for v in valores_2022 if v is not None]
-                    media_2022 = sum(valores_2022) / len(valores_2022) if valores_2022 else None
-                    dados_tempo_por_ponto['2022'].append(round(media_2022, 2) if media_2022 is not None else None)
-                    if media_2022 is not None:
-                        periodos_com_dados['2022'] = True
-                    
-                    # Calcular média para 2023
-                    medidas_2023 = medidas_ponto.filter(
-                        id_envio__id_amostra__id_coleta__data__year=2023
-                    )
-                    valores_2023 = [convert_to_float(m.valor) for m in medidas_2023 if m.valor]
-                    valores_2023 = [v for v in valores_2023 if v is not None]
-                    media_2023 = sum(valores_2023) / len(valores_2023) if valores_2023 else None
-                    dados_tempo_por_ponto['2023'].append(round(media_2023, 2) if media_2023 is not None else None)
-                    if media_2023 is not None:
-                        periodos_com_dados['2023'] = True
-                    
-                    # Calcular médias para cada mês de 2024
-                    for month, month_name in [
-                        (1, 'Jan2024'), (2, 'Fev2024'), (3, 'Mar2024'), 
-                        (4, 'Abr2024'), (5, 'Mai2024'), (6, 'Jun2024'), (7, 'Jul2024'), (8, 'Ago2024'),
-                        (9, 'Set2024'), (10, 'Out2024'), (11, 'Nov2024'), (12, 'Dez2024')
-                    ]:
-                        medidas_mes = medidas_ponto.filter(
-                            id_envio__id_amostra__id_coleta__data__year=2024,
-                            id_envio__id_amostra__id_coleta__data__month=month
-                        )
-                        valores_mes = [convert_to_float(m.valor) for m in medidas_mes if m.valor]
-                        valores_mes = [v for v in valores_mes if v is not None]
-                        media_mes = sum(valores_mes) / len(valores_mes) if valores_mes else None
-                        dados_tempo_por_ponto[month_name].append(round(media_mes, 2) if media_mes is not None else None)
-                        if media_mes is not None:
-                            periodos_com_dados[month_name] = True
-                            
-                    # Calcular médias para os meses de 2025 (até junho)
-                    for month, month_name in [
-                        (1, 'Jan2025'), (2, 'Fev2025'), (3, 'Mar2025'),
-                        (4, 'Abr2025'), (5, 'Mai2025'), (6, 'Jun2025')
-                    ]:
-                        medidas_mes = medidas_ponto.filter(
-                            id_envio__id_amostra__id_coleta__data__year=2025,
-                            id_envio__id_amostra__id_coleta__data__month=month
-                        )
-                        valores_mes = [convert_to_float(m.valor) for m in medidas_mes if m.valor]
-                        valores_mes = [v for v in valores_mes if v is not None]
-                        media_mes = sum(valores_mes) / len(valores_mes) if valores_mes else None
-                        dados_tempo_por_ponto[month_name].append(round(media_mes, 2) if media_mes is not None else None)
-                        if media_mes is not None:
-                            periodos_com_dados[month_name] = True
+                    # Calcular média para pós-tratamento
+                    medidas_pos = medidas_ponto.filter(id_envio__id_amostra__id_coleta__data__gte=pre_tratamento_cutoff)
+                    valores_pos = [convert_to_float(m.valor) for m in medidas_pos if m.valor]
+                    valores_pos = [v for v in valores_pos if v is not None]
+                    media_pos = sum(valores_pos) / len(valores_pos) if valores_pos else None
+                    dados_tempo_por_ponto['pos_tratamento'].append(round(media_pos, 2) if media_pos is not None else None)
+                    if media_pos is not None:
+                        periodos_com_dados['pos_tratamento'] = True
                 
             # Verificar se há algum dado disponível
             tem_dados = any(periodos_com_dados.values())
@@ -4037,107 +4145,10 @@ def dashboard_parametros(request):
                         'valores': dados_tempo_por_ponto['pre_tratamento'],
                         'tem_dados': periodos_com_dados['pre_tratamento']
                     },
-                    '2022': {
-                        'nome': '2022',
-                        'valores': dados_tempo_por_ponto['2022'],
-                        'tem_dados': periodos_com_dados['2022']
-                    },
-                    '2023': {
-                        'nome': '2023',
-                        'valores': dados_tempo_por_ponto['2023'],
-                        'tem_dados': periodos_com_dados['2023']
-                    },
-                    # Meses de 2024
-                    'Jan2024': {
-                        'nome': 'Jan/2024',
-                        'valores': dados_tempo_por_ponto['Jan2024'],
-                        'tem_dados': periodos_com_dados['Jan2024']
-                    },
-                    'Fev2024': {
-                        'nome': 'Fev/2024',
-                        'valores': dados_tempo_por_ponto['Fev2024'],
-                        'tem_dados': periodos_com_dados['Fev2024']
-                    },
-                    'Mar2024': {
-                        'nome': 'Mar/2024',
-                        'valores': dados_tempo_por_ponto['Mar2024'],
-                        'tem_dados': periodos_com_dados['Mar2024']
-                    },
-                    'Abr2024': {
-                        'nome': 'Abr/2024',
-                        'valores': dados_tempo_por_ponto['Abr2024'],
-                        'tem_dados': periodos_com_dados['Abr2024']
-                    },
-                    'Mai2024': {
-                        'nome': 'Mai/2024',
-                        'valores': dados_tempo_por_ponto['Mai2024'],
-                        'tem_dados': periodos_com_dados['Mai2024']
-                    },
-                    'Jun2024': {
-                        'nome': 'Jun/2024',
-                        'valores': dados_tempo_por_ponto['Jun2024'],
-                        'tem_dados': periodos_com_dados['Jun2024']
-                    },
-                    'Jul2024': {
-                        'nome': 'Jul/2024',
-                        'valores': dados_tempo_por_ponto['Jul2024'],
-                        'tem_dados': periodos_com_dados['Jul2024']
-                    },
-                    'Ago2024': {
-                        'nome': 'Ago/2024',
-                        'valores': dados_tempo_por_ponto['Ago2024'],
-                        'tem_dados': periodos_com_dados['Ago2024']
-                    },
-                    'Set2024': {
-                        'nome': 'Set/2024',
-                        'valores': dados_tempo_por_ponto['Set2024'],
-                        'tem_dados': periodos_com_dados['Set2024']
-                    },
-                    'Out2024': {
-                        'nome': 'Out/2024',
-                        'valores': dados_tempo_por_ponto['Out2024'],
-                        'tem_dados': periodos_com_dados['Out2024']
-                    },
-                    'Nov2024': {
-                        'nome': 'Nov/2024',
-                        'valores': dados_tempo_por_ponto['Nov2024'],
-                        'tem_dados': periodos_com_dados['Nov2024']
-                    },
-                    'Dez2024': {
-                        'nome': 'Dez/2024',
-                        'valores': dados_tempo_por_ponto['Dez2024'],
-                        'tem_dados': periodos_com_dados['Dez2024']
-                    },
-                    # Meses de 2025
-                    'Jan2025': {
-                        'nome': 'Jan/2025',
-                        'valores': dados_tempo_por_ponto['Jan2025'],
-                        'tem_dados': periodos_com_dados['Jan2025']
-                    },
-                    'Fev2025': {
-                        'nome': 'Fev/2025',
-                        'valores': dados_tempo_por_ponto['Fev2025'],
-                        'tem_dados': periodos_com_dados['Fev2025']
-                    },
-                    'Mar2025': {
-                        'nome': 'Mar/2025',
-                        'valores': dados_tempo_por_ponto['Mar2025'],
-                        'tem_dados': periodos_com_dados['Mar2025']
-                    },
-                    'Abr2025': {
-                        'nome': 'Abr/2025',
-                        'valores': dados_tempo_por_ponto['Abr2025'],
-                        'tem_dados': periodos_com_dados['Abr2025']
-                    },
-                    'Mai2025': {
-                        'nome': 'Mai/2025',
-                        'valores': dados_tempo_por_ponto['Mai2025'],
-                        'tem_dados': periodos_com_dados['Mai2025']
-                    },
-                    'Jun2025': {
-                        'nome': 'Jun/2025',
-                        'valores': dados_tempo_por_ponto['Jun2025'],
-                        'tem_dados': periodos_com_dados['Jun2025']
+                    'pos_tratamento': {
+                        'nome': 'Pós-tratamento',
+                        'valores': dados_tempo_por_ponto['pos_tratamento'],
+                        'tem_dados': periodos_com_dados['pos_tratamento']
                     }
                 },
                 'tem_dados': tem_dados,
@@ -4168,48 +4179,48 @@ def dashboard_parametros(request):
             cutoff_date = datetime(2024, 4, 1)  # Ajuste esta data conforme necessário
         elif setor.id == 4:  # Maricá
             cutoff_date = datetime(2024, 4, 1)  # Ajuste esta data conforme necessário
+            # Para outros setores, usar uma data padrão
+        else:
+            cutoff_date = datetime(2022, 1, 1)
+        
+        # Get all points in the sector
+        pontos_setor = TabPonto.objects.filter(id_setor=setor).order_by('nome')
+        
+        dados_grafico_tratamento = {
+            'pontos': [],
+            'pre_tratamento': [],
+            'pos_tratamento': []
+        }
+        
+        for ponto in pontos_setor:
+            # Get measurements for this point
+            medidas_ponto = TabMedida.objects.filter(
+                id_pp_id=parametro_id,
+                id_envio__id_amostra__id_ponto=ponto
+            ).select_related('id_envio__id_amostra__id_coleta')
             
-        if cutoff_date:
-            # Get all points in the sector
-            pontos_setor = TabPonto.objects.filter(id_setor=setor).order_by('nome')
+            # Calculate pre-treatment average
+            medidas_pre = medidas_ponto.filter(
+                id_envio__id_amostra__id_coleta__data__lt=cutoff_date
+            )
+            valores_pre = [convert_to_float(m.valor) for m in medidas_pre if m.valor]
+            valores_pre = [v for v in valores_pre if v is not None]  # Filter out None values
+            media_pre = sum(valores_pre) / len(valores_pre) if valores_pre else None
             
-            dados_grafico_tratamento = {
-                'pontos': [],
-                'pre_tratamento': [],
-                'pos_tratamento': []
-            }
+            # Calculate post-treatment average
+            medidas_pos = medidas_ponto.filter(id_envio__id_amostra__id_coleta__data__gte=cutoff_date)
+            valores_pos = [convert_to_float(m.valor) for m in medidas_pos if m.valor]
+            valores_pos = [v for v in valores_pos if v is not None]  # Filter out None values
+            media_pos = sum(valores_pos) / len(valores_pos) if valores_pos else None
             
-            for ponto in pontos_setor:
-                # Get measurements for this point
-                medidas_ponto = TabMedida.objects.filter(
-                    id_pp_id=parametro_id,
-                    id_envio__id_amostra__id_ponto=ponto
-                ).select_related('id_envio__id_amostra__id_coleta')
-                
-                # Calculate pre-treatment average
-                medidas_pre = medidas_ponto.filter(
-                    id_envio__id_amostra__id_coleta__data__lt=cutoff_date
+            if media_pre is not None or media_pos is not None:
+                dados_grafico_tratamento['pontos'].append(ponto.nome)
+                dados_grafico_tratamento['pre_tratamento'].append(
+                    round(media_pre, 2) if media_pre is not None else None
                 )
-                valores_pre = [convert_to_float(m.valor) for m in medidas_pre if m.valor]
-                valores_pre = [v for v in valores_pre if v is not None]  # Filter out None values
-                media_pre = sum(valores_pre) / len(valores_pre) if valores_pre else None
-                
-                # Calculate post-treatment average
-                medidas_pos = medidas_ponto.filter(
-                    id_envio__id_amostra__id_coleta__data__gte=cutoff_date
+                dados_grafico_tratamento['pos_tratamento'].append(
+                    round(media_pos, 2) if media_pos is not None else None
                 )
-                valores_pos = [convert_to_float(m.valor) for m in medidas_pos if m.valor]
-                valores_pos = [v for v in valores_pos if v is not None]  # Filter out None values
-                media_pos = sum(valores_pos) / len(valores_pos) if valores_pos else None
-                
-                if media_pre is not None or media_pos is not None:
-                    dados_grafico_tratamento['pontos'].append(ponto.nome)
-                    dados_grafico_tratamento['pre_tratamento'].append(
-                        round(media_pre, 2) if media_pre is not None else None
-                    )
-                    dados_grafico_tratamento['pos_tratamento'].append(
-                        round(media_pos, 2) if media_pos is not None else None
-                    )
 
     # Add logic for seasonal comparison
     dados_grafico_estacoes = None
@@ -4226,8 +4237,11 @@ def dashboard_parametros(request):
         for ponto in pontos_setor:
             medidas = TabMedida.objects.filter(
                 id_pp_id=parametro_id,
-                id_envio__id_amostra__id_ponto=ponto
-            ).select_related('id_envio__id_amostra__id_coleta')
+                id_envio__id_amostra__id_ponto__id_setor=setor_id
+            ).select_related(
+                'id_envio__id_amostra__id_coleta',
+                'id_envio__id_amostra__id_ponto'
+            ).order_by('id_envio__id_amostra__id_coleta__data')
             
             # Estação chuvosa (abril a outubro)
             medidas_chuvosa = medidas.filter(
@@ -4281,8 +4295,7 @@ def dashboard_parametros(request):
             Q(id_pp=od_percentage_param)  # Only include the specific OD percentage parameter
         ).select_related(
             'id_envio__id_amostra__id_coleta',
-            'id_envio__id_amostra__id_ponto',
-            'id_pp__id_param'
+            'id_envio__id_amostra__id_ponto'
         )
         
         # Aplicar filtro de campanha se selecionada
@@ -4766,6 +4779,46 @@ def process_dbo_pdfs(request, coleta_id, ponto_id, frasco_id):
     print(f"Resposta final: {response_data}")
     return JsonResponse(response_data)
 
+# Alteração para o card 359
+def gerar_relatorio_excel_por_coleta(coleta, id_frasco=1):
+    """
+    Alteração para o card 359
+    Função agora parametrizável: exporta dados do frasco informado (padrão: 1 - Sonda)
+    Gera um arquivo Excel com todos os dados em uma única aba, incluindo o nome do ponto como coluna.
+    Exporta apenas dados do frasco especificado (padrão: 1 - Sonda).
+    Usa openpyxl como engine, não requer xlsxwriter.
+    """
+    from .models import TabAmostra, TabEnvio, TabMedida
+
+    output = io.BytesIO()
+    writer = pd.ExcelWriter(output, engine='openpyxl')
+
+    amostras = TabAmostra.objects.filter(id_coleta=coleta, id_frasco=id_frasco)
+    dados = []
+    # Alteração para o card 359: inclusão da coluna 'Série de Classificação' na exportação
+    for amostra in amostras:
+        ponto_nome = amostra.id_ponto.nome if amostra.id_ponto else ''
+        envios = TabEnvio.objects.filter(id_amostra=amostra)
+        for envio in envios:
+            medidas = TabMedida.objects.filter(id_envio=envio)
+            for medida in medidas:
+                dados.append({
+                    'Ponto': ponto_nome,
+                    'Parâmetro': medida.id_pp.id_param.nome if medida.id_pp and medida.id_pp.id_param else '',
+                    'Valor': medida.input_valor,
+                    'Unidade': medida.id_pp.unidade if medida.id_pp else '',
+                    'Série de Classificação': medida.id_pp.id_serie.nome if medida.id_pp and medida.id_pp.id_serie else '',
+                    'Observação': getattr(medida, 'observacao', ''),
+                    'Código Oceanus': getattr(medida, 'codigo_oceanus', ''),
+                    'Data': getattr(medida, 'data_medida', ''),
+                })
+    df = pd.DataFrame(dados)
+    df.to_excel(writer, sheet_name="Resultados", index=False)
+    writer.close()
+    output.seek(0)
+    return output
+
+
 @login_required
 def export_frasco_resultados_xlsx(request, coleta_id, frasco_id):
     """
@@ -4925,3 +4978,4 @@ def export_frasco_resultados_xlsx(request, coleta_id, frasco_id):
         logger.error(f"Erro ao exportar resultados do frasco: {str(e)}")
         messages.error(request, "Erro ao exportar os resultados. Por favor, tente novamente.")
         return redirect("lista_campo_frasco", coleta_id=coleta_id, frasco_id=frasco_id)
+
