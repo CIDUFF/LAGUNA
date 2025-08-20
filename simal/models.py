@@ -521,6 +521,34 @@ class TabCampanha(models.Model):
 
 
 class TabColeta(models.Model):
+    def is_completa_frasco(self, frasco_id):
+        from .models import TabAmostra, TabEnvio, TabProdxparam, TabMedida, TabPonto
+
+        pontos_esperados = set(TabPonto.objects.filter(id_setor=self.id_setor, status=True).values_list('id', flat=True))
+        amostras_frasco = TabAmostra.objects.filter(id_coleta=self, id_frasco=frasco_id)
+        pontos_amostrados = set(amostras_frasco.values_list('id_ponto', flat=True))
+        if not pontos_esperados or pontos_esperados != pontos_amostrados:
+            print(f"Faltam amostras para o frasco {frasco_id}. Esperados: {pontos_esperados}, encontrados: {pontos_amostrados}")
+            return False
+        for amostra in amostras_frasco:
+            envios = TabEnvio.objects.filter(id_amostra=amostra)
+            for envio in envios:
+                id_frasco = envio.id_amostra.id_frasco
+                if not id_frasco:
+                    continue
+                parametros = TabProdxparam.objects.filter(
+                    id_frasco=id_frasco,
+                    status=True
+                )
+                for parametro in parametros:
+                    medida_qs = TabMedida.objects.filter(
+                        id_envio=envio, id_pp=parametro
+                    ).exclude(input_valor__isnull=True).exclude(input_valor__exact="")
+                    if not medida_qs.exists():
+                        print(f"Faltando medida para amostra {amostra.id}, envio {envio.id}, frasco {id_frasco.id}, parâmetro {parametro.id} ({parametro.id_param.nome})")
+                        return False
+        print(f"Frasco {frasco_id} da coleta {self.id} completo!")
+        return True
     data = models.DateTimeField(blank=True, null=True)
     nome = models.CharField(max_length=255, blank=True, null=True)
     id_campanha = models.ForeignKey(
@@ -646,6 +674,43 @@ class TabColeta(models.Model):
         managed = True
         db_table = "tab_coleta"
 
+    # Alteração para o Relatório Pós Coleta. Card 359
+    # Alteração para o Relatório Pós Coleta. Card 359
+    def is_completa(self):
+        from .models import TabAmostra, TabEnvio, TabProdxparam, TabMedida, TabPonto, TabFrasco
+
+        # 1. Verifica se todos os pontos esperados possuem amostras para todos os frascos
+        pontos_esperados = set(TabPonto.objects.filter(id_setor=self.id_setor, status=True).values_list('id', flat=True))
+        frascos_esperados = set(TabFrasco.objects.all().values_list('id', flat=True))
+        # Para cada frasco esperado, todos os pontos devem ter amostra
+        for frasco_id in frascos_esperados:
+            amostras_frasco = TabAmostra.objects.filter(id_coleta=self, id_frasco=frasco_id)
+            pontos_amostrados = set(amostras_frasco.values_list('id_ponto', flat=True))
+            if pontos_esperados != pontos_amostrados:
+                print(f"Faltam amostras para o frasco {frasco_id}. Esperados: {pontos_esperados}, encontrados: {pontos_amostrados}")
+                return False
+            # 2. Para cada amostra, verifica se todas as medidas obrigatórias estão preenchidas
+            for amostra in amostras_frasco:
+                envios = TabEnvio.objects.filter(id_amostra=amostra)
+                for envio in envios:
+                    id_frasco = envio.id_amostra.id_frasco
+                    id_produto = getattr(envio.id_amostra, 'id_produto', None)
+                    if not id_frasco or not id_produto:
+                        continue
+                    parametros = TabProdxparam.objects.filter(
+                        id_frasco=id_frasco,
+                        id_produto=id_produto,
+                        status=True
+                    )
+                    for parametro in parametros:
+                        medida_qs = TabMedida.objects.filter(
+                            id_envio=envio, id_pp=parametro
+                        ).exclude(input_valor__isnull=True).exclude(input_valor__exact="")
+                        if not medida_qs.exists():
+                            print(f"Faltando medida para amostra {amostra.id}, envio {envio.id}, frasco {id_frasco.id}, produto {id_produto.id}, parâmetro {parametro.id} ({parametro.id_param.nome})")
+                            return False
+        print("Coleta completa!")
+        return True
 
 class TabStatusColeta(models.Model):
     id = models.AutoField(primary_key=True)
