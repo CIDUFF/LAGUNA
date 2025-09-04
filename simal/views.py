@@ -2818,7 +2818,7 @@ def input_laboratorio(request, coleta_id, ponto_id, frasco_id):
     if anexo_query:
         anexo_existente = anexo_query
         # Se não tem arquivo nem observação, deleta o registro
-        if not anexo_existente.anexo and not anexo_existente.observacao:
+        if not anexo_existente.anexo and not anexo_existente.observacao and not anexo_existente.codigo_oceanus:
             anexo_existente.delete()
             anexo_existente = None
 
@@ -2998,29 +2998,34 @@ def handle_anexo(request, envio):
     Returns:
         TabAnexoAmostra: O objeto de anexo criado/atualizado ou None
     """
+    
     anexo_existente = TabAnexoAmostra.objects.filter(id_envio=envio).first()
 
     # Verifica se há novo anexo ou observação
     tem_novo_anexo = bool(request.FILES.get("anexo"))
     tem_nova_observacao = bool(request.POST.get("observacao_anexo"))
-
+    tem_novo_codigo_oceanus = bool(request.POST.get("codigo_oceanus_anexo"))
     # Se tem novo conteúdo
-    if tem_novo_anexo or tem_nova_observacao:
+    if tem_novo_anexo or tem_nova_observacao or tem_novo_codigo_oceanus:
         if anexo_existente:
             # Atualiza anexo existente
             if tem_novo_anexo:
                 anexo_existente.anexo = request.FILES["anexo"]
             anexo_existente.observacao = request.POST.get("observacao_anexo", "")
+            anexo_existente.codigo_oceanus = request.POST.get("codigo_oceanus_anexo", "")
             anexo_existente.save()
+
         else:
             # Cria novo anexo
             anexo_existente = TabAnexoAmostra.objects.create(
                 id_envio=envio,
                 anexo=request.FILES.get("anexo"),
                 observacao=request.POST.get("observacao_anexo", ""),
+                codigo_oceanus=request.POST.get("codigo_oceanus_anexo", ""),
             )
+
     # Se não tem novo conteúdo e existe um anexo vazio
-    elif anexo_existente and not (anexo_existente.anexo or anexo_existente.observacao):
+    elif anexo_existente and not (anexo_existente.anexo or anexo_existente.observacao or anexo_existente.codigo_oceanus):
         anexo_existente.delete()
         anexo_existente = None
 
@@ -4802,15 +4807,17 @@ def gerar_relatorio_excel_por_coleta(coleta, id_frasco=1):
         for envio in envios:
             medidas = TabMedida.objects.filter(id_envio=envio)
             for medida in medidas:
+                anexo = TabAnexoAmostra.objects.filter(id_envio=medida.id_envio).first()
+
                 dados.append({
                     'Ponto': ponto_nome,
                     'Parâmetro': medida.id_pp.id_param.nome if medida.id_pp and medida.id_pp.id_param else '',
                     'Valor': medida.input_valor,
                     'Unidade': medida.id_pp.unidade if medida.id_pp else '',
                     'Série de Classificação': medida.id_pp.id_serie.nome if medida.id_pp and medida.id_pp.id_serie else '',
-                    'Observação': getattr(medida, 'observacao', ''),
-                    'Código Oceanus': getattr(medida, 'codigo_oceanus', ''),
-                    'Data': getattr(medida, 'data_medida', ''),
+                    'Observação': getattr(anexo, 'observacao', '') if anexo else '',
+                    'Código Oceanus': getattr(anexo, 'codigo_oceanus', '') if anexo else '',
+                    'Data de Preenchimento': datetime.now().strftime('%d/%m/%Y'),
                 })
     df = pd.DataFrame(dados)
     df.to_excel(writer, sheet_name="Resultados", index=False)
