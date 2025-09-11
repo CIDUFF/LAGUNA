@@ -2787,7 +2787,7 @@ def input_laboratorio(request, coleta_id, ponto_id, frasco_id):
     )
 
     coleta = get_object_or_404(TabColeta, id=coleta_id)
-    ponto = get_object_or_404(TabPonto, id=ponto_id, status=True)
+    ponto = get_object_or_404(TabPonto, id=ponto_id)
     frasco = get_object_or_404(TabFrasco, id=frasco_id)
 
     # Get amostra and envio for this specific combination
