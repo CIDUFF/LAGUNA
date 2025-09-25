@@ -1,0 +1,162 @@
+{% extends 'base/base_site.html' %}
+{% load static %}
+
+{% block title %}Diagnóstico da Coleta - {{ coleta.ordem_servico }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-3 mb-4">
+    <!-- Cabeçalho -->
+    <div class="row g-3 mb-4 align-items-center">
+        <div class="col">
+            <div class="card border-0 rounded-4 shadow-sm bg-gradient" style="background-color:#063c7a;">
+                <div class="card-body p-4">
+                    <h1 class="display-6 mb-3 text-white d-flex align-items-center">
+                        <i class="bi bi-search me-3"></i>
+                        <span>Diagnóstico da Coleta</span>
+                    </h1>
+                    <p class="text-white-50 mb-0">Análise de frascos e medidas faltantes para a coleta <strong class="text-white">{{ coleta.ordem_servico }}</strong>.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-auto">
+            <a href="{% url 'info_coleta' coleta.id %}" class="btn btn-light btn-lg rounded-pill shadow-sm">
+                <i class="bi bi-arrow-left me-2"></i>Voltar para Coleta
+            </a>
+        </div>
+    </div>
+
+    <!-- Card de Frascos Faltantes -->
+    {% if frascos_faltantes %}
+    <div class="card mt-4 border-0 rounded-4 shadow-sm">
+        <div class="card-header bg-danger text-white rounded-top-4">
+            <h5 class="mb-0"><i class="bi bi-exclamation-triangle-fill me-2"></i>Frascos Faltantes na Coleta</h5>
+        </div>
+        <div class="card-body">
+            <p>Os seguintes frascos estão ativos no sistema mas não foram geradas amostras para eles nesta coleta.</p>
+            <form method="post" action="{% url 'adicionar_frasco_coleta' coleta.id %}">
+                {% csrf_token %}
+                <div class="input-group">
+                    <select name="frasco_id" id="frasco_id" class="form-select">
+                        <option selected disabled>Selecione o frasco para adicionar...</option>
+                        {% for frasco in frascos_faltantes %}
+                            <option value="{{ frasco.id }}">{{ frasco.nome }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-plus-circle me-2"></i>Adicionar Frasco e Medidas
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-success border-0 rounded-4 shadow-sm" role="alert">
+        <h4 class="alert-heading"><i class="bi bi-check-circle-fill me-2"></i>Tudo Certo!</h4>
+        <p class="mb-0">Não há frascos faltantes nesta coleta. Todas as amostras para frascos ativos foram geradas.</p>
+    </div>
+    {% endif %}
+
+    <!-- Card de Medidas Faltantes -->
+    <!-- Medidas existentes, mas não preenchidas -->
+    {% if medidas_faltantes_por_frasco %}
+    <div class="card mt-4 border-0 rounded-4 shadow-sm">
+        <div class="card-header bg-warning text-dark rounded-top-4">
+            <h5 class="mb-0"><i class="bi bi-clipboard-data-fill me-2"></i>Medidas existentes, mas não preenchidas</h5>
+        </div>
+        <div class="card-body">
+            {% for frasco, lista in medidas_faltantes_por_frasco.items %}
+                <div class="accordion mb-3" id="faltantes-{{ frasco.id }}">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="heading-faltantes-{{ frasco.id }}">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-faltantes-{{ frasco.id }}" aria-expanded="false" aria-controls="collapse-faltantes-{{ frasco.id }}">
+                                Frasco: {{ frasco.nome }} ({{ lista|length }} medidas não preenchidas)
+                            </button>
+                        </h2>
+                        <div id="collapse-faltantes-{{ frasco.id }}" class="accordion-collapse collapse" aria-labelledby="heading-faltantes-{{ frasco.id }}" data-bs-parent="#faltantes-{{ frasco.id }}">
+                            <div class="accordion-body">
+                                <div class="table-responsive mb-2">
+                                    <table class="table table-bordered table-striped align-middle">
+                                        <thead>
+                                            <tr>
+                                                <th>Ponto</th>
+                                                <th>Parâmetro</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for amostra, parametro in lista %}
+                                                <tr>
+                                                    <td>{{ amostra.id_ponto.nome }}</td>
+                                                    <td>{{ parametro.id_param.nome }}</td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <!-- Sem botão de correção aqui -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Medidas não geradas (não existem na tabela) -->
+    {% if medidas_nao_geradas_por_frasco %}
+    <div class="card mt-4 border-0 rounded-4 shadow-sm">
+        <div class="card-header bg-danger text-white rounded-top-4">
+            <h5 class="mb-0"><i class="bi bi-exclamation-triangle-fill me-2"></i>Medidas não geradas (não existem na tabela)</h5>
+        </div>
+        <div class="card-body">
+            {% for frasco, lista in medidas_nao_geradas_por_frasco.items %}
+                <div class="accordion mb-3" id="nao-geradas-{{ frasco.id }}">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="heading-nao-geradas-{{ frasco.id }}">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-nao-geradas-{{ frasco.id }}" aria-expanded="false" aria-controls="collapse-nao-geradas-{{ frasco.id }}">
+                                Frasco: {{ frasco.nome }} ({{ lista|length }} medidas não geradas)
+                            </button>
+                        </h2>
+                        <div id="collapse-nao-geradas-{{ frasco.id }}" class="accordion-collapse collapse" aria-labelledby="heading-nao-geradas-{{ frasco.id }}" data-bs-parent="#nao-geradas-{{ frasco.id }}">
+                            <div class="accordion-body">
+                                <div class="table-responsive mb-2">
+                                    <table class="table table-bordered table-striped align-middle">
+                                        <thead>
+                                            <tr>
+                                                <th>Ponto</th>
+                                                <th>Parâmetro</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for amostra, parametro in lista %}
+                                                <tr>
+                                                    <td>{{ amostra.id_ponto.nome }}</td>
+                                                    <td>{{ parametro.id_param.nome }}</td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <form method="post" action="{% url 'corrigir_medidas_frasco' coleta.id frasco.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger btn-sm">
+                                        <i class="bi bi-tools me-2"></i>Gerar Medidas
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if not medidas_faltantes_por_frasco and not medidas_nao_geradas_por_frasco %}
+    <div class="alert alert-success border-0 rounded-4 shadow-sm mt-4" role="alert">
+        <h4 class="alert-heading"><i class="bi bi-check-circle-fill me-2"></i>Tudo Certo!</h4>
+        <p class="mb-0">Todas as medidas estão geradas e preenchidas para os frascos desta coleta.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
