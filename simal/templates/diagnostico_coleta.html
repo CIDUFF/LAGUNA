@@ -127,6 +127,12 @@
                                                 <th>Parâmetro</th>
                                             </tr>
                                         </thead>
+                                    <form method="post" action="{% url 'corrigir_medidas_frasco' coleta.id frasco.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger btn-sm">
+                                        <i class="bi bi-tools me-2"></i>Gerar Medidas
+                                    </button>
+                                </form>
                                         <tbody>
                                             {% for amostra, parametro in lista %}
                                                 <tr>
@@ -137,12 +143,7 @@
                                         </tbody>
                                     </table>
                                 </div>
-                                <form method="post" action="{% url 'corrigir_medidas_frasco' coleta.id frasco.id %}">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-danger btn-sm">
-                                        <i class="bi bi-tools me-2"></i>Gerar Medidas
-                                    </button>
-                                </form>
+
                             </div>
                         </div>
                     </div>

@@ -331,15 +331,58 @@
   </div>
 </div>
 
-{% if mostrar_diagnostico and not formulario_gerado %}
+<!-- Diagnóstico: só aparece para superuser -->
+{% if mostrar_diagnostico %}
 <div class="card mt-4" id="diagnosticoTab">
     <div class="card-header bg-warning">
-        <h5 class="mb-0"><i class="bi bi-search me-2"></i>Diagnóstico</h5>
+        <h5 class="mb-0">Diagnóstico da Coleta</h5>
     </div>
     <div class="card-body">
-        <a href="{% url 'diagnostico_coleta' coleta.id %}" class="btn btn-warning">
-            <i class="bi bi-search me-2"></i>Executar Diagnóstico
-        </a>
+        <form method="post" action="{% url 'diagnostico_coleta' coleta %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-warning">Executar Diagnóstico</button>
+        </form>
+        {% if frascos_faltantes %}
+        <div class="mt-4">
+            <div class="card-header bg-danger">
+                <h6 class="mb-0">Frascos faltantes na coleta</h6>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% url 'adicionar_frasco_coleta' coleta %}">
+                    {% csrf_token %}
+                    <label for="frasco_id">Selecione o frasco para adicionar:</label>
+                    <select name="frasco_id" id="frasco_id" class="form-select">
+                        {% for frasco in frascos_faltantes %}
+                            <option value="{{ frasco.id }}">{{ frasco.nome }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" class="btn btn-danger mt-2">Adicionar frasco</button>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if medidas_faltantes_por_frasco %}
+        <div class="mt-4">
+            <div class="card-header bg-warning">
+                <h6 class="mb-0">Medidas faltantes/incompletas</h6>
+            </div>
+            <div class="card-body">
+                {% for frasco, parametros in medidas_faltantes_por_frasco.items %}
+                    <form method="post" action="{% url 'corrigir_medidas_frasco' coleta frasco.id %}">
+                        {% csrf_token %}
+                        <strong>Frasco: {{ frasco.nome }}</strong>
+                        <ul>
+                            {% for parametro in parametros %}
+                                <li>{{ parametro.id_param.nome }}</li>
+                            {% endfor %}
+                        </ul>
+                        <button type="submit" class="btn btn-warning mt-2">Corrigir medidas deste frasco</button>
+                    </form>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
     </div>
 </div>
 {% endif %}
