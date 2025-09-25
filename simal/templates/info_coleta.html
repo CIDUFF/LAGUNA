@@ -142,9 +142,13 @@
                 <div class="card-header bg-gradient border-0 rounded-top-4" style="background-color:#063c7a;">
                     <div class="d-flex justify-content-between align-items-center">
                         <h5 class="card-title mb-0 text-white"><i class="bi bi-check2-circle me-2"></i>Status</h5>
-                        <button class="btn btn-light btn-sm d-md-none toggle-status" type="button">
-                            <i class="bi bi-chevron-up"></i>
-                        </button>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-light btn-sm d-md-none toggle-status" type="button">
+                                <i class="bi bi-chevron-up"></i>
+                            </button>
+                            {% if mostrar_diagnostico %}
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
                 <div class="card-body p-4 status-content">
@@ -254,7 +258,7 @@
             </div>
         </div>
 
-        <!-- Coluna da direita -->
+        <!-- Coluna da direita (mapa) -->
         <div class="col-md-6 d-flex"> <!-- Adicionado d-flex -->
             <div class="card border-0 rounded-4 shadow-sm hover-shadow flex-fill"> <!-- Adicionado flex-fill -->
                 <div class="card-header bg-gradient border-0 rounded-top-4" style="background-color:#63a355;">
@@ -326,6 +330,62 @@
     </div>
   </div>
 </div>
+
+<!-- Diagnóstico: só aparece para superuser -->
+{% if mostrar_diagnostico %}
+<div class="card mt-4" id="diagnosticoTab">
+    <div class="card-header bg-warning">
+        <h5 class="mb-0">Diagnóstico da Coleta</h5>
+    </div>
+    <div class="card-body">
+        <form method="post" action="{% url 'diagnostico_coleta' coleta %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-warning">Executar Diagnóstico</button>
+        </form>
+        {% if frascos_faltantes %}
+        <div class="mt-4">
+            <div class="card-header bg-danger">
+                <h6 class="mb-0">Frascos faltantes na coleta</h6>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% url 'adicionar_frasco_coleta' coleta %}">
+                    {% csrf_token %}
+                    <label for="frasco_id">Selecione o frasco para adicionar:</label>
+                    <select name="frasco_id" id="frasco_id" class="form-select">
+                        {% for frasco in frascos_faltantes %}
+                            <option value="{{ frasco.id }}">{{ frasco.nome }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" class="btn btn-danger mt-2">Adicionar frasco</button>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if medidas_faltantes_por_frasco %}
+        <div class="mt-4">
+            <div class="card-header bg-warning">
+                <h6 class="mb-0">Medidas faltantes/incompletas</h6>
+            </div>
+            <div class="card-body">
+                {% for frasco, parametros in medidas_faltantes_por_frasco.items %}
+                    <form method="post" action="{% url 'corrigir_medidas_frasco' coleta frasco.id %}">
+                        {% csrf_token %}
+                        <strong>Frasco: {{ frasco.nome }}</strong>
+                        <ul>
+                            {% for parametro in parametros %}
+                                <li>{{ parametro.id_param.nome }}</li>
+                            {% endfor %}
+                        </ul>
+                        <button type="submit" class="btn btn-warning mt-2">Corrigir medidas deste frasco</button>
+                    </form>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
 
 <style>
 .hover-shadow {
@@ -466,28 +526,10 @@
     width: 100%;
 }
 
-#toggleLocation {
-    background-color: white;
-    transition: all 0.3s ease;
-}
-
-#toggleLocation.active {
-    background-color: #4CAF50;
-    color: white;
-}
-
-/* Estilos adicionais para suporte mobile */
 @media (max-width: 768px) {
-    #toggleLocation,
-    #fullscreenLocation {
+    #toggleLocation {
         width: auto !important;
         margin-bottom: 0 !important;
-    }
-    
-    /* Ajusta o tamanho dos botões para mobile */
-    .leaflet-control button {
-        padding: 8px 12px !important;
-        font-size: 16px !important;
     }
 }
 

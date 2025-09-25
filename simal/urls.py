@@ -2,6 +2,9 @@ from django.urls import path
 from .ninja_api import api
 from .apis import get_filtered_options
 from simal.views import (
+    adicionar_frasco_coleta,
+    corrigir_medidas_frasco,
+    diagnostico_coleta,
     dashboard_parametros,
     export_resultados_medidas_csv,
     home,
@@ -265,6 +268,12 @@ urlpatterns = [
         process_dbo_pdfs,
         name="process_dbo_pdfs",
     ),
+    path("adicionar_frasco_coleta/<int:coleta_id>/",
+         adicionar_frasco_coleta, name="adicionar_frasco_coleta"),
+    path("corrigir_medidas_frasco/<int:coleta_id>/<int:frasco_id>/",
+         corrigir_medidas_frasco, name="corrigir_medidas_frasco"),
+    path("diagnostico_coleta/<int:coleta_id>/",
+         diagnostico_coleta, name="diagnostico_coleta"), # type: ignore
     path(
         "export_frasco_resultados_xlsx/<int:coleta_id>/<int:frasco_id>/",
         export_frasco_resultados_xlsx,
