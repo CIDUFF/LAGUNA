@@ -16,7 +16,7 @@ def qi_ecoli(ecoli):
             return max(0, 100 - 37.2 * log_value + 3.60743 * (log_value ** 2))
         else:
             return 3
-    except Exception as e:
+    except Exception:
         return None
 
 def qi_dbo(dbo):

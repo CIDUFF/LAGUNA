@@ -1,45 +1,3 @@
-# ================= FUNÇÃO AUXILIAR DE ENVIO DE EMAIL =================
-def enviar_email_relatorio_coleta(coleta, arquivo_excel, usuario):
-    """
-    Envia o relatório Excel da coleta por e-mail para o usuário logado.
-    """
-    from django.core.mail import EmailMessage
-    from django.conf import settings
-
-    if not usuario.email:
-        logger.warning("Usuário sem e-mail cadastrado. Não foi possível enviar o relatório.")
-        return
-
-    subject = f"Relatório Pós-Coleta - {coleta}"
-    # Monta o link para a página de informações da coleta
-    link_sistema = f"{settings.SITE_URL}/info_coleta/{coleta.id}"
-    codigo_coleta = getattr(coleta, 'codigo_coleta', coleta.id)
-    body = (
-        f"Olá,\n\nSegue em anexo o relatório pós-coleta.\n\n"
-        f"Código da Coleta: {codigo_coleta}\n"
-        f"Acesse as informações completas da coleta neste link: {link_sistema}\n\n"
-        f"Este é um e-mail automático, favor não responder."
-    )
-    email = EmailMessage(
-        subject=subject,
-        body=body,
-        from_email=getattr(settings, "DEFAULT_FROM_EMAIL", None),
-        to=[usuario.email,],
-    )
-    email.attach(
-        f"relatorio_coleta_{coleta.id}.xlsx",
-        arquivo_excel.getvalue(),
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    )
-    try:
-        email.send(fail_silently=False)
-        logger.info(f"Relatório pós-coleta enviado para {usuario.email}.")
-    except Exception as e:
-        logger.error(f"Erro ao enviar relatório pós-coleta: {e}")
-# ================= IMPORTS =================
-import io
-
-# ================= IMPORTS =================
 import io
 import csv
 import json
@@ -47,11 +5,9 @@ import logging
 import os
 from datetime import datetime, timedelta
 from threading import Thread
-
 import pandas as pd
 import plotly.express as px
 from plotly.offline import plot
-
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
@@ -62,7 +18,7 @@ from django.core.exceptions import ObjectDoesNotExist, PermissionDenied
 from django.core.mail import send_mail, EmailMessage
 from django.core.paginator import Paginator
 from django.db import connection, transaction
-from django.db.models import Q, OuterRef, Subquery
+from django.db.models import Q
 from django.forms import inlineformset_factory, modelformset_factory
 from django.http import FileResponse, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -82,8 +38,6 @@ from PIL import Image
 
 from django_tables2 import RequestConfig
 import urllib.parse
-
-from .models import TabAmostra, TabEnvio, TabMedida
 from .services import gerar_etiquetas, get_weather_description
 from .tables import (
     EmailTable,
@@ -115,6 +69,10 @@ from .models import (
     TabLogColeta,
     TabStatusColeta,
     TipoParametro,
+    TabAmostra,
+    TabEnvio,
+    TabMedida,
+    TabProdxparam,
 )
 
 from .forms import (
@@ -150,6 +108,78 @@ from .forms import (
 )
 from .filters import *
 
+
+from .models import (
+    User,
+    ProgramaColeta,
+    ChecklistCampo,
+    Campo,
+    MetadadosCampo,
+    Ajuda,
+    Laboratorios,
+    Analises,
+    TabSetor,
+    TabPonto,
+    TabLocal,
+    TabParam,
+    TabFrasco,
+    TabEquipe,
+    TabLaboratorio,
+    TabProduto,
+    TabSerieClassificacao,
+    TabItemChecklistColeta,
+    TabChecklistColeta,
+    TabColeta,
+    DetalhesUsuario,
+)
+from django.db.models import Count
+
+from .utils.iqa_calculator import calculate_iqa
+import requests
+from django.views.decorators.csrf import csrf_exempt
+from openpyxl.styles import Alignment
+
+
+# ================= FUNÇÃO AUXILIAR DE ENVIO DE EMAIL =================
+def enviar_email_relatorio_coleta(coleta, arquivo_excel, usuario):
+    """
+    Envia o relatório Excel da coleta por e-mail para o usuário logado.
+    """
+    from django.conf import settings
+
+    if not usuario.email:
+        logger.warning(
+            "Usuário sem e-mail cadastrado. Não foi possível enviar o relatório.")
+        return
+
+    subject = f"Relatório Pós-Coleta - {coleta}"
+    # Monta o link para a página de informações da coleta
+    link_sistema = f"{settings.SITE_URL}/info_coleta/{coleta.id}"
+    codigo_coleta = getattr(coleta, 'codigo_coleta', coleta.id)
+    body = (
+        f"Olá,\n\nSegue em anexo o relatório pós-coleta.\n\n"
+        f"Código da Coleta: {codigo_coleta}\n"
+        f"Acesse as informações completas da coleta neste link: {link_sistema}\n\n"
+        f"Este é um e-mail automático, favor não responder."
+    )
+    email = EmailMessage(
+        subject=subject,
+        body=body,
+        from_email=getattr(settings, "DEFAULT_FROM_EMAIL", None),
+        to=[usuario.email,],
+    )
+    email.attach(
+        f"relatorio_coleta_{coleta.id}.xlsx",
+        arquivo_excel.getvalue(),
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
+    try:
+        email.send(fail_silently=False)
+        logger.info(f"Relatório pós-coleta enviado para {usuario.email}.")
+    except Exception as e:
+        logger.error(f"Erro ao enviar relatório pós-coleta: {e}")
+        
+        
 # ================= FUNÇÕES AUXILIARES =================
 # Alteração para o card 359
 def gerar_relatorio_excel_por_coleta(coleta, id_frasco=1):
@@ -187,79 +217,6 @@ def gerar_relatorio_excel_por_coleta(coleta, id_frasco=1):
     writer.close()
     output.seek(0)
     return output
-from .tables import (
-    EmailTable,
-    StatusColetaTable,
-    TabColetaTable,
-    TopCampanhas,
-    ColetaCampoTable,
-    ResultadosColetaTable,
-    ProgramaColetaTable,
-    LaboratoriosTable,
-    SetorTable,
-    PontoTable,
-    LocalTable,
-    TipoParametroTable,
-    ParametroTable,
-    FrascoTable,
-    EquipeTable,
-    LaboratorioTable,
-    ProdutoTable,
-    ProdxparamTable,
-    SerieClassificacaoTable,
-    TipoItemChecklistColetaTable,
-    ListaCampoTable,
-)
-
-from .models import (
-    EmailTemplate,
-    MetadadosPonto,
-    TabAnexoAmostra,
-    TabLogColeta,
-    TabStatusColeta,
-    TipoParametro,
-    User,
-    ProgramaColeta,
-    ChecklistCampo,
-    Campo,
-    MetadadosCampo,
-    Ajuda,
-    Laboratorios,
-    Analises,
-    TabSetor,
-    TabPonto,
-    TabLocal,
-    TabParam,
-    TabFrasco,
-    TabEquipe,
-    TabLaboratorio,
-    TabProduto,
-    TabProdxparam,
-    TabSerieClassificacao,
-    TabItemChecklistColeta,
-    TabChecklistColeta,
-    TabColeta,
-    TabAmostra,
-    TabEnvio,
-    TabMedida,
-    DetalhesUsuario,
-)
-from django.db.models import Count
-
-from .utils.iqa_calculator import calculate_iqa
-import pandas as pd
-import numpy as np
-import json
-import requests
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from openpyxl import Workbook
-from openpyxl.styles import Font, PatternFill
-from openpyxl.utils import get_column_letter
-from django.http import HttpResponse
-import logging
-from openpyxl.styles import Font, PatternFill, Alignment
-
 
 # Configuração do logger
 logger = logging.getLogger(__name__)
@@ -2779,9 +2736,6 @@ def input_laboratorio(request, coleta_id, ponto_id, frasco_id):
     View para entrada de dados laboratoriais
     """
 
-    # Importa os modelos necessários para toda a função
-    from simal.models import TabAmostra, TabEnvio, TabProdxparam, TabMedida
-
     MedidaFormSet = modelformset_factory(
         TabMedida, form=InputFisicoQuimicoForm, extra=0, fields="__all__"
     )
@@ -2823,7 +2777,7 @@ def input_laboratorio(request, coleta_id, ponto_id, frasco_id):
             anexo_existente = None
 
     # Importa os modelos necessários para a verificação de frasco completo
-    from simal.models import TabAmostra, TabEnvio, TabProdxparam, TabMedida
+    from simal.models import TabAmostra, TabEnvio, TabMedida
 
     if request.method == "POST":
         formset = MedidaFormSet(request.POST, request.FILES, queryset=medidas)
@@ -4278,7 +4232,6 @@ def dashboard_parametros(request):
     mapa_iqa = None
     if tipo_visualizacao == 'iqa':
         import folium
-        from folium import plugins
         
         parametros_iqa = [
             "OD", "Escherichia coli", "DBOs", "Nitrogênio Total",
@@ -4490,7 +4443,6 @@ def dashboard_parametros(request):
 
     # Dentro da função dashboard_parametros, antes do return render()
     import json
-    from django.core.serializers.json import DjangoJSONEncoder
 
     # Preparar dados do gráfico para serialização segura no template
     if dados_grafico_tempo:
@@ -4521,7 +4473,6 @@ def process_dbo_pdfs(request, coleta_id, ponto_id, frasco_id):
     # Adicionar importação do módulo re
     import re
     import json
-    import requests
     
     if request.method != 'POST' or frasco_id != 9:  # Apenas para Frasco 9
         return JsonResponse({'error': 'Método não permitido ou frasco inválido'}, status=400)
@@ -4564,7 +4515,7 @@ def process_dbo_pdfs(request, coleta_id, ponto_id, frasco_id):
             try:
                 response = requests.post(extraction_service_url, files=files, timeout=30)
             except requests.exceptions.RequestException as e:
-                error_msg = f"Este PDF não é referente ao laudo Oceanus"
+                error_msg = "Este PDF não é referente ao laudo Oceanus"
                 errors.append(error_msg)
                 print(f"Erro na requisição ao serviço de extração: {str(e)}")
                 continue
@@ -4572,7 +4523,7 @@ def process_dbo_pdfs(request, coleta_id, ponto_id, frasco_id):
             print(f"Resposta do serviço de extração: {response.status_code}")
             
             if response.status_code != 200:
-                error_msg = f"Este PDF não é referente ao laudo Oceanus"
+                error_msg = "Este PDF não é referente ao laudo Oceanus"
                 errors.append(error_msg)
                 print(f"Erro ao processar o arquivo '{file.name}': Serviço retornou código {response.status_code}")
                 continue
@@ -4581,7 +4532,7 @@ def process_dbo_pdfs(request, coleta_id, ponto_id, frasco_id):
             try:
                 data = response.json()
             except json.JSONDecodeError:
-                error_msg = f"Este PDF não é referente ao laudo Oceanus"
+                error_msg = "Este PDF não é referente ao laudo Oceanus"
                 errors.append(error_msg)
                 print(f"Resposta inválida do serviço de extração para '{file.name}'")
                 continue
@@ -4590,7 +4541,7 @@ def process_dbo_pdfs(request, coleta_id, ponto_id, frasco_id):
             
             # Verificar se a resposta contém dados
             if not data:
-                error_msg = f"Este PDF não é referente ao laudo Oceanus"
+                error_msg = "Este PDF não é referente ao laudo Oceanus"
                 errors.append(error_msg)
                 print(f"O serviço de extração não retornou dados para '{file.name}'")
                 continue
@@ -4603,7 +4554,7 @@ def process_dbo_pdfs(request, coleta_id, ponto_id, frasco_id):
                     break
             
             if not ponto_info:
-                error_msg = f"Este PDF não é referente ao laudo Oceanus"
+                error_msg = "Este PDF não é referente ao laudo Oceanus"
                 errors.append(error_msg)
                 print(f"Não foi possível identificar o ponto no arquivo '{file.name}'")
                 continue
@@ -4764,12 +4715,12 @@ def process_dbo_pdfs(request, coleta_id, ponto_id, frasco_id):
                                 resultados_encontrados = True
                 
                 if not resultados_encontrados:
-                    error_msg = f"Este PDF não é referente ao laudo Oceanus"
+                    error_msg = "Este PDF não é referente ao laudo Oceanus"
                     errors.append(error_msg)
                     print(f"Nenhum parâmetro relevante (DBO, DQO, E. coli) encontrado no arquivo '{file.name}'")
             
         except Exception as e:
-            error_msg = f"Este PDF não é referente ao laudo Oceanus"
+            error_msg = "Este PDF não é referente ao laudo Oceanus"
             errors.append(error_msg)
             print(f"Erro ao processar o arquivo '{file.name}': {str(e)}")
             import traceback
