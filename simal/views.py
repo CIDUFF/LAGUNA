@@ -31,6 +31,9 @@ from django_tables2 import RequestConfig
 from openpyxl.styles import Font, PatternFill
 from django.contrib.auth.models import Group
 from django.http import JsonResponse
+import json
+import folium
+from datetime import datetime
 
 import qrcode
 from reportlab.pdfgen import canvas
@@ -3965,7 +3968,25 @@ def convert_to_float(value):
 
 @login_required
 def dashboard_parametros(request):
+    # Initialize ALL variables at the very beginning to ensure they're in function scope
     tipo_visualizacao = request.GET.get('tipo', 'ponto')
+    parametro_id = request.GET.get('parametro')
+    ponto_id = request.GET.get('ponto')
+    setor_id = request.GET.get('setor')
+
+    # Usar nomes diferentes para as variáveis IQA para evitar conflito
+    setor_iqa_param = request.GET.get('setor_iqa')
+    mes_ano_param = request.GET.get('mes_ano')
+
+    # Initialize other variables that might be used in context
+    dados_grafico = None
+    dados_grafico_setor = None
+    dados_grafico_tempo = None
+    dados_grafico_tratamento = None
+    dados_grafico_estacoes = None
+    dados_grafico_iqa = None
+    mapa_iqa = None
+    parametro_nome_display = None
 
     # Add campaign selection
     campanhas = TabColeta.objects.all().order_by('-data')
@@ -4387,9 +4408,6 @@ def dashboard_parametros(request):
     dados_grafico_iqa = None
     mapa_iqa = None
     if tipo_visualizacao == 'iqa':
-        import folium
-        from datetime import datetime
-
         parametros_iqa = [
             "OD", "Escherichia coli", "DBOs", "Nitrogênio Total",
             "Fosfato", "pH", "Turbidez", "TDS",
@@ -4402,9 +4420,6 @@ def dashboard_parametros(request):
             unidade__icontains="%"  # Filter for the percentage unit
         ).first()
 
-        # MUDANÇA: Obter filtros de setor e mês em vez de campanha
-        setor_id_iqa = request.GET.get('setor_iqa')
-        mes_ano = request.GET.get('mes_ano')  # Formato: 'YYYY-MM'
 
         # MUDANÇA: Buscar TODOS os parâmetros IQA sem filtro especial para OD
         query_base = TabMedida.objects.filter(
@@ -4415,14 +4430,14 @@ def dashboard_parametros(request):
         )
 
         # MUDANÇA: Aplicar filtros de setor e mês
-        if setor_id_iqa:
+        if setor_iqa_param:
             query_base = query_base.filter(
-                id_envio__id_amostra__id_ponto__id_setor_id=setor_id_iqa
+                id_envio__id_amostra__id_ponto__id_setor_id=setor_iqa_param
             )
         
-        if mes_ano:
+        if mes_ano_param:
             try:
-                ano, mes = map(int, mes_ano.split('-'))
+                ano, mes = map(int, mes_ano_param.split('-'))
                 query_base = query_base.filter(
                     id_envio__id_amostra__id_coleta__data__year=ano,
                     id_envio__id_amostra__id_coleta__data__month=mes
@@ -4643,12 +4658,9 @@ def dashboard_parametros(request):
         'tipo_visualizacao': tipo_visualizacao,
         'campanhas': campanhas,
         'campanha_selecionada': campanha_selecionada,
-        'setor_iqa_selecionado': setor_id_iqa,
-        'mes_ano_selecionado': mes_ano,
+        'setor_iqa_selecionado': setor_iqa_param,  
+        'mes_ano_selecionado': mes_ano_param,
     }
-
-    # Dentro da função dashboard_parametros, antes do return render()
-    import json
 
     # Preparar dados do gráfico para serialização segura no template
     if dados_grafico_tempo:
