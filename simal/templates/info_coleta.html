@@ -1079,7 +1079,12 @@ document.addEventListener('DOMContentLoaded', function() {
     var bounds = L.latLngBounds();
 
     pontos.forEach(function(ponto) {
-        if (ponto.status === true) {
+        const dataColeta = new Date('{{ data_coleta|date:"Y-m-d" }}');
+        const dataAtual = new Date();
+        const difDias = Math.floor((dataAtual - dataColeta) / (1000 * 60 * 60 * 24));
+        const isColetaAntiga = difDias > 30; // Considerar coletas com mais de 30 dias como antigas
+        
+        if (ponto.status === true || (ponto.status === false && isColetaAntiga)) {
             totalPontos++;
             if (ponto.formulario_preenchido) {
                 pontosPreenchidos++;
@@ -1393,7 +1398,12 @@ function initFullscreenMap() {
     const bounds = L.latLngBounds();
     
     window.pontosColeta.forEach(function(ponto) {
-        if (ponto.status === true) {
+        const dataColeta = new Date('{{ data_coleta|date:"Y-m-d" }}');
+        const dataAtual = new Date();
+        const difDias = Math.floor((dataAtual - dataColeta) / (1000 * 60 * 60 * 24));
+        const isColetaAntiga = difDias > 30; // Considerar coletas com mais de 30 dias como antigas
+        
+        if (ponto.status === true || (ponto.status === false && isColetaAntiga)) {
             let markerColor;
             if (ponto.formulario_preenchido) {
                 markerColor = 'green';
