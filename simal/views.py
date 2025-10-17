@@ -30,10 +30,6 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django_tables2 import RequestConfig
 from openpyxl.styles import Font, PatternFill
 from django.contrib.auth.models import Group
-from django.http import JsonResponse
-import json
-import folium
-from datetime import datetime
 
 import qrcode
 from reportlab.pdfgen import canvas
@@ -3968,25 +3964,7 @@ def convert_to_float(value):
 
 @login_required
 def dashboard_parametros(request):
-    # Initialize ALL variables at the very beginning to ensure they're in function scope
     tipo_visualizacao = request.GET.get('tipo', 'ponto')
-    parametro_id = request.GET.get('parametro')
-    ponto_id = request.GET.get('ponto')
-    setor_id = request.GET.get('setor')
-
-    # Usar nomes diferentes para as variáveis IQA para evitar conflito
-    setor_iqa_param = request.GET.get('setor_iqa')
-    mes_ano_param = request.GET.get('mes_ano')
-
-    # Initialize other variables that might be used in context
-    dados_grafico = None
-    dados_grafico_setor = None
-    dados_grafico_tempo = None
-    dados_grafico_tratamento = None
-    dados_grafico_estacoes = None
-    dados_grafico_iqa = None
-    mapa_iqa = None
-    parametro_nome_display = None
 
     # Add campaign selection
     campanhas = TabColeta.objects.all().order_by('-data')
@@ -4408,10 +4386,11 @@ def dashboard_parametros(request):
     dados_grafico_iqa = None
     mapa_iqa = None
     if tipo_visualizacao == 'iqa':
+        import folium
+
         parametros_iqa = [
             "OD", "Escherichia coli", "DBOs", "Nitrogênio Total",
-            "Fosfato", "pH", "Turbidez", "TDS",
-            "Nitrito", "Nitrato", "Nitrogênio Amoniacal", "Amônia", "Amônio" 
+            "Fosfato", "pH", "Turbidez", "TDS"
         ]
 
         # Find the specific OD parameter from TabProdxparam that measures % (percentage)
@@ -4420,32 +4399,26 @@ def dashboard_parametros(request):
             unidade__icontains="%"  # Filter for the percentage unit
         ).first()
 
-
-        # MUDANÇA: Buscar TODOS os parâmetros IQA sem filtro especial para OD
+        # Base query with IQA parameters but filter OD specifically
         query_base = TabMedida.objects.filter(
-            id_pp__id_param__nome__in=parametros_iqa
+            Q(id_pp__id_param__nome__in=[
+                "Escherichia coli", "DBOs", "Nitrogênio Total",
+                "Fosfato", "pH", "Turbidez", "TDS"
+            ]) |
+            # Only include the specific OD percentage parameter
+            Q(id_pp=od_percentage_param)
         ).select_related(
             'id_envio__id_amostra__id_coleta',
             'id_envio__id_amostra__id_ponto'
         )
 
-        # MUDANÇA: Aplicar filtros de setor e mês
-        if setor_iqa_param:
-            query_base = query_base.filter(
-                id_envio__id_amostra__id_ponto__id_setor_id=setor_iqa_param
+        # Aplicar filtro de campanha se selecionada
+        if campanha_selecionada:
+            dados_iqa = query_base.filter(
+                id_envio__id_amostra__id_coleta=campanha_selecionada
             )
-        
-        if mes_ano_param:
-            try:
-                ano, mes = map(int, mes_ano_param.split('-'))
-                query_base = query_base.filter(
-                    id_envio__id_amostra__id_coleta__data__year=ano,
-                    id_envio__id_amostra__id_coleta__data__month=mes
-                )
-            except (ValueError, AttributeError):
-                pass
-
-        dados_iqa = query_base
+        else:
+            dados_iqa = query_base
 
         # Verificar se existem dados antes de criar o DataFrame
         if dados_iqa.exists():
@@ -4467,12 +4440,12 @@ def dashboard_parametros(request):
                 df.columns = ['data', 'ponto', 'lat',
                               'lon', 'setor', 'parametro', 'valor']
 
-                # MUDANÇA: Pivot table incluindo os novos parâmetros
+                # Pivot table com todos os parâmetros necessários
                 df_pivot = df.pivot_table(
                     index=['data', 'ponto', 'lat', 'lon', 'setor'],
                     columns='parametro',
                     values='valor',
-                    aggfunc='mean'  # Calcula a média se houver múltiplas medições no mesmo mês
+                    aggfunc='mean'
                 ).reset_index()
 
                 # Preencher valores ausentes com 0
@@ -4517,58 +4490,29 @@ def dashboard_parametros(request):
                         data_str = row['data'].strftime(
                             '%d/%m/%Y') if pd.notna(row['data']) else 'Data não disponível'
 
-                    # MUDANÇA: Criar listas de parâmetros presentes e ausentes
+                        # Criar listas de parâmetros presentes e ausentes para este ponto
                         parametros_presentes = []
                         parametros_ausentes = []
 
-                        # Parâmetros principais do IQA
-                        parametros_principais = [
-                            "OD", "Escherichia coli", "DBOs", "pH", 
-                            "Fosfato", "Turbidez", "TDS"
-                        ]
-                        
-                        # Verificar parâmetros principais
-                        for param in parametros_principais:
+                        for param in parametros_iqa:
                             if param in df_pivot.columns and row[param] > 0:
                                 parametros_presentes.append(
-                                    f"{param}: {row[param]:.2f}")
+                                    f"{param}: {row[param]}")
                             else:
                                 parametros_ausentes.append(param)
 
-                        # MUDANÇA: Verificar Nitrogênio (pode ser direto ou calculado)
-                        nt_status = "Não disponível"
-                        if "Nitrogênio Total" in df_pivot.columns and row.get("Nitrogênio Total", 0) > 0:
-                            nt_status = f"Nitrogênio Total: {row['Nitrogênio Total']:.2f}"
-                        elif any(param in df_pivot.columns and row.get(param, 0) > 0 
-                                for param in ["Nitrito", "Nitrato", "Nitrogênio Amoniacal", "Amônia", "Amônio"]):
-                            componentes = []
-                            for param in ["Nitrito", "Nitrato", "Nitrogênio Amoniacal", "Amônia", "Amônio"]:
-                                if param in df_pivot.columns and row.get(param, 0) > 0:
-                                    componentes.append(f"{param}: {row[param]:.2f}")
-                            if componentes:
-                                nt_status = f"Nitrogênio (calculado): {' + '.join(componentes)}"
-
-
                         # Montar HTML para o popup com informações dos parâmetros
                         popup_html = f"""
-                            <div style="font-family: Arial, sans-serif; min-width: 250px;">
-                                <h4 style="margin-bottom: 10px; color: #333;">Informações do Ponto</h4>
-                                <b>Ponto:</b> {row['ponto']}<br>
-                                <b>Setor:</b> {row['setor']}<br>
-                                <b>Data:</b> {data_str}<br>
-                                <b>IQA:</b> <span style="color: {get_color(row['IQA'])}; font-weight: bold;">{row['IQA']:.2f}</span><br>
-                                <hr style="margin: 10px 0;">
-                                <b>Parâmetros utilizados:</b><br>
-                                <ul style="margin: 5px 0; padding-left: 20px;">
-                                    {"".join([f"<li>{p}</li>" for p in parametros_presentes]) if parametros_presentes else "<li>Nenhum</li>"}
-                                    <li>{nt_status}</li>
-                                </ul>
-                                <hr style="margin: 10px 0;">
-                                <b>Parâmetros ausentes:</b><br>
-                                <ul style="margin: 5px 0; padding-left: 20px;">
-                                    {"".join([f"<li>{p}</li>" for p in parametros_ausentes]) if parametros_ausentes else "<li>Nenhum</li>"}
-                                </ul>
-                            </div>
+                            <b>Ponto:</b> {row['ponto']}<br>
+                            <b>Setor:</b> {row['setor']}<br>
+                            <b>Data:</b> {data_str}<br>
+                            <b>IQA:</b> {row['IQA']:.2f}<br>
+                            <hr>
+                            <b>Parâmetros utilizados:</b><br>
+                            {"<br>".join(parametros_presentes) if parametros_presentes else "Nenhum"}<br>
+                            <hr>
+                            <b>Parâmetros ausentes:</b><br>
+                            {"<br>".join(parametros_ausentes) if parametros_ausentes else "Nenhum"}
                         """
 
                         folium.CircleMarker(
@@ -4658,9 +4602,10 @@ def dashboard_parametros(request):
         'tipo_visualizacao': tipo_visualizacao,
         'campanhas': campanhas,
         'campanha_selecionada': campanha_selecionada,
-        'setor_iqa_selecionado': setor_iqa_param,  
-        'mes_ano_selecionado': mes_ano_param,
     }
+
+    # Dentro da função dashboard_parametros, antes do return render()
+    import json
 
     # Preparar dados do gráfico para serialização segura no template
     if dados_grafico_tempo:
@@ -5177,37 +5122,3 @@ def export_frasco_resultados_xlsx(request, coleta_id, frasco_id):
         messages.error(
             request, "Erro ao exportar os resultados. Por favor, tente novamente.")
         return redirect("lista_campo_frasco", coleta_id=coleta_id, frasco_id=frasco_id)
-
-
-
-
-@login_required
-def get_meses_disponiveis_setor(request):
-    """Retorna os meses/anos disponíveis para um setor específico"""
-    setor_id = request.GET.get('setor_id')
-    
-    if not setor_id:
-        return JsonResponse({'meses': []})
-    
-    # Buscar todas as datas de coletas deste setor
-    datas = TabMedida.objects.filter(
-        id_envio__id_amostra__id_ponto__id_setor_id=setor_id
-    ).select_related(
-        'id_envio__id_amostra__id_coleta'
-    ).values_list(
-        'id_envio__id_amostra__id_coleta__data', 
-        flat=True
-    ).distinct()
-    
-    # Extrair mês/ano únicos
-    meses_anos = set()
-    for data in datas:
-        if data:
-            meses_anos.add(data.strftime('%Y-%m'))
-    
-    # Ordenar em ordem decrescente (mais recente primeiro)
-    meses_ordenados = sorted(list(meses_anos), reverse=True)
-    
-    return JsonResponse({
-        'meses': [{'value': mes, 'label': mes} for mes in meses_ordenados]
-    })

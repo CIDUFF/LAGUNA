@@ -1,6 +1,6 @@
 from django.http import JsonResponse
 from django.db.models import Q
-from .models import TabColeta, TabSetor, TabPonto, TabCampanha, TabMedida
+from .models import TabColeta, TabSetor, TabPonto, TabCampanha
 
 
 def get_filtered_options(request):
@@ -73,34 +73,3 @@ def get_filtered_options(request):
     }
 
     return JsonResponse(data)
-
-
-def get_meses_disponiveis_setor(request):
-    """Retorna os meses/anos disponíveis para um setor específico"""
-    setor_id = request.GET.get('setor_id')
-    
-    if not setor_id:
-        return JsonResponse({'meses': []})
-    
-    # Buscar todas as datas de coletas deste setor
-    datas = TabMedida.objects.filter(
-        id_envio__id_amostra__id_ponto__id_setor_id=setor_id
-    ).select_related(
-        'id_envio__id_amostra__id_coleta'
-    ).values_list(
-        'id_envio__id_amostra__id_coleta__data', 
-        flat=True
-    ).distinct()
-    
-    # Extrair mês/ano únicos
-    meses_anos = set()
-    for data in datas:
-        if data:
-            meses_anos.add(data.strftime('%Y-%m'))
-    
-    # Ordenar em ordem decrescente (mais recente primeiro)
-    meses_ordenados = sorted(list(meses_anos), reverse=True)
-    
-    return JsonResponse({
-        'meses': [{'value': mes, 'label': mes} for mes in meses_ordenados]
-    })
