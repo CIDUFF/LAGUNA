@@ -1,6 +1,6 @@
 from django.urls import path
 from .ninja_api import api
-from .apis import get_filtered_options
+from .apis import get_filtered_options, get_meses_disponiveis_setor
 from simal.views import (
     adicionar_frasco_coleta,
     corrigir_medidas_frasco,
@@ -279,4 +279,5 @@ urlpatterns = [
         export_frasco_resultados_xlsx,
         name="export_frasco_resultados_xlsx",
     ),
+    path('api/meses-disponiveis-setor/', get_meses_disponiveis_setor, name='get_meses_disponiveis_setor'),  # NOVO
 ]
