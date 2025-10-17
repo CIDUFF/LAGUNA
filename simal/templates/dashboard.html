@@ -181,26 +181,121 @@
 
             <!-- Adicione isso próximo ao topo do template, antes do mapa -->
             {% if tipo_visualizacao == 'iqa' %}
-            <div class="form-group mb-3">
-                <label for="campanha">Selecione a Campanha:</label>
-                <select class="form-control" id="campanha" name="campanha">
-                    <option value="">Todas as Campanhas</option>
-                    {% for campanha in campanhas %}
-                        <option value="{{ campanha.id }}" {% if campanha == campanha_selecionada %}selected{% endif %}>
-                            {{ campanha.ordem_servico }} - {{ campanha.data|date:"d/m/Y" }}
-                        </option>
-                    {% endfor %}
-                </select>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="setor_iqa" class="form-label">1. Selecione o Setor:</label>
+                    <select class="form-control" id="setor_iqa" name="setor_iqa">
+                        <option value="">-- Selecione um setor --</option>
+                        {% for setor in setores %}
+                            <option value="{{ setor.id }}" {% if setor.id|stringformat:"s" == setor_iqa_selecionado %}selected{% endif %}>
+                                {{ setor.nome }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label for="mes_ano" class="form-label">2. Selecione o Mês/Ano:</label>
+                    <select class="form-control" id="mes_ano" name="mes_ano" disabled>
+                        <option value="">-- Primeiro selecione um setor --</option>
+                    </select>
+                    <small class="form-text text-muted" id="loading-meses" style="display:none;">
+                        <i class="spinner-border spinner-border-sm" role="status"></i> Carregando meses disponíveis...
+                    </small>
+                </div>
             </div>
 
             <script>
-            document.getElementById('campanha').addEventListener('change', function() {
-                const urlParams = new URLSearchParams(window.location.search);
-                urlParams.set('campanha', this.value);
-                urlParams.set('tipo', 'iqa');
-                // Remove parameter from URL if it exists
-                urlParams.delete('parametro');
-                window.location.href = `${window.location.pathname}?${urlParams.toString()}`;
+            document.addEventListener('DOMContentLoaded', function() {
+                const setorSelect = document.getElementById('setor_iqa');
+                const mesSelect = document.getElementById('mes_ano');
+                const loadingText = document.getElementById('loading-meses');
+                
+                // Ao carregar a página, se já houver um setor selecionado, carregar os meses
+                if (setorSelect.value) {
+                    carregarMesesDisponiveis(setorSelect.value);
+                }
+                
+                // Quando o setor mudar, carregar os meses disponíveis
+                setorSelect.addEventListener('change', function() {
+                    const setorId = this.value;
+                    
+                    if (!setorId) {
+                        // Se não houver setor selecionado, desabilitar o select de mês
+                        mesSelect.disabled = true;
+                        mesSelect.innerHTML = '<option value="">-- Primeiro selecione um setor --</option>';
+                        return;
+                    }
+                    
+                    carregarMesesDisponiveis(setorId);
+                });
+                
+                // Quando o mês mudar, atualizar a visualização
+                mesSelect.addEventListener('change', function() {
+                    if (setorSelect.value && mesSelect.value) {
+                        atualizarFiltrosIQA();
+                    }
+                });
+                
+                function carregarMesesDisponiveis(setorId) {
+                    // Mostrar loading
+                    loadingText.style.display = 'block';
+                    mesSelect.disabled = true;
+                    mesSelect.innerHTML = '<option value="">Carregando...</option>';
+                    
+                    // Fazer requisição AJAX para buscar os meses
+                    fetch(`/api/meses-disponiveis-setor/?setor_id=${setorId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            loadingText.style.display = 'none';
+                            mesSelect.disabled = false;
+                            
+                            if (data.meses && data.meses.length > 0) {
+                                mesSelect.innerHTML = '<option value="">-- Selecione um mês/ano --</option>';
+                                
+                                data.meses.forEach(mes => {
+                                    const option = document.createElement('option');
+                                    option.value = mes.value;
+                                    
+                                    // Formatar a label para ficar mais legível (ex: "2024-01" -> "Janeiro/2024")
+                                    const [ano, mesNum] = mes.value.split('-');
+                                    const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+                                                  'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+                                    option.textContent = `${meses[parseInt(mesNum) - 1]}/${ano}`;
+                                    
+                                    // Se este mês estava previamente selecionado, manter selecionado
+                                    if (mes.value === '{{ mes_ano_selecionado }}') {
+                                        option.selected = true;
+                                    }
+                                    
+                                    mesSelect.appendChild(option);
+                                });
+                                
+                                // Se havia um mês selecionado anteriormente, mantê-lo
+                                const mesSelecionado = '{{ mes_ano_selecionado }}';
+                                if (mesSelecionado) {
+                                    mesSelect.value = mesSelecionado;
+                                }
+                            } else {
+                                mesSelect.innerHTML = '<option value="">Nenhum dado disponível para este setor</option>';
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Erro ao carregar meses:', error);
+                            loadingText.style.display = 'none';
+                            mesSelect.disabled = false;
+                            mesSelect.innerHTML = '<option value="">Erro ao carregar meses</option>';
+                        });
+                }
+                
+                function atualizarFiltrosIQA() {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    urlParams.set('setor_iqa', setorSelect.value);
+                    urlParams.set('mes_ano', mesSelect.value);
+                    urlParams.set('tipo', 'iqa');
+                    urlParams.delete('parametro');
+                    urlParams.delete('campanha');
+                    window.location.href = `${window.location.pathname}?${urlParams.toString()}`;
+                }
             });
             </script>
             {% endif %}
@@ -626,7 +721,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('grafico-tempo').innerHTML = 
                 '<div class="alert alert-warning">Não há dados disponíveis para o parâmetro selecionado.</div>';
         } else {
-            // Criar array de traces para cada período
+            // Criar array de traces para cada período que tem dados
             const traces = [];
             const cores = {
                 'pre_tratamento': '#ff7f0e',  // Laranja

@@ -21,7 +21,7 @@ def qi_ecoli(ecoli):
 
 def qi_dbo(dbo):
     if dbo == 0:
-        return None
+        return 100  # MUDANÇA: Retorna 100 em vez de None
     qi_calculado = -30.1 * math.log(dbo) + 103.45
     if qi_calculado > 100:
         return 100
@@ -33,7 +33,7 @@ def qi_fosfato(fosfato):
     if fosfato >= 9.6:
         return 1
     elif fosfato < 0.5:
-        return 20
+        return 100 - 80 * fosfato  # MUDANÇA: Nova fórmula para valores < 0.5
     return 46 - 19.8 * math.log(fosfato)
 
 def qi_nitrogenio(nitrogenio):
@@ -47,11 +47,11 @@ def qi_od(od):
     if od > 140:
         return 42
     elif od < 103:
-        return 100 * math.exp(-((od - 100) ** 2) / (2 * (0.025**2)))
+        return 100 * math.exp(-((((od - 100) ** 2) / 2) * (0.025 ** 2)))  # MUDANÇA: Fórmula corrigida
     return 134 - 0.142 * od - 0.00181 * (od**2)
 
 def qi_ph(ph):
-    return 93 * math.exp(-(((ph - 7.5) ** 2) / (2 * (0.652**2))))
+    return 93 * math.exp(-((((ph - 7.5) ** 2) / 2) * (0.652 ** 2)))  # MUDANÇA: Fórmula corrigida
 
 def qi_tds(tds):
     if tds > 500:
@@ -81,12 +81,46 @@ def calculate_iqa(dados_ponto):
         "Turbidez": 0.08,
         "TDS": 0.08
     }
+    
+    # NOVA FUNÇÃO: Verificar se um valor é válido
+    def is_valid_value(valor):
+        return valor is not None and valor != "" and not np.isnan(float(valor) if isinstance(valor, (int, float, str)) else float('nan'))
+
+    # NOVA FUNÇÃO: Calcular nitrogênio total com hierarquia de prioridade
+    def calculate_nitrogen_total():
+        # Prioridade 1: Nitrogênio Total direto
+        nt_direto = dados_ponto.get("Nitrogênio Total")
+        if is_valid_value(nt_direto):
+            return float(nt_direto)
+        
+        # Prioridade 2: Soma de Nitrito + Nitrato + Nitrogênio Amoniacal
+        nitrito = dados_ponto.get("Nitrito")
+        nitrato = dados_ponto.get("Nitrato") 
+        nitrogenio_amoniacal = dados_ponto.get("Nitrogênio Amoniacal")
+        
+        # Prioridade 3: Se não houver Nitrogênio Amoniacal, usar Amônia ou Amônio
+        if not is_valid_value(nitrogenio_amoniacal):
+            amonia = dados_ponto.get("Amônia")
+            if is_valid_value(amonia):
+                nitrogenio_amoniacal = amonia
+            else:
+                amonio = dados_ponto.get("Amônio")
+                if is_valid_value(amonio):
+                    nitrogenio_amoniacal = amonio
+        
+        # Verificar se temos pelo menos nitrito e nitrato para fazer a soma
+        if is_valid_value(nitrito) and is_valid_value(nitrato):
+            soma = float(nitrito) + float(nitrato)
+            if is_valid_value(nitrogenio_amoniacal):
+                soma += float(nitrogenio_amoniacal)
+            return soma
+        
+        return None
 
     parametros_qi = {
         "OD": (qi_od, pesos["OD"]),
         "Escherichia coli": (qi_ecoli, pesos["Escherichia coli"]),
         "DBOs": (qi_dbo, pesos["DBOs"]), 
-        "Nitrogênio Total": (qi_nitrogenio, pesos["Nitrogênio Total"]),
         "Fosfato": (qi_fosfato, pesos["Fosfato"]),
         "pH": (qi_ph, pesos["pH"]),
         "Turbidez": (qi_turbidez, pesos["Turbidez"]),
@@ -97,20 +131,29 @@ def calculate_iqa(dados_ponto):
     soma_pesos = 0
     qi_temperatura = 93 # Temperatura padrão para o cálculo do IQA
     
-
+    # Processar parâmetros normais
     for param, (func_qi, peso) in parametros_qi.items():
         valor = dados_ponto.get(param)
-        if valor is not None and valor != "" and not np.isnan(valor):
+        if is_valid_value(valor):  # MUDANÇA: Usar nova função de validação
             try:
-                # Ensure valor is converted to float before calculations
                 numeric_valor = float(valor)
                 qi_value = func_qi(numeric_valor)
                 if qi_value is not None:
                     iqa_total += float(qi_value) * peso
                     soma_pesos += peso
             except (ValueError, TypeError):
-                # Skip this parameter if conversion fails
                 continue
+
+    # NOVO: Processar nitrogênio total com hierarquia de prioridade
+    nitrogenio_total_calculado = calculate_nitrogen_total()
+    if nitrogenio_total_calculado is not None:
+        try:
+            qi_value = qi_nitrogenio(nitrogenio_total_calculado)
+            if qi_value is not None:
+                iqa_total += float(qi_value) * pesos["Nitrogênio Total"]
+                soma_pesos += pesos["Nitrogênio Total"]
+        except (ValueError, TypeError):
+            pass
 
     # Adicionar temperatura
     iqa_total += qi_temperatura * pesos["Temperatura"]
